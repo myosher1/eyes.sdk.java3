@@ -39,7 +39,7 @@
     <dependencies>
         <dependency>
             <groupId>com.applitools</groupId>
-            <artifactId>eyes-sdk-java3-jersey2x</artifactId>
+            <artifactId>eyes-sdk-core-java3-jersey2x</artifactId>
             <version>3.1</version>
         </dependency>
         <dependency>

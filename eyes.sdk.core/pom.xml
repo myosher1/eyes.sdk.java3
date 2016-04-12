@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.applitools</groupId>
-    <artifactId>eyes-sdk-java3-jersey2x</artifactId>
+    <artifactId>eyes-sdk-core-java3-jersey2x</artifactId>
     <packaging>jar</packaging>
     <version>3.1</version>
-    <name>eyes-sdk-java3-jersey2x</name>
+    <name>eyes-sdk-core-java3-jersey2x</name>
     <url>http://www.applitools.com</url>
     <description>Applitools Eyes SDK base for Java</description>
     <licenses>
