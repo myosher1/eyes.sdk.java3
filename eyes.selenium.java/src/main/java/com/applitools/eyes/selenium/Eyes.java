@@ -80,7 +80,7 @@ public class Eyes extends EyesBase {
 
     @Override
     public String getBaseAgentId() {
-        return "eyes.selenium.java/2.31";
+        return "eyes.selenium.java/3.1";
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -1876,6 +1876,7 @@ public class Eyes extends EyesBase {
                         algo.getStitchedRegion(imageProvider, regionToCheck,
                                 positionProvider, positionProvider,
                                 scaleProviderHandler.get(),
+                                cutProviderHandler.get(),
                                 getWaitBeforeScreenshots(), screenshotFactory);
                 logger.verbose("Building screenshot object...");
                 result = new EyesWebDriverScreenshot(logger, driver,
@@ -1902,6 +1903,7 @@ public class Eyes extends EyesBase {
                         },
                         new ScrollPositionProvider(logger, this.driver),
                         positionProvider, scaleProviderHandler.get(),
+                                cutProviderHandler.get(),
                         getWaitBeforeScreenshots(), screenshotFactory);
 
                 ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
@@ -1916,6 +1918,8 @@ public class Eyes extends EyesBase {
                 logger.verbose("Done!");
                 screenshotImage =
                         scaleProviderHandler.get().scaleImage(screenshotImage);
+                screenshotImage =
+                        cutProviderHandler.get().cut(screenshotImage);
                 logger.verbose("Creating screenshot object...");
                 result = new EyesWebDriverScreenshot(logger, driver,
                         screenshotImage);

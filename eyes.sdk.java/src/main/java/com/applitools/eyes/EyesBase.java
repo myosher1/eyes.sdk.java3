@@ -20,13 +20,15 @@ public abstract class EyesBase {
 
     private boolean shouldMatchWindowRunOnceOnTimeout;
 
-    protected ServerConnector serverConnector;
     private MatchWindowTask matchWindowTask;
+
+    protected ServerConnector serverConnector;
     protected RunningSession runningSession;
     protected SessionStartInfo sessionStartInfo;
     protected RectangleSize viewportSize;
     protected EyesScreenshot lastScreenshot;
     protected PropertyHandler<ScaleProvider> scaleProviderHandler;
+    protected PropertyHandler<CutProvider> cutProviderHandler;
     protected PositionProvider positionProvider;
 
     // Will be checked <b>before</b> any argument validation. If true,
@@ -80,8 +82,10 @@ public abstract class EyesBase {
         ArgumentGuard.notNull(serverUrl, "serverUrl");
 
         logger = new Logger();
-        scaleProviderHandler = new SimplePropertyHandler<ScaleProvider>();
+        scaleProviderHandler = new SimplePropertyHandler<>();
         scaleProviderHandler.set(new NullScaleProvider());
+        cutProviderHandler = new SimplePropertyHandler<>();
+        cutProviderHandler.set(new NullCutProvider());
         positionProvider = new InvalidPositionProvider();
         scaleMethod = ScaleMethod.getDefault();
         viewportSize = null;
@@ -91,7 +95,7 @@ public abstract class EyesBase {
         runningSession = null;
         defaultMatchSettings = new ImageMatchSettings();
         failureReports = FailureReports.ON_CLOSE;
-        userInputs = new ArrayDeque<Trigger>();
+        userInputs = new ArrayDeque<>();
 
         // New tests are automatically saved by default.
         saveNewTests = true;
@@ -494,6 +498,23 @@ public abstract class EyesBase {
 
     @SuppressWarnings("unused")
     /**
+     * Manually set the the sizes to cut from an image before it's validated.
+     *
+     * @param cutProvider the provider doing the cut. If {@code null}, Eyes
+     *                     would automatically infer if cutting is needed.
+     */
+    public void setImageCut(CutProvider cutProvider) {
+        if (cutProvider != null) {
+            cutProviderHandler = new ReadOnlyPropertyHandler<>(logger,
+                    cutProvider);
+        } else {
+            cutProviderHandler = new SimplePropertyHandler<>();
+            cutProviderHandler.set(new NullCutProvider());
+        }
+    }
+
+    @SuppressWarnings("unused")
+    /**
      * Manually set the scale ratio for the images being validated.
      * @param scaleRatio The scale ratio to use, or {@code null} to reset
      *                   back to automatic scaling.
@@ -503,7 +524,7 @@ public abstract class EyesBase {
             scaleProviderHandler = new ReadOnlyPropertyHandler<ScaleProvider>(
                     logger, new FixedScaleProvider(scaleRatio));
         } else {
-            scaleProviderHandler = new SimplePropertyHandler<ScaleProvider>();
+            scaleProviderHandler = new SimplePropertyHandler<>();
             scaleProviderHandler.set(new NullScaleProvider());
         }
     }

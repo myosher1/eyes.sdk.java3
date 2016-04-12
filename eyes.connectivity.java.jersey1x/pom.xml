@@ -4,7 +4,7 @@
 
     <groupId>com.applitools</groupId>
     <artifactId>eyes-connectivity-java3-jersey1x</artifactId>
-    <version>3.0</version>
+    <version>3.1</version>
     <packaging>jar</packaging>
 
     <name>eyes-connectivity-java3-jersey1x</name>
@@ -46,7 +46,7 @@
         <dependency>
           <groupId>com.applitools</groupId>
           <artifactId>eyes-common-java3</artifactId>
-          <version>3.0</version>
+          <version>3.1</version>
         </dependency>
         <dependency>
             <groupId>com.sun.jersey</groupId>
@@ -67,8 +67,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.1</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                 </configuration>
             </plugin>
             <!--&lt;!&ndash;-->

@@ -274,4 +274,23 @@ public class ImageUtils {
         }
         return copyImageWithType(scaledImage, image.getType());
     }
+
+    /**
+     * Removes a given region from the image.
+     * @param image The image to crop.
+     * @param regionToCrop The region to crop from the image.
+     * @return A new image without the cropped region.
+     */
+    public static BufferedImage cropImage(BufferedImage image,
+                                          Region regionToCrop) {
+        BufferedImage croppedImage = Scalr.crop(image, regionToCrop.getLeft(),
+                regionToCrop.getTop(), regionToCrop.getWidth(),
+                regionToCrop.getHeight());
+
+        if (image.getType() == croppedImage.getType()) {
+            return croppedImage;
+        }
+
+        return copyImageWithType(croppedImage, image.getType());
+    }
 }

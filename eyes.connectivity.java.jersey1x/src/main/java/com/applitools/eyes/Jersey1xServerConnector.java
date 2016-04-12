@@ -115,7 +115,8 @@ public class Jersey1xServerConnector extends RestClient
      * @param sessionStartInfo The start parameters for the session.
      * @return RunningSession object which represents the current running
      *         session
-     * @throws EyesException
+     * @throws EyesException For invalid status codes, or if response parsing
+     *          failed.
      */
     public RunningSession startSession(SessionStartInfo sessionStartInfo)
             throws EyesException {
@@ -153,7 +154,7 @@ public class Jersey1xServerConnector extends RestClient
         }
 
         // Ok, let's create the running session from the response
-        validStatusCodes = new ArrayList<Integer>();
+        validStatusCodes = new ArrayList<>();
         validStatusCodes.add(ClientResponse.Status.OK.getStatusCode());
         validStatusCodes.add(ClientResponse.Status.CREATED.getStatusCode());
 
@@ -173,7 +174,8 @@ public class Jersey1xServerConnector extends RestClient
      *
      * @param runningSession The running session to be stopped.
      * @return TestResults object for the stopped running session
-     * @throws EyesException
+     * @throws EyesException For invalid status codes, or if response parsing
+     *          failed.
      */
     public TestResults stopSession(final RunningSession runningSession,
                                    final boolean isAborted, final boolean save)
@@ -209,7 +211,7 @@ public class Jersey1xServerConnector extends RestClient
         response = sendLongRequest(delete, "stopSession");
 
         // Ok, let's create the running session from the response
-        validStatusCodes = new ArrayList<Integer>();
+        validStatusCodes = new ArrayList<>();
         validStatusCodes.add(ClientResponse.Status.OK.getStatusCode());
 
         result = parseResponseWithJsonData(response, validStatusCodes,
@@ -224,7 +226,8 @@ public class Jersey1xServerConnector extends RestClient
      * @param runningSession The current agent's running session.
      * @param matchData Encapsulation of a capture taken from the application.
      * @return The results of the window matching.
-     * @throws EyesException
+     * @throws EyesException For invalid status codes, or response parsing
+     * failed.
      */
     public MatchResult matchWindow(RunningSession runningSession,
                                    MatchWindowData matchData)
@@ -296,7 +299,7 @@ public class Jersey1xServerConnector extends RestClient
                 post(ClientResponse.class);
 
         // Ok, let's create the running session from the response
-        validStatusCodes = new ArrayList<Integer>(1);
+        validStatusCodes = new ArrayList<>(1);
         validStatusCodes.add(ClientResponse.Status.OK.getStatusCode());
 
         result = parseResponseWithJsonData(response, validStatusCodes,

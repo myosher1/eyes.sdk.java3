@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.applitools</groupId>
     <artifactId>eyes-selenium-java3</artifactId>
-    <version>3.0</version>
+    <version>3.1</version>
     <name>eyes-selenium-java3</name>
     <url>http://www.applitools.com</url>
     <description>Applitools Eyes SDK for Selenium Java WebDriver</description>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>com.applitools</groupId>
             <artifactId>eyes-sdk-java3-jersey2x</artifactId>
-            <version>3.0</version>
+            <version>3.1</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
@@ -65,8 +65,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.1</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                 </configuration>
             </plugin>
             <!--&lt;!&ndash;-->

@@ -23,7 +23,7 @@ public class RestClient {
      * calls.
      */
     protected interface HttpMethodCall {
-        public ClientResponse call();
+        ClientResponse call();
     }
 
     private ProxySettings proxySettings;
@@ -112,7 +112,7 @@ public class RestClient {
     }
 
     /**
-     * Sets the connect & read timeout for web requests.
+     * Sets the connect and read timeouts for web requests.
      *
      * @param timeout Connect/Read timeout in milliseconds. 0 equals infinity.
      */
@@ -187,7 +187,13 @@ public class RestClient {
 
 
     /**
-     * Builds an error message which includes the response http status etc.
+     * Builds an error message which includes the response data.
+     *
+     * @param errMsg The error message.
+     * @param statusCode The response status code.
+     * @param statusPhrase The response status phrase.
+     * @param responseBody The response body.
+     * @return An error message which includes the response data.
      */
     protected String getReadResponseError(
             String errMsg, int statusCode, String statusPhrase,
@@ -202,19 +208,28 @@ public class RestClient {
             responseBody = "";
         }
 
-        return errMsg + " [" + statusCode + " " + statusPhrase + "] " + responseBody;
+        return errMsg + " [" + statusCode + " " + statusPhrase + "] "
+                + responseBody;
     }
 
     /**
-     * Generic handling of response with data.
-     * <p/>
-     * Response Handling includes the following:
+     * Generic handling of response with data. Response Handling includes the
+     * following:
      * 1. Verify that we are able to read response data.
      * 2. verify that the status code is valid
      * 3. Parse the response data from JSON to the relevant type.
+     *
+     * @param response The response to parse.
+     * @param validHttpStatusCodes The list of acceptable status codes.
+     * @param resultType The class object of the type of result this response
+     *                   should be parsed to.
+     * @param <T> The return value type.
+     * @return The parse response of the type given in {@code resultType}.
+     * @throws EyesException For invalid status codes or if the response
+     * parsing failed.
      */
     protected <T> T parseResponseWithJsonData(ClientResponse response,
-                                              List<Integer> validHttpStatusCodes, Class<T> resultType)
+        List<Integer> validHttpStatusCodes, Class<T> resultType)
             throws EyesException {
         ArgumentGuard.notNull(response, "response");
         ArgumentGuard.notNull(validHttpStatusCodes, "validHttpStatusCodes");
@@ -227,7 +242,7 @@ public class RestClient {
         String data = response.getEntity(String.class);
         response.close();
         // Validate the status code.
-        if (!validHttpStatusCodes.contains(Integer.valueOf(statusCode))) {
+        if (!validHttpStatusCodes.contains(statusCode)) {
             String errorMessage = getReadResponseError(
                     "Invalid status code",
                     statusCode,

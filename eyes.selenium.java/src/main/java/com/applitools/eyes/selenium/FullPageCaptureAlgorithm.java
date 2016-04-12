@@ -33,7 +33,7 @@ public class FullPageCaptureAlgorithm {
     public BufferedImage getStitchedRegion(ImageProvider imageProvider,
                                            RegionProvider regionProvider, PositionProvider originProvider,
                                            PositionProvider positionProvider, ScaleProvider scaleProvider,
-                                           int waitBeforeScreenshots,
+                                           CutProvider cutProvider, int waitBeforeScreenshots,
                                            EyesScreenshotFactory screenshotFactory) {
         logger.verbose("getStitchedRegion()");
 
@@ -74,8 +74,13 @@ public class FullPageCaptureAlgorithm {
 
         logger.verbose("Getting top/left image...");
         BufferedImage image = imageProvider.getImage();
+
         // FIXME - scaling should be refactored
         image = scaleProvider.scaleImage(image);
+
+        // FIXME - cropping should be overlaid, so a single cut provider will only handle a single part of the image.
+        image = cutProvider.cut(image);
+
         logger.verbose("Done! Creating screenshot object...");
         // We need the screenshot to be able to convert the region to
         // screenshot coordinates.
@@ -162,8 +167,13 @@ public class FullPageCaptureAlgorithm {
             // Actually taking the screenshot.
             logger.verbose("Getting image...");
             partImage = imageProvider.getImage();
+
             // FIXME - scaling should be refactored
             partImage = scaleProvider.scaleImage(partImage);
+
+            // FIXME - cropping should be overlaid (see previous comment re cropping)
+            partImage = cutProvider.cut(partImage);
+
             logger.verbose("Done!");
 
             if (!regionInScreenshot.isEmpty()) {
