@@ -3,9 +3,8 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.applitools</groupId>
-    <artifactId>eyes-selenium-java3</artifactId>
-    <version>3.1</version>
+    <artifactId>eyes-selenium-java3${eyes.artifact.suffix}</artifactId>
+    <version>${eyes.version}</version>
     <name>eyes-selenium-java3</name>
     <url>http://www.applitools.com</url>
     <description>Applitools Eyes SDK for Selenium Java WebDriver</description>
@@ -17,9 +16,9 @@
         </license>
     </licenses>
     <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <groupId>com.applitools</groupId>
+        <artifactId>eyes-sdk-java3-aggregator</artifactId>
+        <version>${eyes.version}</version>
     </parent>
     <developers>
         <developer>
@@ -38,8 +37,8 @@
     <dependencies>
         <dependency>
             <groupId>com.applitools</groupId>
-            <artifactId>eyes-sdk-core-java3-jersey2x</artifactId>
-            <version>3.1</version>
+            <artifactId>eyes-sdk-core-java3-${jersey.suffix}</artifactId>
+            <version>${eyes.version}</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
@@ -51,87 +50,5 @@
             <artifactId>java-client</artifactId>
             <version>RELEASE</version>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
-            <!--&lt;!&ndash;-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.6</version>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--&ndash;&gt;-->
-            <!--&lt;!&ndash;-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--&ndash;&gt;-->
-            <!--&lt;!&ndash;-->
-            <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--&ndash;&gt;-->
-            <!--&lt;!&ndash;-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-javadocs</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!--&ndash;&gt;-->
-        </plugins>
-    </build>
-
 </project>
