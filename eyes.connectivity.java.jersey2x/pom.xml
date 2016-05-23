@@ -3,7 +3,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>eyes-connectivity-java3-jersey2x</artifactId>
-    <version>${eyes.version}</version>
     <packaging>jar</packaging>
 
     <name>eyes-connectivity-java3-jersey2x</name>
@@ -19,8 +18,9 @@
     </licenses>
     <parent>
         <groupId>com.applitools</groupId>
-        <artifactId>eyes-sdk-java3-aggregator</artifactId>
-        <version>${eyes.version}</version>
+        <artifactId>eyes-sdk-java3-parent</artifactId>
+        <version>3.2</version>
+        <relativePath>../parent/pom.xml</relativePath>
     </parent>
     <developers>
         <developer>

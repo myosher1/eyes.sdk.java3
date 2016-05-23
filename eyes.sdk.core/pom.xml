@@ -2,9 +2,10 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <artifactId>eyes-sdk-core-java3-${jersey.suffix}</artifactId>
     <packaging>jar</packaging>
-    <version>${eyes.version}</version>
+
     <name>eyes-sdk-core-java3</name>
     <url>http://www.applitools.com</url>
     <description>Applitools Eyes SDK base for Java</description>
@@ -17,8 +18,9 @@
     </licenses>
     <parent>
         <groupId>com.applitools</groupId>
-        <artifactId>eyes-sdk-java3-aggregator</artifactId>
-        <version>${eyes.version}</version>
+        <artifactId>eyes-sdk-java3-parent</artifactId>
+        <version>3.2</version>
+        <relativePath>../parent/pom.xml</relativePath>
     </parent>
     <developers>
         <developer>
@@ -40,24 +42,40 @@
             <artifactId>eyes-common-java3</artifactId>
             <version>${eyes.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.applitools</groupId>
-            <!--suppress MavenModelInspection -->
-            <artifactId>eyes-connectivity-java3-${jersey.suffix}</artifactId>
-            <!--suppress MavenModelInspection -->
-            <version>${eyes.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.11</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>info.cukes</groupId>
-            <artifactId>cucumber-java</artifactId>
-            <version>1.2.2</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>eyes.sdk.core.jersey2x</id>
+            <activation>
+                <property>
+                    <name>jersey.version</name>
+                    <value>2</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.applitools</groupId>
+                    <artifactId>eyes-connectivity-java3-jersey2x</artifactId>
+                    <version>${eyes.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+        <profile>
+            <id>eyes.sdk.core.jersey1x</id>
+            <activation>
+                <property>
+                    <name>jersey.version</name>
+                    <value>1</value>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>com.applitools</groupId>
+                    <artifactId>eyes-connectivity-java3-jersey1x</artifactId>
+                    <version>${eyes.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
