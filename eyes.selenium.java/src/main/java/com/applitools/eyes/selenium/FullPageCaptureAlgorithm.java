@@ -79,9 +79,6 @@ public class FullPageCaptureAlgorithm {
                     "Couldn't set position to the to the top/left corner!");
         }
 
-        RectangleSize entireSize = positionProvider.getEntireSize();
-        logger.verbose("Entire size of region context: " + entireSize);
-
         logger.verbose("Getting top/left image...");
         BufferedImage image = imageProvider.getImage();
 
@@ -112,6 +109,19 @@ public class FullPageCaptureAlgorithm {
 
         if (!regionInScreenshot.isEmpty()) {
             image = ImageUtils.getImagePart(image, regionInScreenshot);
+        }
+
+        RectangleSize entireSize;
+        try {
+            entireSize = positionProvider.getEntireSize();
+            logger.verbose("Entire size of region context: " + entireSize);
+        } catch (EyesDriverOperationException e) {
+            logger.log(
+                    "WARNING: Failed to extract entire size of region context"
+                            + e.getMessage());
+            logger.log("Using image size instead: "
+                    + image.getWidth() + "x" + image.getHeight());
+            entireSize = new RectangleSize(image.getWidth(), image.getHeight());
         }
 
         // Notice that this might still happen even if we used
