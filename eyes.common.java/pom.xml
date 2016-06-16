@@ -3,10 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>eyes-common-java3</artifactId>
-    <packaging>jar</packaging>
-
     <name>eyes-common-java3</name>
-    <url>http://maven.apache.org</url>
+    <url>http://www.applitools.com</url>
 
     <description>Common code for Applitools Eyes Java SDK projects</description>
 
@@ -14,7 +12,7 @@
         <groupId>com.applitools</groupId>
         <artifactId>eyes-sdk-java3-parent</artifactId>
         <version>3.2</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
 

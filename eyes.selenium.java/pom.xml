@@ -3,29 +3,29 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>eyes-selenium-java3${eyes.artifact.suffix}</artifactId>
+    <artifactId>eyes-selenium-java3</artifactId>
     <name>eyes-selenium-java3</name>
-
     <url>http://www.applitools.com</url>
+
     <description>Applitools Eyes SDK for Selenium Java WebDriver</description>
 
     <parent>
         <groupId>com.applitools</groupId>
         <artifactId>eyes-sdk-java3-parent</artifactId>
         <version>3.2</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>com.applitools</groupId>
             <artifactId>eyes-common-java3</artifactId>
-            <version>${eyes.version}</version>
+            <version>3.2</version>
         </dependency>
         <dependency>
             <groupId>com.applitools</groupId>
-            <artifactId>eyes-sdk-core-java3-${jersey.suffix}</artifactId>
-            <version>${eyes.version}</version>
+            <artifactId>eyes-sdk-core-java3-jersey2x</artifactId>
+            <version>3.2</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>

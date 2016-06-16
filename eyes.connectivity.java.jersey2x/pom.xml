@@ -3,10 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>eyes-connectivity-java3-jersey2x</artifactId>
-    <packaging>jar</packaging>
-
     <name>eyes-connectivity-java3-jersey2x</name>
-    <url>http://maven.apache.org</url>
+    <url>http://www.applitools.com</url>
 
     <description>Applitools Eyes SDK REST API communication implementation depending on Jersey version 2x</description>
 
@@ -14,7 +12,7 @@
         <groupId>com.applitools</groupId>
         <artifactId>eyes-sdk-java3-parent</artifactId>
         <version>3.2</version>
-        <relativePath>../parent/pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
 
@@ -22,7 +20,7 @@
         <dependency>
           <groupId>com.applitools</groupId>
           <artifactId>eyes-common-java3</artifactId>
-          <version>${eyes.version}</version>
+          <version>3.2</version>
         </dependency>
         <dependency>
           <groupId>org.glassfish.jersey.connectors</groupId>
