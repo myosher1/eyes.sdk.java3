@@ -22,8 +22,7 @@ public class MatchWindowTask {
      * @param serverConnector   Our gateway to the agent
      * @param runningSession    The running session in which we should match the
      *                          window
-     * @param retryTimeout      The default total time we tell the agent to ignore
-     *                          mismatches.
+     * @param retryTimeout      The default total time to retry matching (ms).
      * @param appOutputProvider A callback for getting the application output
      *                          when performing match
      */
@@ -38,7 +37,7 @@ public class MatchWindowTask {
         this.logger = logger;
         this.serverConnector = serverConnector;
         this.runningSession = runningSession;
-        this.defaultRetryTimeout = retryTimeout * 1000;
+        this.defaultRetryTimeout = retryTimeout;
         this.appOutputProvider = appOutputProvider;
     }
 

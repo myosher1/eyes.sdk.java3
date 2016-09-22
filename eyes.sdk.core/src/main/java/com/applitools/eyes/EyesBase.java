@@ -15,7 +15,7 @@ import java.util.Queue;
  */
 public abstract class EyesBase {
 
-    private static final int DEFAULT_MATCH_TIMEOUT = 2; // Seconds
+    private static final int DEFAULT_MATCH_TIMEOUT = 2000; // Milliseconds
     protected static final int USE_DEFAULT_TIMEOUT = -1;
 
     private boolean shouldMatchWindowRunOnceOnTimeout;
@@ -289,28 +289,30 @@ public abstract class EyesBase {
     }
 
     /**
-     * Sets the maximal time (in seconds) a match operation tries to perform
+     * Sets the maximum time (in ms) a match operation tries to perform
      * a match.
      *
-     * @param seconds Total number of seconds to wait for a match.
+     * @param ms Total number of ms to wait for a match.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public void setMatchTimeout(int seconds) {
+    public void setMatchTimeout(int ms) {
+        final int MIN_MATCH_TIMEOUT = 500;
         if (getIsDisabled()) {
             logger.verbose("Ignored");
             return;
         }
 
-        logger.verbose("setMatchTimeout(" + seconds + ")");
-        ArgumentGuard.greaterThanOrEqualToZero(seconds, "seconds");
+        logger.verbose("Setting match timeout to: " + ms);
+        if (MIN_MATCH_TIMEOUT > ms) {
+            throw new IllegalArgumentException("Match timeout must be set in milliseconds, and must be > " +
+                    MIN_MATCH_TIMEOUT);
+        }
 
-        this.matchTimeout = seconds;
-
-        logger.log("Match timeout set to " + seconds + " second(s)");
+        this.matchTimeout = ms;
     }
 
     /**
-     * @return The maximum time in seconds {@link #checkWindowBase
+     * @return The maximum time in ms {@link #checkWindowBase
      * (RegionProvider, String, boolean, int)} waits for a match.
      */
     @SuppressWarnings("UnusedDeclaration")
