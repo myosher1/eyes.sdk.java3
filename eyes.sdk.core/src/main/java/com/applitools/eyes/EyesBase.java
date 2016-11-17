@@ -545,12 +545,14 @@ public abstract class EyesBase {
      *
      * @param method The method used to perform scaling.
      */
-    protected void setScaleMethod(ScaleMethod method) {
+    @SuppressWarnings({"WeakerAccess", "unused"})
+    public void setScaleMethod(ScaleMethod method) {
         ArgumentGuard.notNull(method, "method");
         scaleMethod = method;
     }
 
-    protected ScaleMethod getScaleMethod() {
+    @SuppressWarnings("WeakerAccess")
+    public ScaleMethod getScaleMethod() {
         return scaleMethod;
     }
 
@@ -1223,7 +1225,6 @@ public abstract class EyesBase {
             this.sessionType =
                     sessionType != null ? sessionType : SessionType.SEQUENTIAL;
             scaleProviderHandler.set(new NullScaleProvider());
-            setScaleMethod(ScaleMethod.getDefault());
             isOpen = true;
 
         } catch (EyesException e) {

@@ -13,7 +13,7 @@ public enum  ScaleMethod {
     private Scalr.Method method;
 
     public static ScaleMethod getDefault() {
-        return SPEED;
+        return QUALITY;
     }
 
     ScaleMethod(Scalr.Method method) {

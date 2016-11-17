@@ -1161,7 +1161,7 @@ public class Eyes extends EyesBase {
                 logger.verbose("Failed to set ContextBasedScaleProvider.");
                 logger.verbose("Using FixedScaleProvider instead...");
                 scaleProviderHandler.set(
-                        new FixedScaleProvider(1/devicePixelRatio));
+                        new FixedScaleProvider(1/devicePixelRatio, getScaleMethod()));
             }
             logger.verbose("Done!");
         }
@@ -2010,7 +2010,6 @@ public class Eyes extends EyesBase {
                     logger.verbose("Setting OS: " + os);
                     appEnv.setOs(os);
                     logger.verbose("Setting scale method for mobile.");
-                    setScaleMethod(ScaleMethod.QUALITY);
                 }
             } else {
                 logger.log("No mobile OS detected.");
