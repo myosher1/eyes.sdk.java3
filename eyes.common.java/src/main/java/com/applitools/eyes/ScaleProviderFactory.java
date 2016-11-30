@@ -22,11 +22,12 @@ public abstract class ScaleProviderFactory {
     /**
      * The main API for this factory.
      *
-     * @param image An image which can be used to infer the scale ratio.
+     * @param imageToScaleWidth The width of the image to scale. This parameter CAN be by class implementing
+     *                          the factory, but this is not mandatory.
      * @return A {@link ScaleProvider} instance.
      */
-    public ScaleProvider getScaleProvider(BufferedImage image) {
-        ScaleProvider scaleProvider = getScaleProviderImpl(image);
+    public ScaleProvider getScaleProvider(int imageToScaleWidth) {
+        ScaleProvider scaleProvider = getScaleProviderImpl(imageToScaleWidth);
         scaleProviderHandler.set(scaleProvider);
         return scaleProvider;
     }
@@ -35,8 +36,9 @@ public abstract class ScaleProviderFactory {
      * The implementation of getting/creating the scale provider, should be implemented by child classes.
      *
      *
-     * @param image An image which can be used to infer the scale ratio.
+     * @param imageToScaleWidth The width of the image to scale. This parameter CAN be by class implementing
+     *                          the factory, but this is not mandatory.
      * @return The scale provider to be used.
      */
-    protected abstract ScaleProvider getScaleProviderImpl(BufferedImage image);
+    protected abstract ScaleProvider getScaleProviderImpl(int imageToScaleWidth);
 }

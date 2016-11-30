@@ -1196,7 +1196,7 @@ public class Eyes extends EyesBase {
                     ImageUtils.imageFromBase64(screenshot64);
 
             // FIXME - Scaling should be handled in a single place instead
-            ScaleProvider scaleProvider = updateScalingParams().getScaleProvider(screenshotImage);
+            ScaleProvider scaleProvider = updateScalingParams().getScaleProvider(screenshotImage.getWidth());
 
             screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
             logger.verbose("Done! Building required object...");
@@ -1928,7 +1928,7 @@ public class Eyes extends EyesBase {
                 logger.verbose("Done! Creating image object...");
                 BufferedImage screenshotImage = ImageUtils.imageFromBase64(
                         screenshot64);
-                ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage);
+                ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
                 logger.verbose("Done!");
                 screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
                 screenshotImage =

@@ -82,7 +82,7 @@ public class FullPageCaptureAlgorithm {
         BufferedImage image = imageProvider.getImage();
 
         // FIXME - scaling should be refactored
-        ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(image);
+        ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(image.getWidth());
         image = ImageUtils.scaleImage(image, scaleProvider);
 
         // FIXME - cropping should be overlaid, so a single cut provider will only handle a single part of the image.

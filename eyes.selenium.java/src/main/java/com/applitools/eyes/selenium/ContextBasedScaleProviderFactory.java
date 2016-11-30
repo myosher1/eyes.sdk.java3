@@ -43,10 +43,10 @@ public class ContextBasedScaleProviderFactory extends ScaleProviderFactory {
     }
 
     @Override
-    protected ScaleProvider getScaleProviderImpl(BufferedImage image) {
+    protected ScaleProvider getScaleProviderImpl(int imageToScaleWidth) {
         ContextBasedScaleProvider scaleProvider = new ContextBasedScaleProvider(topLevelContextEntireSize, viewportSize,
                 scaleMethod, devicePixelRatio);
-        scaleProvider.updateScaleRatio(image);
+        scaleProvider.updateScaleRatio(imageToScaleWidth);
         return scaleProvider;
     }
 }

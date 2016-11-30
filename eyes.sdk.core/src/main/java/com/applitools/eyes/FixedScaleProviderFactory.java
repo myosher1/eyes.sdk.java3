@@ -25,7 +25,7 @@ public class FixedScaleProviderFactory extends ScaleProviderFactory {
     }
 
     @Override
-    protected ScaleProvider getScaleProviderImpl(BufferedImage image) {
+    protected ScaleProvider getScaleProviderImpl(int imageToScaleWidth) {
         return new FixedScaleProvider(scaleRatio, scaleMethod);
     }
 }

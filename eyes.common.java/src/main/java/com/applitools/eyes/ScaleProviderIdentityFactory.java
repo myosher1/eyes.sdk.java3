@@ -22,7 +22,7 @@ public class ScaleProviderIdentityFactory extends ScaleProviderFactory {
     }
 
     @Override
-    protected ScaleProvider getScaleProviderImpl(BufferedImage image) {
+    protected ScaleProvider getScaleProviderImpl(int imageToScaleWidth) {
         return scaleProvider;
     }
 }

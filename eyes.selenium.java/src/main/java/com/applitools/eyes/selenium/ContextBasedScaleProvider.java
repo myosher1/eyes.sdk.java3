@@ -69,21 +69,18 @@ public class ContextBasedScaleProvider implements ScaleProvider {
 
     /**
      * Set the scale ratio based on the given image.
-     * @param image The image on which to base the scale ratio.
+     * @param imageToScaleWidth The width of the image to scale, used for calculating the scale ratio.
      */
-    public void updateScaleRatio(BufferedImage image) {
-        ArgumentGuard.notNull(image, "image");
-
-        int imageWidth = image.getWidth();
+    public void updateScaleRatio(int imageToScaleWidth) {
         int viewportWidth = viewportSize.getWidth();
         int dcesWidth = topLevelContextEntireSize.getWidth();
 
         // If the image's width is the same as the viewport's width or the
         // top level context's width, no scaling is necessary.
-        if (((imageWidth >= viewportWidth - ALLOWED_VS_DEVIATION)
-                && (imageWidth <= viewportWidth + ALLOWED_VS_DEVIATION))
-                || ((imageWidth >= dcesWidth - ALLOWED_DCES_DEVIATION)
-                && imageWidth <= dcesWidth + ALLOWED_DCES_DEVIATION)) {
+        if (((imageToScaleWidth >= viewportWidth - ALLOWED_VS_DEVIATION)
+                && (imageToScaleWidth <= viewportWidth + ALLOWED_VS_DEVIATION))
+                || ((imageToScaleWidth >= dcesWidth - ALLOWED_DCES_DEVIATION)
+                && imageToScaleWidth <= dcesWidth + ALLOWED_DCES_DEVIATION)) {
             scaleRatio = 1;
         } else {
             scaleRatio = 1 / devicePixelRatio;
