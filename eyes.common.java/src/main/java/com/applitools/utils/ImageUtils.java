@@ -6,6 +6,7 @@ package com.applitools.utils;
 import com.applitools.eyes.EyesException;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.ScaleMethod;
+import com.applitools.eyes.ScaleProvider;
 import org.apache.commons.codec.binary.Base64;
 import org.imgscalr.Scalr;
 
@@ -240,16 +241,17 @@ public class ImageUtils {
      * Scales an image by the given ratio
      *
      * @param image The image to scale.
-     * @param scaleMethod The method used in order to scale the image.
-     * @param scaleRatio The ratio by which to scale the image.
+     * @param scaleProvider The encapulation of the required scaling.
      * @return If the scale ratio != 1, returns a new scaled image,
      * otherwise, returns the original image.
      */
     public static BufferedImage scaleImage(BufferedImage image,
-                                           ScaleMethod scaleMethod,
-                                           double scaleRatio) {
+                                           ScaleProvider scaleProvider) {
         ArgumentGuard.notNull(image, "image");
-        ArgumentGuard.greaterThanZero(scaleRatio, "scaleRatio");
+        ArgumentGuard.notNull(scaleProvider, "scaleProvider");
+
+        double scaleRatio = scaleProvider.getScaleRatio();
+        ScaleMethod scaleMethod = scaleProvider.getScaleMethod();
 
         if (scaleRatio == 1) {
             return image;

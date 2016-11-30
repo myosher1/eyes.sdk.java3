@@ -1,9 +1,6 @@
 package com.applitools.eyes;
 
 import com.applitools.utils.ArgumentGuard;
-import com.applitools.utils.ImageUtils;
-
-import java.awt.image.BufferedImage;
 
 /**
  * Scale provider based on a fixed scale ratio.
@@ -45,7 +42,5 @@ public class FixedScaleProvider implements ScaleProvider {
      *
      * {@inheritDoc}
      */
-    public BufferedImage scaleImage(BufferedImage image) {
-        return ImageUtils.scaleImage(image, scaleMethod, scaleRatio);
-    }
+    public ScaleMethod getScaleMethod() { return scaleMethod; }
 }

@@ -1,7 +1,5 @@
 package com.applitools.eyes;
 
-import java.awt.image.BufferedImage;
-
 /**
  * Encapsulates scaling logic.
  */
@@ -14,8 +12,7 @@ public interface ScaleProvider {
 
     /**
      *
-     * @param image The image to scale.
-     * @return A new scaled image.
+     * @return The scale method used for the scaling.
      */
-    BufferedImage scaleImage(BufferedImage image);
+    ScaleMethod getScaleMethod();
 }

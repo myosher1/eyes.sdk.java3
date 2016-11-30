@@ -4,7 +4,10 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.*;
-import com.applitools.utils.*;
+import com.applitools.utils.ArgumentGuard;
+import com.applitools.utils.ImageUtils;
+import com.applitools.utils.PropertyHandler;
+import com.applitools.utils.SimplePropertyHandler;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.RemoteWebElement;
@@ -1137,8 +1140,11 @@ public class Eyes extends EyesBase {
     /**
      * Updates the state of scaling related parameters.
      */
-    protected void updateScalingParams() {
-        if (devicePixelRatio == UNKNOWN_DEVICE_PIXEL_RATIO) {
+    protected ScaleProviderFactory updateScalingParams() {
+        // Update the scaling params only if we haven't done so yet, and the user hasn't set anything else manually.
+        if (devicePixelRatio == UNKNOWN_DEVICE_PIXEL_RATIO &&
+                scaleProviderHandler.get() instanceof NullScaleProvider) {
+            ScaleProviderFactory factory;
             logger.verbose("Trying to extract device pixel ratio...");
             try {
                 devicePixelRatio =
@@ -1153,18 +1159,20 @@ public class Eyes extends EyesBase {
 
             logger.verbose("Setting scale provider..");
             try {
-                scaleProviderHandler.set(new ContextBasedScaleProvider(
-                        positionProvider.getEntireSize(), getViewportSize(),
-                        getScaleMethod(), devicePixelRatio));
+                factory = new ContextBasedScaleProviderFactory(positionProvider.getEntireSize(), getViewportSize(),
+                        getScaleMethod(), devicePixelRatio, scaleProviderHandler);
             } catch (Exception e) {
                 // This can happen in Appium for example.
                 logger.verbose("Failed to set ContextBasedScaleProvider.");
                 logger.verbose("Using FixedScaleProvider instead...");
-                scaleProviderHandler.set(
-                        new FixedScaleProvider(1/devicePixelRatio, getScaleMethod()));
+                factory = new FixedScaleProviderFactory(1/devicePixelRatio, getScaleMethod(), scaleProviderHandler);
             }
             logger.verbose("Done!");
+            return factory;
         }
+        // If we already have a scale provider set, we'll just use it, and pass a mock as provider handler.
+        PropertyHandler<ScaleProvider> nullProvider = new SimplePropertyHandler<>();
+        return new ScaleProviderIdentityFactory(scaleProviderHandler.get(), nullProvider);
     }
 
     /**
@@ -1181,16 +1189,16 @@ public class Eyes extends EyesBase {
 
             checkFrameOrElement = true;
 
-            // FIXME - Scaling should be handled in a single place instead
-            updateScalingParams();
-
             logger.verbose("Getting screenshot as base64..");
             String screenshot64 = driver.getScreenshotAs(OutputType.BASE64);
             logger.verbose("Done! Creating image object...");
             BufferedImage screenshotImage =
                     ImageUtils.imageFromBase64(screenshot64);
-            screenshotImage =
-                    scaleProviderHandler.get().scaleImage(screenshotImage);
+
+            // FIXME - Scaling should be handled in a single place instead
+            ScaleProvider scaleProvider = updateScalingParams().getScaleProvider(screenshotImage);
+
+            screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
             logger.verbose("Done! Building required object...");
             final EyesWebDriverScreenshot screenshot =
                     new EyesWebDriverScreenshot(logger, driver,
@@ -1856,7 +1864,7 @@ public class Eyes extends EyesBase {
         logger.verbose("getScreenshot()");
         EyesWebDriverScreenshot result;
 
-        updateScalingParams();
+        ScaleProviderFactory scaleProviderFactory = updateScalingParams();
 
         String originalOverflow = null;
         if (hideScrollbars) {
@@ -1880,7 +1888,7 @@ public class Eyes extends EyesBase {
                 BufferedImage entireFrameOrElement =
                         algo.getStitchedRegion(imageProvider, regionToCheck,
                                 positionProvider, positionProvider,
-                                scaleProviderHandler.get(),
+                                scaleProviderFactory,
                                 cutProviderHandler.get(),
                                 getWaitBeforeScreenshots(), screenshotFactory);
                 logger.verbose("Building screenshot object...");
@@ -1907,7 +1915,7 @@ public class Eyes extends EyesBase {
                             }
                         },
                         new ScrollPositionProvider(logger, this.driver),
-                        positionProvider, scaleProviderHandler.get(),
+                        positionProvider, scaleProviderFactory,
                                 cutProviderHandler.get(),
                         getWaitBeforeScreenshots(), screenshotFactory);
 
@@ -1920,14 +1928,13 @@ public class Eyes extends EyesBase {
                 logger.verbose("Done! Creating image object...");
                 BufferedImage screenshotImage = ImageUtils.imageFromBase64(
                         screenshot64);
+                ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage);
                 logger.verbose("Done!");
-                screenshotImage =
-                        scaleProviderHandler.get().scaleImage(screenshotImage);
+                screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
                 screenshotImage =
                         cutProviderHandler.get().cut(screenshotImage);
                 logger.verbose("Creating screenshot object...");
-                result = new EyesWebDriverScreenshot(logger, driver,
-                        screenshotImage);
+                result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
             }
             logger.verbose("Done!");
             return result;

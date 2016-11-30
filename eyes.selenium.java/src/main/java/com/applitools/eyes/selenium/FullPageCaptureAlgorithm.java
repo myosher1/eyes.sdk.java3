@@ -31,8 +31,7 @@ public class FullPageCaptureAlgorithm {
      * @param originProvider A provider for scrolling to initial position
      *                       before starting the actual stitching.
      * @param positionProvider A provider of the scrolling implementation.
-     * @param scaleProvider The provider which performs the necessary
-     *                         scaling.
+     * @param scaleProviderFactory A factory for getting the scale provider.
      * @param waitBeforeScreenshots Time to wait before each screenshot
      *                              (milliseconds).
      * @param screenshotFactory The factory to use for creating screenshots
@@ -42,7 +41,7 @@ public class FullPageCaptureAlgorithm {
 
     public BufferedImage getStitchedRegion(ImageProvider imageProvider,
                RegionProvider regionProvider, PositionProvider originProvider,
-               PositionProvider positionProvider, ScaleProvider scaleProvider,
+               PositionProvider positionProvider, ScaleProviderFactory scaleProviderFactory,
                CutProvider cutProvider, int waitBeforeScreenshots,
                EyesScreenshotFactory screenshotFactory) {
         logger.verbose("getStitchedRegion()");
@@ -83,7 +82,8 @@ public class FullPageCaptureAlgorithm {
         BufferedImage image = imageProvider.getImage();
 
         // FIXME - scaling should be refactored
-        image = scaleProvider.scaleImage(image);
+        ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(image);
+        image = ImageUtils.scaleImage(image, scaleProvider);
 
         // FIXME - cropping should be overlaid, so a single cut provider will only handle a single part of the image.
         image = cutProvider.cut(image);
@@ -198,7 +198,7 @@ public class FullPageCaptureAlgorithm {
             partImage = imageProvider.getImage();
 
             // FIXME - scaling should be refactored
-            partImage = scaleProvider.scaleImage(partImage);
+            partImage = ImageUtils.scaleImage(partImage, scaleProvider);
 
             // FIXME - cropping should be overlaid (see previous comment re cropping)
             partImage = cutProvider.cut(partImage);

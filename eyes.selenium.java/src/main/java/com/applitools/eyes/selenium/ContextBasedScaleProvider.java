@@ -4,7 +4,6 @@ import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.ScaleMethod;
 import com.applitools.eyes.ScaleProvider;
 import com.applitools.utils.ArgumentGuard;
-import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
 
@@ -33,9 +32,10 @@ public class ContextBasedScaleProvider implements ScaleProvider {
      *                                  level frame.
      * @param viewportSize              The viewport size.
      * @param devicePixelRatio          The device pixel ratio of the
-     *                                  platfrom on which the application is
+     *                                  platform on which the application is
      *                                  running.
      */
+    @SuppressWarnings("WeakerAccess")
     public ContextBasedScaleProvider(
             RectangleSize topLevelContextEntireSize, RectangleSize viewportSize,
             ScaleMethod scaleMethod, double devicePixelRatio) {
@@ -49,31 +49,44 @@ public class ContextBasedScaleProvider implements ScaleProvider {
         scaleRatio = UNKNOWN_SCALE_RATIO;
     }
 
+    /**
+     *
+     * {@inheritDoc}
+     */
     public double getScaleRatio() {
         ArgumentGuard.isValidState(scaleRatio != UNKNOWN_SCALE_RATIO,
                 "scaleRatio not defined yet");
         return scaleRatio;
     }
 
-    public BufferedImage scaleImage(BufferedImage image) {
-        // First time an image is given we determine the scale ratio.
-        if (scaleRatio == UNKNOWN_SCALE_RATIO) {
+    /**
+     *
+     * {@inheritDoc}
+     */
+    public ScaleMethod getScaleMethod() {
+        return scaleMethod;
+    }
 
-            int imageWidth = image.getWidth();
-            int viewportWidth = viewportSize.getWidth();
-            int dcesWidth = topLevelContextEntireSize.getWidth();
+    /**
+     * Set the scale ratio based on the given image.
+     * @param image The image on which to base the scale ratio.
+     */
+    public void updateScaleRatio(BufferedImage image) {
+        ArgumentGuard.notNull(image, "image");
 
-            // If the image's width is the same as the viewport's width or the
-            // top level context's width, no scaling is necessary.
-            if (((imageWidth >= viewportWidth - ALLOWED_VS_DEVIATION)
-                        && (imageWidth <= viewportWidth + ALLOWED_VS_DEVIATION))
-                    || ((imageWidth >= dcesWidth - ALLOWED_DCES_DEVIATION)
-                        && imageWidth <= dcesWidth + ALLOWED_DCES_DEVIATION)) {
-                scaleRatio = 1;
-            } else {
-                scaleRatio = 1 / devicePixelRatio;
-            }
+        int imageWidth = image.getWidth();
+        int viewportWidth = viewportSize.getWidth();
+        int dcesWidth = topLevelContextEntireSize.getWidth();
+
+        // If the image's width is the same as the viewport's width or the
+        // top level context's width, no scaling is necessary.
+        if (((imageWidth >= viewportWidth - ALLOWED_VS_DEVIATION)
+                && (imageWidth <= viewportWidth + ALLOWED_VS_DEVIATION))
+                || ((imageWidth >= dcesWidth - ALLOWED_DCES_DEVIATION)
+                && imageWidth <= dcesWidth + ALLOWED_DCES_DEVIATION)) {
+            scaleRatio = 1;
+        } else {
+            scaleRatio = 1 / devicePixelRatio;
         }
-        return ImageUtils.scaleImage(image, scaleMethod, scaleRatio);
     }
 }
