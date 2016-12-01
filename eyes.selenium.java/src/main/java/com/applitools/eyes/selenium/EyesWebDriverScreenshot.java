@@ -45,7 +45,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         if (screenshotType == ScreenshotType.VIEWPORT) {
             Location defaultContentScroll = firstFrame
                     .getParentScrollPosition();
-            locationInScreenshot.offset(-defaultContentScroll.getX(),
+            locationInScreenshot = locationInScreenshot.offset(-defaultContentScroll.getX(),
                     -defaultContentScroll.getY());
         }
 
@@ -60,7 +60,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             Location frameParentScrollPosition = frame
                     .getParentScrollPosition();
             // Offsetting the location in the screenshot
-            locationInScreenshot.offset(
+            locationInScreenshot = locationInScreenshot.offset(
                     frameLocation.getX() - frameParentScrollPosition.getX(),
                     frameLocation.getY() - frameParentScrollPosition.getY());
         }
@@ -275,14 +275,14 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
                         && to == CoordinatesType.SCREENSHOT_AS_IS) {
 
                 // If this is not a sub-screenshot, this will have no effect.
-                result.offset(frameLocationInScreenshot.getX(),
+                result = result.offset(frameLocationInScreenshot.getX(),
                         frameLocationInScreenshot.getY());
 
             } else if (from == CoordinatesType.SCREENSHOT_AS_IS &&
                     (to == CoordinatesType.CONTEXT_RELATIVE
                             || to == CoordinatesType.CONTEXT_AS_IS)){
 
-                result.offset(-frameLocationInScreenshot.getX(),
+                result = result.offset(-frameLocationInScreenshot.getX(),
                         -frameLocationInScreenshot.getY());
             }
             return result;
@@ -292,12 +292,12 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             case CONTEXT_AS_IS:
                 switch (to) {
                     case CONTEXT_RELATIVE:
-                        result.offset(currentFrameScrollPosition.getX(),
+                        result = result.offset(currentFrameScrollPosition.getX(),
                                 currentFrameScrollPosition.getY());
                         break;
 
                     case SCREENSHOT_AS_IS:
-                        result.offset(frameLocationInScreenshot.getX(),
+                        result = result.offset(frameLocationInScreenshot.getX(),
                                 frameLocationInScreenshot.getY());
                         break;
 
@@ -310,15 +310,15 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
                 switch (to) {
                     case SCREENSHOT_AS_IS:
                         // First, convert context-relative to context-as-is.
-                        result.offset(-currentFrameScrollPosition.getX(),
+                        result = result.offset(-currentFrameScrollPosition.getX(),
                                 -currentFrameScrollPosition.getY());
                         // Now convert context-as-is to screenshot-as-is.
-                        result.offset(frameLocationInScreenshot.getX(),
+                        result = result.offset(frameLocationInScreenshot.getX(),
                                 frameLocationInScreenshot.getY());
                         break;
 
                     case CONTEXT_AS_IS:
-                        result.offset(-currentFrameScrollPosition.getX(),
+                        result = result.offset(-currentFrameScrollPosition.getX(),
                                 -currentFrameScrollPosition.getY());
                         break;
 
@@ -331,15 +331,15 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
                 switch (to) {
                     case CONTEXT_RELATIVE:
                         // First convert to context-as-is.
-                        result.offset(-frameLocationInScreenshot.getX(),
+                        result = result.offset(-frameLocationInScreenshot.getX(),
                                 -frameLocationInScreenshot.getY());
                         // Now convert to context-relative.
-                        result.offset(currentFrameScrollPosition.getX(),
+                        result = result.offset(currentFrameScrollPosition.getX(),
                                 currentFrameScrollPosition.getY());
                         break;
 
                     case CONTEXT_AS_IS:
-                        result.offset(-frameLocationInScreenshot.getX(),
+                        result = result.offset(-frameLocationInScreenshot.getX(),
                                 -frameLocationInScreenshot.getY());
                         break;
 

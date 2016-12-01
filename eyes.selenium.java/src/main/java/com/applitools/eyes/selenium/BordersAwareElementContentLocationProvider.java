@@ -114,8 +114,7 @@ public class BordersAwareElementContentLocationProvider {
             topBorderWidth = 0;
         }
 
-        Location contentLocation = new Location(location);
-        contentLocation.offset(leftBorderWidth, topBorderWidth);
+        Location contentLocation = new Location(location).offset(leftBorderWidth, topBorderWidth);
         logger.verbose("Done!");
         return contentLocation;
     }

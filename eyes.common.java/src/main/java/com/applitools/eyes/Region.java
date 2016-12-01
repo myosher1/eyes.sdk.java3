@@ -1,7 +1,7 @@
 package com.applitools.eyes;
 
 import com.applitools.utils.ArgumentGuard;
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -97,26 +97,52 @@ public class Region {
     }
 
     /**
-     * Offsets the region's location (in place).
+     * Get an offset region.
      *
      * @param dx The X axis offset.
      * @param dy The Y axis offset.
+     * @return A region with an offset location.
      */
-    public void offset(int dx, int dy) {
-        left += dx;
-        top += dy;
+    public Region offset(int dx, int dy) {
+        return new Region(getLocation().offset(dx, dy), getSize());
+    }
+
+    /**
+     * Get a region which is a scaled version of the current region.
+     * IMPORTANT: This also scales the LOCATION(!!) of the region (not just its size).
+     *
+     * @param scaleRatio The ratio by which to scale the region.
+     * @return A new region which is a scaled version of the current region.
+     */
+    public Region scale(double scaleRatio) {
+        Location l = getLocation();
+        l.scale(scaleRatio);
+
+        RectangleSize s = getSize();
+        s.scale(scaleRatio);
+        return new Region(l, s);
     }
 
     /**
      *
-     * @return The (top,left) position of the current region.
+     * @return The size of the region.
      */
     public RectangleSize getSize() {
         return new RectangleSize(width, height);
     }
 
     /**
+     *
+     * @param size The updated size of the region.
+     */
+    public void setSize(RectangleSize size) {
+        width = size.getWidth();
+        height = size.getHeight();
+    }
+
+    /**
      * Set the (top,left) position of the current region
+     *
      * @param location The (top,left) position to set.
      */
     public void setLocation(Location location) {

@@ -54,24 +54,34 @@ public class Location implements Cloneable {
     }
 
     /**
-     * Translates this location by the specified amount (in place!).
-     * <p>
+     * Get a location translated by the specified amount.
+     *
      * @param dx The amount to offset the x-coordinate.
      * @param dy The amount to offset the y-coordinate.
+     * @return A location translated by the specified amount.
      */
-    public void offset(int dx, int dy) {
-        x += dx;
-        y += dy;
+    public Location offset(int dx, int dy) {
+        return new Location(x + dx, y + dy);
     }
 
     /**
-     * Translates this location by the specified amount (in place!).
-     * <p>
-     * @param amount The amount the offset.
+     * Get a location translated by the specified amount.
+     *
+     * @param amount The amount to offset.
+     * @return A location translated by the specified amount.
      */
-    public void offset(Location amount) {
-        x += amount.getX();
-        y += amount.getY();
+    public Location offset(Location amount) {
+        return offset(amount.getX(), amount.getY());
+    }
+
+    /**
+     * Get a scaled location.
+     *
+     * @param scaleRatio The ratio by which to scale the results.
+     * @return A scaled copy of the current location.
+     */
+    public Location scale(double scaleRatio) {
+        return new Location((int) Math.ceil(x * scaleRatio), (int) Math.ceil(y * scaleRatio));
     }
 
     /**

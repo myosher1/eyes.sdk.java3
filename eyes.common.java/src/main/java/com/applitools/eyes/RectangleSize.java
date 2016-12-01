@@ -53,6 +53,18 @@ public class RectangleSize {
                 Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
     }
 
+
+    /**
+     * Get a scaled version of the current size.
+     *
+     * @param scaleRatio The ratio by which to scale.
+     * @return A scaled version of the current size.
+     */
+    public RectangleSize scale(double scaleRatio) {
+        return new RectangleSize((int) Math.ceil(width * scaleRatio),
+                (int) Math.ceil(height * scaleRatio));
+    }
+
     /**
      * @param obj A {@link com.applitools.eyes.RectangleSize} instance to be
      *            checked for equality with the current instance.
