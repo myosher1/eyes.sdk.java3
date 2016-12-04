@@ -13,4 +13,13 @@ public interface CutProvider {
      * @return A new cut image.
      */
     BufferedImage cut(BufferedImage image);
+
+
+    /**
+     * Get a scaled version of the cut provider.
+     *
+     * @param scaleRatio The ratio by which to scale the current cut parameters.
+     * @return A new scale cut provider instance.
+     */
+    CutProvider scale(double scaleRatio);
 }

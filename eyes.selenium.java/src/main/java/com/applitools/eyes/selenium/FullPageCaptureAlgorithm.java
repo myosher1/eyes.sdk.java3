@@ -83,9 +83,11 @@ public class FullPageCaptureAlgorithm {
 
         // FIXME - scaling should be refactored
         ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(image.getWidth());
-        image = ImageUtils.scaleImage(image, scaleProvider);
+        // Notice that we want to cut/crop an image before we scale it, we need to change
+        double pixelRatio = 1 / scaleProvider.getScaleRatio();
 
         // FIXME - cropping should be overlaid, so a single cut provider will only handle a single part of the image.
+        cutProvider = cutProvider.scale(pixelRatio);
         image = cutProvider.cut(image);
 
         logger.verbose("Done! Creating screenshot object...");
@@ -99,6 +101,8 @@ public class FullPageCaptureAlgorithm {
                         CoordinatesType.SCREENSHOT_AS_IS);
 
         logger.verbose("Done! Region in screenshot: " + regionInScreenshot);
+        regionInScreenshot = regionInScreenshot.scale(pixelRatio);
+        logger.verbose("Scaled region: " + regionInScreenshot);
 
         // Handling a specific case where the region is actually larger than
         // the screenshot (e.g., when body width/height are set to 100%, and
@@ -110,6 +114,7 @@ public class FullPageCaptureAlgorithm {
         if (!regionInScreenshot.isEmpty()) {
             image = ImageUtils.getImagePart(image, regionInScreenshot);
         }
+        image = ImageUtils.scaleImage(image, scaleProvider);
 
         RectangleSize entireSize;
         try {
@@ -136,7 +141,7 @@ public class FullPageCaptureAlgorithm {
         // These will be used for storing the actual stitched size (it is
         // sometimes less than the size extracted via "getEntireSize").
         Location lastSuccessfulLocation;
-        RectangleSize lastSuccesfulPartSize;
+        RectangleSize lastSuccessfulPartSize;
 
         // The screenshot part is a bit smaller than the screenshot size,
         // in order to eliminate duplicate bottom scroll bars, as well as fixed
@@ -169,7 +174,7 @@ public class FullPageCaptureAlgorithm {
         logger.verbose("Done!");
 
         lastSuccessfulLocation = new Location(0, 0);
-        lastSuccesfulPartSize = new RectangleSize(initialPart.getWidth(),
+        lastSuccessfulPartSize = new RectangleSize(initialPart.getWidth(),
                 initialPart.getHeight());
 
         PositionMemento originalStitchedState = positionProvider.getState();
@@ -197,9 +202,6 @@ public class FullPageCaptureAlgorithm {
             logger.verbose("Getting image...");
             partImage = imageProvider.getImage();
 
-            // FIXME - scaling should be refactored
-            partImage = ImageUtils.scaleImage(partImage, scaleProvider);
-
             // FIXME - cropping should be overlaid (see previous comment re cropping)
             partImage = cutProvider.cut(partImage);
 
@@ -209,6 +211,9 @@ public class FullPageCaptureAlgorithm {
                 partImage = ImageUtils.getImagePart(partImage,
                         regionInScreenshot);
             }
+
+            // FIXME - scaling should be refactored
+            partImage = ImageUtils.scaleImage(partImage, scaleProvider);
 
             // Stitching the current part.
             logger.verbose("Stitching part into the image container...");
@@ -220,7 +225,7 @@ public class FullPageCaptureAlgorithm {
         }
 
         if (partImage != null) {
-            lastSuccesfulPartSize = new RectangleSize(partImage.getWidth(),
+            lastSuccessfulPartSize = new RectangleSize(partImage.getWidth(),
                     partImage.getHeight());
         }
 
@@ -232,9 +237,9 @@ public class FullPageCaptureAlgorithm {
         // If the actual image size is smaller than the extracted size, we
         // crop the image.
         int actualImageWidth = lastSuccessfulLocation.getX() +
-                lastSuccesfulPartSize.getWidth();
+                lastSuccessfulPartSize.getWidth();
         int actualImageHeight = lastSuccessfulLocation.getY() +
-                lastSuccesfulPartSize.getHeight();
+                lastSuccessfulPartSize.getHeight();
         logger.verbose("Extracted entire size: " + entireSize);
         logger.verbose("Actual stitched size: " + actualImageWidth + "x" +
                 actualImageHeight);
