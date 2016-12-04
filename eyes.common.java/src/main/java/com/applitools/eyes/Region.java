@@ -115,12 +115,7 @@ public class Region {
      * @return A new region which is a scaled version of the current region.
      */
     public Region scale(double scaleRatio) {
-        Location l = getLocation();
-        l.scale(scaleRatio);
-
-        RectangleSize s = getSize();
-        s.scale(scaleRatio);
-        return new Region(l, s);
+        return new Region(getLocation().scale(scaleRatio), getSize().scale(scaleRatio));
     }
 
     /**
