@@ -75,7 +75,7 @@ public class FullPageCaptureAlgorithm {
         if (currentPosition.getX() != 0 || currentPosition.getY() != 0) {
             originProvider.restoreState(originalPosition);
             throw new EyesException(
-                    "Couldn't set position to the to the top/left corner!");
+                    "Couldn't set position to the top/left corner!");
         }
 
         logger.verbose("Getting top/left image...");
