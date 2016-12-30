@@ -400,9 +400,9 @@ public class EyesSeleniumUtils {
 
         final int MAX_DIFF = 3;
         int widthDiff = actualViewportSize.getWidth() - requiredSize.getWidth();
-        int widthStep = widthDiff / (-widthDiff); // -1 for smaller size, 1 for larger
+        int widthStep = widthDiff != 0 ? (widthDiff / (-widthDiff)) : 1; // -1 for smaller size, 1 for larger
         int heightDiff = actualViewportSize.getHeight() - requiredSize.getHeight();
-        int heightStep = heightDiff / (-heightDiff);
+        int heightStep = heightDiff != 0 ? (heightDiff / (-heightDiff)) : 1;
 
         Dimension dBrowserSize = driver.manage().window().getSize();
         RectangleSize browserSize = new RectangleSize(dBrowserSize.getWidth(),
