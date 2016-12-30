@@ -258,7 +258,7 @@ public class EyesSeleniumUtils {
      * @param executor The executor to use.
      * @return The viewport size.
      */
-    public static RectangleSize executeViewportSizeExtraction(
+    public static RectangleSize getViewportSize(
             JavascriptExecutor executor) {
         //noinspection unchecked
         List<Long> vsAsList =
@@ -268,16 +268,18 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     *
      * @param logger The logger to use.
      * @param driver The web driver to use.
-     * @return The viewport size of the current context.
+     * @return The viewport size of the current context, or the display size
+     *          if the viewport size cannot be retrieved.
      */
-    public static RectangleSize extractViewportSize(Logger logger, WebDriver
+    public static RectangleSize getViewportSizeOrDisplaySize(Logger logger, WebDriver
             driver) {
-        logger.verbose("extractViewportSize()");
+        logger.verbose("getViewportSizeOrDisplaySize()");
 
         try {
-            return executeViewportSizeExtraction((JavascriptExecutor) driver);
+            return getViewportSize((JavascriptExecutor) driver);
         } catch (Exception ex) {
             logger.verbose(String.format(
                     "Failed to extract viewport size using Javascript: %s",
@@ -320,7 +322,7 @@ public class EyesSeleniumUtils {
         final int SLEEP = 1000;
         final int RETRIES = 3;
 
-        RectangleSize actualViewportSize = extractViewportSize(logger, driver);
+        RectangleSize actualViewportSize = getViewportSizeOrDisplaySize(logger, driver);
         logger.verbose("Initial viewport size:" + actualViewportSize);
 
         // If the viewport size is already the required size
@@ -355,7 +357,7 @@ public class EyesSeleniumUtils {
             throw new EyesException("Failed to set browser size!");
         }
 
-        actualViewportSize = extractViewportSize(logger, driver);
+        actualViewportSize = getViewportSizeOrDisplaySize(logger, driver);
         logger.verbose("Current viewport size: " + actualViewportSize);
         if (!actualViewportSize.equals(size)) {
             // Additional attempt. This Solves the "maximized browser" bug
@@ -376,7 +378,7 @@ public class EyesSeleniumUtils {
             do {
                 driver.manage().window().setSize(requiredBrowserSize);
                 GeneralUtils.sleep(SLEEP);
-                actualViewportSize = extractViewportSize(logger, driver);
+                actualViewportSize = getViewportSizeOrDisplaySize(logger, driver);
                 logger.verbose("Browser size: "
                         + driver.manage().window().getSize());
                 logger.verbose("Viewport size: " + actualViewportSize);
