@@ -348,7 +348,7 @@ public class EyesSeleniumUtils {
      *
      * @param logger The logger to use.
      * @param driver The web driver to use.
-     * @param size The size to set as the viepwort size.
+     * @param size The size to set as the viewport size.
      */
     public static void setViewportSize(Logger logger, WebDriver driver,
                                 RectangleSize size) {
