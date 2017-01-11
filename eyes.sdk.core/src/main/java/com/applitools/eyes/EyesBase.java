@@ -67,6 +67,9 @@ public abstract class EyesBase {
     // Used for automatic save of a test run.
     private boolean saveNewTests, saveFailedTests;
 
+    protected boolean saveDebugScreenshots;
+    protected String debugScreenshotsPath;
+
     /**
      * Creates a new {@code EyesBase}instance that interacts with the Eyes
      * Server at the specified url.
@@ -103,6 +106,8 @@ public abstract class EyesBase {
         saveFailedTests = false;
         agentId = null;
         lastScreenshot = null;
+        saveDebugScreenshots = false;
+        debugScreenshotsPath = null;
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -554,6 +559,33 @@ public abstract class EyesBase {
     @SuppressWarnings("WeakerAccess")
     public ScaleMethod getScaleMethod() {
         return scaleMethod;
+    }
+
+    /**
+     * @param saveDebugScreenshots If true, will save all screenshots to local directory.
+     */
+    @SuppressWarnings("unused")
+    public void setSaveDebugScreenshots(boolean saveDebugScreenshots) {
+        this.saveDebugScreenshots = saveDebugScreenshots;
+    }
+
+    /**
+     * @param saveDebugScreenshots If true, will save all screenshots to local directory.
+     * @param pathToSave Path where you want to save debug screenshots.
+     */
+    @SuppressWarnings("unused")
+    public void setSaveDebugScreenshots(boolean saveDebugScreenshots, String pathToSave) {
+        this.saveDebugScreenshots = saveDebugScreenshots;
+        this.debugScreenshotsPath = pathToSave.endsWith("/") ? pathToSave : pathToSave + '/';
+    }
+
+    /**
+     *
+     * @return True if screenshots saving enabled.
+     */
+    @SuppressWarnings("unused")
+    public boolean getSaveDebugScreenshots() {
+        return  this.saveDebugScreenshots;
     }
 
     /**

@@ -7,6 +7,7 @@ import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
+import java.util.Calendar;
 
 public class FullPageCaptureAlgorithm {
     // This should pretty much cover all scroll bars (and some fixed position
@@ -15,10 +16,14 @@ public class FullPageCaptureAlgorithm {
     private static final int MIN_SCREENSHOT_PART_HEIGHT = 10;
 
     private final Logger logger;
+    private final boolean saveDebugScreenshots;
+    private final String debugScreenshotsPath;
 
-    public FullPageCaptureAlgorithm(Logger logger) {
+    public FullPageCaptureAlgorithm(Logger logger, boolean saveDebugScreenshots, String debugScreenshotsPath) {
         ArgumentGuard.notNull(logger, "logger");
         this.logger = logger;
+        this.saveDebugScreenshots = saveDebugScreenshots;
+        this.debugScreenshotsPath = debugScreenshotsPath;
     }
 
     /**
@@ -80,6 +85,10 @@ public class FullPageCaptureAlgorithm {
 
         logger.verbose("Getting top/left image...");
         BufferedImage image = imageProvider.getImage();
+        if (saveDebugScreenshots) {
+            String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " original.png";
+            ImageUtils.saveImage(image, debugScreenshotsPath + filename.replaceAll(" ", "_"));
+        }
 
         // FIXME - scaling should be refactored
         ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(image.getWidth());
@@ -113,8 +122,17 @@ public class FullPageCaptureAlgorithm {
 
         if (!regionInScreenshot.isEmpty()) {
             image = ImageUtils.getImagePart(image, regionInScreenshot);
+            if (saveDebugScreenshots) {
+                String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " cropped.png";
+                ImageUtils.saveImage(image, debugScreenshotsPath + filename.replaceAll(" ", "_"));
+            }
         }
+
         image = ImageUtils.scaleImage(image, scaleProvider);
+        if (saveDebugScreenshots) {
+            String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " scaled.png";
+            ImageUtils.saveImage(image, debugScreenshotsPath + filename.replaceAll(" ", "_"));
+        }
 
         RectangleSize entireSize;
         try {
@@ -202,6 +220,11 @@ public class FullPageCaptureAlgorithm {
             logger.verbose("Getting image...");
             partImage = imageProvider.getImage();
 
+            if (saveDebugScreenshots) {
+                String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " original.png";
+                ImageUtils.saveImage(partImage, debugScreenshotsPath + filename.replaceAll(" ", "_"));
+            }
+
             // FIXME - cropping should be overlaid (see previous comment re cropping)
             partImage = cutProvider.cut(partImage);
 
@@ -210,10 +233,18 @@ public class FullPageCaptureAlgorithm {
             if (!regionInScreenshot.isEmpty()) {
                 partImage = ImageUtils.getImagePart(partImage,
                         regionInScreenshot);
+                if (saveDebugScreenshots) {
+                    String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " cropped.png";
+                    ImageUtils.saveImage(partImage, debugScreenshotsPath + filename.replaceAll(" ", "_"));
+                }
             }
 
             // FIXME - scaling should be refactored
             partImage = ImageUtils.scaleImage(partImage, scaleProvider);
+            if (saveDebugScreenshots) {
+                String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " scaled.png";
+                ImageUtils.saveImage(partImage, debugScreenshotsPath + filename.replaceAll(" ", "_"));
+            }
 
             // Stitching the current part.
             logger.verbose("Stitching part into the image container...");

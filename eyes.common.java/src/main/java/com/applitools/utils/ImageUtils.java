@@ -304,4 +304,18 @@ public class ImageUtils {
 
         return copyImageWithType(croppedImage, image.getType());
     }
+
+    /**
+     * Save image to local file system
+     * @param image The image to save.
+     * @param filename The path to save image
+     */
+    public static void saveImage(BufferedImage image, String filename) {
+        try {
+            File file = new File(filename);
+            ImageIO.write(image, "png", file);
+        } catch (IOException e) {
+            throw new EyesException("Failed to save image", e);
+        }
+    }
 }
