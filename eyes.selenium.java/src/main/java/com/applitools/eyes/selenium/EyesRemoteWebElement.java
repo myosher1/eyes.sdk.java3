@@ -127,7 +127,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
      * @return The value of the scrollLeft property of the element.
      */
     public int getScrollLeft() {
-        return Integer.parseInt(eyesDriver.executeScript(JS_GET_SCROLL_LEFT,
+        return (int) Double.parseDouble(eyesDriver.executeScript(JS_GET_SCROLL_LEFT,
                 this).toString());
     }
 
@@ -135,7 +135,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
      * @return The value of the scrollTop property of the element.
      */
     public int getScrollTop() {
-        return Integer.parseInt(eyesDriver.executeScript(JS_GET_SCROLL_TOP,
+        return (int) Double.parseDouble(eyesDriver.executeScript(JS_GET_SCROLL_TOP,
                 this).toString());
     }
 
@@ -143,7 +143,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
      * @return The value of the scrollWidth property of the element.
      */
     public int getScrollWidth() {
-        return Integer.parseInt(eyesDriver.executeScript(JS_GET_SCROLL_WIDTH,
+        return (int) Double.parseDouble(eyesDriver.executeScript(JS_GET_SCROLL_WIDTH,
                 this).toString());
     }
 
@@ -151,7 +151,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
      * @return The value of the scrollHeight property of the element.
      */
     public int getScrollHeight() {
-        return Integer.parseInt(eyesDriver.executeScript(JS_GET_SCROLL_HEIGHT,
+        return (int) Double.parseDouble(eyesDriver.executeScript(JS_GET_SCROLL_HEIGHT,
                 this).toString());
     }
 
