@@ -1,12 +1,9 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.ScaleMethod;
 import com.applitools.eyes.ScaleProvider;
 import com.applitools.eyes.ScaleProviderFactory;
 import com.applitools.utils.PropertyHandler;
-
-import java.awt.image.BufferedImage;
 
 /**
  * Factory implementation for creating {@link ContextBasedScaleProvider} instances.

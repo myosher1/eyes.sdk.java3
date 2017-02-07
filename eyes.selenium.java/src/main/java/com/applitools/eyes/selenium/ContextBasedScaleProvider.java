@@ -1,11 +1,8 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.ScaleMethod;
 import com.applitools.eyes.ScaleProvider;
 import com.applitools.utils.ArgumentGuard;
-
-import java.awt.image.BufferedImage;
 
 @SuppressWarnings("SpellCheckingInspection")
 /**

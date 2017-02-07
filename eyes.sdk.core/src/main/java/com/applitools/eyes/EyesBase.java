@@ -58,7 +58,6 @@ public abstract class EyesBase {
     private String hostOS;
     private String baselineEnvName;
     private String environmentName;
-    private ScaleMethod scaleMethod;
     private String branchName;
     private String parentBranchName;
     private FailureReports failureReports;
@@ -91,7 +90,6 @@ public abstract class EyesBase {
         cutProviderHandler = new SimplePropertyHandler<>();
         cutProviderHandler.set(new NullCutProvider());
         positionProvider = new InvalidPositionProvider();
-        scaleMethod = ScaleMethod.getDefault();
         viewportSize = null;
         serverConnector = ServerConnectorFactory.create(logger,
                 getBaseAgentId(), serverUrl);
@@ -544,21 +542,6 @@ public abstract class EyesBase {
      */
     public double getScaleRatio() {
         return scaleProviderHandler.get().getScaleRatio();
-    }
-
-    /**
-     *
-     * @param method The method used to perform scaling.
-     */
-    @SuppressWarnings({"WeakerAccess", "unused"})
-    public void setScaleMethod(ScaleMethod method) {
-        ArgumentGuard.notNull(method, "method");
-        scaleMethod = method;
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    public ScaleMethod getScaleMethod() {
-        return scaleMethod;
     }
 
     /**
