@@ -4,16 +4,14 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.*;
-import com.applitools.utils.ArgumentGuard;
-import com.applitools.utils.ImageUtils;
-import com.applitools.utils.PropertyHandler;
-import com.applitools.utils.SimplePropertyHandler;
+import com.applitools.utils.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.RemoteWebElement;
 
 import java.awt.image.BufferedImage;
 import java.net.URI;
+import java.util.Calendar;
 
 /**
  * The main API gateway for the SDK.
@@ -1884,7 +1882,7 @@ public class Eyes extends EyesBase {
             if (checkFrameOrElement) {
                 logger.verbose("Check frame/element requested");
                 FullPageCaptureAlgorithm algo =
-                        new FullPageCaptureAlgorithm(logger);
+                        new FullPageCaptureAlgorithm(logger, saveDebugScreenshots, debugScreenshotsPath);
                 BufferedImage entireFrameOrElement =
                         algo.getStitchedRegion(imageProvider, regionToCheck,
                                 positionProvider, positionProvider,
@@ -1902,7 +1900,7 @@ public class Eyes extends EyesBase {
                 FrameChain originalFrame = driver.getFrameChain();
                 driver.switchTo().defaultContent();
                 FullPageCaptureAlgorithm algo =
-                        new FullPageCaptureAlgorithm(logger);
+                        new FullPageCaptureAlgorithm(logger, saveDebugScreenshots, debugScreenshotsPath);
                 BufferedImage fullPageImage = algo.getStitchedRegion
                         (imageProvider,
                         new RegionProvider() {
@@ -1926,13 +1924,23 @@ public class Eyes extends EyesBase {
                 logger.verbose("Screenshot requested...");
                 String screenshot64 = driver.getScreenshotAs(OutputType.BASE64);
                 logger.verbose("Done! Creating image object...");
-                BufferedImage screenshotImage = ImageUtils.imageFromBase64(
-                        screenshot64);
+                BufferedImage screenshotImage = ImageUtils.imageFromBase64(screenshot64);
+
+                if (saveDebugScreenshots) {
+                    String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " original.png";
+                    ImageUtils.saveImage(screenshotImage, debugScreenshotsPath + filename.replaceAll(" ", "_"));
+                }
+
                 ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
                 logger.verbose("Done!");
                 screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
-                screenshotImage =
-                        cutProviderHandler.get().cut(screenshotImage);
+
+                if (saveDebugScreenshots) {
+                    String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " scaled.png";
+                    ImageUtils.saveImage(screenshotImage, debugScreenshotsPath + filename.replaceAll(" ", "_"));
+                }
+
+                screenshotImage = cutProviderHandler.get().cut(screenshotImage);
                 logger.verbose("Creating screenshot object...");
                 result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
             }
