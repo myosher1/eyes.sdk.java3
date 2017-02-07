@@ -15,7 +15,6 @@ public class ContextBasedScaleProviderFactory extends ScaleProviderFactory {
 
     private final RectangleSize topLevelContextEntireSize;
     private final RectangleSize viewportSize;
-    private final ScaleMethod scaleMethod;
     private final double devicePixelRatio;
 
     /**
@@ -26,26 +25,23 @@ public class ContextBasedScaleProviderFactory extends ScaleProviderFactory {
      *                                  would be the document size of the top
      *                                  level frame.
      * @param viewportSize              The viewport size.
-     *
-     * @param scaleMethod               The method used for scaling.
      * @param devicePixelRatio          The device pixel ratio of the
      *                                  platform on which the application is
      *                                  running.
      */
     public ContextBasedScaleProviderFactory(RectangleSize topLevelContextEntireSize, RectangleSize viewportSize,
-                                            ScaleMethod scaleMethod, double devicePixelRatio,
+                                            double devicePixelRatio,
                                             PropertyHandler<ScaleProvider> scaleProviderHandler) {
         super(scaleProviderHandler);
         this.topLevelContextEntireSize = topLevelContextEntireSize;
         this.viewportSize = viewportSize;
-        this.scaleMethod = scaleMethod;
         this.devicePixelRatio = devicePixelRatio;
     }
 
     @Override
     protected ScaleProvider getScaleProviderImpl(int imageToScaleWidth) {
         ContextBasedScaleProvider scaleProvider = new ContextBasedScaleProvider(topLevelContextEntireSize, viewportSize,
-                scaleMethod, devicePixelRatio);
+                devicePixelRatio);
         scaleProvider.updateScaleRatio(imageToScaleWidth);
         return scaleProvider;
     }

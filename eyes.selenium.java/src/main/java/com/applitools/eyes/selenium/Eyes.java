@@ -1158,12 +1158,13 @@ public class Eyes extends EyesBase {
             logger.verbose("Setting scale provider..");
             try {
                 factory = new ContextBasedScaleProviderFactory(positionProvider.getEntireSize(), getViewportSize(),
-                        getScaleMethod(), devicePixelRatio, scaleProviderHandler);
+                        devicePixelRatio, scaleProviderHandler);
             } catch (Exception e) {
                 // This can happen in Appium for example.
                 logger.verbose("Failed to set ContextBasedScaleProvider.");
                 logger.verbose("Using FixedScaleProvider instead...");
-                factory = new FixedScaleProviderFactory(1/devicePixelRatio, getScaleMethod(), scaleProviderHandler);
+                factory = new FixedScaleProviderFactory(1/devicePixelRatio,
+                        scaleProviderHandler);
             }
             logger.verbose("Done!");
             return factory;
