@@ -558,6 +558,7 @@ public abstract class EyesBase {
      */
     @SuppressWarnings("unused")
     public void setSaveDebugScreenshots(boolean saveDebugScreenshots, String pathToSave) {
+        ArgumentGuard.notNull(pathToSave, "pathToSave");
         this.saveDebugScreenshots = saveDebugScreenshots;
         this.debugScreenshotsPath = pathToSave.endsWith("/") ? pathToSave : pathToSave + '/';
     }
