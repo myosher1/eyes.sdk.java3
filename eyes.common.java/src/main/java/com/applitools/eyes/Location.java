@@ -102,4 +102,8 @@ public class Location implements Cloneable {
     public String toString() {
         return "(" + x + ", " + y + ")";
     }
+
+    public String toStringForFilename() {
+        return x + "_" + y;
+    }
 }
