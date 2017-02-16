@@ -66,8 +66,7 @@ public abstract class EyesBase {
     // Used for automatic save of a test run.
     private boolean saveNewTests, saveFailedTests;
 
-    protected boolean saveDebugScreenshots;
-    protected String debugScreenshotsPath;
+    protected DebugScreenshotsProvider debugScreenshotsProvider;
 
     /**
      * Creates a new {@code EyesBase}instance that interacts with the Eyes
@@ -104,8 +103,7 @@ public abstract class EyesBase {
         saveFailedTests = false;
         agentId = null;
         lastScreenshot = null;
-        saveDebugScreenshots = false;
-        debugScreenshotsPath = null;
+        debugScreenshotsProvider = new NullDebugScreenshotProvider();
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -549,18 +547,14 @@ public abstract class EyesBase {
      */
     @SuppressWarnings("unused")
     public void setSaveDebugScreenshots(boolean saveDebugScreenshots) {
-        this.saveDebugScreenshots = saveDebugScreenshots;
-    }
-
-    /**
-     * @param saveDebugScreenshots If true, will save all screenshots to local directory.
-     * @param pathToSave Path where you want to save debug screenshots.
-     */
-    @SuppressWarnings("unused")
-    public void setSaveDebugScreenshots(boolean saveDebugScreenshots, String pathToSave) {
-        ArgumentGuard.notNull(pathToSave, "pathToSave");
-        this.saveDebugScreenshots = saveDebugScreenshots;
-        this.debugScreenshotsPath = pathToSave.endsWith("/") ? pathToSave : pathToSave + '/';
+        DebugScreenshotsProvider prev = debugScreenshotsProvider;
+        if (saveDebugScreenshots) {
+            debugScreenshotsProvider = new FileDebugScreenshotsProvider();
+        } else {
+            debugScreenshotsProvider = new NullDebugScreenshotProvider();
+        }
+        debugScreenshotsProvider.setPrefix(prev.getPrefix());
+        debugScreenshotsProvider.setPath(prev.getPath());
     }
 
     /**
@@ -569,8 +563,44 @@ public abstract class EyesBase {
      */
     @SuppressWarnings("unused")
     public boolean getSaveDebugScreenshots() {
-        return  this.saveDebugScreenshots;
+        return !(debugScreenshotsProvider instanceof NullDebugScreenshotProvider);
     }
+
+    /**
+     * @param pathToSave Path where you want to save the debug screenshots.
+     */
+    @SuppressWarnings("unused")
+    public void setDebugScreenshotsPath(String pathToSave) {
+        debugScreenshotsProvider.setPath(pathToSave);
+    }
+
+    /**
+     *
+     * @return The path where you want to save the debug screenshots.
+     */
+    @SuppressWarnings("unused")
+    public String getDebugScreenshotsPath() {
+        return debugScreenshotsProvider.getPath();
+    }
+
+    /**
+     * @param prefix The prefix for the screenshots' names.
+     */
+    @SuppressWarnings("unused")
+    public void setDebugScreenshotsPrefix(String prefix) {
+        debugScreenshotsProvider.setPrefix(prefix);
+    }
+
+    /**
+     *
+     * @return The prefix for the screenshots' names.
+     */
+    @SuppressWarnings("unused")
+    public String getDebugScreenshotsPrefix() {
+        return debugScreenshotsProvider.getPrefix();
+    }
+
+
 
     /**
      * See {@link #close(boolean)}.

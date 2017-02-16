@@ -16,14 +16,17 @@ public class FullPageCaptureAlgorithm {
     private static final int MIN_SCREENSHOT_PART_HEIGHT = 10;
 
     private final Logger logger;
-    private final boolean saveDebugScreenshots;
-    private final String debugScreenshotsPath;
 
-    public FullPageCaptureAlgorithm(Logger logger, boolean saveDebugScreenshots, String debugScreenshotsPath) {
+    public FullPageCaptureAlgorithm(Logger logger) {
         ArgumentGuard.notNull(logger, "logger");
         this.logger = logger;
-        this.saveDebugScreenshots = saveDebugScreenshots;
-        this.debugScreenshotsPath = debugScreenshotsPath;
+    }
+
+    private static void saveDebugScreenshotPart(DebugScreenshotsProvider debugScreenshotsProvider, BufferedImage image,
+                                               Region region, String name) {
+        String suffix = "part-" + name + "-" + region.getLeft() + "_" + region.getTop() + "_" + region.getWidth() + "x"
+                + region.getHeight();
+        debugScreenshotsProvider.save(image, suffix);
     }
 
     /**
@@ -47,7 +50,7 @@ public class FullPageCaptureAlgorithm {
     public BufferedImage getStitchedRegion(ImageProvider imageProvider,
                RegionProvider regionProvider, PositionProvider originProvider,
                PositionProvider positionProvider, ScaleProviderFactory scaleProviderFactory,
-               CutProvider cutProvider, int waitBeforeScreenshots,
+               CutProvider cutProvider, int waitBeforeScreenshots, DebugScreenshotsProvider debugScreenshotsProvider,
                EyesScreenshotFactory screenshotFactory) {
         logger.verbose("getStitchedRegion()");
 
@@ -85,10 +88,7 @@ public class FullPageCaptureAlgorithm {
 
         logger.verbose("Getting top/left image...");
         BufferedImage image = imageProvider.getImage();
-        if (saveDebugScreenshots) {
-            String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " original.png";
-            ImageUtils.saveImage(image, debugScreenshotsPath + filename.replaceAll(" ", "_"));
-        }
+        debugScreenshotsProvider.save(image, "original");
 
         // FIXME - scaling should be refactored
         ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(image.getWidth());
@@ -98,6 +98,7 @@ public class FullPageCaptureAlgorithm {
         // FIXME - cropping should be overlaid, so a single cut provider will only handle a single part of the image.
         cutProvider = cutProvider.scale(pixelRatio);
         image = cutProvider.cut(image);
+        debugScreenshotsProvider.save(image, "original-cut");
 
         logger.verbose("Done! Creating screenshot object...");
         // We need the screenshot to be able to convert the region to
@@ -122,17 +123,11 @@ public class FullPageCaptureAlgorithm {
 
         if (!regionInScreenshot.isEmpty()) {
             image = ImageUtils.getImagePart(image, regionInScreenshot);
-            if (saveDebugScreenshots) {
-                String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " cropped.png";
-                ImageUtils.saveImage(image, debugScreenshotsPath + filename.replaceAll(" ", "_"));
-            }
+            saveDebugScreenshotPart(debugScreenshotsProvider, image, regionProvider.getRegion(), "before-scaled");
         }
 
         image = ImageUtils.scaleImage(image, scaleProvider);
-        if (saveDebugScreenshots) {
-            String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " scaled.png";
-            ImageUtils.saveImage(image, debugScreenshotsPath + filename.replaceAll(" ", "_"));
-        }
+        debugScreenshotsProvider.save(image, "scaled");
 
         RectangleSize entireSize;
         try {
@@ -219,32 +214,28 @@ public class FullPageCaptureAlgorithm {
             // Actually taking the screenshot.
             logger.verbose("Getting image...");
             partImage = imageProvider.getImage();
-
-            if (saveDebugScreenshots) {
-                String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " original.png";
-                ImageUtils.saveImage(partImage, debugScreenshotsPath + filename.replaceAll(" ", "_"));
-            }
+            debugScreenshotsProvider.save(partImage,
+                    "original-scrolled-" + positionProvider.getCurrentPosition().toStringForFilename());
 
             // FIXME - cropping should be overlaid (see previous comment re cropping)
             partImage = cutProvider.cut(partImage);
+            debugScreenshotsProvider.save(partImage,
+                    "original-scrolled-cut-" + positionProvider.getCurrentPosition().toStringForFilename());
 
             logger.verbose("Done!");
 
             if (!regionInScreenshot.isEmpty()) {
                 partImage = ImageUtils.getImagePart(partImage,
                         regionInScreenshot);
-                if (saveDebugScreenshots) {
-                    String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " cropped.png";
-                    ImageUtils.saveImage(partImage, debugScreenshotsPath + filename.replaceAll(" ", "_"));
-                }
+                saveDebugScreenshotPart(debugScreenshotsProvider, partImage, partRegion, "original-scrolled-"
+                        + positionProvider.getCurrentPosition().toStringForFilename());
             }
 
             // FIXME - scaling should be refactored
             partImage = ImageUtils.scaleImage(partImage, scaleProvider);
-            if (saveDebugScreenshots) {
-                String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " scaled.png";
-                ImageUtils.saveImage(partImage, debugScreenshotsPath + filename.replaceAll(" ", "_"));
-            }
+            saveDebugScreenshotPart(debugScreenshotsProvider, partImage, partRegion,
+                    "original-scrolled-" + positionProvider.getCurrentPosition().toStringForFilename() + "-scaled-");
+
 
             // Stitching the current part.
             logger.verbose("Stitching part into the image container...");
@@ -283,6 +274,7 @@ public class FullPageCaptureAlgorithm {
             logger.verbose("Done!");
         }
 
+        debugScreenshotsProvider.save(stitchedImage, "stitched");
         return stitchedImage;
     }
 }

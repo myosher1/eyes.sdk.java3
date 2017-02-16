@@ -1883,13 +1883,13 @@ public class Eyes extends EyesBase {
             if (checkFrameOrElement) {
                 logger.verbose("Check frame/element requested");
                 FullPageCaptureAlgorithm algo =
-                        new FullPageCaptureAlgorithm(logger, saveDebugScreenshots, debugScreenshotsPath);
+                        new FullPageCaptureAlgorithm(logger);
                 BufferedImage entireFrameOrElement =
                         algo.getStitchedRegion(imageProvider, regionToCheck,
                                 positionProvider, positionProvider,
                                 scaleProviderFactory,
                                 cutProviderHandler.get(),
-                                getWaitBeforeScreenshots(), screenshotFactory);
+                                getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory);
                 logger.verbose("Building screenshot object...");
                 result = new EyesWebDriverScreenshot(logger, driver,
                         entireFrameOrElement,
@@ -1901,7 +1901,7 @@ public class Eyes extends EyesBase {
                 FrameChain originalFrame = driver.getFrameChain();
                 driver.switchTo().defaultContent();
                 FullPageCaptureAlgorithm algo =
-                        new FullPageCaptureAlgorithm(logger, saveDebugScreenshots, debugScreenshotsPath);
+                        new FullPageCaptureAlgorithm(logger);
                 BufferedImage fullPageImage = algo.getStitchedRegion
                         (imageProvider,
                         new RegionProvider() {
@@ -1916,7 +1916,7 @@ public class Eyes extends EyesBase {
                         new ScrollPositionProvider(logger, this.driver),
                         positionProvider, scaleProviderFactory,
                                 cutProviderHandler.get(),
-                        getWaitBeforeScreenshots(), screenshotFactory);
+                        getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory);
 
                 ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
                 result = new EyesWebDriverScreenshot(logger, driver,
@@ -1927,21 +1927,18 @@ public class Eyes extends EyesBase {
                 logger.verbose("Done! Creating image object...");
                 BufferedImage screenshotImage = ImageUtils.imageFromBase64(screenshot64);
 
-                if (saveDebugScreenshots) {
-                    String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " original.png";
-                    ImageUtils.saveImage(screenshotImage, debugScreenshotsPath + filename.replaceAll(" ", "_"));
-                }
+                debugScreenshotsProvider.save(screenshotImage, "original");
 
                 ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
                 logger.verbose("Done!");
                 screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
 
-                if (saveDebugScreenshots) {
-                    String filename = "screenshot " + Calendar.getInstance().getTimeInMillis() + " scaled.png";
-                    ImageUtils.saveImage(screenshotImage, debugScreenshotsPath + filename.replaceAll(" ", "_"));
-                }
+                debugScreenshotsProvider.save(screenshotImage, "scaled");
 
                 screenshotImage = cutProviderHandler.get().cut(screenshotImage);
+
+                debugScreenshotsProvider.save(screenshotImage, "cut");
+
                 logger.verbose("Creating screenshot object...");
                 result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
             }
