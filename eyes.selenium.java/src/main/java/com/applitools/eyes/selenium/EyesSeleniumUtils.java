@@ -25,6 +25,9 @@ import java.util.Map;
  * class, and it caused collision.
  */
 public class EyesSeleniumUtils {
+
+    private static final String NATIVE_APP = "NATIVE_APP";
+
     // See Applitools WiKi for explanation.
     private static final String JS_GET_VIEWPORT_SIZE =
             "var height = undefined;"
@@ -126,29 +129,29 @@ public class EyesSeleniumUtils {
     public static boolean isLandscapeOrientation(WebDriver driver) {
         // We can only find orientation for mobile devices.
         if (isMobileDevice(driver)) {
-            AppiumDriver appiumDriver = (AppiumDriver) driver;
+            AppiumDriver<?> appiumDriver = (AppiumDriver<?>) driver;
 
+            String originalContext = null;
             try {
                 // We must be in native context in order to ask for orientation,
                 // because of an Appium bug.
-                String originalContext = appiumDriver.getContext();
+                originalContext = appiumDriver.getContext();
                 if (appiumDriver.getContextHandles().size() > 1 &&
-                        !originalContext.equalsIgnoreCase("NATIVE_APP")) {
-                    appiumDriver.context("NATIVE_APP");
+                        !originalContext.equalsIgnoreCase(NATIVE_APP)) {
+                    appiumDriver.context(NATIVE_APP);
                 } else {
                     originalContext = null;
                 }
-
                 ScreenOrientation orientation = appiumDriver.getOrientation();
-
-                if (originalContext != null) {
-                    appiumDriver.context(originalContext);
-                }
-
                 return orientation == ScreenOrientation.LANDSCAPE;
             } catch (Exception e) {
                 throw new EyesDriverOperationException(
                         "Failed to get orientation!", e);
+            }
+            finally {
+                if (originalContext != null) {
+                    appiumDriver.context(originalContext);
+                }
             }
         }
 
