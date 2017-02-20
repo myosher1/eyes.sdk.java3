@@ -504,8 +504,7 @@ public abstract class EyesBase {
     /**
      * Manually set the the sizes to cut from an image before it's validated.
      *
-     * @param cutProvider the provider doing the cut. If {@code null}, Eyes
-     *                     would automatically infer if cutting is needed.
+     * @param cutProvider the provider doing the cut.
      */
     public void setImageCut(CutProvider cutProvider) {
         if (cutProvider != null) {
