@@ -396,16 +396,15 @@ public class EyesSeleniumUtils {
         actualViewportSize = getViewportSize((JavascriptExecutor) driver);
         logger.verbose("Current viewport size: " + actualViewportSize);
 
-        if (actualViewportSize.equals(requiredSize))
-        {
+        if (actualViewportSize.equals(requiredSize)) {
             return;
         }
 
         final int MAX_DIFF = 3;
         int widthDiff = actualViewportSize.getWidth() - requiredSize.getWidth();
-        int widthStep = widthDiff != 0 ? (widthDiff / (-widthDiff)) : 1; // -1 for smaller size, 1 for larger
+        int widthStep = widthDiff > 0 ? -1 : 1; // -1 for smaller size, 1 for larger
         int heightDiff = actualViewportSize.getHeight() - requiredSize.getHeight();
-        int heightStep = heightDiff != 0 ? (heightDiff / (-heightDiff)) : 1;
+        int heightStep = heightDiff > 0 ? -1 : 1;
 
         Dimension dBrowserSize = driver.manage().window().getSize();
         RectangleSize browserSize = new RectangleSize(dBrowserSize.getWidth(),
@@ -414,37 +413,44 @@ public class EyesSeleniumUtils {
         int currWidthChange = 0;
         int currHeightChange = 0;
         // We try the zoom workaround only if size difference is reasonable.
-        if (Math.abs(widthDiff) <= MAX_DIFF && Math.abs(heightDiff) <= MAX_DIFF)
-        {
+        if (Math.abs(widthDiff) <= MAX_DIFF && Math.abs(heightDiff) <= MAX_DIFF) {
             logger.verbose("Trying workaround for zoom...");
-            do
-            {
+            int retriesLeft = Math.abs((widthDiff == 0 ? 1 : widthDiff) * (heightDiff == 0 ? 1 : heightDiff)) * 2;
+            RectangleSize lastRequiredBrowserSize = null;
+            do {
+                logger.verbose("Retries left: " + retriesLeft);
                 // We specifically use "<=" (and not "<"), so to give an extra resize attempt
                 // in addition to reaching the diff, due to floating point issues.
                 if (Math.abs(currWidthChange) <= Math.abs(widthDiff) &&
-                        actualViewportSize.getWidth() != requiredSize.getWidth())
-                {
+                        actualViewportSize.getWidth() != requiredSize.getWidth()) {
                     currWidthChange += widthStep;
                 }
                 if (Math.abs(currHeightChange) <= Math.abs(heightDiff) &&
-                        actualViewportSize.getHeight() != requiredSize.getHeight())
-                {
+                        actualViewportSize.getHeight() != requiredSize.getHeight()) {
                     currHeightChange += heightStep;
                 }
 
-                setBrowserSize(logger, driver,
-                        new RectangleSize(browserSize.getWidth()+ currWidthChange,
-                                browserSize.getHeight() + currHeightChange));
+                RectangleSize requiredBrowserSize = new RectangleSize(browserSize.getWidth()+ currWidthChange,
+                        browserSize.getHeight() + currHeightChange);
+                if (requiredBrowserSize.equals(lastRequiredBrowserSize)) {
+                    logger.verbose("Browser size is as required but viewport size does not match!");
+                    logger.verbose("Browser size: " + requiredBrowserSize + " , Viewport size: " + actualViewportSize);
+                    logger.verbose("Stopping viewport size attempts.");
+                    break;
+                }
+
+                setBrowserSize(logger, driver, requiredBrowserSize);
+                lastRequiredBrowserSize = requiredBrowserSize;
 
                 actualViewportSize = getViewportSize((JavascriptExecutor) driver);
                 logger.verbose("Current viewport size: " + actualViewportSize);
 
-                if (actualViewportSize.equals(requiredSize))
-                {
+                if (actualViewportSize.equals(requiredSize)) {
                     return;
                 }
-            } while (Math.abs(currWidthChange) <= Math.abs(widthDiff) ||
-                    Math.abs(currHeightChange) <= Math.abs(heightDiff));
+            } while ((Math.abs(currWidthChange) <= Math.abs(widthDiff) ||
+                    Math.abs(currHeightChange) <= Math.abs(heightDiff))
+                    && (--retriesLeft > 0));
 
             logger.verbose("Zoom workaround failed.");
         }
