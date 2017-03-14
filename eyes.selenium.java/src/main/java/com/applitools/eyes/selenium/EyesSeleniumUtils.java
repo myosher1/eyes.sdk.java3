@@ -481,7 +481,7 @@ public class EyesSeleniumUtils {
     /**
      *
      * @param driver The driver to get the platform version from.
-     * @return The plaform version or {@code null} if it is undefined.
+     * @return The platform version or {@code null} if it is undefined.
      */
     public static String getPlatformVersion(HasCapabilities driver) {
         Capabilities capabilities = driver.getCapabilities();

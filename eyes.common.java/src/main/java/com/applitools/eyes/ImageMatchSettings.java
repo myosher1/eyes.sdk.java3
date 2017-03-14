@@ -15,7 +15,7 @@ public class ImageMatchSettings {
     /**
      * See {@link #ImageMatchSettings(MatchLevel, ExactMatchSettings)}.
      * {@code matchLevel} defaults to {@code STRICT},
-     * {@code exact} defualts to {@code null}.
+     * {@code exact} defaults to {@code null}.
      */
     public ImageMatchSettings() {
         this(MatchLevel.STRICT, null);

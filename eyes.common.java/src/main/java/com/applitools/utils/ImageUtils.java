@@ -261,7 +261,7 @@ public class ImageUtils {
      * Scales an image by the given ratio
      *
      * @param image The image to scale.
-     * @param scaleProvider The encapulation of the required scaling.
+     * @param scaleProvider The encapsulation of the required scaling.
      * @return If the scale ratio != 1, returns a new scaled image,
      * otherwise, returns the original image.
      */
