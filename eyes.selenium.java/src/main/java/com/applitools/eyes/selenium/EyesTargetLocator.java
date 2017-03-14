@@ -55,7 +55,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
      * Initialized a new EyesTargetLocator object.
      * @param driver The WebDriver from which the targetLocator was received.
      * @param targetLocator The actual TargetLocator object.
-     * @param onWillSwitch A delegate to be called whenever a relavant switch
+     * @param onWillSwitch A delegate to be called whenever a relevant switch
      *                     is about to be performed.
      */
     public EyesTargetLocator(Logger logger, EyesWebDriver driver,

@@ -328,7 +328,7 @@ public class Eyes extends EyesBase {
     /**
      * Adds a keyboard trigger.
      *
-     * @param control The control's context-relatieve region.
+     * @param control The control's context-relative region.
      * @param text    The trigger's text.
      */
     public void addTextTrigger(Region control, String text) {
