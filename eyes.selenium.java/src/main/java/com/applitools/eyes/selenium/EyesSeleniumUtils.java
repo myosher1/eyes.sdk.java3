@@ -218,10 +218,9 @@ public class EyesSeleniumUtils {
     public static Location getCurrentScrollPosition(
             JavascriptExecutor executor) {
         //noinspection unchecked
-        List<Double> positionAsList = (List<Double>) executor.executeScript(
-                JS_GET_CURRENT_SCROLL_POSITION);
-        return new Location((int)Math.ceil(positionAsList.get(0)),
-                (int)Math.ceil(positionAsList.get(1)));
+        List<Number> positionAsList = (List<Number>)executor.executeScript(JS_GET_CURRENT_SCROLL_POSITION);
+        return new Location((int)Math.ceil(positionAsList.get(0).doubleValue()),
+                (int)Math.ceil(positionAsList.get(1).doubleValue()));
     }
 
     /**
