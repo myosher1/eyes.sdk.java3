@@ -305,7 +305,7 @@ public abstract class EyesBase {
         }
 
         logger.verbose("Setting match timeout to: " + ms);
-        if (MIN_MATCH_TIMEOUT > ms) {
+        if ((ms != 0) && (MIN_MATCH_TIMEOUT > ms)) {
             throw new IllegalArgumentException("Match timeout must be set in milliseconds, and must be > " +
                     MIN_MATCH_TIMEOUT);
         }
