@@ -63,8 +63,8 @@ public class RestClient {
             if (uriParts.length < 2) {
                 throw new EyesException("Invalid proxy URI: " + uri);
             }
-            String scheme = uriParts[0].substring(1); // remove "//" part of the hostname.
-            String hostName = uriParts[1];
+            String scheme = uriParts[0];
+            String hostName = uriParts[1].substring(2); // remove "//" part of the hostname.;
 
             if (proxySettings.getUsername() != null) {
 
@@ -83,6 +83,7 @@ public class RestClient {
             if (uriParts.length > 2) {
                 String leftOverUri = uriParts[2];
                 String[] leftOverParts = leftOverUri.split("/", 2);
+
                 port = Integer.valueOf(leftOverParts[0]);
 
                 // If there's a "path" part following the port
