@@ -50,8 +50,6 @@ public class RestClient {
                                       ProxySettings proxySettings) {
         ResteasyClientBuilder builder = new ResteasyClientBuilder();
 
-        ApacheHttpClient4Engine engine = new ApacheHttpClient4Engine();
-
         builder = builder.establishConnectionTimeout(timeout, TimeUnit.MILLISECONDS)
                 .socketTimeout(timeout, TimeUnit.MILLISECONDS);
         // Creating the client configuration
@@ -66,11 +64,11 @@ public class RestClient {
             String scheme = uriParts[0];
             String hostName = uriParts[1].substring(2); // remove "//" part of the hostname.;
 
-            if (proxySettings.getUsername() != null) {
+            if (proxySettings.getUsername() != null && !proxySettings.getUsername().isEmpty()) {
 
                 String userpass = proxySettings.getUsername();
 
-                if (proxySettings.getPassword() != null) {
+                if (proxySettings.getPassword() != null && !proxySettings.getPassword().isEmpty()) {
                     userpass += ":" + proxySettings.getPassword();
                 }
 
