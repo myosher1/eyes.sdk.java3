@@ -41,7 +41,7 @@ public class Eyes extends EyesBase {
      */
     @Override
     public String getBaseAgentId() {
-        return "eyes.images.java/3.11";
+        return "eyes.images.java-jboss/3.12";
     }
 
     @SuppressWarnings("UnusedDeclaration")
