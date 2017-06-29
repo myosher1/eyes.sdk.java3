@@ -3,6 +3,15 @@ package com.applitools.eyes;
 import com.applitools.utils.ArgumentGuard;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 
@@ -52,49 +61,54 @@ public class RestClient {
 
         builder = builder.establishConnectionTimeout(timeout, TimeUnit.MILLISECONDS)
                 .socketTimeout(timeout, TimeUnit.MILLISECONDS);
-        // Creating the client configuration
-        if (proxySettings != null) {
-            String uri = proxySettings.getUri();
-            String[] uriParts = uri.split(":",3);
 
-            // There must be at least http':'//...
-            if (uriParts.length < 2) {
-                throw new EyesException("Invalid proxy URI: " + uri);
-            }
-            String scheme = uriParts[0];
-            String hostName = uriParts[1].substring(2); // remove "//" part of the hostname.;
-
-            if (proxySettings.getUsername() != null && !proxySettings.getUsername().isEmpty()) {
-
-                String userpass = proxySettings.getUsername();
-
-                if (proxySettings.getPassword() != null && !proxySettings.getPassword().isEmpty()) {
-                    userpass += ":" + proxySettings.getPassword();
-                }
-
-                hostName = userpass + "@" + hostName;
-            }
-
-            int port = scheme.equalsIgnoreCase("https") ? DEFAULT_HTTPS_PROXY_PORT : DEFAULT_HTTP_PROXY_PORT;
-
-            // If a port is specified
-            if (uriParts.length > 2) {
-                String leftOverUri = uriParts[2];
-                String[] leftOverParts = leftOverUri.split("/", 2);
-
-                port = Integer.valueOf(leftOverParts[0]);
-
-                // If there's a "path" part following the port
-                if (leftOverParts.length == 2) {
-                    hostName += "/" + leftOverParts[1];
-                }
-            }
-
-            builder.defaultProxy(hostName, port, scheme);
-
+        if (proxySettings == null) {
+            return builder.build();
         }
 
-        return builder.build();
+        // Setting the proxy configuration
+        String uri = proxySettings.getUri();
+        String[] uriParts = uri.split(":",3);
+
+        // There must be at least http':'//...
+        if (uriParts.length < 2) {
+            throw new EyesException("Invalid proxy URI: " + uri);
+        }
+        String scheme = uriParts[0];
+        String hostName = uriParts[1].substring(2); // remove "//" part of the hostname.;
+
+        int port = scheme.equalsIgnoreCase("https") ? DEFAULT_HTTPS_PROXY_PORT : DEFAULT_HTTP_PROXY_PORT;
+
+        // If a port is specified
+        if (uriParts.length > 2) {
+            String leftOverUri = uriParts[2];
+            String[] leftOverParts = leftOverUri.split("/", 2);
+
+            port = Integer.valueOf(leftOverParts[0]);
+
+            // If there's a "path" part following the port
+            if (leftOverParts.length == 2) {
+                hostName += "/" + leftOverParts[1];
+            }
+        }
+
+        ResteasyClient client = builder.defaultProxy(hostName, port, scheme).build();
+
+        if (proxySettings.getUsername() != null) {
+            Credentials credentials = new UsernamePasswordCredentials(proxySettings.getUsername(),
+                    proxySettings.getPassword());
+
+            ApacheHttpClient4Engine engine = (ApacheHttpClient4Engine) client.httpEngine();
+            HttpContext context = new BasicHttpContext();
+            engine.setHttpContext(context);
+
+            CredentialsProvider credsProvider = new BasicCredentialsProvider();
+            context.setAttribute(HttpClientContext.CREDS_PROVIDER, credsProvider);
+            AuthScope authScope = new AuthScope(hostName, port, null, null);
+            credsProvider.setCredentials(authScope, credentials);
+        }
+
+        return client;
     }
 
     /***
