@@ -6,10 +6,12 @@ package com.applitools.eyes;
 public class ImageMatchSettings {
     private MatchLevel matchLevel;
     private ExactMatchSettings exact;
+    private Boolean ignoreCaret;
 
     public ImageMatchSettings(MatchLevel matchLevel, ExactMatchSettings exact) {
         this.matchLevel = matchLevel;
         this.exact = exact;
+        this.ignoreCaret = null;
     }
 
     /**
@@ -53,6 +55,24 @@ public class ImageMatchSettings {
      */
     public void setExact(ExactMatchSettings exact) {
         this.exact = exact;
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    /**
+     *
+     * @return The parameters for the "IgnoreCaret" match settings.
+     */
+    public Boolean getIgnoreCaret() {
+        return ignoreCaret;
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    /**
+     *
+     * @param ignoreCaret The parameters for the "ignoreCaret" match settings.
+     */
+    public void setIgnoreCaret(Boolean ignoreCaret) {
+        this.ignoreCaret = ignoreCaret;
     }
 
     public String toString() {

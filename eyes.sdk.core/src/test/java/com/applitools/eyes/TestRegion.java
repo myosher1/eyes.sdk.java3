@@ -189,6 +189,28 @@ public class TestRegion {
     }
 
     @Test
+    public void test_ImageMatchSettings_Serialization() throws JsonProcessingException {
+        ImageMatchSettings ims = new ImageMatchSettings();
+
+        String actualSerialization = jsonMapper.writeValueAsString(ims);
+
+        String expectedSerialization = "{\"matchLevel\":\"STRICT\",\"exact\":null,\"ignoreCaret\":null}";
+
+        Assert.assertEquals("ImageMatchSettings serialization does not match!",
+                expectedSerialization, actualSerialization);
+
+        ims.setIgnoreCaret(true);
+
+        actualSerialization = jsonMapper.writeValueAsString(ims);
+
+        expectedSerialization = "{\"matchLevel\":\"STRICT\",\"exact\":null,\"ignoreCaret\":true}";
+
+        Assert.assertEquals("ImageMatchSettings serialization does not match!",
+                expectedSerialization, actualSerialization);
+
+    }
+
+    @Test
     public void test_SessionStartInfo_Serialization() throws JsonProcessingException {
         ArrayList<PropertyData> properties = new ArrayList<>();
         properties.add(new PropertyData("property name", "property value"));

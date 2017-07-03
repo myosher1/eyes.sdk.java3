@@ -613,7 +613,24 @@ public abstract class EyesBase {
         return debugScreenshotsProvider.getPrefix();
     }
 
+    /**
+     *
+     * @return Whether to ignore or the blinking caret or not when comparing images.
+     */
+    @SuppressWarnings("unused")
+    public boolean getIgnoreCaret() {
+        Boolean ignoreCaret = defaultMatchSettings.getIgnoreCaret();
+        return ignoreCaret == null ? true : ignoreCaret;
+    }
 
+    /**
+     * Sets the ignore blinking caret value.
+     * @param value The ignore value.
+     */
+    @SuppressWarnings("unused")
+    public void setIgnoreCaret(boolean value) {
+        defaultMatchSettings.setIgnoreCaret(value);
+    }
 
     /**
      * See {@link #close(boolean)}.
