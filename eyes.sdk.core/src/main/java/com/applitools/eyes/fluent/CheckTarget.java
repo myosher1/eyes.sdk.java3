@@ -7,12 +7,12 @@ import com.applitools.eyes.Region;
  */
 public class CheckTarget {
 
-    public static ICheckSettings Window()
+    public static ICheckSettings window()
     {
         return new CheckSettings();
     }
 
-    public static ICheckSettings Region(Region rect)
+    public static ICheckSettings region(Region rect)
     {
         return new CheckSettings();
     }

@@ -12,13 +12,13 @@ public interface ICheckSettings {
      * @param regions One or more regions to ignore when validating the screenshot.
      * @return This instance of the settings object.
      */
-    ICheckSettings Ignore(Region... regions);
+    ICheckSettings ignore(Region... regions);
 
     /**
      * Defines that the screenshot will contain the entire element or region, even if it's outside the view.
      * @return This instance of the settings object.
      */
-    ICheckSettings Fully();
+    ICheckSettings fully();
 
     /**
      * Adds a floating region. A floating region is a a region that can be placed within the boundaries of a bigger region.
@@ -26,7 +26,7 @@ public interface ICheckSettings {
      * @param regions One or more content rectangles.
      * @return This instance of the settings object.
      */
-    ICheckSettings Floating(int maxOffset, Region... regions);
+    ICheckSettings floating(int maxOffset, Region... regions);
 
     /**
      * Adds a floating region. A floating region is a a region that can be placed within the boundaries of a bigger region.
@@ -37,56 +37,56 @@ public interface ICheckSettings {
      * @param maxRightOffset How much the content can move to the right.
      * @return This instance of the settings object.
      */
-    ICheckSettings Floating(Region region, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset);
+    ICheckSettings floating(Region region, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset);
 
     /**
      * Defines the timeout to use when acquiring and comparing screenshots.
      * @param timeoutMilliseconds The timeout to use in milliseconds.
      * @return This instance of the settings object.
      */
-    ICheckSettings Timeout(int timeoutMilliseconds);
+    ICheckSettings timeout(int timeoutMilliseconds);
 
     /**
      * Shortcut to set the match level to {@code MatchLevel.LAYOUT}.
      * @return This instance of the settings object.
      */
-    ICheckSettings Layout();
+    ICheckSettings layout();
 
     /**
      * Shortcut to set the match level to {@code MatchLevel.EXACT}.
      * @return This instance of the settings object.
      */
-    ICheckSettings Exact();
+    ICheckSettings exact();
 
     /**
      * Shortcut to set the match level to {@code MatchLevel.STRICT}.
      * @return This instance of the settings object.
      */
-    ICheckSettings Strict();
+    ICheckSettings strict();
 
     /**
      * Shortcut to set the match level to {@code MatchLevel.CONTENT}.
      * @return This instance of the settings object.
      */
-    ICheckSettings Content();
+    ICheckSettings content();
 
     /**
      * Set the match level by which to compare the screenshot.
      * @param matchLevel The match level to use.
      * @return This instance of the settings object.
      */
-    ICheckSettings MatchLevel(MatchLevel matchLevel);
+    ICheckSettings matchLevel(MatchLevel matchLevel);
 
     /**
      * Defines if to detect and ignore a blinking caret in the screenshot.
      * @param ignoreCaret Whether or not to detect and ignore a blinking caret in the screenshot.
      * @return This instance of the settings object.
      */
-    ICheckSettings IgnoreCaret(boolean ignoreCaret);
+    ICheckSettings ignoreCaret(boolean ignoreCaret);
 
     /**
      * Defines to ignore a blinking caret in the screenshot.
      * @return This instance of the settings object.
      */
-    ICheckSettings IgnoreCaret();
+    ICheckSettings ignoreCaret();
 }

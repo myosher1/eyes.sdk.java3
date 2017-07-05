@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * The Match settings object to use in the various Eyes.Check methods.
  */
-public class CheckSettings implements ICheckSettings {
+public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
 
     private Region targetRegion;
     private List<Region> ignoreRegions = new ArrayList<>();
@@ -26,11 +26,11 @@ public class CheckSettings implements ICheckSettings {
         this.targetRegion = region;
     }
 
-    protected void Ignore(Region region) {
+    protected void ignore(Region region) {
         ignoreRegions.add(region);
     }
 
-    protected void Floating_(Region region, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset){
+    protected void floating_(Region region, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset){
         this.floatingRegions.add(
                 new FloatingMatchSettings(
                         region.getLeft(),
@@ -45,9 +45,9 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings Ignore(Region... regions) {
+    public ICheckSettings ignore(Region... regions) {
         for (Region r : regions) {
-            Ignore(r);
+            ignore(r);
         }
         return this;
     }
@@ -56,7 +56,7 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings Fully() {
+    public ICheckSettings fully() {
         this.stitchContent = true;
         return this;
     }
@@ -66,9 +66,9 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings Floating(int maxOffset, Region... regions) {
+    public ICheckSettings floating(int maxOffset, Region... regions) {
         for (Region r:regions) {
-            this.Floating_(r, maxOffset, maxOffset, maxOffset, maxOffset);
+            this.floating_(r, maxOffset, maxOffset, maxOffset, maxOffset);
         }
         return this;
     }
@@ -77,8 +77,8 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings Floating(Region region, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
-        this.Floating_(region, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset);
+    public ICheckSettings floating(Region region, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
+        this.floating_(region, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset);
         return this;
     }
 
@@ -86,7 +86,7 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings Timeout(int timeoutMilliseconds) {
+    public ICheckSettings timeout(int timeoutMilliseconds) {
         this.timeout = timeoutMilliseconds;
         return this;
     }
@@ -95,7 +95,7 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings Layout() {
+    public ICheckSettings layout() {
         this.matchLevel = MatchLevel.LAYOUT;
         return this;
     }
@@ -104,7 +104,7 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings Exact() {
+    public ICheckSettings exact() {
         this.matchLevel = MatchLevel.EXACT;
         return this;
     }
@@ -113,7 +113,7 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings Strict() {
+    public ICheckSettings strict() {
         this.matchLevel = MatchLevel.STRICT;
         return this;
     }
@@ -122,7 +122,7 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings Content() {
+    public ICheckSettings content() {
         this.matchLevel = MatchLevel.CONTENT;
         return this;
     }
@@ -131,7 +131,7 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings MatchLevel(MatchLevel matchLevel) {
+    public ICheckSettings matchLevel(MatchLevel matchLevel) {
         this.matchLevel = matchLevel;
         return this;
     }
@@ -140,7 +140,7 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings IgnoreCaret(boolean ignoreCaret) {
+    public ICheckSettings ignoreCaret(boolean ignoreCaret) {
         this.ignoreCaret = ignoreCaret;
         return this;
     }
@@ -149,8 +149,43 @@ public class CheckSettings implements ICheckSettings {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings IgnoreCaret() {
+    public ICheckSettings ignoreCaret() {
         this.ignoreCaret = true;
         return this;
+    }
+
+    @Override
+    public Region getTargetRegion() {
+        return this.targetRegion;
+    }
+
+    @Override
+    public int getTimeout() {
+        return this.timeout;
+    }
+
+    @Override
+    public boolean getStitchContent() {
+        return this.stitchContent;
+    }
+
+    @Override
+    public MatchLevel getMatchLevel() {
+        return this.matchLevel;
+    }
+
+    @Override
+    public Region[] getIgnoreRegions() {
+        return this.ignoreRegions.toArray(new Region[0]);
+    }
+
+    @Override
+    public FloatingMatchSettings[] getFloatingRegions() {
+        return this.floatingRegions.toArray(new FloatingMatchSettings[0]);
+    }
+
+    @Override
+    public Boolean getIgnoreCaret() {
+        return this.ignoreCaret;
     }
 }
