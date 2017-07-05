@@ -188,4 +188,8 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     public Boolean getIgnoreCaret() {
         return this.ignoreCaret;
     }
+
+    public void updateTargetRegion(Region region) {
+        this.targetRegion = region;
+    }
 }
