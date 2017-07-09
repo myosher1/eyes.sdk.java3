@@ -13,6 +13,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
@@ -27,9 +28,10 @@ public class ElementsFramesTest {
         eyes = new Eyes();
         eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
         eyes.setLogHandler(new StdoutLogHandler(true));
+        eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
         eyes.setStitchMode(StitchMode.CSS);
         eyes.setForceFullPageScreenshot(true);
-        eyes.setScaleMethod(ScaleMethod.SPEED);
+        //eyes.setScaleMethod(ScaleMethod.SPEED);
 
         ChromeOptions co = new ChromeOptions();
         co.addArguments("--force-device-scale-factor=1.25");
@@ -49,6 +51,13 @@ public class ElementsFramesTest {
         eyes.checkRegion(By.id("overflowing-div"), "Initial", true);
         eyes.checkRegionInFrame("frame1", By.id("inner-frame-div"), "Inner frame div", true);
         eyes.checkRegion(By.id("overflowing-div-image"), "minions", true);
+    }
+
+    @org.junit.Test
+    public static void playbuzz() {
+        driver.get("http://alpha.playbuzz.com/plabuzz1010/automation-test-story-default");
+        driver.findElement(By.cssSelector("#pb-story > pb-story > div > div.bottom-share-bar-container.ng-scope.ng-isolate-scope > button")).click();
+        eyes.checkRegion(By.cssSelector("body > div.modal.fade.ng-isolate-scope.embed-modal.in > div > div"));
     }
 
     @Rule
