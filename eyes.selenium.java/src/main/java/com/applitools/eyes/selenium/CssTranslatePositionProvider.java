@@ -11,11 +11,10 @@ import org.openqa.selenium.JavascriptExecutor;
 public class CssTranslatePositionProvider implements PositionProvider {
 
     private final Logger logger;
-    private final JavascriptExecutor executor;
+    private final IEyesJsExecutor executor;
     private Location lastSetPosition; // cache.
 
-    public CssTranslatePositionProvider(Logger logger, JavascriptExecutor
-            executor) {
+    public CssTranslatePositionProvider(Logger logger, IEyesJsExecutor executor) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(executor, "executor");
 

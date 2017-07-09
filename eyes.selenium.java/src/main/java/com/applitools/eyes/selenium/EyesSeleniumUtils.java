@@ -3,10 +3,7 @@
  */
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.EyesException;
-import com.applitools.eyes.Location;
-import com.applitools.eyes.Logger;
-import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import io.appium.java_client.AppiumDriver;
@@ -216,7 +213,7 @@ public class EyesSeleniumUtils {
      * @return The current scroll position of the current frame.
      */
     public static Location getCurrentScrollPosition(
-            JavascriptExecutor executor) {
+            IEyesJsExecutor executor) {
         //noinspection unchecked
         List<Number> positionAsList = (List<Number>)executor.executeScript(JS_GET_CURRENT_SCROLL_POSITION);
         return new Location((int)Math.ceil(positionAsList.get(0).doubleValue()),
@@ -228,7 +225,7 @@ public class EyesSeleniumUtils {
      * @param executor The executor to use.
      * @param location The position to be set.
      */
-    public static void setCurrentScrollPosition(JavascriptExecutor executor,
+    public static void setCurrentScrollPosition(IEyesJsExecutor executor,
                                                 Location location) {
         executor.executeScript(String.format("window.scrollTo(%d,%d)",
                 location.getX(), location.getY()));
@@ -240,7 +237,7 @@ public class EyesSeleniumUtils {
      * @return The size of the entire content.
      */
     public static RectangleSize getCurrentFrameContentEntireSize(
-            JavascriptExecutor executor) {
+            IEyesJsExecutor executor) {
         RectangleSize result;
         try {
             //noinspection unchecked
@@ -496,7 +493,7 @@ public class EyesSeleniumUtils {
      * @param executor The executor to use.
      * @return The device pixel ratio.
      */
-    public static float getDevicePixelRatio(JavascriptExecutor executor) {
+    public static float getDevicePixelRatio(IEyesJsExecutor executor) {
         return Float.parseFloat(
                 executor.executeScript("return window.devicePixelRatio")
                         .toString());
@@ -508,8 +505,7 @@ public class EyesSeleniumUtils {
      * @return The current documentElement transform values, according to
      * {@link #JS_TRANSFORM_KEYS}.
      */
-    public static Map<String, String> getCurrentTransform(JavascriptExecutor
-                                                           executor) {
+    public static Map<String, String> getCurrentTransform(IEyesJsExecutor executor) {
 
         String script = "return { ";
 
@@ -534,7 +530,7 @@ public class EyesSeleniumUtils {
      * @param transforms The transforms to set. Keys are used as style keys,
      *                   and values are the values for those styles.
      */
-    public static void setTransforms(JavascriptExecutor executor,
+    public static void setTransforms(IEyesJsExecutor executor,
                                     Map<String, String> transforms) {
 
         String script = "";
@@ -554,7 +550,7 @@ public class EyesSeleniumUtils {
      * @param executor The executor to use.
      * @param transform The transform value to set.
      */
-    public static void setTransform(JavascriptExecutor executor,
+    public static void setTransform(IEyesJsExecutor executor,
                                       String transform) {
         Map<String, String> transforms =
                 new HashMap<String, String>(JS_TRANSFORM_KEYS.length);
@@ -571,7 +567,7 @@ public class EyesSeleniumUtils {
      * @param executor The executor to use.
      * @param position The position to translate to.
      */
-    public static void translateTo(JavascriptExecutor executor,
+    public static void translateTo(IEyesJsExecutor executor,
                                      Location position) {
         setTransform(executor, String.format("translate(-%spx, -%spx)",
                 position.getX(), position.getY()));

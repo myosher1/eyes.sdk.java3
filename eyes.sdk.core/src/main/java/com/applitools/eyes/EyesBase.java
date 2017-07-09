@@ -1,5 +1,8 @@
 package com.applitools.eyes;
 
+import com.applitools.eyes.fluent.CheckSettings;
+import com.applitools.eyes.fluent.ICheckSettings;
+import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.utils.*;
 import org.apache.commons.codec.binary.Base64;
 
@@ -1065,6 +1068,27 @@ public abstract class EyesBase {
     protected MatchResult checkWindowBase(RegionProvider regionProvider,
                                           String tag, boolean ignoreMismatch,
                                           int retryTimeout) {
+        return this.checkWindowBase(regionProvider, tag, ignoreMismatch, new CheckSettings(retryTimeout));
+    }
+
+    /**
+     * Takes a snapshot of the application under test and matches it with the
+     * expected output.
+     *
+     * @param regionProvider      Returns the region to check or the empty
+     *                            rectangle to check the entire window.
+     * @param tag                 An optional tag to be associated with the
+     *                            snapshot.
+     * @param ignoreMismatch      Whether to ignore this check if a mismatch is
+     *                            found.
+     * @param checkSettings            The settings to use.
+     * @return The result of matching the output with the expected output.
+     * @throws com.applitools.eyes.TestFailedException Thrown if a mismatch is
+     *          detected and immediate failure reports are enabled.
+     */
+    protected MatchResult checkWindowBase(RegionProvider regionProvider,
+                                          String tag, boolean ignoreMismatch,
+                                          ICheckSettings checkSettings) {
 
         MatchResult result;
 
@@ -1078,9 +1102,11 @@ public abstract class EyesBase {
         ArgumentGuard.isValidState(getIsOpen(), "Eyes not open");
         ArgumentGuard.notNull(regionProvider, "regionProvider");
 
+        ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
+
         logger.verbose(String.format(
                 "CheckWindowBase(regionProvider, '%s', %b, %d)",
-                tag, ignoreMismatch, retryTimeout));
+                tag, ignoreMismatch, checkSettingsInternal.getTimeout()));
 
         if (tag == null) {
             tag = "";
@@ -1113,7 +1139,8 @@ public abstract class EyesBase {
         result = matchWindowTask.matchWindow(getUserInputs(), lastScreenshot,
                 regionProvider, tag,
                 shouldMatchWindowRunOnceOnTimeout, ignoreMismatch,
-                retryTimeout);
+                checkSettingsInternal.getTimeout());
+
         logger.verbose("MatchWindow Done!");
 
         if (!result.getAsExpected()) {

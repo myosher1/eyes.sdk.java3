@@ -4,12 +4,11 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.EyesException;
+import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
+import com.applitools.eyes.RectangleSize;
 import com.applitools.utils.ArgumentGuard;
-import org.openqa.selenium.Alert;
-import org.openqa.selenium.NoSuchFrameException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.openqa.selenium.remote.RemoteWebElement;
 
 import java.util.List;
@@ -22,54 +21,83 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
 
     private final Logger logger;
     private final EyesWebDriver driver;
+    private final SeleniumJavaScriptExecutor jsExecutor;
     private final ScrollPositionProvider scrollPosition;
-    private final OnWillSwitch onWillSwitch;
     private final WebDriver.TargetLocator targetLocator;
 
     /**
      * An enum for the different types of frames we can switch into.
      */
-    protected static enum TargetType { FRAME, PARENT_FRAME, DEFAULT_CONTENT }
+    protected static enum TargetType {
+        FRAME, PARENT_FRAME, DEFAULT_CONTENT
+    }
 
     /**
-     * A wrapper for an action to be performed before the actual switch is made.
+     * Will be called before switching into a frame.
+     * @param targetType  The type of frame we're about to switch into.
+     * @param targetFrame The element about to be switched to,
+     *                    if available. Otherwise, null.
      */
-    protected static interface OnWillSwitch {
-        /**
-         * Will be called before switching into a frame.
-         * @param targetType The type of frame we're about to switch into.
-         * @param targetFrame The element about to be switched to,
-         *                     if available. Otherwise, null.
-         */
-        public void willSwitchToFrame(TargetType targetType,
-                WebElement targetFrame);
+    public void willSwitchToFrame(
+            EyesTargetLocator.TargetType targetType,
+            WebElement targetFrame) {
+        logger.verbose("willSwitchToFrame()");
+        switch (targetType) {
+            case DEFAULT_CONTENT:
+                logger.verbose("Default content.");
+                driver.getFrameChain().clear();
+                break;
+            case PARENT_FRAME:
+                logger.verbose("Parent frame.");
+                driver.getFrameChain().pop();
+                break;
+            default: // Switching into a frame
+                logger.verbose("Frame");
 
-        /**
-         * Will be called before switching into a window.
-         * @param nameOrHandle The name/handle of the window to be switched to.
-         */
-        public void willSwitchToWindow(String nameOrHandle);
+                String frameId = ((EyesRemoteWebElement)
+                        targetFrame).getId();
+                Point pl = targetFrame.getLocation();
+                Dimension ds = targetFrame.getSize();
+                // Get the frame's content location.
+                Location contentLocation = new
+                        BordersAwareElementContentLocationProvider
+                        ().getLocation(logger, targetFrame,
+                        new Location(pl.getX(), pl.getY()));
+                Location currentLocation = scrollPosition.getCurrentPosition();
+                driver.getFrameChain().push(new Frame(logger, targetFrame,
+                        frameId,
+                        contentLocation,
+                        new RectangleSize(ds.getWidth(), ds.getHeight()),
+                        currentLocation));
+        }
+        logger.verbose("Done!");
+    }
+
+    /**
+     * Will be called before switching into a window.
+     * @param nameOrHandle The name/handle of the window to be switched to.
+     */
+    public void willSwitchToWindow(String nameOrHandle) {
+        logger.verbose("willSwitchToWindow()");
+        driver.getFrameChain().clear();
+        logger.verbose("Done!");
     }
 
     /**
      * Initialized a new EyesTargetLocator object.
-     * @param driver The WebDriver from which the targetLocator was received.
+     * @param driver        The WebDriver from which the targetLocator was received.
      * @param targetLocator The actual TargetLocator object.
-     * @param onWillSwitch A delegate to be called whenever a relevant switch
-     *                     is about to be performed.
      */
     public EyesTargetLocator(Logger logger, EyesWebDriver driver,
-                             WebDriver.TargetLocator
-            targetLocator, OnWillSwitch onWillSwitch) {
+                             WebDriver.TargetLocator targetLocator) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(driver, "driver");
         ArgumentGuard.notNull(targetLocator, "targetLocator");
-        ArgumentGuard.notNull(onWillSwitch, "onWillSwitch");
         this.logger = logger;
         this.driver = driver;
         this.targetLocator = targetLocator;
-        this.onWillSwitch = onWillSwitch;
-        this.scrollPosition = new ScrollPositionProvider(logger, driver);
+        this.jsExecutor = new SeleniumJavaScriptExecutor(driver);
+        this.scrollPosition = new ScrollPositionProvider(logger, jsExecutor);
     }
 
     public WebDriver frame(int index) {
@@ -85,7 +113,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         logger.verbose("Done! getting the specific frame...");
         WebElement targetFrame = frames.get(index);
         logger.verbose("Done! Making preparations...");
-        onWillSwitch.willSwitchToFrame(TargetType.FRAME, targetFrame);
+        willSwitchToFrame(TargetType.FRAME, targetFrame);
         logger.verbose("Done! Switching to frame...");
         targetLocator.frame(index);
         logger.verbose("Done!");
@@ -104,14 +132,14 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
             logger.verbose("No frames Found! Trying by id...");
             // If there are no frames by that name, we'll try the id
             frames = driver.findElementsById(nameOrId);
-            if (frames.size() == 0 ) {
+            if (frames.size() == 0) {
                 // No such frame, bummer
                 throw new NoSuchFrameException(String.format(
                         "No frame with name or id '%s' exists!", nameOrId));
             }
         }
         logger.verbose("Done! Making preparations..");
-        onWillSwitch.willSwitchToFrame(TargetType.FRAME, frames.get(0));
+        willSwitchToFrame(TargetType.FRAME, frames.get(0));
         logger.verbose("Done! Switching to frame...");
         targetLocator.frame(nameOrId);
         logger.verbose("Done!");
@@ -121,7 +149,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     public WebDriver frame(WebElement frameElement) {
         logger.verbose("EyesTargetLocator.frame(element)");
         logger.verbose("Making preparations..");
-        onWillSwitch.willSwitchToFrame(TargetType.FRAME, frameElement);
+        willSwitchToFrame(TargetType.FRAME, frameElement);
         logger.verbose("Done! Switching to frame...");
         targetLocator.frame(frameElement);
         logger.verbose("Done!");
@@ -132,7 +160,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         logger.verbose("EyesTargetLocator.parentFrame()");
         if (driver.getFrameChain().size() != 0) {
             logger.verbose("Making preparations..");
-            onWillSwitch.willSwitchToFrame(TargetType.PARENT_FRAME, null);
+            willSwitchToFrame(TargetType.PARENT_FRAME, null);
             logger.verbose("Done! Switching to parent frame..");
             targetLocator.parentFrame();
         }
@@ -148,7 +176,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
      */
     public WebDriver frames(FrameChain frameChain) {
         logger.verbose("EyesTargetLocator.frames(frameChain)");
-        for (Frame frame: frameChain) {
+        for (Frame frame : frameChain) {
             logger.verbose("Scrolling by parent scroll position..");
             scrollPosition.setPosition(frame.getParentScrollPosition());
             logger.verbose("Done! Switching to frame...");
@@ -169,7 +197,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
      */
     public WebDriver frames(String[] framesPath) {
         logger.verbose("EyesTargetLocator.frames(framesPath)");
-        for (String frameNameOrId: framesPath) {
+        for (String frameNameOrId : framesPath) {
             logger.verbose("Switching to frame...");
             driver.switchTo().frame(frameNameOrId);
             logger.verbose("Done!");
@@ -181,7 +209,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     public WebDriver window(String nameOrHandle) {
         logger.verbose("EyesTargetLocator.frames()");
         logger.verbose("Making preparations..");
-        onWillSwitch.willSwitchToWindow(nameOrHandle);
+        willSwitchToWindow(nameOrHandle);
         logger.verbose("Done! Switching to window..");
         targetLocator.window(nameOrHandle);
         logger.verbose("Done!");
@@ -192,7 +220,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         logger.verbose("EyesTargetLocator.defaultContent()");
         if (driver.getFrameChain().size() != 0) {
             logger.verbose("Making preparations..");
-            onWillSwitch.willSwitchToFrame(TargetType.DEFAULT_CONTENT, null);
+            willSwitchToFrame(TargetType.DEFAULT_CONTENT, null);
             logger.verbose("Done! Switching to default content..");
             targetLocator.defaultContent();
             logger.verbose("Done!");
@@ -208,7 +236,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
             throw new EyesException("Not a remote web element!");
         }
         EyesRemoteWebElement result = new EyesRemoteWebElement(logger, driver,
-                (RemoteWebElement)element);
+                (RemoteWebElement) element);
         logger.verbose("Done!");
         return result;
     }

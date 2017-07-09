@@ -9,9 +9,9 @@ public class ScrollPositionProvider implements PositionProvider {
 
 
     protected final Logger logger;
-    protected final JavascriptExecutor executor;
+    protected final IEyesJsExecutor executor;
 
-    public ScrollPositionProvider(Logger logger, JavascriptExecutor executor) {
+    public ScrollPositionProvider(Logger logger, IEyesJsExecutor executor) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(executor, "executor");
 

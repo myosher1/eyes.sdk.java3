@@ -26,6 +26,15 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         this.targetRegion = region;
     }
 
+    /**
+     * For internal use only.
+     * @param timeout timeout
+     */
+    public CheckSettings(int timeout)
+    {
+        this.timeout = timeout;
+    }
+
     protected void ignore(Region region) {
         ignoreRegions.add(region);
     }
@@ -189,7 +198,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         return this.ignoreCaret;
     }
 
-    public void updateTargetRegion(Region region) {
+    protected void updateTargetRegion(Region region) {
         this.targetRegion = region;
     }
 }

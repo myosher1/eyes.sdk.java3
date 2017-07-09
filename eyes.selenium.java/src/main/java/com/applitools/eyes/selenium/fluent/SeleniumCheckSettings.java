@@ -13,13 +13,13 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     private By targetSelector;
     private List<FrameLocator> frameChain = new ArrayList<>();
 
-    public SeleniumCheckSettings() { }
+    SeleniumCheckSettings() { }
 
-    public SeleniumCheckSettings(Region region) {
+    SeleniumCheckSettings(Region region) {
         super(region);
     }
 
-    public SeleniumCheckSettings(By targetSelector)
+    SeleniumCheckSettings(By targetSelector)
     {
         this.targetSelector = targetSelector;
     }
