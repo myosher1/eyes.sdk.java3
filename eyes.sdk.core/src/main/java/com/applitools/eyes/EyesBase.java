@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 
 /**
@@ -62,6 +64,7 @@ public abstract class EyesBase {
     private String parentBranchName;
     private FailureReports failureReports;
     private final Queue<Trigger> userInputs;
+    private final List<PropertyData> properties = new ArrayList<>();
 
     // Used for automatic save of a test run.
     private boolean saveNewTests, saveFailedTests;
@@ -542,6 +545,17 @@ public abstract class EyesBase {
     }
 
     /**
+     * Adds a property to be sent to the server.
+     * @param name The property name.
+     * @param value The property value.
+     */
+    @SuppressWarnings("unused")
+    public void addProperty(String name, String value) {
+        PropertyData pd = new PropertyData(name, value);
+        properties.add(pd);
+    }
+
+    /**
      * @param saveDebugScreenshots If true, will save all screenshots to local directory.
      */
     @SuppressWarnings("unused")
@@ -599,7 +613,24 @@ public abstract class EyesBase {
         return debugScreenshotsProvider.getPrefix();
     }
 
+    /**
+     *
+     * @return Whether to ignore or the blinking caret or not when comparing images.
+     */
+    @SuppressWarnings("unused")
+    public boolean getIgnoreCaret() {
+        Boolean ignoreCaret = defaultMatchSettings.getIgnoreCaret();
+        return ignoreCaret == null ? true : ignoreCaret;
+    }
 
+    /**
+     * Sets the ignore blinking caret value.
+     * @param value The ignore value.
+     */
+    @SuppressWarnings("unused")
+    public void setIgnoreCaret(boolean value) {
+        defaultMatchSettings.setIgnoreCaret(value);
+    }
 
     /**
      * See {@link #close(boolean)}.
@@ -1240,29 +1271,9 @@ public abstract class EyesBase {
             logger.verbose(String.format("openBase('%s', '%s', '%s')", appName,
                     testName, viewportSize));
 
-            if (getApiKey() == null) {
-                String errMsg =
-                        "API key is missing! Please set it using setApiKey()";
-                logger.log(errMsg);
-                throw new EyesException(errMsg);
-            }
-
-            logger.log(String.format("Eyes server URL is '%s'",
-                    serverConnector.getServerUrl()));
-            logger.verbose(String.format("Timeout = '%d'",
-                    serverConnector.getTimeout()));
-            logger.log(String.format("matchTimeout = '%d' ", matchTimeout));
-            logger.log(String.format("Default match settings = '%s' ",
-                    defaultMatchSettings));
-            logger.log(String.format("FailureReports = '%s' ", failureReports));
-
-
-            if (isOpen) {
-                abortIfNotClosed();
-                String errMsg = "A test is already running";
-                logger.log(errMsg);
-                throw new EyesException(errMsg);
-            }
+            validateApiKey();
+            logOpenBase();
+            validateSessionOpen();
 
             this.currentAppName = appName != null ? appName : this.appName;
             this.testName = testName;
@@ -1270,12 +1281,69 @@ public abstract class EyesBase {
             this.sessionType =
                     sessionType != null ? sessionType : SessionType.SEQUENTIAL;
             scaleProviderHandler.set(new NullScaleProvider());
+
+            ensureRunningSession();
+
             isOpen = true;
 
         } catch (EyesException e) {
             logger.log(String.format("%s", e.getMessage()));
             logger.getLogHandler().close();
             throw e;
+        }
+    }
+
+    private void ensureRunningSession() {
+        if (runningSession != null)
+        {
+            return;
+        }
+
+        logger.log("No running session, calling start session...");
+        startSession();
+        logger.log("Done!");
+
+        matchWindowTask = new MatchWindowTask(
+                logger,
+                serverConnector,
+                runningSession,
+                matchTimeout,
+                // A callback which will call getAppOutput
+                new AppOutputProvider() {
+                    @Override
+                    public AppOutputWithScreenshot getAppOutput(RegionProvider regionProvider, EyesScreenshot lastScreenshot) {
+                        return getAppOutputWithScreenshot(regionProvider, lastScreenshot);
+                    }
+                }
+        );
+    }
+
+    private void validateApiKey() {
+        if (getApiKey() == null) {
+            String errMsg =
+                    "API key is missing! Please set it using setApiKey()";
+            logger.log(errMsg);
+            throw new EyesException(errMsg);
+        }
+    }
+
+    private void logOpenBase() {
+        logger.log(String.format("Eyes server URL is '%s'",
+                serverConnector.getServerUrl()));
+        logger.verbose(String.format("Timeout = '%d'",
+                serverConnector.getTimeout()));
+        logger.log(String.format("matchTimeout = '%d' ", matchTimeout));
+        logger.log(String.format("Default match settings = '%s' ",
+                defaultMatchSettings));
+        logger.log(String.format("FailureReports = '%s' ", failureReports));
+    }
+
+    private void validateSessionOpen() {
+        if (isOpen) {
+            abortIfNotClosed();
+            String errMsg = "A test is already running";
+            logger.log(errMsg);
+            throw new EyesException(errMsg);
         }
     }
 
@@ -1309,7 +1377,6 @@ public abstract class EyesBase {
      * @return The current title of of the AUT.
      */
     protected abstract String getTitle();
-
 
     // FIXME add "GetScreenshotUrl"
     // FIXME add CloseOrAbort ??
@@ -1476,7 +1543,7 @@ public abstract class EyesBase {
 
         sessionStartInfo = new SessionStartInfo(getBaseAgentId(), sessionType,
                 getAppName(), null, testName, testBatch, baselineEnvName, environmentName, appEnv,
-                defaultMatchSettings, branchName, parentBranchName);
+                defaultMatchSettings, branchName, parentBranchName, properties);
 
         logger.verbose("Starting server session...");
         runningSession = serverConnector.startSession(sessionStartInfo);

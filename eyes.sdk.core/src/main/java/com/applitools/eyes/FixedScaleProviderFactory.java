@@ -9,7 +9,7 @@ import java.awt.image.BufferedImage;
  */
 public class FixedScaleProviderFactory extends ScaleProviderFactory {
 
-    private final double scaleRatio;
+    private FixedScaleProvider fixedScaleProvider;
 
     /**
      *
@@ -18,11 +18,11 @@ public class FixedScaleProviderFactory extends ScaleProviderFactory {
     public FixedScaleProviderFactory(double scaleRatio,
                                      PropertyHandler<ScaleProvider> scaleProviderHandler) {
         super(scaleProviderHandler);
-        this.scaleRatio = scaleRatio;
+        this.fixedScaleProvider = new FixedScaleProvider(scaleRatio);
     }
 
     @Override
     protected ScaleProvider getScaleProviderImpl(int imageToScaleWidth) {
-        return new FixedScaleProvider(scaleRatio);
+        return fixedScaleProvider;
     }
 }

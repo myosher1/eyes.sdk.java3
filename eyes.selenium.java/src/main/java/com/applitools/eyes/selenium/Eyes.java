@@ -278,9 +278,17 @@ public class Eyes extends EyesBase {
         }
 
         openBase(appName, testName, viewportSize, sessionType);
-
         ArgumentGuard.notNull(driver, "driver");
 
+        devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
+        initDriver(driver);
+        initPositionProvider();
+
+        this.driver.setRotation(rotation);
+        return this.driver;
+    }
+
+    private void initDriver(WebDriver driver) {
         if (driver instanceof RemoteWebDriver) {
             this.driver = new EyesWebDriver(logger, this,
                     (RemoteWebDriver) driver);
@@ -292,8 +300,9 @@ public class Eyes extends EyesBase {
             logger.log(errMsg);
             throw new EyesException(errMsg);
         }
-        devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
+    }
 
+    private void initPositionProvider() {
         // Setting the correct position provider.
         switch (getStitchMode()) {
             case CSS: setPositionProvider(
@@ -302,9 +311,6 @@ public class Eyes extends EyesBase {
             default: setPositionProvider(
                     new ScrollPositionProvider(logger, this.driver));
         }
-
-        this.driver.setRotation(rotation);
-        return this.driver;
     }
 
     @SuppressWarnings("UnusedDeclaration")
