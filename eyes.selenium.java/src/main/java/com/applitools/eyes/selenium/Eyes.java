@@ -81,7 +81,7 @@ public class Eyes extends EyesBase {
 
     @Override
     public String getBaseAgentId() {
-        return "eyes.selenium.java-jboss/3.13";
+        return "eyes.selenium.java/3.13";
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -1805,8 +1805,6 @@ public class Eyes extends EyesBase {
      * {@inheritDoc}
      */
     protected RectangleSize getViewportSize() {
-        ArgumentGuard.isValidState(getIsOpen(), "Eyes not open");
-
         return driver.getDefaultContentViewportSize();
     }
 
