@@ -35,7 +35,7 @@ public class TestFluentApi {
         eyes.setForceFullPageScreenshot(true);
         eyes.setStitchMode(StitchMode.CSS);
 
-        driver = eyes.open(new ChromeDriver(), "Eyes Selenium SDK - .Net", "FramesElementsTest",
+        driver = eyes.open(new ChromeDriver(), "Eyes Selenium SDK - Java", "FramesElementsTest",
                 new RectangleSize(800, 599));
 
         //string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
