@@ -1,5 +1,6 @@
 package com.applitools.eyes.fluent;
 
+import com.applitools.eyes.FloatingMatchSettings;
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;
 

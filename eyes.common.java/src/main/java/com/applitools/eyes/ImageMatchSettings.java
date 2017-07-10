@@ -7,6 +7,8 @@ public class ImageMatchSettings {
     private MatchLevel matchLevel;
     private ExactMatchSettings exact;
     private Boolean ignoreCaret;
+    private Region ignoreRegions[];
+    private FloatingMatchSettings floatingMatchSettings[];
 
     public ImageMatchSettings(MatchLevel matchLevel, ExactMatchSettings exact) {
         this.matchLevel = matchLevel;
@@ -68,12 +70,49 @@ public class ImageMatchSettings {
 
     @SuppressWarnings("UnusedDeclaration")
     /**
+     * Sets an array of regions to ignore.
+     * @param ignoreRegions The array of regions to ignore.
+     */
+    public void setIgnoreRegions(Region[] ignoreRegions) {
+        this.ignoreRegions = ignoreRegions;
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    /**
+     * Returns the array of regions to ignore.
+     * @return the array of regions to ignore.
+     */
+    public Region[] getIgnoreRegion() {
+        return this.ignoreRegions;
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    /**
+     * Sets an array of floating regions.
+     * @param floatingRegions The array of floating regions.
+     */
+    public void setFloatingRegions(FloatingMatchSettings[] floatingRegions) {
+        this.floatingMatchSettings = floatingRegions;
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    /**
+     * Returns an array of floating regions.
+     * @return an array of floating regions.
+     */
+    public FloatingMatchSettings[] getFloatingRegions() {
+        return this.floatingMatchSettings;
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    /**
      *
      * @param ignoreCaret The parameters for the "ignoreCaret" match settings.
      */
     public void setIgnoreCaret(Boolean ignoreCaret) {
         this.ignoreCaret = ignoreCaret;
     }
+
 
     public String toString() {
         return String.format("Match level: %s, Exact match settings: %s",

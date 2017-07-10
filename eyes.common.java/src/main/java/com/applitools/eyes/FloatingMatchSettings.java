@@ -1,4 +1,4 @@
-package com.applitools.eyes.fluent;
+package com.applitools.eyes;
 
 public class FloatingMatchSettings {
     public int top;
