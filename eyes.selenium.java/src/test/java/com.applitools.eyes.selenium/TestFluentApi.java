@@ -36,7 +36,7 @@ public class TestFluentApi {
         eyes.setStitchMode(StitchMode.CSS);
 
         driver = eyes.open(new ChromeDriver(), "Eyes Selenium SDK - .Net", "FramesElementsTest",
-                new RectangleSize(1024, 635));
+                new RectangleSize(800, 599));
 
         //string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         driver.navigate().to("http://applitools.github.io/demo/TestPages/FramesTestPage/");

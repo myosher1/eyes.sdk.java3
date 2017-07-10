@@ -284,11 +284,12 @@ public class Eyes extends EyesBase {
             return driver;
         }
 
+        initDriver(driver);
+
         openBase(appName, testName, viewportSize, sessionType);
         ArgumentGuard.notNull(driver, "driver");
 
         devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
-        initDriver(driver);
 
         this.jsExecutor = new SeleniumJavaScriptExecutor(this.driver);
 
@@ -1960,7 +1961,7 @@ public class Eyes extends EyesBase {
      * {@inheritDoc}
      */
     protected void setViewportSize(RectangleSize size) {
-        ArgumentGuard.isValidState(getIsOpen(), "Eyes not open");
+        //ArgumentGuard.isValidState(getIsOpen(), "Eyes not open");
 
         FrameChain originalFrame = driver.getFrameChain();
         driver.switchTo().defaultContent();
