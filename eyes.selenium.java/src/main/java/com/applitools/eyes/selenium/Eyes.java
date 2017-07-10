@@ -1830,8 +1830,6 @@ public class Eyes extends EyesBase {
      * {@inheritDoc}
      */
     protected void setViewportSize(RectangleSize size) {
-        ArgumentGuard.isValidState(getIsOpen(), "Eyes not open");
-
         FrameChain originalFrame = driver.getFrameChain();
         driver.switchTo().defaultContent();
 
