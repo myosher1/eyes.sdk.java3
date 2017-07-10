@@ -277,11 +277,11 @@ public class Eyes extends EyesBase {
             return driver;
         }
 
+        initDriver(driver);
         openBase(appName, testName, viewportSize, sessionType);
         ArgumentGuard.notNull(driver, "driver");
 
         devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
-        initDriver(driver);
         initPositionProvider();
 
         this.driver.setRotation(rotation);
