@@ -33,7 +33,6 @@ public class Eyes extends EyesBase {
     public static final double UNKNOWN_DEVICE_PIXEL_RATIO = 0;
     public static final double DEFAULT_DEVICE_PIXEL_RATIO = 1;
 
-
     private static final int USE_DEFAULT_MATCH_TIMEOUT = -1;
 
     // Seconds
@@ -57,7 +56,7 @@ public class Eyes extends EyesBase {
     private StitchMode stitchMode;
     private int waitBeforeScreenshots;
     private RegionVisibilityStrategy regionVisibilityStrategy;
-
+    private ElementPositionProvider elementPositionProvider;
     private SeleniumJavaScriptExecutor jsExecutor;
 
     /**
@@ -776,9 +775,89 @@ public class Eyes extends EyesBase {
     }
 
     private void checkRegion(By targetSelector, String name, ICheckSettings checkSettings) {
+
     }
 
     private void checkElement(WebElement element, String name, ICheckSettings checkSettings) {
+
+        final EyesRemoteWebElement eyesElement = (element instanceof EyesRemoteWebElement) ? (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, (RemoteWebElement)element);
+
+        PositionProvider originalPositionProvider = positionProvider;
+        PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
+        Location originalScrollPosition = scrollPositionProvider.getCurrentPosition();
+
+        Point p = eyesElement.getLocation();
+        scrollPositionProvider.setPosition(new Location(p.getX(), p.getY()));
+
+        String originalOverflow = eyesElement.getOverflow();
+
+        try
+        {
+            checkFrameOrElement = true;
+            String displayStyle = eyesElement.getComputedStyle("display");
+            if (displayStyle.equals("inline"))
+            {
+                elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
+            }
+            eyesElement.setOverflow("hidden");
+            //Rectangle rect = eyesElement.GetClientBounds();
+            final Region rect = eyesElement.getBounds();
+
+            final int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
+            final int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
+
+            regionToCheck = new RegionProvider() {
+                @Override
+                public Region getRegion() {
+                    return new Region(
+                            rect.getLeft() + borderLeftWidth,
+                            rect.getTop() + borderTopWidth,
+                            eyesElement.getClientWidth(),
+                            eyesElement.getClientHeight());
+                }
+
+                @Override
+                public CoordinatesType getCoordinatesType() {
+                    return CoordinatesType.CONTEXT_RELATIVE;
+                }
+            };
+
+            logger.verbose(String.format("Element region: %s", regionToCheck));
+
+            checkWindowBase(new RegionProvider() {
+                @Override
+                public Region getRegion() {
+                    return Region.EMPTY;
+                }
+
+                @Override
+                public CoordinatesType getCoordinatesType() {
+                    return null;
+                }
+            }, name, false, checkSettings);
+        }
+        finally
+        {
+            eyesElement.setOverflow(originalOverflow);
+
+            checkFrameOrElement = false;
+
+            scrollPositionProvider.setPosition(originalScrollPosition);
+            positionProvider = originalPositionProvider;
+            regionToCheck = new RegionProvider() {
+                @Override
+                public Region getRegion() {
+                    return Region.EMPTY;
+                }
+
+                @Override
+                public CoordinatesType getCoordinatesType() {
+                    return null;
+                }
+            };
+
+            elementPositionProvider = null;
+        }
     }
 
     /**
@@ -1102,7 +1181,7 @@ public class Eyes extends EyesBase {
     }
 
     /**
-     * See {@link #checkRegionInFrame(String, By)}.
+     * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector) {
@@ -1110,7 +1189,7 @@ public class Eyes extends EyesBase {
     }
 
     /**
-     * See {@link #checkRegionInFrame(String, By, String, boolean)}.
+     * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code tag} defaults to {@code null}.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
@@ -1980,7 +2059,7 @@ public class Eyes extends EyesBase {
                         new FullPageCaptureAlgorithm(logger);
                 BufferedImage entireFrameOrElement =
                         algo.getStitchedRegion(imageProvider, regionToCheck,
-                                positionProvider, positionProvider,
+                                positionProvider, elementPositionProvider == null ? positionProvider : elementPositionProvider,
                                 scaleProviderFactory,
                                 cutProviderHandler.get(),
                                 getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory);

@@ -52,6 +52,9 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     private final String JS_SET_OVERFLOW_FORMATTED_STR =
             "arguments[0].style.overflow = '%s'";
 
+    private final String JS_GET_CLIENT_WIDTH = "return arguments[0].clientWidth;";
+    private final String JS_GET_CLIENT_HEIGHT = "return arguments[0].clientHeight;";
+
     public EyesRemoteWebElement(Logger logger, EyesWebDriver eyesDriver,
                                 RemoteWebElement webElement) {
         super();
@@ -118,7 +121,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     /**
      * @return The integer value of a computed style.
      */
-    private int getComputedStyleInteger(String propStyle) {
+    public int getComputedStyleInteger(String propStyle) {
         return Math.round(Float.valueOf(getComputedStyle(propStyle).trim().
                 replace("px", "")));
     }
@@ -153,6 +156,14 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     public int getScrollHeight() {
         return (int) Math.ceil(Double.parseDouble(eyesDriver.executeScript(JS_GET_SCROLL_HEIGHT,
                 this).toString()));
+    }
+
+    public int getClientWidth() {
+        return (int) Math.ceil(Double.parseDouble(eyesDriver.executeScript(JS_GET_CLIENT_WIDTH, this).toString()));
+    }
+
+    public int getClientHeight() {
+        return (int) Math.ceil(Double.parseDouble(eyesDriver.executeScript(JS_GET_CLIENT_HEIGHT, this).toString()));
     }
 
     /**
