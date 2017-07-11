@@ -9,16 +9,16 @@ import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.selenium.fluent.FrameLocator;
 import com.applitools.eyes.selenium.fluent.ISeleniumCheckTarget;
 import com.applitools.eyes.selenium.fluent.ISeleniumFrameCheckTarget;
-import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.utils.*;
-import org.apache.tools.ant.taskdefs.Tar;
+import com.applitools.utils.ArgumentGuard;
+import com.applitools.utils.ImageUtils;
+import com.applitools.utils.PropertyHandler;
+import com.applitools.utils.SimplePropertyHandler;
 import org.openqa.selenium.*;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.RemoteWebElement;
 
 import java.awt.image.BufferedImage;
 import java.net.URI;
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -79,7 +79,6 @@ public class Eyes extends EyesBase {
         regionVisibilityStrategy = new MoveToRegionVisibilityStrategy(logger);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Creates a new Eyes instance that interacts with the Eyes cloud
      * service.
@@ -93,7 +92,6 @@ public class Eyes extends EyesBase {
         return "eyes.selenium.java/3.13";
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * ﻿Forces a full page screenshot (by scrolling and stitching) if the
      * browser only ﻿supports viewport screenshots).
@@ -104,7 +102,6 @@ public class Eyes extends EyesBase {
         forceFullPageScreenshot = shouldForce;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * @return Whether Eyes should force a full page screenshot.
      */
@@ -112,7 +109,6 @@ public class Eyes extends EyesBase {
         return forceFullPageScreenshot;
     }
 
-    @SuppressWarnings("unused")
     /**
      * Sets the time to wait just before taking a screenshot (e.g., to allow
      * positioning to stabilize when performing a full page stitching).
@@ -129,7 +125,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("unused")
     /**
      *
      * @return The time to wait just before taking a screenshot.
@@ -138,7 +133,6 @@ public class Eyes extends EyesBase {
         return waitBeforeScreenshots;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Turns on/off the automatic scrolling to a region being checked by
      * {@code checkRegion}.
@@ -155,7 +149,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * @return Whether to automatically scroll to a region being validated.
      */
@@ -164,7 +157,6 @@ public class Eyes extends EyesBase {
                 NopRegionVisibilityStrategy);
     }
 
-    @SuppressWarnings("unused")
     /**
      * Set the type of stitching used for full page screenshots. When the
      * page includes fixed position header/sidebar, use {@link StitchMode#CSS}.
@@ -192,7 +184,6 @@ public class Eyes extends EyesBase {
         return stitchMode;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Hide the scrollbars when taking screenshots.
      * @param shouldHide Whether to hide the scrollbars or not.
@@ -201,27 +192,21 @@ public class Eyes extends EyesBase {
         hideScrollbars = shouldHide;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
-     *
      * @return Whether or not scrollbars are hidden when taking screenshots.
      */
     public boolean getHideScrollbars() {
         return hideScrollbars;
     }
 
-    @SuppressWarnings("unused")
     /**
-     *
      * @return The image rotation data.
      */
     public ImageRotation getRotation() {
         return rotation;
     }
 
-    @SuppressWarnings("unused")
     /**
-     *
      * @param rotation The image rotation data.
      */
     public void setRotation(ImageRotation rotation) {
@@ -231,7 +216,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("unused")
     /**
      *
      * @return The device pixel ratio, or {@link #UNKNOWN_DEVICE_PIXEL_RATIO}
@@ -241,7 +225,6 @@ public class Eyes extends EyesBase {
         return devicePixelRatio;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #open(WebDriver, String, String, RectangleSize, SessionType)}.
      * {@code sessionType} defaults to {@code null}.
@@ -251,7 +234,6 @@ public class Eyes extends EyesBase {
         return open(driver, appName, testName, viewportSize, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #open(WebDriver, String, String, SessionType)}.
      * {@code viewportSize} defaults to {@code null}.
@@ -324,7 +306,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #open(WebDriver, String, String, RectangleSize)}.
      * {@code viewportSize} defaults to {@code null}.
@@ -334,7 +315,6 @@ public class Eyes extends EyesBase {
         return open(driver, appName, testName, null, sessionType);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkWindow(String)}.
      * {@code tag} defaults to {@code null}.
@@ -411,7 +391,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testWindow(WebDriver, String, String, RectangleSize)}.
      * {@code viewportSize} defaults to {@code null}.
@@ -430,7 +409,6 @@ public class Eyes extends EyesBase {
         testWindow(driver, null, testName, viewportSize);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testWindow(WebDriver, String, RectangleSize)}.
      * {@code viewportSize} defaults to {@code null}.
@@ -439,7 +417,6 @@ public class Eyes extends EyesBase {
         testWindow(driver, testName, (RectangleSize) null);
     }
 
-    @SuppressWarnings("unused")
     /**
      * Run a visual performance test.
      * @param driver The driver to use.
@@ -497,11 +474,10 @@ public class Eyes extends EyesBase {
         closeResponseTime(deadlineExceeded);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
-     */
+     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
+            */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action,
                                  int deadline) {
@@ -509,12 +485,10 @@ public class Eyes extends EyesBase {
                 (deadline + RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
-     *
+     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action) {
@@ -524,11 +498,10 @@ public class Eyes extends EyesBase {
                         RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
      * {@code action} defaults to {@code null}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, int deadline) {
@@ -536,11 +509,10 @@ public class Eyes extends EyesBase {
                 (deadline + RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      * {@code action} defaults to {@code null}.
      */
     public void testResponseTime(WebDriver driver, String appName,
@@ -551,7 +523,6 @@ public class Eyes extends EyesBase {
                         RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
     }
 
-    @SuppressWarnings("unused")
     /**
      * Similar to {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)},
      * except this method sets the viewport size before starting the
@@ -571,10 +542,9 @@ public class Eyes extends EyesBase {
         testResponseTime(driver, appName, testName, action, deadline, timeout);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action,
@@ -584,11 +554,10 @@ public class Eyes extends EyesBase {
                 viewportSize);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action,
@@ -600,7 +569,6 @@ public class Eyes extends EyesBase {
                 viewportSize);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
      * {@code action} defaults to {@code null}.
@@ -612,10 +580,9 @@ public class Eyes extends EyesBase {
                 viewportSize);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, int, int, RectangleSize)}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, int deadline,
@@ -625,11 +592,10 @@ public class Eyes extends EyesBase {
                 viewportSize);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, int, int, RectangleSize)}.
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, RectangleSize viewportSize) {
@@ -774,7 +740,6 @@ public class Eyes extends EyesBase {
     private void checkElement(WebElement element, String name, ICheckSettings checkSettings) {
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegion(Region, int, String)}.
      * {@code tag} defaults to {@code null}.
@@ -784,7 +749,6 @@ public class Eyes extends EyesBase {
         checkRegion(region, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Takes a snapshot of the application under test and matches a specific
      * region within it with the expected output.
@@ -829,7 +793,6 @@ public class Eyes extends EyesBase {
         );
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegion(WebElement, String)}.
      * {@code tag} defaults to {@code null}.
@@ -838,7 +801,6 @@ public class Eyes extends EyesBase {
         checkRegion(element, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(org.openqa.selenium.WebElement)}, otherwise
@@ -852,7 +814,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegion(WebElement, int, String)}.
      * Default match timeout is used.
@@ -861,7 +822,6 @@ public class Eyes extends EyesBase {
         checkRegion(element, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * if {@code stitchContent} is {@code false} then behaves the same {@link
      * #checkRegion(org.openqa.selenium.WebElement, String)}. Otherwise
@@ -876,7 +836,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Takes a snapshot of the application under test and matches a region of
      * a specific element with the expected region output.
@@ -932,7 +891,6 @@ public class Eyes extends EyesBase {
         logger.verbose("Done!");
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * if {@code stitchContent} is {@code false} then behaves the same {@link
      * #checkRegion(org.openqa.selenium.WebElement, int, String)}. Otherwise
@@ -947,7 +905,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegion(By, String)}.
      * {@code tag} defaults to {@code null}.
@@ -956,7 +913,6 @@ public class Eyes extends EyesBase {
         checkRegion(selector, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(org.openqa.selenium.By)}. Otherwise, behaves the
@@ -970,7 +926,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegion(By, int, String)}.
      * Default match timeout is used.
@@ -979,7 +934,6 @@ public class Eyes extends EyesBase {
         checkRegion(selector, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(org.openqa.selenium.By, String)}. Otherwise,
@@ -993,7 +947,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Takes a snapshot of the application under test and matches a region
      * specified by the given selector with the expected region output.
@@ -1016,7 +969,6 @@ public class Eyes extends EyesBase {
         checkRegion(driver.findElement(selector), matchTimeout, tag);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(org.openqa.selenium.By, int, String)}. Otherwise,
@@ -1031,7 +983,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(int, By, String)}.
      * {@code tag} defaults to {@code null}.
@@ -1040,7 +991,6 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(frameIndex, selector, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(int, By, String)}.
      * {@code tag} defaults to {@code null}.
@@ -1050,7 +1000,6 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(frameIndex, selector, null, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(int, By, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
@@ -1059,7 +1008,6 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(frameIndex, selector, tag, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * Default match timeout is used.
@@ -1070,7 +1018,6 @@ public class Eyes extends EyesBase {
                 tag, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
@@ -1113,7 +1060,6 @@ public class Eyes extends EyesBase {
         driver.switchTo().parentFrame();
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(String, By)}.
      * {@code stitchContent} defaults to {@code null}.
@@ -1131,7 +1077,6 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(frameNameOrId, selector, null, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
@@ -1142,7 +1087,6 @@ public class Eyes extends EyesBase {
                 tag, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * Default match timeout is used
@@ -1153,7 +1097,6 @@ public class Eyes extends EyesBase {
                 tag, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
@@ -1162,7 +1105,6 @@ public class Eyes extends EyesBase {
                                    int matchTimeout, String tag) {
         checkRegionInFrame(frameNameOrId, selector, matchTimeout, tag, false);
     }
-
 
     /**
      * Switches into the given frame, takes a snapshot of the application under
@@ -1196,7 +1138,6 @@ public class Eyes extends EyesBase {
         driver.switchTo().parentFrame();
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(WebElement, By, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
@@ -1205,7 +1146,6 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(frameReference, selector, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code tag} defaults to {@code null}.
@@ -1215,7 +1155,6 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(frameReference, selector, null, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
@@ -1225,7 +1164,6 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(frameReference, selector, tag, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(WebElement, By, int, String, boolean)}.
      * Default match timeout is used.
@@ -1236,7 +1174,6 @@ public class Eyes extends EyesBase {
                 tag, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(WebElement, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
@@ -1278,7 +1215,6 @@ public class Eyes extends EyesBase {
         }
         driver.switchTo().parentFrame();
     }
-
 
     /**
      * Updates the state of scaling related parameters.
@@ -1377,7 +1313,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(String, int, String)}.
      * {@code tag} defaults to {@code null}. Default match timeout is used.
@@ -1386,7 +1321,6 @@ public class Eyes extends EyesBase {
         checkFrame(frameNameOrId, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(String, int, String)}.
      * Default match timeout is used.
@@ -1429,7 +1363,6 @@ public class Eyes extends EyesBase {
         logger.verbose("Done!");
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(int, int, String)}.
      * {@code tag} defaults to {@code null}. Default match timeout is used.
@@ -1438,7 +1371,6 @@ public class Eyes extends EyesBase {
         checkFrame(frameIndex, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(int, int, String)}.
      * Default match timeout is used.
@@ -1481,7 +1413,6 @@ public class Eyes extends EyesBase {
 
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(WebElement, int, String)}.
      * {@code tag} defaults to {@code null}.
@@ -1491,7 +1422,6 @@ public class Eyes extends EyesBase {
         checkFrame(frameReference, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(WebElement, int, String)}.
      * Default match timeout is used.
@@ -1571,7 +1501,6 @@ public class Eyes extends EyesBase {
         logger.verbose("Done!");
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(String[], int, String)}.
      * Default match timeout is used.
@@ -1580,7 +1509,6 @@ public class Eyes extends EyesBase {
         checkFrame(framesPath, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(String[], int, String)}.
      * Default match timeout is used.
@@ -1644,7 +1572,6 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(framePath, selector, matchTimeout, tag, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(String[], By, int, String)}.
      * Default match timeout is used.
@@ -1654,7 +1581,6 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(framePath, selector, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(String[], By, int, String)}.
      * Default match timeout is used.
@@ -1924,18 +1850,17 @@ public class Eyes extends EyesBase {
         addTextTrigger(elementRegion, text);
     }
 
-    @Override
     /**
      * Use this method only if you made a previous call to {@link #open
      * (WebDriver, String, String)} or one of its variants.
      *
      * {@inheritDoc}
      */
+    @Override
     protected RectangleSize getViewportSize() {
         return driver.getDefaultContentViewportSize();
     }
 
-    @SuppressWarnings("unused")
     /**
      * Call this method if for some
      * reason you don't want to call {@link #open(WebDriver, String, String)}
@@ -1949,13 +1874,13 @@ public class Eyes extends EyesBase {
         return EyesSeleniumUtils.getViewportSizeOrDisplaySize(new Logger(), driver);
     }
 
-    @Override
     /**
      * Use this method only if you made a previous call to {@link #open
      * (WebDriver, String, String)} or one of its variants.
      *
      * {@inheritDoc}
      */
+    @Override
     protected void setViewportSize(RectangleSize size) {
         FrameChain originalFrame = driver.getFrameChain();
         driver.switchTo().defaultContent();
