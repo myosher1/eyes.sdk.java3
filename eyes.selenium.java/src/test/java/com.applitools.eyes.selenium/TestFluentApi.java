@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.net.URI;
 
@@ -35,7 +36,11 @@ public class TestFluentApi {
         eyes.setForceFullPageScreenshot(true);
         eyes.setStitchMode(StitchMode.CSS);
 
-        driver = eyes.open(new ChromeDriver(), "Eyes Selenium SDK - Java", "FramesElementsTest",
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("disable-infobars");
+        ChromeDriver chromeDriver = new ChromeDriver(options);
+
+        driver = eyes.open(chromeDriver, "Eyes Selenium SDK - Java", "FramesElementsTest",
                 new RectangleSize(800, 599));
 
         //string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);

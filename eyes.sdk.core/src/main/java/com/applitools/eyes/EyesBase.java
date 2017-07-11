@@ -1099,11 +1099,23 @@ public abstract class EyesBase {
             );
         }
 
+        int retryTimeout = -1;
+        ImageMatchSettings imageMatchSettings = null;
+        if (checkSettingsInternal != null)
+        {
+            retryTimeout = checkSettingsInternal.getTimeout();
+            imageMatchSettings = new ImageMatchSettings(checkSettingsInternal.getMatchLevel(), null);
+            imageMatchSettings.setFloatingRegions(checkSettingsInternal.getFloatingRegions());
+            imageMatchSettings.setIgnoreRegions(checkSettingsInternal.getIgnoreRegions());
+            imageMatchSettings.setIgnoreCaret(checkSettingsInternal.getIgnoreCaret());
+        }
+
         logger.verbose("Calling match window...");
         result = matchWindowTask.matchWindow(getUserInputs(), lastScreenshot,
                 regionProvider, tag,
                 shouldMatchWindowRunOnceOnTimeout, ignoreMismatch,
-                checkSettingsInternal.getTimeout());
+                imageMatchSettings,
+                retryTimeout);
 
         logger.verbose("MatchWindow Done!");
 

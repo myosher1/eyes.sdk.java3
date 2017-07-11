@@ -20,11 +20,9 @@ public class MatchWindowTask {
     /**
      * @param logger            A logger instance.
      * @param serverConnector   Our gateway to the agent
-     * @param runningSession    The running session in which we should match the
-     *                          window
+     * @param runningSession    The running session in which we should match the window
      * @param retryTimeout      The default total time to retry matching (ms).
-     * @param appOutputProvider A callback for getting the application output
-     *                          when performing match
+     * @param appOutputProvider A callback for getting the application output when performing match.
      */
     public MatchWindowTask(Logger logger, ServerConnector serverConnector,
                            RunningSession runningSession, int retryTimeout,
@@ -43,24 +41,26 @@ public class MatchWindowTask {
 
     /**
      * Creates the match data and calls the server connector matchWindow method.
-     *
-     * @param userInputs     The user inputs related to the current appOutput.
-     * @param appOutput      The application output to be matched.
-     * @param tag            Optional tag to be associated with the match (can
-     *                       be {@code null}).
-     * @param ignoreMismatch Whether to instruct the server to ignore the
-     *                       match attempt in case of a mismatch.
+     * @param userInputs         The user inputs related to the current appOutput.
+     * @param appOutput          The application output to be matched.
+     * @param tag                Optional tag to be associated with the match (can
+     *                           be {@code null}).
+     * @param ignoreMismatch     Whether to instruct the server to ignore the
+     *                           match attempt in case of a mismatch.
+     * @param imageMatchSettings The settings to use.
      * @return The match result.
      */
     protected MatchResult performMatch(Trigger[] userInputs,
                                        AppOutputWithScreenshot appOutput,
-                                       String tag, boolean ignoreMismatch) {
+                                       String tag, boolean ignoreMismatch,
+                                       ImageMatchSettings imageMatchSettings) {
 
         // Prepare match data.
         MatchWindowData data = new MatchWindowData(userInputs, appOutput
                 .getAppOutput(), tag, ignoreMismatch,
-                new MatchWindowData.Options(tag, userInputs,ignoreMismatch,
-                        false, false, false));
+                new MatchWindowData.Options(tag, userInputs, ignoreMismatch,
+                        false, false, false,
+                        imageMatchSettings));
 
         // Perform match.
         return serverConnector.matchWindow(runningSession, data);
@@ -69,29 +69,25 @@ public class MatchWindowTask {
     /**
      * Repeatedly obtains an application snapshot and matches it with the next
      * expected output, until a match is found or the timeout expires.
-     *
      * @param userInputs                        User input preceding this match.
-     * @param lastScreenshot                    The last screenshot matched or
-     *                                          not ignored.
+     * @param lastScreenshot                    The last screenshot matched or not ignored.
      * @param regionProvider                    Window region to capture.
-     * @param tag                               Optional tag to be associated with
-     *                                          the match (can be {@code null}).
-     * @param shouldMatchWindowRunOnceOnTimeout Force a single match attempt at the
-     *                                          end of the match timeout.
-     * @param ignoreMismatch                    Whether to instruct the server to
-     *                                          ignore the match attempt in case
+     * @param tag                               Optional tag to be associated with the match (can be {@code null}).
+     * @param shouldMatchWindowRunOnceOnTimeout Force a single match attempt at the end of the match timeout.
+     * @param ignoreMismatch                    Whether to instruct the server to ignore the match attempt in case
      *                                          of a mismatch.
-     * @param retryTimeout                      The amount of time to retry
-     *                                          matching in milliseconds or a
-     *                                          negative value to use the default
-     *                                          retry timeout.
+     * @param imageMatchSettings                The settings to use.
+     * @param retryTimeout                      The amount of time to retry matching in milliseconds or a
+     *                                          negative value to use the default retry timeout.
      * @return Returns the results of the match
      */
     public MatchResult matchWindow(Trigger[] userInputs,
                                    EyesScreenshot lastScreenshot,
                                    RegionProvider regionProvider, String tag,
                                    boolean shouldMatchWindowRunOnceOnTimeout,
-                                   boolean ignoreMismatch, int retryTimeout) {
+                                   boolean ignoreMismatch,
+                                   ImageMatchSettings imageMatchSettings,
+                                   int retryTimeout) {
 
         AppOutputWithScreenshot appOutput;
         MatchResult matchResult;
@@ -116,8 +112,7 @@ public class MatchWindowTask {
             appOutput = appOutputProvider.getAppOutput(regionProvider,
                     lastScreenshot);
 
-            matchResult = performMatch(userInputs, appOutput, tag,
-                    ignoreMismatch);
+            matchResult = performMatch(userInputs, appOutput, tag, ignoreMismatch, imageMatchSettings);
 
         } else {
             /*
@@ -128,14 +123,12 @@ public class MatchWindowTask {
 
             // We intentionally start the timer after(!) taking the screenshot,
             // so less time is "wasted" on the transfer of the image.
-            appOutput = appOutputProvider.getAppOutput(regionProvider,
-                    lastScreenshot);
+            appOutput = appOutputProvider.getAppOutput(regionProvider, lastScreenshot);
 
             // Start the retry timer.
             long start = System.currentTimeMillis();
 
-            matchResult = performMatch(userInputs, appOutput, tag,
-                    true);
+            matchResult = performMatch(userInputs, appOutput, tag, true, imageMatchSettings);
 
             long retry = System.currentTimeMillis() - start;
 
@@ -145,29 +138,22 @@ public class MatchWindowTask {
                 // Wait before trying again.
                 GeneralUtils.sleep(MATCH_INTERVAL);
 
-                appOutput = appOutputProvider.getAppOutput(regionProvider,
-                        lastScreenshot);
+                appOutput = appOutputProvider.getAppOutput(regionProvider, lastScreenshot);
 
                 // Notice the ignoreMismatch here is true
-                matchResult = performMatch(userInputs, appOutput, tag, true);
+                matchResult = performMatch(userInputs, appOutput, tag, true, imageMatchSettings);
 
                 retry = System.currentTimeMillis() - start;
             }
 
             // if we're here because we haven't found a match yet, try once more
             if (!matchResult.getAsExpected()) {
-
-                appOutput = appOutputProvider.getAppOutput(regionProvider,
-                        lastScreenshot);
-
-                matchResult = performMatch(userInputs, appOutput, tag,
-                        ignoreMismatch);
+                appOutput = appOutputProvider.getAppOutput(regionProvider, lastScreenshot);
+                matchResult = performMatch(userInputs, appOutput, tag, ignoreMismatch, imageMatchSettings);
             }
         }
-        double elapsedTime = (System.currentTimeMillis() - elapsedTimeStart) /
-                1000;
-        logger.verbose(String.format("Completed in  %.2f seconds",
-                elapsedTime));
+        double elapsedTime = (System.currentTimeMillis() - elapsedTimeStart) / 1000;
+        logger.verbose(String.format("Completed in  %.2f seconds", elapsedTime));
         matchResult.setScreenshot(appOutput.getScreenshot());
         return matchResult;
     }

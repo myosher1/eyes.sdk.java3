@@ -732,6 +732,47 @@ public class Eyes extends EyesBase {
     }
 
     private void checkFullFrameOrElement(String name, ICheckSettings checkSettings) {
+        checkFrameOrElement = true;
+
+        checkWindowBase(new RegionProvider() {
+            @Override
+            public Region getRegion() {
+                if (checkFrameOrElement)
+                {
+                    ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor);
+                    spp.setPosition(Location.ZERO);
+
+                    byte[] screenshotBytes = driver.getScreenshotAs(OutputType.BYTES);
+                    BufferedImage screenshotImage = ImageUtils.imageFromBytes(screenshotBytes);
+
+                    // FIXME - Scaling should be handled in a single place instead
+                    ScaleProvider scaleProvider = updateScalingParams().getScaleProvider(screenshotImage.getWidth());
+
+                    final EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
+
+                    regionToCheck = new RegionProvider() {
+                        @Override
+                        public Region getRegion() {
+                            return screenshot.getFrameWindow();
+                        }
+
+                        @Override
+                        public CoordinatesType getCoordinatesType() {
+                            return null;
+                        }
+                    };
+                }
+
+                return Region.EMPTY;
+            }
+
+            @Override
+            public CoordinatesType getCoordinatesType() {
+                return null;
+            }
+        }, name, false, checkSettings);
+
+        checkFrameOrElement = false;
     }
 
     private void checkRegion(By targetSelector, String name, ICheckSettings checkSettings) {

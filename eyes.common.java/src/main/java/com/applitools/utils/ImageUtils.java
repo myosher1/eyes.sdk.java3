@@ -65,7 +65,6 @@ public class ImageUtils {
         return encodedImage;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Creates a {@code BufferedImage} from an image file specified by {@code
      * path}.
@@ -89,7 +88,6 @@ public class ImageUtils {
         return image;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Creates a {@link BufferedImage} from an image file specified by {@code
      * resource}.
@@ -192,7 +190,6 @@ public class ImageUtils {
         return imageFromBytes(imagePartBytes);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Rotates an image by the given degrees.
      *

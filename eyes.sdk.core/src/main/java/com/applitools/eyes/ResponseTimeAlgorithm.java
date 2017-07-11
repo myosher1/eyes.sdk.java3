@@ -123,7 +123,7 @@ public class ResponseTimeAlgorithm {
                 tag,
                 true,
                 new MatchWindowData.Options(tag, noUserInputs, false,
-                        false, false, false)
+                        false, false, false, null)
         );
         serverConnector.matchWindow(runningSession, mwd);
         logger.verbose("Finished saving.");
@@ -277,7 +277,7 @@ public class ResponseTimeAlgorithm {
                     tag,
                     true,
                     new MatchWindowData.Options(tag, noUserInputs, true,
-                            true, false, false)
+                            true, false, false, null)
             );
             currentWindowDataWithScreenshot =
                     new MatchWindowDataWithScreenshot(currentWindowData,
@@ -610,7 +610,8 @@ public class ResponseTimeAlgorithm {
                             false,
                             false,
                             true,
-                            false
+                            false,
+                            null
                     )
             );
             serverConnector.matchWindow(runningSession, mwdToSend);
@@ -634,7 +635,8 @@ public class ResponseTimeAlgorithm {
                         false,
                         false,
                         !forceMatch,
-                        forceMatch
+                        forceMatch,
+                        null
                 )
         );
         serverConnector.matchWindow(runningSession, mwdToSend);

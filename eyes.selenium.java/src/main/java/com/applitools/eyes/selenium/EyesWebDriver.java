@@ -283,8 +283,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         return findElement(By.partialLinkText(partialLinkText));
     }
 
-    public List<WebElement> findElementsByPartialLinkText(String
-                                                                  partialLinkText) {
+    public List<WebElement> findElementsByPartialLinkText(String partialLinkText) {
         return findElements(By.partialLinkText(partialLinkText));
     }
 
