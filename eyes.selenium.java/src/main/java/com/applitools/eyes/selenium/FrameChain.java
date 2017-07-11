@@ -105,6 +105,13 @@ public class FrameChain implements Iterable<Frame>{
     }
 
     /**
+     * @return Returns the top frame in the chain.
+     */
+    public Frame peek() {
+        return frames.get(frames.size() - 1);
+    }
+
+    /**
      * Appends a frame to the frame chain.
      * @param frame The frame to be added.
      */
@@ -171,4 +178,5 @@ public class FrameChain implements Iterable<Frame>{
             }
         };
     }
+
 }

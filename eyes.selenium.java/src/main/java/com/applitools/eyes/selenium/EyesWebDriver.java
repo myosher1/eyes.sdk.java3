@@ -227,50 +227,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
 
     public TargetLocator switchTo() {
         logger.verbose("switchTo()");
-        return new EyesTargetLocator(logger, this, driver.switchTo(),
-                new EyesTargetLocator.OnWillSwitch() {
-                    public void willSwitchToFrame(
-                            EyesTargetLocator.TargetType targetType,
-                            WebElement targetFrame) {
-                        logger.verbose("willSwitchToFrame()");
-                        switch(targetType) {
-                            case DEFAULT_CONTENT:
-                                logger.verbose("Default content.");
-                                frameChain.clear();
-                                break;
-                            case PARENT_FRAME:
-                                logger.verbose("Parent frame.");
-                                frameChain.pop();
-                                break;
-                            default: // Switching into a frame
-                                logger.verbose("Frame");
-
-                                String frameId = ((EyesRemoteWebElement)
-                                        targetFrame).getId();
-                                Point pl = targetFrame.getLocation();
-                                Dimension ds = targetFrame.getSize();
-                                // Get the frame's content location.
-                                Location contentLocation = new
-                                        BordersAwareElementContentLocationProvider
-                                        ().getLocation(logger, targetFrame,
-                                        new Location(pl.getX(), pl.getY()));
-                                frameChain.push(new Frame(logger, targetFrame,
-                                        frameId,
-                                        contentLocation,
-                                        new RectangleSize(ds.getWidth(),
-                                                ds.getHeight()),
-                                        new ScrollPositionProvider(logger,
-                                                driver).getCurrentPosition()));
-                        }
-                        logger.verbose("Done!");
-                    }
-
-                    public void willSwitchToWindow(String nameOrHandle) {
-                        logger.verbose("willSwitchToWindow()");
-                        frameChain.clear();
-                        logger.verbose("Done!");
-                    }
-                });
+        return new EyesTargetLocator(logger, this, driver.switchTo());
     }
 
     public Navigation navigate() {
