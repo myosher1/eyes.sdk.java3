@@ -14,6 +14,8 @@ import com.applitools.utils.ImageUtils;
 import com.applitools.utils.PropertyHandler;
 import com.applitools.utils.SimplePropertyHandler;
 import org.openqa.selenium.*;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.RemoteWebElement;
 
@@ -775,12 +777,36 @@ public class Eyes extends EyesBase {
     }
 
     private void checkRegion(By targetSelector, String name, ICheckSettings checkSettings) {
+        ArgumentGuard.notNull(targetSelector, "selector");
 
+        final WebElement element = driver.getRemoteWebDriver().findElement(targetSelector);
+        Point p = element.getLocation();
+        final Location elementLocation = new Location(p.getX(), p.getY());
+        Dimension s = element.getSize();
+        final RectangleSize elementSize = new RectangleSize(s.getWidth(), s.getHeight());
+        regionVisibilityStrategy.moveToRegion(getPositionProvider(), elementLocation);
+
+        checkWindowBase(new RegionProvider() {
+            @Override
+            public Region getRegion() {
+                return new Region(elementLocation, elementSize);
+            }
+
+            @Override
+            public CoordinatesType getCoordinatesType() {
+                return CoordinatesType.CONTEXT_RELATIVE;
+            }
+        }, name, false, checkSettings);
+
+        logger.verbose("Done! trying to scroll back to original position..");
+        regionVisibilityStrategy.returnToOriginalPosition(positionProvider);
+        logger.verbose("Done!");
     }
 
     private void checkElement(WebElement element, String name, ICheckSettings checkSettings) {
 
-        final EyesRemoteWebElement eyesElement = (element instanceof EyesRemoteWebElement) ? (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, (RemoteWebElement)element);
+        final EyesRemoteWebElement eyesElement = (element instanceof EyesRemoteWebElement) ?
+                (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, (RemoteWebElement)element);
 
         PositionProvider originalPositionProvider = positionProvider;
         PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
