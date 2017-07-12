@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -29,7 +30,7 @@ public class TestFluentApi {
         // Initialize the eyes SDK and set your private API key.
         eyes = new Eyes();
         eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
-        eyes.setApiKey (System.getenv("APPLITOOLS_API_KEY"));
+        eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
 
         //logHandler = new FileLogger("c:\\temp\\logs\\Java\\TestElement.log", true, true);
         //eyes.setLogHandler(logHandler);
@@ -48,7 +49,7 @@ public class TestFluentApi {
     }
 
     @AfterClass
-    public static void tearDown () {
+    public static void tearDown() {
         driver.quit();
         eyes.abortIfNotClosed();
     }
@@ -59,5 +60,44 @@ public class TestFluentApi {
                 .fully()
                 .timeout(5000)
                 .ignore(new Region(50, 50, 100, 100)));
+    }
+
+
+    @Test
+    public void TestCheckRegionWithIgnoreRegion_Fluent() {
+        eyes.check("Region with Ignore region", Target.region(By.id("overflowing-div"))
+                .ignore(new Region(50, 50, 100, 100)));
+    }
+
+    @Test
+    public void TestCheckFrame_Fully_Fluent() {
+        eyes.check("Full Frame", Target.frame("frame1").fully());
+    }
+
+    @Test
+    public void TestCheckFrame_Fluent() {
+        eyes.check("Frame", Target.frame("frame1"));
+    }
+
+    @Test
+    public void TestCheckFrameInFrame_Fully_Fluent() {
+        eyes.check("Full Frame in Frame", Target.frame("frame1")
+                .frame("frame1-1")
+                .fully());
+    }
+
+    @Test
+    public void TestCheckRegionInFrame_Fluent() {
+        eyes.check("Region in Frame", Target.frame("frame1")
+                .region(By.id("inner-frame-div"))
+                .fully());
+    }
+
+    @Test
+    public void TestCheckRegionInFrameInFrame_Fluent() {
+        eyes.check("Region in Frame in Frame", Target.frame("frame1")
+                .frame("frame1-1")
+                .region(By.tagName("img"))
+                .fully());
     }
 }
