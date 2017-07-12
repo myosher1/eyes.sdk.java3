@@ -70,7 +70,7 @@ public class Eyes extends EyesBase {
         super(serverUrl);
 
         checkFrameOrElement = false;
-        regionToCheck = null;
+        regionToCheck = new NullRegionProvider();
         forceFullPageScreenshot = false;
         dontGetTitle = false;
         hideScrollbars = false;
@@ -96,7 +96,6 @@ public class Eyes extends EyesBase {
     /**
      * ﻿Forces a full page screenshot (by scrolling and stitching) if the
      * browser only ﻿supports viewport screenshots).
-     *
      * @param shouldForce Whether to force a full page screenshot or not.
      */
     public void setForceFullPageScreenshot(boolean shouldForce) {
@@ -113,7 +112,6 @@ public class Eyes extends EyesBase {
     /**
      * Sets the time to wait just before taking a screenshot (e.g., to allow
      * positioning to stabilize when performing a full page stitching).
-     *
      * @param waitBeforeScreenshots The time to wait (Milliseconds). Values
      *                              smaller or equal to 0, will cause the
      *                              default value to be used.
@@ -127,7 +125,6 @@ public class Eyes extends EyesBase {
     }
 
     /**
-     *
      * @return The time to wait just before taking a screenshot.
      */
     public int getWaitBeforeScreenshots() {
@@ -137,7 +134,6 @@ public class Eyes extends EyesBase {
     /**
      * Turns on/off the automatic scrolling to a region being checked by
      * {@code checkRegion}.
-     *
      * @param shouldScroll Whether to automatically scroll to a region being
      *                     validated.
      */
@@ -162,7 +158,6 @@ public class Eyes extends EyesBase {
      * Set the type of stitching used for full page screenshots. When the
      * page includes fixed position header/sidebar, use {@link StitchMode#CSS}.
      * Default is {@link StitchMode#SCROLL}.
-     *
      * @param mode The stitch mode to set.
      */
     public void setStitchMode(StitchMode mode) {
@@ -218,7 +213,6 @@ public class Eyes extends EyesBase {
     }
 
     /**
-     *
      * @return The device pixel ratio, or {@link #UNKNOWN_DEVICE_PIXEL_RATIO}
      * if the DPR is not known yet or if it wasn't possible to extract it.
      */
@@ -420,14 +414,14 @@ public class Eyes extends EyesBase {
 
     /**
      * Run a visual performance test.
-     * @param driver The driver to use.
-     * @param appName The name of the application being tested.
+     * @param driver   The driver to use.
+     * @param appName  The name of the application being tested.
      * @param testName The test name.
-     * @param action Actions to be performed in parallel to starting the test.
+     * @param action   Actions to be performed in parallel to starting the test.
      * @param deadline The expected time until the application
-     *                        should have been loaded. (Seconds)
-     * @param timeout The maximum time until the application should have been
-     *                   loaded. (Seconds)
+     *                 should have been loaded. (Seconds)
+     * @param timeout  The maximum time until the application should have been
+     *                 loaded. (Seconds)
      */
     public void testResponseTime(final WebDriver driver, String appName,
                                  String testName, final WebDriverAction action,
@@ -478,7 +472,7 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
      * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
-            */
+     */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action,
                                  int deadline) {
@@ -528,7 +522,6 @@ public class Eyes extends EyesBase {
      * Similar to {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)},
      * except this method sets the viewport size before starting the
      * performance test.
-     *
      * @param viewportSize The required viewport size.
      */
     public void testResponseTime(WebDriver driver, String appName,
@@ -738,8 +731,7 @@ public class Eyes extends EyesBase {
         checkWindowBase(new RegionProvider() {
             @Override
             public Region getRegion() {
-                if (checkFrameOrElement)
-                {
+                if (checkFrameOrElement) {
                     ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor);
                     spp.setPosition(Location.ZERO);
 
@@ -759,7 +751,7 @@ public class Eyes extends EyesBase {
 
                         @Override
                         public CoordinatesType getCoordinatesType() {
-                            return null;
+                            return CoordinatesType.SCREENSHOT_AS_IS;
                         }
                     };
                 }
@@ -769,7 +761,7 @@ public class Eyes extends EyesBase {
 
             @Override
             public CoordinatesType getCoordinatesType() {
-                return null;
+                return CoordinatesType.SCREENSHOT_AS_IS;
             }
         }, name, false, checkSettings);
 
@@ -806,7 +798,7 @@ public class Eyes extends EyesBase {
     private void checkElement(WebElement element, String name, ICheckSettings checkSettings) {
 
         final EyesRemoteWebElement eyesElement = (element instanceof EyesRemoteWebElement) ?
-                (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, (RemoteWebElement)element);
+                (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, (RemoteWebElement) element);
 
         PositionProvider originalPositionProvider = positionProvider;
         PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
@@ -817,12 +809,10 @@ public class Eyes extends EyesBase {
 
         String originalOverflow = eyesElement.getOverflow();
 
-        try
-        {
+        try {
             checkFrameOrElement = true;
             String displayStyle = eyesElement.getComputedStyle("display");
-            if (displayStyle.equals("inline"))
-            {
+            if (displayStyle.equals("inline")) {
                 elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
             }
             eyesElement.setOverflow("hidden");
@@ -861,27 +851,14 @@ public class Eyes extends EyesBase {
                     return null;
                 }
             }, name, false, checkSettings);
-        }
-        finally
-        {
+        } finally {
             eyesElement.setOverflow(originalOverflow);
 
             checkFrameOrElement = false;
 
             scrollPositionProvider.setPosition(originalScrollPosition);
             positionProvider = originalPositionProvider;
-            regionToCheck = new RegionProvider() {
-                @Override
-                public Region getRegion() {
-                    return Region.EMPTY;
-                }
-
-                @Override
-                public CoordinatesType getCoordinatesType() {
-                    return null;
-                }
-            };
-
+            regionToCheck = new NullRegionProvider();
             elementPositionProvider = null;
         }
     }
@@ -898,7 +875,6 @@ public class Eyes extends EyesBase {
     /**
      * Takes a snapshot of the application under test and matches a specific
      * region within it with the expected output.
-     *
      * @param region       A non empty region representing the screen region to
      *                     check.
      * @param matchTimeout The amount of time to retry matching.
@@ -985,7 +961,6 @@ public class Eyes extends EyesBase {
     /**
      * Takes a snapshot of the application under test and matches a region of
      * a specific element with the expected region output.
-     *
      * @param element      The element which represents the region to check.
      * @param matchTimeout The amount of time to retry matching.
      *                     (Milliseconds)
@@ -1096,7 +1071,6 @@ public class Eyes extends EyesBase {
     /**
      * Takes a snapshot of the application under test and matches a region
      * specified by the given selector with the expected region output.
-     *
      * @param selector     Selects the region to check.
      * @param matchTimeout The amount of time to retry matching.
      *                     (Milliseconds)
@@ -1433,26 +1407,12 @@ public class Eyes extends EyesBase {
                 public Region getRegion() {
                     return screenshot.getFrameWindow();
                 }
-
                 public CoordinatesType getCoordinatesType() {
                     return CoordinatesType.SCREENSHOT_AS_IS;
                 }
             };
 
-            super.checkWindowBase(
-                    new RegionProvider() {
-                        public Region getRegion() {
-                            return Region.EMPTY;
-                        }
-
-                        public CoordinatesType getCoordinatesType() {
-                            return null;
-                        }
-                    },
-                    tag,
-                    false,
-                    matchTimeout
-            );
+            super.checkWindowBase(new NullRegionProvider(), tag, false, matchTimeout);
         } finally {
             checkFrameOrElement = false;
             regionToCheck = null;
@@ -1779,8 +1739,7 @@ public class Eyes extends EyesBase {
         PositionProvider originalPositionProvider = getPositionProvider();
         try {
             checkFrameOrElement = true;
-            setPositionProvider(new ElementPositionProvider(logger, driver,
-                    element));
+            setPositionProvider(new ElementPositionProvider(logger, driver, element));
 
             // Set overflow to "hidden".
             originalOverflow = eyesElement.getOverflow();
@@ -1806,7 +1765,6 @@ public class Eyes extends EyesBase {
                 public Region getRegion() {
                     return elementRegion;
                 }
-
                 public CoordinatesType getCoordinatesType() {
                     return CoordinatesType.CONTEXT_RELATIVE;
                 }
@@ -1999,7 +1957,7 @@ public class Eyes extends EyesBase {
     /**
      * Use this method only if you made a previous call to {@link #open
      * (WebDriver, String, String)} or one of its variants.
-     *
+     * <p>
      * {@inheritDoc}
      */
     @Override
@@ -2011,7 +1969,6 @@ public class Eyes extends EyesBase {
      * Call this method if for some
      * reason you don't want to call {@link #open(WebDriver, String, String)}
      * (or one of its variants) yet.
-     *
      * @param driver The driver to use for getting the viewport.
      * @return The viewport size of the current context.
      */
@@ -2023,7 +1980,7 @@ public class Eyes extends EyesBase {
     /**
      * Use this method only if you made a previous call to {@link #open
      * (WebDriver, String, String)} or one of its variants.
-     *
+     * <p>
      * {@inheritDoc}
      */
     @Override
@@ -2075,14 +2032,11 @@ public class Eyes extends EyesBase {
             }
         }
         try {
-            ImageProvider imageProvider =
-                    new TakesScreenshotImageProvider(logger, driver);
-            EyesScreenshotFactory screenshotFactory =
-                    new EyesWebDriverScreenshotFactory(logger, driver);
+            ImageProvider imageProvider = new TakesScreenshotImageProvider(logger, driver);
+            EyesScreenshotFactory screenshotFactory = new EyesWebDriverScreenshotFactory(logger, driver);
             if (checkFrameOrElement) {
                 logger.verbose("Check frame/element requested");
-                FullPageCaptureAlgorithm algo =
-                        new FullPageCaptureAlgorithm(logger);
+                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger);
                 BufferedImage entireFrameOrElement =
                         algo.getStitchedRegion(imageProvider, regionToCheck,
                                 positionProvider, elementPositionProvider == null ? positionProvider : elementPositionProvider,
@@ -2090,10 +2044,8 @@ public class Eyes extends EyesBase {
                                 cutProviderHandler.get(),
                                 getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory);
                 logger.verbose("Building screenshot object...");
-                result = new EyesWebDriverScreenshot(logger, driver,
-                        entireFrameOrElement,
-                        new RectangleSize(entireFrameOrElement.getWidth(),
-                                entireFrameOrElement.getHeight()));
+                result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
+                        new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
             } else if (forceFullPageScreenshot) {
                 logger.verbose("Full page screenshot requested.");
                 // Save the current frame path.
