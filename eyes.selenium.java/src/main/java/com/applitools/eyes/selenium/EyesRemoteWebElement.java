@@ -215,8 +215,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
      * @param overflow The overflow to set.
      */
     public void setOverflow(String overflow) {
-        eyesDriver.executeScript(String.format(JS_SET_OVERFLOW_FORMATTED_STR,
-                overflow), this);
+        eyesDriver.executeScript(String.format(JS_SET_OVERFLOW_FORMATTED_STR, overflow), this);
     }
 
     @Override

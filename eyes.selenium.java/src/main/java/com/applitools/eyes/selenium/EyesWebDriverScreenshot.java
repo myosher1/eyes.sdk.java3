@@ -133,9 +133,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         // This is used for frame related calculations.
         if (frameLocationInScreenshot == null) {
             if (frameChain.size() > 0) {
-                frameLocationInScreenshot =
-                        calcFrameLocationInScreenshot(logger, frameChain,
-                                this.screenshotType);
+                frameLocationInScreenshot = calcFrameLocationInScreenshot(logger, frameChain, this.screenshotType);
             } else {
                 frameLocationInScreenshot = new Location(0, 0);
             }
@@ -144,8 +142,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
         logger.verbose("Calculating frame window..");
         this.frameWindow = new Region(frameLocationInScreenshot, frameSize);
-        this.frameWindow.intersect(new Region(0, 0, image.getWidth(),
-                image.getHeight()));
+        this.frameWindow.intersect(new Region(0, 0, image.getWidth(), image.getHeight()));
         if (this.frameWindow.getWidth() <= 0 ||
                 this.frameWindow.getHeight() <= 0) {
             throw new EyesException("Got empty frame window for screenshot!");
