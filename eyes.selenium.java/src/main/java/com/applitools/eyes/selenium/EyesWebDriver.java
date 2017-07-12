@@ -324,11 +324,10 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
                             driver.manage().window().getSize(), script, args);
 
             if (trigger != null) {
-                // TODO - Daniel, additional type of triggers
+                // TODO - Daniel, additional types of triggers
                 if (trigger instanceof MouseTrigger) {
                     MouseTrigger mt = (MouseTrigger) trigger;
-                    eyes.addMouseTrigger(mt.getMouseAction(),
-                            mt.getControl(), mt.getLocation());
+                    eyes.addMouseTrigger(mt.getMouseAction(), mt.getControl(), mt.getLocation());
                 }
             }
         }
@@ -400,11 +399,10 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     }
 
     /**
-     *
-     * @return A copy of the current frame chain.
+     * @return The current frame chain.
      */
     public FrameChain getFrameChain() {
-        return new FrameChain(logger, frameChain);
+        return frameChain;
     }
 
     public <X> X getScreenshotAs(OutputType<X> xOutputType)
