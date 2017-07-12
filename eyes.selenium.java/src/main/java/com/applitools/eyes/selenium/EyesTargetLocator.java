@@ -35,8 +35,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     /**
      * Will be called before switching into a frame.
      * @param targetType  The type of frame we're about to switch into.
-     * @param targetFrame The element about to be switched to,
-     *                    if available. Otherwise, null.
+     * @param targetFrame The element about to be switched to, if available. Otherwise, null.
      */
     public void willSwitchToFrame(
             EyesTargetLocator.TargetType targetType,
@@ -54,8 +53,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
             default: // Switching into a frame
                 logger.verbose("Frame");
 
-                String frameId = ((EyesRemoteWebElement)
-                        targetFrame).getId();
+                String frameId = ((EyesRemoteWebElement) targetFrame).getId();
                 Point pl = targetFrame.getLocation();
                 Dimension ds = targetFrame.getSize();
                 // Get the frame's content location.
@@ -104,11 +102,9 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         logger.verbose(String.format("EyesTargetLocator.frame(%d)", index));
         // Finding the target element so and reporting it using onWillSwitch.
         logger.verbose("Getting frames list...");
-        List<WebElement> frames = driver.findElementsByCssSelector(
-                "frame, iframe");
+        List<WebElement> frames = driver.findElementsByCssSelector("frame, iframe");
         if (index > frames.size()) {
-            throw new NoSuchFrameException(String.format(
-                    "Frame index [%d] is invalid!", index));
+            throw new NoSuchFrameException(String.format("Frame index [%d] is invalid!", index));
         }
         logger.verbose("Done! getting the specific frame...");
         WebElement targetFrame = frames.get(index);
