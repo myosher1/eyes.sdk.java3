@@ -55,8 +55,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     private final String JS_GET_CLIENT_WIDTH = "return arguments[0].clientWidth;";
     private final String JS_GET_CLIENT_HEIGHT = "return arguments[0].clientHeight;";
 
-    public EyesRemoteWebElement(Logger logger, EyesWebDriver eyesDriver,
-                                RemoteWebElement webElement) {
+    public EyesRemoteWebElement(Logger logger, EyesWebDriver eyesDriver, WebElement webElement) {
         super();
 
         ArgumentGuard.notNull(logger, "logger");
@@ -65,7 +64,12 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
         this.logger = logger;
         this.eyesDriver = eyesDriver;
-        this.webElement = webElement;
+
+        if (webElement instanceof RemoteWebElement) {
+            this.webElement = (RemoteWebElement)webElement;
+        } else {
+            throw new EyesException("The input web element is not a RemoteWebElement.");
+        }
 
         try {
             // We can't call the execute method directly because it is

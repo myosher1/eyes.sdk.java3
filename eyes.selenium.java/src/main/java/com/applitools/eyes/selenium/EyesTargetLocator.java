@@ -53,20 +53,36 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
             default: // Switching into a frame
                 logger.verbose("Frame");
 
-                String frameId = ((EyesRemoteWebElement) targetFrame).getId();
+                EyesRemoteWebElement eyesFrame = (targetFrame instanceof EyesRemoteWebElement) ?
+                        (EyesRemoteWebElement)targetFrame : new EyesRemoteWebElement(logger, driver, targetFrame);
+
+                String frameId = eyesFrame.getId();
                 Point pl = targetFrame.getLocation();
                 Dimension ds = targetFrame.getSize();
+
+                int clientWidth =  eyesFrame.getClientWidth();
+                int clientHeight = eyesFrame.getClientHeight();
+
+                Location location = new Location(pl.getX(), pl.getY());
+
                 // Get the frame's content location.
                 Location contentLocation = new
                         BordersAwareElementContentLocationProvider
                         ().getLocation(logger, targetFrame,
-                        new Location(pl.getX(), pl.getY()));
+                        location);
+
+                Location originalLocation = scrollPosition.getCurrentPosition();
+                scrollPosition.setPosition(location);
+
                 Location currentLocation = scrollPosition.getCurrentPosition();
+
                 driver.getFrameChain().push(new Frame(logger, targetFrame,
                         frameId,
                         contentLocation,
                         new RectangleSize(ds.getWidth(), ds.getHeight()),
-                        currentLocation));
+                        new RectangleSize(clientWidth, clientHeight),
+                        currentLocation,
+                        originalLocation));
         }
         logger.verbose("Done!");
     }

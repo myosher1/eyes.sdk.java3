@@ -40,12 +40,11 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         logger.verbose("Done!");
         Location locationInScreenshot = new Location(firstFrame.getLocation());
 
-        // We only consider scroll of the default content if this is
-        // a viewport screenshot.
+        // We only consider scroll of the default content if this is a viewport screenshot.
         if (screenshotType == ScreenshotType.VIEWPORT) {
-            Location defaultContentScroll = firstFrame
-                    .getParentScrollPosition();
-            locationInScreenshot = locationInScreenshot.offset(-defaultContentScroll.getX(),
+            Location defaultContentScroll = firstFrame.getParentScrollPosition();
+            locationInScreenshot = locationInScreenshot.offset(
+                    -defaultContentScroll.getX(),
                     -defaultContentScroll.getY());
         }
 
@@ -57,8 +56,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             logger.verbose("Done!");
             Location frameLocation = frame.getLocation();
             // For inner frames we must consider the scroll
-            Location frameParentScrollPosition = frame
-                    .getParentScrollPosition();
+            Location frameParentScrollPosition = frame.getParentScrollPosition();
             // Offsetting the location in the screenshot
             locationInScreenshot = locationInScreenshot.offset(
                     frameLocation.getX() - frameParentScrollPosition.getX(),
@@ -72,64 +70,40 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
      * @param logger                     A Logger instance.
      * @param driver                     The web driver used to get the screenshot.
      * @param image                      The actual screenshot image.
-     * @param screenshotType             (Optional) The screenshot's type (e.g.,
-     *                                   viewport/full page).
-     * @param frameLocationInScreenshot  (Optional) The current frame's
-     *                                   location in the screenshot.
+     * @param screenshotType             (Optional) The screenshot's type (e.g., viewport/full page).
+     * @param frameLocationInScreenshot  (Optional) The current frame's location in the screenshot.
      */
-    public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver,
-                                   BufferedImage image,
-                                   ScreenshotType screenshotType,
-                                   Location frameLocationInScreenshot) {
+    public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver, BufferedImage image,
+                                   ScreenshotType screenshotType, Location frameLocationInScreenshot) {
         super(image);
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(driver, "driver");
         this.logger = logger;
         this.driver = driver;
 
+        this.screenshotType = updateScreenshotType(screenshotType, image);
+
         IEyesJsExecutor jsExecutor = new SeleniumJavaScriptExecutor(this.driver);
-        ScrollPositionProvider positionProvider =
-                new ScrollPositionProvider(logger, jsExecutor);
+        ScrollPositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor);
 
-        RectangleSize viewportSize = driver.getDefaultContentViewportSize();
         frameChain = driver.getFrameChain();
-        // If we're inside a frame, then the frame size is given by the frame
-        // chain. Otherwise, it's the size of the entire page.
-        RectangleSize frameSize;
-        if (frameChain.size() != 0) {
-            frameSize = frameChain.getCurrentFrameSize();
-        } else {
-            // get entire page size might throw an exception for applications
-            // which don't support Javascript (e.g., Appium). In that case
-            // we'll use the viewport size as the frame's size.
-            RectangleSize fs;
-            try {
-                fs = positionProvider.getEntireSize();
-            } catch (EyesDriverOperationException e) {
-                fs = viewportSize;
-            }
-            frameSize = fs;
-        }
-        // Getting the scroll position. For native Appium apps we can't get the
-        // scroll position, so we use (0,0)
-        Location sp;
-        try {
-            sp = positionProvider.getCurrentPosition();
-        } catch (EyesDriverOperationException e) {
-            sp = new Location(0, 0);
-        }
-        currentFrameScrollPosition = sp;
+        RectangleSize frameSize = getFrameSize(positionProvider);
+        currentFrameScrollPosition = getUpdatedScrollPosition(positionProvider);
+        frameLocationInScreenshot = getUpdatedFrameLocationInScreenshot(logger, frameLocationInScreenshot);
 
-        if (screenshotType == null) {
-            if (image.getWidth() <= viewportSize.getWidth()
-                    && image.getHeight() <= viewportSize.getHeight()) {
-                screenshotType = ScreenshotType.VIEWPORT;
-            } else {
-                screenshotType = ScreenshotType.ENTIRE_FRAME;
-            }
-        }
-        this.screenshotType = screenshotType;
+        this.frameLocationInScreenshot = frameLocationInScreenshot;
 
+        logger.verbose("Calculating frame window..");
+        this.frameWindow = new Region(frameLocationInScreenshot, frameSize);
+        this.frameWindow.intersect(new Region(0, 0, image.getWidth(), image.getHeight()));
+        if (this.frameWindow.getWidth() <= 0 || this.frameWindow.getHeight() <= 0) {
+            throw new EyesException("Got empty frame window for screenshot!");
+        }
+
+        logger.verbose("Done!");
+    }
+
+    private Location getUpdatedFrameLocationInScreenshot(Logger logger, Location frameLocationInScreenshot) {
         // This is used for frame related calculations.
         if (frameLocationInScreenshot == null) {
             if (frameChain.size() > 0) {
@@ -138,17 +112,46 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
                 frameLocationInScreenshot = new Location(0, 0);
             }
         }
-        this.frameLocationInScreenshot = frameLocationInScreenshot;
+        return frameLocationInScreenshot;
+    }
 
-        logger.verbose("Calculating frame window..");
-        this.frameWindow = new Region(frameLocationInScreenshot, frameSize);
-        this.frameWindow.intersect(new Region(0, 0, image.getWidth(), image.getHeight()));
-        if (this.frameWindow.getWidth() <= 0 ||
-                this.frameWindow.getHeight() <= 0) {
-            throw new EyesException("Got empty frame window for screenshot!");
+    private Location getUpdatedScrollPosition(ScrollPositionProvider positionProvider) {
+        Location sp;
+        try {
+            sp = positionProvider.getCurrentPosition();
+        } catch (EyesDriverOperationException e) {
+            sp = new Location(0, 0);
         }
+        return sp;
+    }
 
-        logger.verbose("Done!");
+    private RectangleSize getFrameSize(ScrollPositionProvider positionProvider) {
+        RectangleSize frameSize;
+        if (frameChain.size() != 0) {
+            frameSize = frameChain.getCurrentFrameInnerSize();
+        } else {
+            // get entire page size might throw an exception for applications
+            // which don't support Javascript (e.g., Appium). In that case
+            // we'll use the viewport size as the frame's size.
+            try {
+                frameSize = positionProvider.getEntireSize();
+            } catch (EyesDriverOperationException e) {
+                frameSize = this.driver.getDefaultContentViewportSize();
+            }
+        }
+        return frameSize;
+    }
+
+    private ScreenshotType updateScreenshotType(ScreenshotType screenshotType, BufferedImage image) {
+        if (screenshotType == null) {
+            RectangleSize viewportSize = driver.getDefaultContentViewportSize();
+            if (image.getWidth() <= viewportSize.getWidth() && image.getHeight() <= viewportSize.getHeight()) {
+                screenshotType = ScreenshotType.VIEWPORT;
+            } else {
+                screenshotType = ScreenshotType.ENTIRE_FRAME;
+            }
+        }
+        return screenshotType;
     }
 
     /**

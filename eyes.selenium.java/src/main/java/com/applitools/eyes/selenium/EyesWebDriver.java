@@ -373,7 +373,8 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
             return defaultContentViewportSize;
         }
 
-        FrameChain currentFrames = getFrameChain();
+        FrameChain currentFrames = new FrameChain(logger, getFrameChain());
+
         // Optimization
         if (currentFrames.size() > 0) {
             switchTo().defaultContent();
