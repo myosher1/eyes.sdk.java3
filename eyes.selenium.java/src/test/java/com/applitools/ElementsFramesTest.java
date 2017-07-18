@@ -16,6 +16,9 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import java.net.URL;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 /**
  * Unit test for simple App.
@@ -25,18 +28,33 @@ public class ElementsFramesTest {
     private static WebDriver driver;
 
     @BeforeClass
-    public static void setUp () throws URISyntaxException {
+    public static void setUp () throws URISyntaxException, java.net.MalformedURLException {
         eyes = new Eyes();
         eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
         eyes.setLogHandler(new StdoutLogHandler(true));
         eyes.setStitchMode(StitchMode.CSS);
         eyes.setForceFullPageScreenshot(true);
-
-        ChromeOptions co = new ChromeOptions();
+        driver = createDriver();
 //        co.addArguments("--force-device-scale-factor=1.25");
-        driver = new ChromeDriver(co);
+        ElementsFramesTest.driver = driver;
     }
 
+
+    private static WebDriver createDriver() throws java.net.MalformedURLException
+    {
+        final String URL = System.getenv("SAUCELABS_URL");
+
+        if (URL != null) {
+            DesiredCapabilities caps = DesiredCapabilities.chrome();
+            driver = new RemoteWebDriver(new URL(URL), caps);
+        }
+        else
+        {
+            ChromeOptions co = new ChromeOptions();
+            driver = new ChromeDriver(co);
+        }
+        return driver;
+    }
     @AfterClass
     public static void tearDown () {
         driver.quit();
