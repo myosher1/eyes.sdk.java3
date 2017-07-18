@@ -1,3 +1,5 @@
+package com.applitools;
+
 import com.applitools.eyes.*;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.StitchMode;
@@ -29,10 +31,9 @@ public class ElementsFramesTest {
         eyes.setLogHandler(new StdoutLogHandler(true));
         eyes.setStitchMode(StitchMode.CSS);
         eyes.setForceFullPageScreenshot(true);
-        eyes.setScaleMethod(ScaleMethod.SPEED);
 
         ChromeOptions co = new ChromeOptions();
-        co.addArguments("--force-device-scale-factor=1.25");
+//        co.addArguments("--force-device-scale-factor=1.25");
         driver = new ChromeDriver(co);
     }
 
