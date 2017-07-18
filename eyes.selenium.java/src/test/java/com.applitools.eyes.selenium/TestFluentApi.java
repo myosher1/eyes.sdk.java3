@@ -32,10 +32,15 @@ public class TestFluentApi {
         eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
         eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
 
-        //logHandler = new FileLogger("c:\\temp\\logs\\Java\\TestElement.log", true, true);
-        //eyes.setLogHandler(logHandler);
+        logHandler = new FileLogger("c:\\temp\\logs\\Java\\TestElement.log", true, true);
+        eyes.setLogHandler(logHandler);
         eyes.setForceFullPageScreenshot(true);
         eyes.setStitchMode(StitchMode.CSS);
+
+        eyes.setHideScrollbars(true);
+
+        eyes.setDebugScreenshotsPath("c:\\temp\\logs");
+        eyes.setSaveDebugScreenshots(true);
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments("disable-infobars");

@@ -161,6 +161,7 @@ public class Eyes extends EyesBase {
      * @param mode The stitch mode to set.
      */
     public void setStitchMode(StitchMode mode) {
+        logger.verbose("setting stitch mode to " + mode);
         stitchMode = mode;
         if (driver != null) {
             switch (mode) {
@@ -290,14 +291,14 @@ public class Eyes extends EyesBase {
 
     private void initPositionProvider() {
         // Setting the correct position provider.
-        switch (getStitchMode()) {
+        StitchMode stitchMode = getStitchMode();
+        logger.verbose("initializing position provider. stitchMode: " + stitchMode);
+        switch (stitchMode) {
             case CSS:
-                setPositionProvider(
-                        new CssTranslatePositionProvider(logger, this.jsExecutor));
+                setPositionProvider(new CssTranslatePositionProvider(logger, this.jsExecutor));
                 break;
             default:
-                setPositionProvider(
-                        new ScrollPositionProvider(logger, this.jsExecutor));
+                setPositionProvider(new ScrollPositionProvider(logger, this.jsExecutor));
         }
     }
 
@@ -812,7 +813,7 @@ public class Eyes extends EyesBase {
         try {
             checkFrameOrElement = true;
             String displayStyle = eyesElement.getComputedStyle("display");
-            if (displayStyle.equals("inline")) {
+            if (!displayStyle.equals("inline")) {
                 elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
             }
             eyesElement.setOverflow("hidden");
