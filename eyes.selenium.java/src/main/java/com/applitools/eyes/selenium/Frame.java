@@ -58,7 +58,7 @@ public class Frame {
         this.id = frameId;
         this.parentScrollPosition = parentScrollPosition;
         this.size = size;
-        this.innerSize = size;
+        this.innerSize = innerSize;
         this.location = location;
         this.originalLocation = originalLocation;
     }

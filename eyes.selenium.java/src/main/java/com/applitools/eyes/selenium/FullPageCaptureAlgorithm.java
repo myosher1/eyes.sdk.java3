@@ -208,8 +208,7 @@ public class FullPageCaptureAlgorithm {
 
             // Stitching the current part.
             logger.verbose("Stitching part into the image container...");
-            stitchedImage.getRaster().setRect(currentPosition.getX(),
-                    currentPosition.getY(), partImage.getData());
+            stitchedImage.getRaster().setRect(currentPosition.getX(), currentPosition.getY(), partImage.getData());
             logger.verbose("Done!");
 
             lastSuccessfulLocation = currentPosition;
