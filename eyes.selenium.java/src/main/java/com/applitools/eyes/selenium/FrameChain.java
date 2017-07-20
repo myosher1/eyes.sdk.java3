@@ -40,7 +40,7 @@ public class FrameChain implements Iterable<Frame>{
 
         //noinspection ForLoopReplaceableByForEach
         for(int i = 0; i<lc1; ++i) {
-            if (!c1Iterator.next().getId().equals(c2Iterator.next().getId())) {
+            if (!c1Iterator.next().getReference().equals(c2Iterator.next().getReference())) {
                 return false;
             }
         }
@@ -55,7 +55,7 @@ public class FrameChain implements Iterable<Frame>{
     public FrameChain(Logger logger) {
         ArgumentGuard.notNull(logger, "logger");
         this.logger = logger;
-        frames = new LinkedList<Frame>();
+        frames = new LinkedList<>();
     }
 
     /**
@@ -71,7 +71,7 @@ public class FrameChain implements Iterable<Frame>{
         frames = new LinkedList<>();
         for (Frame otherFrame: other.frames) {
             frames.add(new Frame(logger, otherFrame.getReference(),
-                    otherFrame.getId(), otherFrame.getLocation(),
+                    otherFrame.getLocation(),
                     otherFrame.getSize(), otherFrame.getInnerSize(),
                     otherFrame.getParentScrollPosition(),
                     otherFrame.getOriginalLocation()));

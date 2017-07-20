@@ -77,7 +77,6 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
                 Location currentLocation = scrollPosition.getCurrentPosition();
 
                 driver.getFrameChain().push(new Frame(logger, targetFrame,
-                        frameId,
                         contentLocation,
                         new RectangleSize(ds.getWidth(), ds.getHeight()),
                         new RectangleSize(clientWidth, clientHeight),
