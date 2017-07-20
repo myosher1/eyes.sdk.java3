@@ -189,7 +189,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     public WebDriver frames(FrameChain frameChain) {
         logger.verbose("EyesTargetLocator.frames(frameChain)");
         for (Frame frame : frameChain) {
-            logger.verbose("Scrolling by parent scroll position..");
+            logger.verbose("Scrolling by parent scroll position...");
             scrollPosition.setPosition(frame.getParentScrollPosition());
             logger.verbose("Done! Switching to frame...");
             driver.switchTo().frame(frame.getReference());
@@ -220,9 +220,9 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
 
     public WebDriver window(String nameOrHandle) {
         logger.verbose("EyesTargetLocator.frames()");
-        logger.verbose("Making preparations..");
+        logger.verbose("Making preparations...");
         willSwitchToWindow(nameOrHandle);
-        logger.verbose("Done! Switching to window..");
+        logger.verbose("Done! Switching to window...");
         targetLocator.window(nameOrHandle);
         logger.verbose("Done!");
         return driver;
@@ -231,9 +231,9 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     public WebDriver defaultContent() {
         logger.verbose("EyesTargetLocator.defaultContent()");
         if (driver.getFrameChain().size() != 0) {
-            logger.verbose("Making preparations..");
+            logger.verbose("Making preparations...");
             willSwitchToFrame(TargetType.DEFAULT_CONTENT, null);
-            logger.verbose("Done! Switching to default content..");
+            logger.verbose("Done! Switching to default content...");
             targetLocator.defaultContent();
             logger.verbose("Done!");
         }
@@ -242,20 +242,19 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
 
     public WebElement activeElement() {
         logger.verbose("EyesTargetLocator.activeElement()");
-        logger.verbose("Switching to element..");
+        logger.verbose("Switching to element...");
         WebElement element = targetLocator.activeElement();
         if (!(element instanceof RemoteWebElement)) {
             throw new EyesException("Not a remote web element!");
         }
-        EyesRemoteWebElement result = new EyesRemoteWebElement(logger, driver,
-                (RemoteWebElement) element);
+        EyesRemoteWebElement result = new EyesRemoteWebElement(logger, driver, (RemoteWebElement) element);
         logger.verbose("Done!");
         return result;
     }
 
     public Alert alert() {
         logger.verbose("EyesTargetLocator.alert()");
-        logger.verbose("Switching to alert..");
+        logger.verbose("Switching to alert...");
         Alert result = targetLocator.alert();
         logger.verbose("Done!");
         return result;

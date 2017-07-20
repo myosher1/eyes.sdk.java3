@@ -163,8 +163,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
      * @param driver The web driver used to get the screenshot.
      * @param image The actual screenshot image.
      */
-    public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver,
-                                   BufferedImage image) {
+    public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver, BufferedImage image) {
         this(logger, driver, image, null, null);
     }
 
@@ -188,6 +187,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         frameChain = driver.getFrameChain();
         // The frame comprises the entire screenshot.
         screenshotType = ScreenshotType.ENTIRE_FRAME;
+
         currentFrameScrollPosition = new Location(0, 0);
         frameLocationInScreenshot = new Location(0, 0);
         frameWindow = new Region(new Location(0, 0), entireFrameSize);

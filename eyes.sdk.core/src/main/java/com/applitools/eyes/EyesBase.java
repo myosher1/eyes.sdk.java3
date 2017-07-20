@@ -153,7 +153,6 @@ public abstract class EyesBase {
      * @param serverUrl The URI of the rest server, or {@code null} to use
      *                  the default server.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setServerUrl(URI serverUrl) {
         if (serverUrl == null) {
             serverConnector.setServerUrl(getDefaultServerUrl());
@@ -165,7 +164,6 @@ public abstract class EyesBase {
     /**
      * @return The URI of the eyes server.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public URI getServerUrl() {
         return serverConnector.getServerUrl();
     }
@@ -175,7 +173,6 @@ public abstract class EyesBase {
      * @param proxySettings The proxy settings to be used by the rest client.
      *                      If {@code null} then no proxy is set.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setProxy(ProxySettings proxySettings) {
         serverConnector.setProxy(proxySettings);
     }
@@ -184,7 +181,6 @@ public abstract class EyesBase {
      * @return The current proxy settings used by the server connector,
      * or {@code null} if no proxy is set.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public ProxySettings getProxy() {
         return serverConnector.getProxy();
     }
@@ -193,7 +189,6 @@ public abstract class EyesBase {
      * @param isDisabled If true, all interactions with this API will be
      *                   silently ignored.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setIsDisabled(boolean isDisabled) {
         this.isDisabled = isDisabled;
     }
@@ -201,12 +196,10 @@ public abstract class EyesBase {
     /**
      * @return Whether eyes is disabled.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public boolean getIsDisabled() {
         return isDisabled;
     }
 
-    @SuppressWarnings("unused")
     /**
      *
      * @param appName The name of the application under test.
@@ -215,7 +208,6 @@ public abstract class EyesBase {
         this.appName = appName;
     }
 
-    @SuppressWarnings("unused")
     /**
      *
      * @return The name of the application under test.
@@ -230,10 +222,8 @@ public abstract class EyesBase {
      * specified parent branch (see {@link #setParentBranchName}).
      * Changes to the baseline or model of a branch do not propagate to other
      * branches.
-     * @param branchName Branch name or {@code null} to specify the default
-     *                   branch.
+     * @param branchName Branch name or {@code null} to specify the default branch.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setBranchName(String branchName) {
         this.branchName = branchName;
     }
@@ -241,7 +231,6 @@ public abstract class EyesBase {
     /**
      * @return The current branch (see {@link #setBranchName(String)}).
      */
-    @SuppressWarnings("UnusedDeclaration")
     public String getBranchName() {
         return branchName;
     }
@@ -249,10 +238,8 @@ public abstract class EyesBase {
     /**
      * Sets the branch under which new branches are created. (see {@link
      * #setBranchName(String)}.
-     * @param branchName Branch name or {@code null} to specify the default
-     *                   branch.
+     * @param branchName Branch name or {@code null} to specify the default branch.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setParentBranchName(String branchName) {
         this.parentBranchName = branchName;
     }
@@ -261,7 +248,6 @@ public abstract class EyesBase {
      * @return The name of the current parent branch under which new branches
      * will be created. (see {@link #setParentBranchName(String)}).
      */
-    @SuppressWarnings("UnusedDeclaration")
     public String getParentBranchName() {
         return parentBranchName;
     }
@@ -277,8 +263,7 @@ public abstract class EyesBase {
     }
 
     /**
-     * @return User inputs collected between {@code checkWindowBase}
-     * invocations.
+     * @return User inputs collected between {@code checkWindowBase} invocations.
      */
     protected Trigger[] getUserInputs() {
         if (isDisabled) {
@@ -289,11 +274,9 @@ public abstract class EyesBase {
     }
 
     /**
-     * Sets the maximum time (in ms) a match operation tries to perform
-     * a match.
+     * Sets the maximum time (in ms) a match operation tries to perform a match.
      * @param ms Total number of ms to wait for a match.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setMatchTimeout(int ms) {
         final int MIN_MATCH_TIMEOUT = 500;
         if (getIsDisabled()) {
@@ -314,17 +297,14 @@ public abstract class EyesBase {
      * @return The maximum time in ms {@link #checkWindowBase
      * (RegionProvider, String, boolean, int)} waits for a match.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public int getMatchTimeout() {
         return matchTimeout;
     }
 
     /**
      * Set whether or not new tests are saved by default.
-     * @param saveNewTests True if new tests should be saved by default.
-     *                     False otherwise.
+     * @param saveNewTests True if new tests should be saved by default. False otherwise.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setSaveNewTests(boolean saveNewTests) {
         this.saveNewTests = saveNewTests;
     }
@@ -332,17 +312,14 @@ public abstract class EyesBase {
     /**
      * @return True if new tests are saved by default.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public boolean getSaveNewTests() {
         return saveNewTests;
     }
 
     /**
      * Set whether or not failed tests are saved by default.
-     * @param saveFailedTests True if failed tests should be saved by
-     *                        default, false otherwise.
+     * @param saveFailedTests True if failed tests should be saved by default, false otherwise.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setSaveFailedTests(boolean saveFailedTests) {
         this.saveFailedTests = saveFailedTests;
     }
@@ -350,7 +327,6 @@ public abstract class EyesBase {
     /**
      * @return True if failed tests are saved by default.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public boolean getSaveFailedTests() {
         return saveFailedTests;
     }
@@ -360,7 +336,6 @@ public abstract class EyesBase {
      * if tests are to run standalone.
      * @param batch The batch info to set.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setBatch(BatchInfo batch) {
         if (isDisabled) {
             logger.verbose("Ignored");
@@ -375,7 +350,6 @@ public abstract class EyesBase {
     /**
      * @return The currently set batch info.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public BatchInfo getBatch() {
         return batch;
     }
@@ -384,7 +358,6 @@ public abstract class EyesBase {
      * @param failureReports The failure reports setting.
      * @see FailureReports
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setFailureReports(FailureReports failureReports) {
         this.failureReports = failureReports;
     }
@@ -392,17 +365,13 @@ public abstract class EyesBase {
     /**
      * @return the failure reports setting.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public FailureReports getFailureReports() {
         return failureReports;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Updates the match settings to be used for the session.
-     *
-     * @param defaultMatchSettings The match settings to be used for the
-     *                             session.
+     * @param defaultMatchSettings The match settings to be used for the session.
      */
     public void setDefaultMatchSettings(ImageMatchSettings
                                                 defaultMatchSettings) {
@@ -410,9 +379,7 @@ public abstract class EyesBase {
         this.defaultMatchSettings = defaultMatchSettings;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
-     *
      * @return The match settings used for the session.
      */
     public ImageMatchSettings getDefaultMatchSettings() {
@@ -420,15 +387,13 @@ public abstract class EyesBase {
     }
 
     /**
-     * This function is deprecated. Please use
-     * {@link #setDefaultMatchSettings} instead.
+     * This function is deprecated. Please use {@link #setDefaultMatchSettings} instead.
      * <p>
      * The test-wide match level to use when checking application screenshot
      * with the expected output.
      * @param matchLevel The match level setting.
      * @see com.applitools.eyes.MatchLevel
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setMatchLevel(MatchLevel matchLevel) {
         this.defaultMatchSettings.setMatchLevel(matchLevel);
     }
@@ -437,7 +402,6 @@ public abstract class EyesBase {
      * @return The test-wide match level.
      * @deprecated Please use{@link #getDefaultMatchSettings} instead.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public MatchLevel getMatchLevel() {
         return defaultMatchSettings.getMatchLevel();
     }
@@ -462,7 +426,6 @@ public abstract class EyesBase {
     /**
      * @return Whether a session is open.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public boolean getIsOpen() {
         return isOpen;
     }
@@ -479,7 +442,6 @@ public abstract class EyesBase {
      * Sets a handler of log messages generated by this API.
      * @param logHandler Handles log messages generated by this API.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setLogHandler(LogHandler logHandler) {
         logger.setLogHandler(logHandler);
     }
@@ -487,12 +449,10 @@ public abstract class EyesBase {
     /**
      * @return The currently set log handler.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public LogHandler getLogHandler() {
         return logger.getLogHandler();
     }
 
-    @SuppressWarnings("unused")
     /**
      * Manually set the the sizes to cut from an image before it's validated.
      *
@@ -508,7 +468,6 @@ public abstract class EyesBase {
         }
     }
 
-    @SuppressWarnings("unused")
     /**
      * Manually set the scale ratio for the images being validated.
      * @param scaleRatio The scale ratio to use, or {@code null} to reset
@@ -524,7 +483,6 @@ public abstract class EyesBase {
         }
     }
 
-    @SuppressWarnings("unused")
     /**
      *
      * @return The ratio used to scale the images being validated.
@@ -538,7 +496,6 @@ public abstract class EyesBase {
      * @param name  The property name.
      * @param value The property value.
      */
-    @SuppressWarnings("unused")
     public void addProperty(String name, String value) {
         PropertyData pd = new PropertyData(name, value);
         properties.add(pd);
@@ -547,7 +504,6 @@ public abstract class EyesBase {
     /**
      * @param saveDebugScreenshots If true, will save all screenshots to local directory.
      */
-    @SuppressWarnings("unused")
     public void setSaveDebugScreenshots(boolean saveDebugScreenshots) {
         DebugScreenshotsProvider prev = debugScreenshotsProvider;
         if (saveDebugScreenshots) {
@@ -562,7 +518,6 @@ public abstract class EyesBase {
     /**
      * @return True if screenshots saving enabled.
      */
-    @SuppressWarnings("unused")
     public boolean getSaveDebugScreenshots() {
         return !(debugScreenshotsProvider instanceof NullDebugScreenshotProvider);
     }
@@ -570,7 +525,6 @@ public abstract class EyesBase {
     /**
      * @param pathToSave Path where you want to save the debug screenshots.
      */
-    @SuppressWarnings("unused")
     public void setDebugScreenshotsPath(String pathToSave) {
         debugScreenshotsProvider.setPath(pathToSave);
     }
@@ -578,7 +532,6 @@ public abstract class EyesBase {
     /**
      * @return The path where you want to save the debug screenshots.
      */
-    @SuppressWarnings("unused")
     public String getDebugScreenshotsPath() {
         return debugScreenshotsProvider.getPath();
     }
@@ -586,7 +539,6 @@ public abstract class EyesBase {
     /**
      * @param prefix The prefix for the screenshots' names.
      */
-    @SuppressWarnings("unused")
     public void setDebugScreenshotsPrefix(String prefix) {
         debugScreenshotsProvider.setPrefix(prefix);
     }
@@ -594,7 +546,6 @@ public abstract class EyesBase {
     /**
      * @return The prefix for the screenshots' names.
      */
-    @SuppressWarnings("unused")
     public String getDebugScreenshotsPrefix() {
         return debugScreenshotsProvider.getPrefix();
     }
@@ -602,7 +553,6 @@ public abstract class EyesBase {
     /**
      * @return Whether to ignore or the blinking caret or not when comparing images.
      */
-    @SuppressWarnings("unused")
     public boolean getIgnoreCaret() {
         Boolean ignoreCaret = defaultMatchSettings.getIgnoreCaret();
         return ignoreCaret == null ? true : ignoreCaret;
@@ -612,7 +562,6 @@ public abstract class EyesBase {
      * Sets the ignore blinking caret value.
      * @param value The ignore value.
      */
-    @SuppressWarnings("unused")
     public void setIgnoreCaret(boolean value) {
         defaultMatchSettings.setIgnoreCaret(value);
     }
@@ -835,7 +784,6 @@ public abstract class EyesBase {
     /**
      * @param hostOS The host OS running the AUT.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setHostOS(String hostOS) {
 
         logger.log("Host OS: " + hostOS);
@@ -850,7 +798,6 @@ public abstract class EyesBase {
     /**
      * @return get the host OS running the AUT.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public String getHostOS() {
         return hostOS;
     }
@@ -858,7 +805,6 @@ public abstract class EyesBase {
     /**
      * @param hostApp The application running the AUT (e.g., Chrome).
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setHostApp(String hostApp) {
 
         logger.log("Host App: " + hostApp);
@@ -873,7 +819,6 @@ public abstract class EyesBase {
     /**
      * @return The application name running the AUT.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public String getHostApp() {
         return hostApp;
     }
@@ -883,7 +828,6 @@ public abstract class EyesBase {
      *                     with and disables automatic baseline inference.
      * @deprecated Only available for backward compatibility. See {@link #setBaselineEnvName(String)}.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setBaselineName(String baselineName) {
 
         logger.log("Baseline environment name: " + baselineName);
@@ -908,7 +852,6 @@ public abstract class EyesBase {
      * If not {@code null}, determines the name of the environment of the baseline.
      * @param baselineEnvName The name of the baseline's environment.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setBaselineEnvName(String baselineEnvName) {
 
         logger.log("Baseline environment name: " + baselineEnvName);
@@ -924,7 +867,6 @@ public abstract class EyesBase {
      * If not {@code null}, determines the name of the environment of the baseline.
      * @return The name of the baseline's environment, or {@code null} if no such name was set.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public String getBaselineEnvName() {
         return baselineEnvName;
     }
@@ -934,7 +876,6 @@ public abstract class EyesBase {
      * If not {@code null} specifies a name for the environment in which the application under test is running.
      * @param envName The name of the environment of the baseline.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void setEnvName(String envName) {
 
         logger.log("Environment name: " + envName);
@@ -950,32 +891,25 @@ public abstract class EyesBase {
      * If not {@code null} specifies a name for the environment in which the application under test is running.
      * @return The name of the environment of the baseline, or {@code null} if no such name was set.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public String getEnvName() {
         return environmentName;
     }
 
 
     /**
-     * Superseded by {@link #setHostOS(String)} and {@link #setHostApp
-     * (String)}.
-     * Sets the OS (e.g., Windows) and application (e.g., Chrome) that host the
-     * application under test.
-     * @param hostOS  The name of the OS hosting the application under test or
-     *                {@code null} to auto-detect.
-     * @param hostApp The name of the application hosting the application under
-     *                test or {@code null} to auto-detect.
+     * Superseded by {@link #setHostOS(String)} and {@link #setHostApp(String)}.
+     * Sets the OS (e.g., Windows) and application (e.g., Chrome) that host the application under test.
+     * @param hostOS  The name of the OS hosting the application under test or {@code null} to auto-detect.
+     * @param hostApp The name of the application hosting the application under test or {@code null} to auto-detect.
      */
     @Deprecated
-    @SuppressWarnings("UnusedDeclaration")
     public void setAppEnvironment(String hostOS, String hostApp) {
         if (isDisabled) {
             logger.verbose("Ignored");
             return;
         }
 
-        logger.log("Warning: SetAppEnvironment is deprecated! Please use " +
-                "'setHostOS' and 'setHostApp'");
+        logger.log("Warning: SetAppEnvironment is deprecated! Please use 'setHostOS' and 'setHostApp'");
 
         logger.verbose("setAppEnvironment(" + hostOS + ", " + hostApp + ")");
         setHostOS(hostOS);
@@ -996,16 +930,13 @@ public abstract class EyesBase {
         this.positionProvider = positionProvider;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkWindowBase(RegionProvider, String, boolean, int)}.
      * {@code retryTimeout} defaults to {@code USE_DEFAULT_TIMEOUT}.
      *
-     * @param regionProvider Returns the region to check or the empty
-     *                       rectangle to check the entire window.
+     * @param regionProvider Returns the region to check or the empty rectangle to check the entire window.
      * @param tag An optional tag to be associated with the snapshot.
-     * @param ignoreMismatch Whether to ignore this check if a mismatch is
-     *                       found.
+     * @param ignoreMismatch Whether to ignore this check if a mismatch is found.
      * @return The result of matching the output with the expected output.
      */
     protected MatchResult checkWindowBase(RegionProvider regionProvider,
@@ -1017,43 +948,30 @@ public abstract class EyesBase {
     /**
      * Takes a snapshot of the application under test and matches it with the
      * expected output.
-     * @param regionProvider Returns the region to check or the empty
-     *                       rectangle to check the entire window.
-     * @param tag            An optional tag to be associated with the
-     *                       snapshot.
-     * @param ignoreMismatch Whether to ignore this check if a mismatch is
-     *                       found.
-     * @param retryTimeout   The amount of time to retry matching in
-     *                       milliseconds or a negative value to use the
-     *                       default retry timeout.
+     * @param regionProvider Returns the region to check or the empty rectangle to check the entire window.
+     * @param tag            An optional tag to be associated with the snapshot.
+     * @param ignoreMismatch Whether to ignore this check if a mismatch is found.
+     * @param retryTimeout   The amount of time to retry matching in milliseconds or a negative
+     *                       value to use the default retry timeout.
      * @return The result of matching the output with the expected output.
-     * @throws com.applitools.eyes.TestFailedException Thrown if a mismatch is
-     *                                                 detected and immediate failure reports are enabled.
+     * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
-    protected MatchResult checkWindowBase(RegionProvider regionProvider,
-                                          String tag, boolean ignoreMismatch,
-                                          int retryTimeout) {
+    protected MatchResult checkWindowBase(RegionProvider regionProvider, String tag, boolean ignoreMismatch, int retryTimeout) {
         return this.checkWindowBase(regionProvider, tag, ignoreMismatch, new CheckSettings(retryTimeout));
     }
 
     /**
      * Takes a snapshot of the application under test and matches it with the
      * expected output.
-     * @param regionProvider Returns the region to check or the empty
-     *                       rectangle to check the entire window.
-     * @param tag            An optional tag to be associated with the
-     *                       snapshot.
-     * @param ignoreMismatch Whether to ignore this check if a mismatch is
-     *                       found.
+     * @param regionProvider Returns the region to check or the empty rectangle to check the entire window.
+     * @param tag            An optional tag to be associated with the snapshot.
+     * @param ignoreMismatch Whether to ignore this check if a mismatch is found.
      * @param checkSettings  The settings to use.
      * @return The result of matching the output with the expected output.
-     * @throws com.applitools.eyes.TestFailedException Thrown if a mismatch is
-     *                                                 detected and immediate failure reports are enabled.
+     * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
-    protected MatchResult checkWindowBase(RegionProvider regionProvider,
-                                          String tag, boolean ignoreMismatch,
-                                          ICheckSettings checkSettings) {
-
+    protected MatchResult checkWindowBase(RegionProvider regionProvider, String tag,
+                                          boolean ignoreMismatch, ICheckSettings checkSettings) {
         MatchResult result;
 
         if (getIsDisabled()) {
@@ -1148,17 +1066,11 @@ public abstract class EyesBase {
 
     /**
      * Runs a timing test.
-     * @param regionProvider Returns the region to check or the empty
-     *                       rectangle to check the entire window.
-     * @param action         An action to run in parallel to starting the
-     *                       test, or {@code null} if no such action is
-     *                       required.
-     * @param deadline       The expected amount of time until finding a
-     *                       match. (Seconds)
-     * @param timeout        The maximum amount of time to retry matching.
-     *                       (Seconds)
-     * @param matchInterval  The interval for testing for a match.
-     *                       (Milliseconds)
+     * @param regionProvider Returns the region to check or the empty rectangle to check the entire window.
+     * @param action         An action to run in parallel to starting the test, or {@code null} if no such action is required.
+     * @param deadline       The expected amount of time until finding a match. (Seconds)
+     * @param timeout        The maximum amount of time to retry matching. (Seconds)
+     * @param matchInterval  The interval for testing for a match. (Milliseconds)
      * @return The earliest match found, or {@code null} if no match was found.
      */
     protected MatchWindowDataWithScreenshot testResponseTimeBase(
@@ -1176,8 +1088,7 @@ public abstract class EyesBase {
         ArgumentGuard.greaterThanZero(timeout, "timeout");
         ArgumentGuard.greaterThanZero(matchInterval, "matchInterval");
 
-        logger.verbose(String.format(
-                "testResponseTimeBase(regionProvider, %d, %d, %d)",
+        logger.verbose(String.format("testResponseTimeBase(regionProvider, %d, %d, %d)",
                 deadline, timeout, matchInterval));
 
         if (runningSession == null) {
@@ -1217,11 +1128,9 @@ public abstract class EyesBase {
             // Since there's never a match for a new session..
             result = null;
         } else {
-            result =
-                    ResponseTimeAlgorithm.runProgressionSessionForExistingBaseline(
-                            logger, serverConnector, runningSession,
-                            appOutputProvider, regionProvider, startTime,
-                            deadline, timeout, matchInterval);
+            result = ResponseTimeAlgorithm.runProgressionSessionForExistingBaseline(
+                    logger, serverConnector, runningSession, appOutputProvider, regionProvider, startTime,
+                    deadline, timeout, matchInterval);
         }
 
         if (actionThread != null) {
@@ -1328,13 +1237,10 @@ public abstract class EyesBase {
     }
 
     private void logOpenBase() {
-        logger.log(String.format("Eyes server URL is '%s'",
-                serverConnector.getServerUrl()));
-        logger.verbose(String.format("Timeout = '%d'",
-                serverConnector.getTimeout()));
+        logger.log(String.format("Eyes server URL is '%s'", serverConnector.getServerUrl()));
+        logger.verbose(String.format("Timeout = '%d'", serverConnector.getTimeout()));
         logger.log(String.format("matchTimeout = '%d' ", matchTimeout));
-        logger.log(String.format("Default match settings = '%s' ",
-                defaultMatchSettings));
+        logger.log(String.format("Default match settings = '%s' ", defaultMatchSettings));
         logger.log(String.format("FailureReports = '%s' ", failureReports));
     }
 
@@ -1482,8 +1388,7 @@ public abstract class EyesBase {
             cursorInScreenshot.offset(-l.getX(), -l.getY());
         }
 
-        Trigger trigger = new MouseTrigger(action, controlScreenshotIntersect,
-                cursorInScreenshot);
+        Trigger trigger = new MouseTrigger(action, controlScreenshotIntersect, cursorInScreenshot);
         addUserInput(trigger);
 
         logger.verbose(String.format("Added %s", trigger));
@@ -1592,8 +1497,7 @@ public abstract class EyesBase {
         }
 
         logger.verbose("Compressing screenshot...");
-        String compressResult =
-                compressScreenshot64(screenshot, lastScreenshot);
+        String compressResult = compressScreenshot64(screenshot, lastScreenshot);
         logger.verbose("Done! Getting title...");
         String title = getTitle();
         logger.verbose("Done!");

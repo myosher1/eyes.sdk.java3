@@ -24,8 +24,7 @@ public class FrameChain implements Iterable<Frame>{
      * Compares two frame chains.
      * @param c1 Frame chain to be compared against c2.
      * @param c2 Frame chain to be compared against c1.
-     * @return True if both frame chains represent the same frame,
-     *         false otherwise.
+     * @return True if both frame chains represent the same frame, false otherwise.
      */
     public static boolean isSameFrameChain(FrameChain c1, FrameChain c2) {
         int lc1 = c1.frames.size();
@@ -181,8 +180,7 @@ public class FrameChain implements Iterable<Frame>{
             }
 
             public void remove() {
-                throw new EyesException(
-                        "Remove is forbidden using the iterator!");
+                throw new EyesException("Remove is forbidden using the iterator!");
             }
         };
     }

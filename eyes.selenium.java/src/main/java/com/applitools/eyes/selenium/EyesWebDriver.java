@@ -239,8 +239,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     }
 
     public Mouse getMouse() {
-        return new EyesMouse(logger, this,
-                driver.getMouse());
+        return new EyesMouse(logger, this, driver.getMouse());
     }
 
     public Keyboard getKeyboard() {

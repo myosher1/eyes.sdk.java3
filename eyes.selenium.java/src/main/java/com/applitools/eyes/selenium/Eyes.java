@@ -48,7 +48,6 @@ public class Eyes extends EyesBase {
     private EyesWebDriver driver;
     private boolean dontGetTitle;
 
-
     private boolean forceFullPageScreenshot;
     private boolean checkFrameOrElement;
     private RegionProvider regionToCheck;
@@ -134,13 +133,11 @@ public class Eyes extends EyesBase {
     /**
      * Turns on/off the automatic scrolling to a region being checked by
      * {@code checkRegion}.
-     * @param shouldScroll Whether to automatically scroll to a region being
-     *                     validated.
+     * @param shouldScroll Whether to automatically scroll to a region being validated.
      */
     public void setScrollToRegion(boolean shouldScroll) {
         if (shouldScroll) {
-            regionVisibilityStrategy =
-                    new MoveToRegionVisibilityStrategy(logger);
+            regionVisibilityStrategy = new MoveToRegionVisibilityStrategy(logger);
         } else {
             regionVisibilityStrategy = new NopRegionVisibilityStrategy(logger);
         }
@@ -306,8 +303,7 @@ public class Eyes extends EyesBase {
      * See {@link #open(WebDriver, String, String, RectangleSize)}.
      * {@code viewportSize} defaults to {@code null}.
      */
-    protected WebDriver open(WebDriver driver, String appName, String testName,
-                             SessionType sessionType) {
+    protected WebDriver open(WebDriver driver, String appName, String testName, SessionType sessionType) {
         return open(driver, appName, testName, null, sessionType);
     }
 
@@ -332,8 +328,7 @@ public class Eyes extends EyesBase {
     /**
      * Takes a snapshot of the application under test and matches it with
      * the expected output.
-     * @param matchTimeout The amount of time to retry matching
-     *                     (Milliseconds).
+     * @param matchTimeout The amount of time to retry matching (Milliseconds).
      * @param tag          An optional tag to be associated with the snapshot.
      * @throws TestFailedException Thrown if a mismatch is detected and
      *                             immediate failure reports are enabled.
@@ -341,13 +336,11 @@ public class Eyes extends EyesBase {
     public void checkWindow(int matchTimeout, String tag) {
 
         if (getIsDisabled()) {
-            logger.log(String.format("CheckWindow(%d, '%s'): Ignored",
-                    matchTimeout, tag));
+            logger.log(String.format("CheckWindow(%d, '%s'): Ignored", matchTimeout, tag));
             return;
         }
 
-        logger.log(String.format("CheckWindow(%d, '%s')", matchTimeout,
-                tag));
+        logger.log(String.format("CheckWindow(%d, '%s')", matchTimeout, tag));
 
         super.checkWindowBase(
                 new RegionProvider() {
@@ -370,8 +363,7 @@ public class Eyes extends EyesBase {
      * @param driver       The web driver that controls the browser hosting
      *                     the application under test.
      * @param appName      The name of the application under test.
-     * @param testName     The test name (will also be used as the tag name
-     *                     for the step).
+     * @param testName     The test name (will also be used as the tag name for the step).
      * @param viewportSize The required browser's viewport size
      *                     (i.e., the visible part of the document's body) or
      *                     {@code null} to use the current window's viewport.
@@ -419,10 +411,8 @@ public class Eyes extends EyesBase {
      * @param appName  The name of the application being tested.
      * @param testName The test name.
      * @param action   Actions to be performed in parallel to starting the test.
-     * @param deadline The expected time until the application
-     *                 should have been loaded. (Seconds)
-     * @param timeout  The maximum time until the application should have been
-     *                 loaded. (Seconds)
+     * @param deadline The expected time until the application should have been loaded. (Seconds)
+     * @param timeout  The maximum time until the application should have been loaded. (Seconds)
      */
     public void testResponseTime(final WebDriver driver, String appName,
                                  String testName, final WebDriverAction action,
@@ -874,15 +864,11 @@ public class Eyes extends EyesBase {
     }
 
     /**
-     * Takes a snapshot of the application under test and matches a specific
-     * region within it with the expected output.
-     * @param region       A non empty region representing the screen region to
-     *                     check.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * Takes a snapshot of the application under test and matches a specific region within it with the expected output.
+     * @param region       A non empty region representing the screen region to check.
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
-     * @throws TestFailedException Thrown if a mismatch is detected and
-     *                             immediate failure reports are enabled.
+     * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
     public void checkRegion(final Region region, int matchTimeout, String tag) {
 
@@ -963,8 +949,7 @@ public class Eyes extends EyesBase {
      * Takes a snapshot of the application under test and matches a region of
      * a specific element with the expected region output.
      * @param element      The element which represents the region to check.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
      * @throws TestFailedException if a mismatch is detected and
      *                             immediate failure reports are enabled
@@ -1073,8 +1058,7 @@ public class Eyes extends EyesBase {
      * Takes a snapshot of the application under test and matches a region
      * specified by the given selector with the expected region output.
      * @param selector     Selects the region to check.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the screenshot.
      * @throws TestFailedException if a mismatch is detected and
      *                             immediate failure reports are enabled
@@ -1116,8 +1100,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkRegionInFrame(int, By, String)}.
      * {@code tag} defaults to {@code null}.
      */
-    public void checkRegionInFrame(int frameIndex, By selector, boolean
-            stitchContent) {
+    public void checkRegionInFrame(int frameIndex, By selector, boolean stitchContent) {
         checkRegionInFrame(frameIndex, selector, null, stitchContent);
     }
 
@@ -1133,8 +1116,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * Default match timeout is used.
      */
-    public void checkRegionInFrame(int frameIndex, By selector, String tag,
-                                   boolean stitchContent) {
+    public void checkRegionInFrame(int frameIndex, By selector, String tag, boolean stitchContent) {
         checkRegionInFrame(frameIndex, selector, USE_DEFAULT_MATCH_TIMEOUT,
                 tag, stitchContent);
     }
@@ -1143,8 +1125,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
      */
-    public void checkRegionInFrame(int frameIndex, By selector,
-                                   int matchTimeout, String tag) {
+    public void checkRegionInFrame(int frameIndex, By selector, int matchTimeout, String tag) {
         checkRegionInFrame(frameIndex, selector, matchTimeout, tag, false);
     }
 
@@ -1155,8 +1136,7 @@ public class Eyes extends EyesBase {
      *                      as would be used in a call to
      *                      driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
-     * @param matchTimeout  The amount of time to retry matching.
-     *                      (Milliseconds)
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the snapshot.
      * @param stitchContent If {@code true}, stitch the internal content of
      *                      the region (i.e., perform
@@ -1193,8 +1173,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code tag} defaults to {@code null}.
      */
-    public void checkRegionInFrame(String frameNameOrId, By selector,
-                                   boolean stitchContent) {
+    public void checkRegionInFrame(String frameNameOrId, By selector, boolean stitchContent) {
         checkRegionInFrame(frameNameOrId, selector, null, stitchContent);
     }
 
@@ -1233,13 +1212,11 @@ public class Eyes extends EyesBase {
      * @param frameNameOrId The name or id of the frame to switch to. (as would
      *                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
-     * @param matchTimeout  The amount of time to retry matching.
-     *                      (Milliseconds)
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the snapshot.
      * @param stitchContent If {@code true}, stitch the internal content of
      *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the
-     *                      region.
+     *                      {@link #checkElement(By, int, String)} on the region.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    int matchTimeout, String tag,
@@ -1271,8 +1248,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code tag} defaults to {@code null}.
      */
-    public void checkRegionInFrame(WebElement frameReference, By selector,
-                                   boolean stitchContent) {
+    public void checkRegionInFrame(WebElement frameReference, By selector, boolean stitchContent) {
         checkRegionInFrame(frameReference, selector, null, stitchContent);
     }
 
@@ -1280,8 +1256,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
      */
-    public void checkRegionInFrame(WebElement frameReference, By selector,
-                                   String tag) {
+    public void checkRegionInFrame(WebElement frameReference, By selector, String tag) {
         checkRegionInFrame(frameReference, selector, tag, false);
     }
 
@@ -1377,8 +1352,7 @@ public class Eyes extends EyesBase {
 
     /**
      * Verifies the current frame.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
      */
     protected void checkCurrentFrame(int matchTimeout, String tag) {
@@ -1408,6 +1382,7 @@ public class Eyes extends EyesBase {
                 public Region getRegion() {
                     return screenshot.getFrameWindow();
                 }
+
                 public CoordinatesType getCoordinatesType() {
                     return CoordinatesType.SCREENSHOT_AS_IS;
                 }
@@ -1442,8 +1417,7 @@ public class Eyes extends EyesBase {
      * @param frameNameOrId The name or id of the frame to check. (The same
      *                      name/id as would be used in a call to
      *                      driver.switchTo().frame()).
-     * @param matchTimeout  The amount of time to retry matching.
-     *                      (Milliseconds)
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the match.
      */
     public void checkFrame(String frameNameOrId, int matchTimeout, String tag) {
@@ -1492,8 +1466,7 @@ public class Eyes extends EyesBase {
      * @param frameIndex   The index of the frame to switch to. (The same index
      *                     as would be used in a call to
      *                     driver.switchTo().frame()).
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the match.
      */
     public void checkFrame(int frameIndex, int matchTimeout, String tag) {
@@ -1556,8 +1529,7 @@ public class Eyes extends EyesBase {
 
         ArgumentGuard.notNull(frameReference, "frameReference");
 
-        logger.log(String.format("CheckFrame(element, %d, '%s')",
-                matchTimeout, tag));
+        logger.log(String.format("CheckFrame(element, %d, '%s')", matchTimeout, tag));
 
         logger.verbose("Switching to frame based on element reference...");
         driver.switchTo().frame(frameReference);
@@ -1718,8 +1690,7 @@ public class Eyes extends EyesBase {
      * Takes a snapshot of the application under test and matches a specific
      * element with the expected region output.
      * @param element      The element to check.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
      * @throws TestFailedException if a mismatch is detected and
      *                             immediate failure reports are enabled
@@ -1766,6 +1737,7 @@ public class Eyes extends EyesBase {
                 public Region getRegion() {
                     return elementRegion;
                 }
+
                 public CoordinatesType getCoordinatesType() {
                     return CoordinatesType.CONTEXT_RELATIVE;
                 }
@@ -1815,8 +1787,7 @@ public class Eyes extends EyesBase {
      * Takes a snapshot of the application under test and matches an element
      * specified by the given selector with the expected region output.
      * @param selector     Selects the element to check.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the screenshot.
      * @throws TestFailedException if a mismatch is detected and
      *                             immediate failure reports are enabled
@@ -1836,8 +1807,7 @@ public class Eyes extends EyesBase {
     /**
      * Adds a mouse trigger.
      * @param action  Mouse action.
-     * @param control The control on which the trigger is activated (context
-     *                relative coordinates).
+     * @param control The control on which the trigger is activated (context relative coordinates).
      * @param cursor  The cursor's position relative to the control.
      */
     protected void addMouseTrigger(MouseAction action, Region control,

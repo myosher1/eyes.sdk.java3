@@ -109,8 +109,7 @@ public class MatchWindowTask {
             }
 
             // Getting the screenshot.
-            appOutput = appOutputProvider.getAppOutput(regionProvider,
-                    lastScreenshot);
+            appOutput = appOutputProvider.getAppOutput(regionProvider, lastScreenshot);
 
             matchResult = performMatch(userInputs, appOutput, tag, ignoreMismatch, imageMatchSettings);
 
