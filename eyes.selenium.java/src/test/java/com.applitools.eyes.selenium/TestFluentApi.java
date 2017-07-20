@@ -105,4 +105,17 @@ public class TestFluentApi {
                 .region(By.tagName("img"))
                 .fully());
     }
+
+
+    @Test
+    public void TestCheckFrameInFrame_Fully_Fluent2() {
+        eyes.check("Window with Ignore region", Target.window()
+                .fully()
+                .timeout(5000)
+                .ignore(new Region(50, 50, 100, 100)));
+
+        eyes.check("Full Frame in Frame", Target.frame("frame1")
+                .frame("frame1-1")
+                .fully());
+    }
 }
