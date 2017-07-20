@@ -639,16 +639,12 @@ public class Eyes extends EyesBase {
                     this.driver.switchTo().parentFrame();
                     switchedToFrameCount--;
 
-                    //regionVisibilityStrategy_.MoveToRegion(PositionProvider, new Location(element.Location));
-
                     this.checkWindowBase(new RegionProvider() {
                         @Override
                         public Region getRegion() {
                             Point p = element.getLocation();
-                            Location loc = new Location(p.getX(), p.getY());
                             Dimension d = element.getSize();
-                            RectangleSize rs = new RectangleSize(d.width, d.height);
-                            return new Region(loc, rs);
+                            return new Region(p.getX(), p.getY(), d.getWidth(), d.getHeight());
                         }
 
                         @Override
@@ -656,7 +652,6 @@ public class Eyes extends EyesBase {
                             return CoordinatesType.CONTEXT_RELATIVE;
                         }
                     }, name, false, checkSettings);
-                    //regionVisibilityStrategy_.ReturnToOriginalPosition(PositionProvider);
                 }
             } else {
                 this.checkWindowBase(new RegionProvider() {

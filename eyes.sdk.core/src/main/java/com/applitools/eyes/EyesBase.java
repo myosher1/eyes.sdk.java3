@@ -981,87 +981,65 @@ public abstract class EyesBase {
             return result;
         }
 
+        if (tag == null) {
+            tag = "";
+        }
+
         ArgumentGuard.isValidState(getIsOpen(), "Eyes not open");
         ArgumentGuard.notNull(regionProvider, "regionProvider");
 
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
-        logger.verbose(String.format(
-                "CheckWindowBase(regionProvider, '%s', %b, %d)",
-                tag, ignoreMismatch, checkSettingsInternal.getTimeout()));
-
-        if (tag == null) {
-            tag = "";
-        }
-
-        if (runningSession == null) {
-            logger.verbose("No running session, calling start session..");
-            startSession();
-            logger.verbose("Done!");
-
-            matchWindowTask = new MatchWindowTask(
-                    logger,
-                    serverConnector,
-                    runningSession,
-                    matchTimeout,
-                    // A callback which will call getAppOutput
-                    new AppOutputProvider() {
-                        public AppOutputWithScreenshot getAppOutput(
-                                RegionProvider regionProvider_,
-                                EyesScreenshot lastScreenshot_) {
-
-                            return getAppOutputWithScreenshot(
-                                    regionProvider_, lastScreenshot_);
-                        }
-                    }
-            );
-        }
-
         int retryTimeout = -1;
         ImageMatchSettings imageMatchSettings = null;
-        if (checkSettingsInternal != null)
-        {
+        if (checkSettingsInternal != null) {
             retryTimeout = checkSettingsInternal.getTimeout();
-            imageMatchSettings = new ImageMatchSettings(checkSettingsInternal.getMatchLevel(), null);
+            MatchLevel matchLevel = checkSettingsInternal.getMatchLevel();
+            matchLevel = (matchLevel == null) ? getDefaultMatchSettings().getMatchLevel() : matchLevel;
+            imageMatchSettings = new ImageMatchSettings(matchLevel, null);
             imageMatchSettings.setFloatingRegions(checkSettingsInternal.getFloatingRegions());
             imageMatchSettings.setIgnoreRegions(checkSettingsInternal.getIgnoreRegions());
             imageMatchSettings.setIgnoreCaret(checkSettingsInternal.getIgnoreCaret());
         }
 
+        ensureRunningSession();
+
+        logger.verbose(String.format("CheckWindowBase(regionProvider, '%s', %b, %d)", tag, ignoreMismatch, retryTimeout));
+
         logger.verbose("Calling match window...");
-        result = matchWindowTask.matchWindow(getUserInputs(), lastScreenshot,
-                regionProvider, tag,
-                shouldMatchWindowRunOnceOnTimeout, ignoreMismatch,
-                imageMatchSettings,
-                retryTimeout);
+        result = matchWindowTask.matchWindow(getUserInputs(), lastScreenshot, regionProvider, tag,
+                shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, imageMatchSettings, retryTimeout);
 
         logger.verbose("MatchWindow Done!");
 
-        if (!result.getAsExpected()) {
-            if (!ignoreMismatch) {
-                clearUserInputs();
-                lastScreenshot = result.getScreenshot();
-            }
-
-            shouldMatchWindowRunOnceOnTimeout = true;
-
-            if (!runningSession.getIsNewSession()) {
-                logger.log(String.format("Mismatch! (%s)", tag));
-            }
-
-            if (getFailureReports() == FailureReports.IMMEDIATE) {
-                throw new TestFailedException(String.format(
-                        "Mismatch found in '%s' of '%s'",
-                        sessionStartInfo.getScenarioIdOrName(),
-                        sessionStartInfo.getAppIdOrName()));
-            }
-        } else { // Match successful
+        if (!ignoreMismatch) {
             clearUserInputs();
             lastScreenshot = result.getScreenshot();
         }
 
+        validateResult(tag, result);
+
         logger.verbose("Done!");
         return result;
+    }
+
+    private void validateResult(String tag, MatchResult result) {
+        if (result.getAsExpected()) {
+            return;
+        }
+
+        shouldMatchWindowRunOnceOnTimeout = true;
+
+        if (!runningSession.getIsNewSession()) {
+            logger.log(String.format("Mismatch! (%s)", tag));
+        }
+
+        if (getFailureReports() == FailureReports.IMMEDIATE) {
+            throw new TestFailedException(String.format(
+                    "Mismatch found in '%s' of '%s'",
+                    sessionStartInfo.getScenarioIdOrName(),
+                    sessionStartInfo.getAppIdOrName()));
+        }
     }
 
     /**
@@ -1158,7 +1136,7 @@ public abstract class EyesBase {
      * @param sessionType  The type of test (e.g., Progression for timing
      *                     tests), or {@code null} to use the default.
      */
-    public void openBase(String appName, String testName,
+    protected void openBase(String appName, String testName,
                          RectangleSize viewportSize, SessionType sessionType) {
 
         logger.getLogHandler().open();
