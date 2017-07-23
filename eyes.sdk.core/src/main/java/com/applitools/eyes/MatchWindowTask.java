@@ -6,6 +6,8 @@ package com.applitools.eyes;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 
+import java.awt.image.BufferedImage;
+
 public class MatchWindowTask {
 
     private static final int MATCH_INTERVAL = 500; // Milliseconds
@@ -16,6 +18,9 @@ public class MatchWindowTask {
     private final int defaultRetryTimeout;
     private final AppOutputProvider appOutputProvider;
 
+    private EyesScreenshot lastScreenshot = null;
+    private MatchResult matchResult;
+    private Region lastScreenshotBounds;
 
     /**
      * @param logger            A logger instance.
@@ -89,16 +94,31 @@ public class MatchWindowTask {
                                    ImageMatchSettings imageMatchSettings,
                                    int retryTimeout) {
 
-        AppOutputWithScreenshot appOutput;
-        MatchResult matchResult;
-
         if (retryTimeout < 0) {
             retryTimeout = defaultRetryTimeout;
         }
 
         logger.verbose(String.format("retryTimeout = %d", retryTimeout));
 
+        EyesScreenshot screenshot = takeScreenshot(userInputs, regionProvider, tag,
+                shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, imageMatchSettings, retryTimeout);
+
+        if (ignoreMismatch) {
+            return matchResult;
+        }
+
+        updateLastScreenshot(screenshot);
+        updateBounds(regionProvider.getRegion());
+
+        return matchResult;
+    }
+
+    private EyesScreenshot takeScreenshot(Trigger[] userInputs, RegionProvider regionProvider,
+                                          String tag, boolean shouldMatchWindowRunOnceOnTimeout, boolean ignoreMismatch,
+                                          ImageMatchSettings imageMatchSettings, int retryTimeout) {
         long elapsedTimeStart = System.currentTimeMillis();
+        EyesScreenshot screenshot = null;
+        AppOutputWithScreenshot appOutput = null;
 
         // If the wait to load time is 0, or "run once" is true,
         // we perform a single check window.
@@ -107,53 +127,88 @@ public class MatchWindowTask {
             if (shouldMatchWindowRunOnceOnTimeout) {
                 GeneralUtils.sleep(retryTimeout);
             }
-
-            // Getting the screenshot.
-            appOutput = appOutputProvider.getAppOutput(regionProvider, lastScreenshot);
-
-            matchResult = performMatch(userInputs, appOutput, tag, ignoreMismatch, imageMatchSettings);
-
+            screenshot = tryTakeScreenshot(userInputs, regionProvider, tag, ignoreMismatch, imageMatchSettings);
         } else {
-            /*
-            * We call a "tolerant" match window until we find a match
-            * or we timeout, in which case we call a single "strict"
-            * match.
-            */
-
-            // We intentionally start the timer after(!) taking the screenshot,
-            // so less time is "wasted" on the transfer of the image.
-            appOutput = appOutputProvider.getAppOutput(regionProvider, lastScreenshot);
-
-            // Start the retry timer.
-            long start = System.currentTimeMillis();
-
-            matchResult = performMatch(userInputs, appOutput, tag, true, imageMatchSettings);
-
-            long retry = System.currentTimeMillis() - start;
-
-            // The match retry loop.
-            while ((retry < retryTimeout) && !matchResult.getAsExpected()) {
-
-                // Wait before trying again.
-                GeneralUtils.sleep(MATCH_INTERVAL);
-
-                appOutput = appOutputProvider.getAppOutput(regionProvider, lastScreenshot);
-
-                // Notice the ignoreMismatch here is true
-                matchResult = performMatch(userInputs, appOutput, tag, true, imageMatchSettings);
-
-                retry = System.currentTimeMillis() - start;
-            }
-
-            // if we're here because we haven't found a match yet, try once more
-            if (!matchResult.getAsExpected()) {
-                appOutput = appOutputProvider.getAppOutput(regionProvider, lastScreenshot);
-                matchResult = performMatch(userInputs, appOutput, tag, ignoreMismatch, imageMatchSettings);
-            }
+            screenshot = retryTakingScreenshot(userInputs, regionProvider, tag, ignoreMismatch, imageMatchSettings, retryTimeout);
         }
+
         double elapsedTime = (System.currentTimeMillis() - elapsedTimeStart) / 1000;
-        logger.verbose(String.format("Completed in  %.2f seconds", elapsedTime));
-        matchResult.setScreenshot(appOutput.getScreenshot());
-        return matchResult;
+        logger.verbose(String.format("Completed in %.2f seconds", elapsedTime));
+        matchResult.setScreenshot(screenshot);
+        return screenshot;
     }
+
+    private EyesScreenshot retryTakingScreenshot(Trigger[] userInputs, RegionProvider regionProvider, String tag, boolean ignoreMismatch,
+                                                 ImageMatchSettings imageMatchSettings, int retryTimeout) {
+        /*
+        * We call a "tolerant" match window until we find a match
+        * or we timeout, in which case we call a single "strict"
+        * match.
+        */
+
+        // We intentionally start the timer after(!) taking the screenshot,
+        // so less time is "wasted" on the transfer of the image.
+        AppOutputWithScreenshot appOutput = appOutputProvider.getAppOutput(regionProvider, lastScreenshot);
+
+        // Start the retry timer.
+        long start = System.currentTimeMillis();
+
+        matchResult = performMatch(userInputs, appOutput, tag, true, imageMatchSettings);
+
+        EyesScreenshot screenshot = null;
+
+        long retry = System.currentTimeMillis() - start;
+
+        // The match retry loop.
+        while ((retry < retryTimeout) && !matchResult.getAsExpected()) {
+
+            // Wait before trying again.
+            GeneralUtils.sleep(MATCH_INTERVAL);
+
+            screenshot = tryTakeScreenshot(userInputs, regionProvider, tag, true, imageMatchSettings);
+
+            retry = System.currentTimeMillis() - start;
+        }
+
+        // if we're here because we haven't found a match yet, try once more
+        if (!matchResult.getAsExpected()) {
+            screenshot = tryTakeScreenshot(userInputs, regionProvider, tag, ignoreMismatch, imageMatchSettings);
+        }
+        return screenshot;
+    }
+
+    private EyesScreenshot tryTakeScreenshot(Trigger[] userInputs, RegionProvider regionProvider, String tag,
+                                             boolean ignoreMismatch, ImageMatchSettings imageMatchSettings) {
+        AppOutputWithScreenshot appOutput;
+        appOutput = appOutputProvider.getAppOutput(regionProvider, lastScreenshot);
+
+        // Notice the ignoreMismatch here is true
+        matchResult = performMatch(userInputs, appOutput, tag, ignoreMismatch, imageMatchSettings);
+        return appOutput.getScreenshot();
+    }
+
+    private void updateLastScreenshot(EyesScreenshot screenshot) {
+        if (screenshot != null) {
+            lastScreenshot = screenshot;
+        }
+    }
+
+    private void updateBounds(Region region) {
+        if (region.isEmpty()) {
+            if (lastScreenshot == null) {
+                // We set an "infinite" image size since we don't know what the screenshot size is...
+                lastScreenshotBounds = new Region(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+            } else {
+                BufferedImage image = lastScreenshot.getImage();
+                lastScreenshotBounds = new Region(0, 0, image.getWidth(), image.getHeight());
+            }
+        } else {
+            lastScreenshotBounds = region;
+        }
+    }
+
+    public Region getLastScreenshotBounds() {
+        return lastScreenshotBounds;
+    }
+
 }

@@ -21,6 +21,7 @@ import org.openqa.selenium.remote.RemoteWebElement;
 
 import java.awt.image.BufferedImage;
 import java.net.URI;
+import java.security.acl.LastOwnerException;
 import java.util.List;
 
 /**
@@ -594,6 +595,8 @@ public class Eyes extends EyesBase {
     public void check(String name, ICheckSettings checkSettings) {
         ArgumentGuard.notNull(checkSettings, "checkSettings");
 
+        logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
+
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
 
@@ -672,6 +675,8 @@ public class Eyes extends EyesBase {
             this.driver.switchTo().parentFrame();
             switchedToFrameCount--;
         }
+
+        logger.verbose("done!");
     }
 
     private int switchToFrame(ISeleniumCheckTarget checkTarget) {
@@ -714,6 +719,8 @@ public class Eyes extends EyesBase {
     private void checkFullFrameOrElement(String name, ICheckSettings checkSettings) {
         checkFrameOrElement = true;
 
+        logger.verbose("checkFullFrameOrElement()");
+
         checkWindowBase(new RegionProvider() {
             @Override
             public Region getRegion() {
@@ -729,6 +736,7 @@ public class Eyes extends EyesBase {
 
                     final EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
 
+                    logger.verbose("replacing regionToCheck");
                     regionToCheck = new RegionProvider() {
                         @Override
                         public Region getRegion() {
@@ -808,6 +816,7 @@ public class Eyes extends EyesBase {
             final int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
             final int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
 
+            logger.verbose("replacing regionToCheck");
             regionToCheck = new RegionProvider() {
                 @Override
                 public Region getRegion() {
@@ -868,15 +877,13 @@ public class Eyes extends EyesBase {
     public void checkRegion(final Region region, int matchTimeout, String tag) {
 
         if (getIsDisabled()) {
-            logger.log(String.format("CheckRegion([%s], %d, '%s'): Ignored",
-                    region, matchTimeout, tag));
+            logger.log(String.format("CheckRegion([%s], %d, '%s'): Ignored", region, matchTimeout, tag));
             return;
         }
 
         ArgumentGuard.notNull(region, "region");
 
-        logger.verbose(String.format("CheckRegion([%s], %d, '%s')", region,
-                matchTimeout, tag));
+        logger.verbose(String.format("CheckRegion([%s], %d, '%s')", region, matchTimeout, tag));
 
         super.checkWindowBase(
                 new RegionProvider() {
@@ -886,8 +893,7 @@ public class Eyes extends EyesBase {
                     }
 
                     public CoordinatesType getCoordinatesType() {
-                        // If we're given a region, it is relative to the
-                        // frame's viewport.
+                        // If we're given a region, it is relative to the frame's viewport.
                         return CoordinatesType.CONTEXT_AS_IS;
                     }
                 },
@@ -1373,6 +1379,7 @@ public class Eyes extends EyesBase {
                             screenshotImage);
             logger.verbose("Done!");
 
+            logger.verbose("replacing regionToCheck");
             regionToCheck = new RegionProvider() {
                 public Region getRegion() {
                     return screenshot.getFrameWindow();
@@ -1596,23 +1603,18 @@ public class Eyes extends EyesBase {
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
      * @param framePath     The path to the frame to check. This is a list of
-     *                      frame names/IDs (where each frame is nested in the
-     *                      previous frame).
+     *                      frame names/IDs (where each frame is nested in the previous frame).
      * @param selector      A Selector specifying the region to check.
      * @param matchTimeout  The amount of time to retry matching (milliseconds).
      * @param tag           An optional tag to be associated with the snapshot.
-     * @param stitchContent Whether or not to stitch the internal content of
-     *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the
-     *                      region.
+     * @param stitchContent Whether or not to stitch the internal content of the
+     *                      region (i.e., perform {@link #checkElement(By, int, String)} on the region.
      */
     public void checkRegionInFrame(String[] framePath, By selector,
                                    int matchTimeout, String tag,
                                    boolean stitchContent) {
         if (getIsDisabled()) {
-            logger.log(String.format(
-                    "checkRegionInFrame(framePath, selector, %d, '%s'): Ignored",
-                    matchTimeout, tag));
+            logger.log(String.format("checkRegionInFrame(framePath, selector, %d, '%s'): Ignored", matchTimeout, tag));
             return;
         }
         ArgumentGuard.notNull(framePath, "framePath");
@@ -1624,12 +1626,10 @@ public class Eyes extends EyesBase {
         // and call check frame.
         logger.verbose("Switching to parent frame according to frames path..");
         String[] parentFramePath = new String[framePath.length - 1];
-        System.arraycopy(framePath, 0, parentFramePath, 0,
-                parentFramePath.length);
+        System.arraycopy(framePath, 0, parentFramePath, 0, parentFramePath.length);
         ((EyesTargetLocator) (driver.switchTo())).frames(parentFramePath);
         logger.verbose("Done! Calling checkRegionInFrame..");
-        checkRegionInFrame(framePath[framePath.length - 1], selector,
-                matchTimeout, tag, stitchContent);
+        checkRegionInFrame(framePath[framePath.length - 1], selector, matchTimeout, tag, stitchContent);
         logger.verbose("Done! switching back to default content..");
         driver.switchTo().defaultContent();
         logger.verbose("Done! Switching into the original frame..");
@@ -1641,8 +1641,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkRegionInFrame(String[], By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
      */
-    public void checkRegionInFrame(String[] framePath, By selector,
-                                   int matchTimeout, String tag) {
+    public void checkRegionInFrame(String[] framePath, By selector, int matchTimeout, String tag) {
         checkRegionInFrame(framePath, selector, matchTimeout, tag, false);
     }
 
@@ -1650,8 +1649,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkRegionInFrame(String[], By, int, String)}.
      * Default match timeout is used.
      */
-    public void checkRegionInFrame(String[] framePath, By selector,
-                                   String tag) {
+    public void checkRegionInFrame(String[] framePath, By selector, String tag) {
         checkRegionInFrame(framePath, selector, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
@@ -1690,8 +1688,7 @@ public class Eyes extends EyesBase {
      * @throws TestFailedException if a mismatch is detected and
      *                             immediate failure reports are enabled
      */
-    protected void checkElement(final WebElement element, int matchTimeout,
-                                String tag) {
+    protected void checkElement(final WebElement element, int matchTimeout, String tag) {
         String originalOverflow = null;
         EyesRemoteWebElement eyesElement;
 
@@ -1728,6 +1725,7 @@ public class Eyes extends EyesBase {
 
             logger.verbose("Element region: " + elementRegion);
 
+            logger.verbose("replacing regionToCheck");
             regionToCheck = new RegionProvider() {
                 public Region getRegion() {
                     return elementRegion;
@@ -1790,9 +1788,7 @@ public class Eyes extends EyesBase {
     protected void checkElement(By selector, int matchTimeout, String tag) {
 
         if (getIsDisabled()) {
-            logger.log(String.format(
-                    "CheckElement(selector, %d, '%s'): Ignored",
-                    matchTimeout, tag));
+            logger.log(String.format("CheckElement(selector, %d, '%s'): Ignored", matchTimeout, tag));
             return;
         }
 
@@ -1805,8 +1801,7 @@ public class Eyes extends EyesBase {
      * @param control The control on which the trigger is activated (context relative coordinates).
      * @param cursor  The cursor's position relative to the control.
      */
-    protected void addMouseTrigger(MouseAction action, Region control,
-                                   Location cursor) {
+    protected void addMouseTrigger(MouseAction action, Region control, Location cursor) {
         if (getIsDisabled()) {
             logger.verbose(String.format("Ignoring %s (disabled)", action));
             return;
@@ -1814,15 +1809,13 @@ public class Eyes extends EyesBase {
 
         // Triggers are actually performed on the previous window.
         if (lastScreenshot == null) {
-            logger.verbose(String.format("Ignoring %s (no screenshot)",
-                    action));
+            logger.verbose(String.format("Ignoring %s (no screenshot)", action));
             return;
         }
 
         if (!FrameChain.isSameFrameChain(driver.getFrameChain(),
                 ((EyesWebDriverScreenshot) lastScreenshot).getFrameChain())) {
-            logger.verbose(String.format("Ignoring %s (different frame)",
-                    action));
+            logger.verbose(String.format("Ignoring %s (different frame)", action));
             return;
         }
 
@@ -1850,15 +1843,13 @@ public class Eyes extends EyesBase {
 
         // Triggers are actually performed on the previous window.
         if (lastScreenshot == null) {
-            logger.verbose(String.format("Ignoring %s (no screenshot)",
-                    action));
+            logger.verbose(String.format("Ignoring %s (no screenshot)", action));
             return;
         }
 
         if (!FrameChain.isSameFrameChain(driver.getFrameChain(),
                 ((EyesWebDriverScreenshot) lastScreenshot).getFrameChain())) {
-            logger.verbose(String.format("Ignoring %s (different frame)",
-                    action));
+            logger.verbose(String.format("Ignoring %s (different frame)", action));
             return;
         }
 
@@ -1883,15 +1874,13 @@ public class Eyes extends EyesBase {
         }
 
         if (lastScreenshot == null) {
-            logger.verbose(String.format("Ignoring '%s' (no screenshot)",
-                    text));
+            logger.verbose(String.format("Ignoring '%s' (no screenshot)", text));
             return;
         }
 
         if (!FrameChain.isSameFrameChain(driver.getFrameChain(),
                 ((EyesWebDriverScreenshot) lastScreenshot).getFrameChain())) {
-            logger.verbose(String.format("Ignoring '%s' (different frame)",
-                    text));
+            logger.verbose(String.format("Ignoring '%s' (different frame)", text));
             return;
         }
 
@@ -1914,8 +1903,7 @@ public class Eyes extends EyesBase {
         Point pl = element.getLocation();
         Dimension ds = element.getSize();
 
-        Region elementRegion = new Region(pl.getX(), pl.getY(), ds.getWidth(),
-                ds.getHeight());
+        Region elementRegion = new Region(pl.getX(), pl.getY(), ds.getWidth(), ds.getHeight());
 
         addTextTrigger(elementRegion, text);
     }
@@ -1963,8 +1951,7 @@ public class Eyes extends EyesBase {
             throw new TestFailedException("Failed to set the viewport size", e);
         }
         ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
-        this.viewportSize = new RectangleSize(size.getWidth(),
-                size.getHeight());
+        this.viewportSize = new RectangleSize(size.getWidth(), size.getHeight());
     }
 
     /**
@@ -1993,8 +1980,7 @@ public class Eyes extends EyesBase {
                 originalOverflow =
                         EyesSeleniumUtils.hideScrollbars(driver, 200);
             } catch (EyesDriverOperationException e) {
-                logger.log("WARNING: Failed to hide scrollbars! Error: "
-                        + e.getMessage());
+                logger.log("WARNING: Failed to hide scrollbars! Error: " + e.getMessage());
             }
         }
         try {
@@ -2017,8 +2003,7 @@ public class Eyes extends EyesBase {
                 // Save the current frame path.
                 FrameChain originalFrame = driver.getFrameChain();
                 driver.switchTo().defaultContent();
-                FullPageCaptureAlgorithm algo =
-                        new FullPageCaptureAlgorithm(logger);
+                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger);
                 BufferedImage fullPageImage = algo.getStitchedRegion
                         (imageProvider,
                                 new RegionProvider() {
@@ -2067,8 +2052,7 @@ public class Eyes extends EyesBase {
                     EyesSeleniumUtils.setOverflow(driver, originalOverflow);
                 } catch (EyesDriverOperationException e) {
                     // Bummer, but we'll continue with the screenshot anyway :)
-                    logger.log("WARNING: Failed to revert overflow! Error: "
-                            + e.getMessage());
+                    logger.log("WARNING: Failed to revert overflow! Error: " + e.getMessage());
                 }
             }
         }

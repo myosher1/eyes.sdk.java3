@@ -10,8 +10,7 @@ import java.awt.image.Raster;
 import java.util.Calendar;
 
 public class FullPageCaptureAlgorithm {
-    // This should pretty much cover all scroll bars (and some fixed position
-    // footer elements :).
+    // This should pretty much cover all scroll bars (and some fixed position footer elements :).
     private static final int MAX_SCROLL_BAR_SIZE = 50;
     private static final int MIN_SCREENSHOT_PART_HEIGHT = 10;
 
@@ -33,11 +32,9 @@ public class FullPageCaptureAlgorithm {
      * Returns a stitching of a region.
      *
      * @param imageProvider The provider for the screenshot.
-     * @param regionProvider A provider of the region to stitch. If {@code
-     *                       getRegion} returns {@code Region.EMPTY}, the
-     *                       entire image will be stitched.
-     * @param originProvider A provider for scrolling to initial position
-     *                       before starting the actual stitching.
+     * @param regionProvider A provider of the region to stitch.
+     *                       If {@code getRegion} returns {@code Region.EMPTY}, the entire image will be stitched.
+     * @param originProvider A provider for scrolling to initial position before starting the actual stitching.
      * @param positionProvider A provider of the scrolling implementation.
      * @param scaleProviderFactory A factory for getting the scale provider.
      * @param waitBeforeScreenshots Time to wait before each screenshot (milliseconds).
@@ -54,6 +51,9 @@ public class FullPageCaptureAlgorithm {
 
         ArgumentGuard.notNull(regionProvider, "regionProvider");
         ArgumentGuard.notNull(positionProvider, "positionProvider");
+
+        logger.verbose(String.format("getStitchedRegion: regionProvider: %s ; originProvider: %s ; positionProvider: %s ; cutProvider: %s",
+                regionProvider.getClass(), originProvider.getClass(), positionProvider.getClass(), cutProvider.getClass()));
 
         logger.verbose(String.format("Region to check: %s", regionProvider.getRegion()));
         logger.verbose(String.format("Coordinates type: %s", regionProvider.getCoordinatesType()));

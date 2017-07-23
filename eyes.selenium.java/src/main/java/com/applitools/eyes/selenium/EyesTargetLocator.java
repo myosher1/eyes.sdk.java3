@@ -83,7 +83,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
                         currentLocation,
                         originalLocation));
         }
-        logger.verbose("Done!");
+        logger.verbose("Done! FrameChain size: " + driver.getFrameChain().size());
     }
 
     /**
@@ -93,7 +93,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     public void willSwitchToWindow(String nameOrHandle) {
         logger.verbose("willSwitchToWindow()");
         driver.getFrameChain().clear();
-        logger.verbose("Done!");
+        logger.verbose("Done! FrameChain size: " + driver.getFrameChain().size());
     }
 
     /**

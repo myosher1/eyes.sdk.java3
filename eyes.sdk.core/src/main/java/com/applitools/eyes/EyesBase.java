@@ -1004,7 +1004,7 @@ public abstract class EyesBase {
 
         ensureRunningSession();
 
-        logger.verbose(String.format("CheckWindowBase(regionProvider, '%s', %b, %d)", tag, ignoreMismatch, retryTimeout));
+        logger.verbose(String.format("CheckWindowBase(%s, '%s', %b, %d)", regionProvider.getClass(), tag, ignoreMismatch, retryTimeout));
 
         logger.verbose("Calling match window...");
         result = matchWindowTask.matchWindow(getUserInputs(), lastScreenshot, regionProvider, tag,
