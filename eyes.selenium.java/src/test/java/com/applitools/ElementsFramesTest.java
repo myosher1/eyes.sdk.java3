@@ -54,7 +54,7 @@ public class ElementsFramesTest {
         eyes = new Eyes();
         eyes.setLogHandler(new FileLogger("/tmp/applitools.log", true, true));
         eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
-        eyes.setLogHandler(new StdoutLogHandler(true));
+        //eyes.setLogHandler(new StdoutLogHandler(true));
         eyes.setStitchMode(StitchMode.CSS);
         eyes.setForceFullPageScreenshot(true);
     }
