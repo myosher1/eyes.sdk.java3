@@ -27,6 +27,7 @@ import java.util.ArrayList;
 public class ElementsFramesTest {
     private static Eyes eyes;
     private static ArrayList<WebDriver> drivers;
+    private static WebDriver activeDriver;
 
     @BeforeClass
     public static void setUp () throws URISyntaxException, java.net.MalformedURLException {
@@ -97,7 +98,8 @@ public class ElementsFramesTest {
     @org.junit.Test
     public void home1 () throws IOException {
         for (WebDriver driver:drivers) {
-            driver.get("https://astappev.github.io/test-html-pages/");
+            activeDriver  = driver;
+            activeDriver.get("https://astappev.github.io/test-html-pages/");
             eyes.checkWindow("Initial");
             eyes.checkRegion(By.id("overflowing-div"), "Initial", true);
             eyes.checkRegionInFrame("frame1", By.id("inner-frame-div"), "Inner frame div", true);
@@ -108,9 +110,7 @@ public class ElementsFramesTest {
     @Rule
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
-            for (WebDriver driver:drivers) {
-                eyes.open(driver, "Eyes Selenium SDK", description.getMethodName());
-            }
+            eyes.open(activeDriver, "Eyes Selenium SDK", description.getMethodName());
         }
 
         protected void finished(Description description) {
