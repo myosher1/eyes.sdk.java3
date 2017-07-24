@@ -20,14 +20,34 @@ import java.net.URISyntaxException;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import java.net.URL;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import java.util.ArrayList;
+
+import java.util.*;
+
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
+
 /**
  * Unit test for simple App.
  */
+@RunWith(Parameterized.class)
 public class ElementsFramesTest {
     private static Eyes eyes;
-    private static ArrayList<WebDriver> drivers;
-    private static WebDriver activeDriver;
+    private static WebDriver driver;
+
+    @Parameters
+    public static Collection<Object[]> data() {
+
+            return Arrays.asList(new Object[][] {
+                    { Platform.WIN10, "chrome" },
+                    { Platform.WIN10, "firefox" },
+                    { Platform.WIN10, "internet explorer" },
+                    { Platform.LINUX, "chrome" },
+                    { Platform.LINUX, "firefox" },
+                    { Platform.MAC, "chrome" },
+                    { Platform.MAC, "firefox" },});
+
+    }
 
     @BeforeClass
     public static void setUp () throws URISyntaxException, java.net.MalformedURLException {
@@ -36,27 +56,6 @@ public class ElementsFramesTest {
         eyes.setLogHandler(new StdoutLogHandler(true));
         eyes.setStitchMode(StitchMode.CSS);
         eyes.setForceFullPageScreenshot(true);
-        ArrayList<Platform> platforms = new ArrayList<Platform>();
-        platforms.add(Platform.WIN10);
-        platforms.add(Platform.LINUX);
-        platforms.add(Platform.MAC);
-        ArrayList<String> browsers = new ArrayList<String>();
-        browsers.add("chrome");
-        browsers.add("firefox");
-        drivers = new ArrayList<WebDriver>();
-        for (Platform platform:platforms)
-        {
-            for (String browser:browsers)
-            {
-                WebDriver driver = createDriver(platform, browser);
-                drivers.add(driver);
-            }
-        }
-
-
-
-        WebDriver driver = createDriver(Platform.WIN10, "internet explorer");
-        drivers.add(driver);
     }
 
 
@@ -87,30 +86,36 @@ public class ElementsFramesTest {
 
     @AfterClass
     public static void tearDown () {
-        for (WebDriver driver:drivers)
-        {
-            driver.quit();
-        }
-
+        driver.quit();
         eyes.abortIfNotClosed();
+    }
+
+    public ElementsFramesTest(Platform platform, String browser)
+    {
+        try {
+            System.out.println("Testing "+ platform + " " + browser);
+            driver = createDriver(platform, browser);
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+
+        }
     }
 
     @org.junit.Test
     public void home1 () throws IOException {
-        for (WebDriver driver:drivers) {
-            activeDriver  = driver;
-            activeDriver.get("https://astappev.github.io/test-html-pages/");
-            eyes.checkWindow("Initial");
-            eyes.checkRegion(By.id("overflowing-div"), "Initial", true);
-            eyes.checkRegionInFrame("frame1", By.id("inner-frame-div"), "Inner frame div", true);
-            eyes.checkRegion(By.id("overflowing-div-image"), "minions", true);
-        }
+        driver.get("https://astappev.github.io/test-html-pages/");
+        eyes.checkWindow("Initial");
+        eyes.checkRegion(By.id("overflowing-div"), "Initial", true);
+        eyes.checkRegionInFrame("frame1", By.id("inner-frame-div"), "Inner frame div", true);
+        eyes.checkRegion(By.id("overflowing-div-image"), "minions", true);
     }
 
     @Rule
     public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
-            eyes.open(activeDriver, "Eyes Selenium SDK", description.getMethodName());
+        protected void starting( Description description) {
+            eyes.open(driver, "Eyes Selenium SDK", description.getMethodName());
         }
 
         protected void finished(Description description) {
