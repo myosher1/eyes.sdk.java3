@@ -51,7 +51,7 @@ public class Eyes extends EyesBase {
 
     private boolean forceFullPageScreenshot;
     private boolean checkFrameOrElement;
-    private RegionProvider regionToCheck;
+    private Region regionToCheck = null;
     private boolean hideScrollbars;
     private ImageRotation rotation;
     private double devicePixelRatio;
@@ -70,7 +70,6 @@ public class Eyes extends EyesBase {
         super(serverUrl);
 
         checkFrameOrElement = false;
-        regionToCheck = new NullRegionProvider();
         forceFullPageScreenshot = false;
         dontGetTitle = false;
         hideScrollbars = false;
@@ -344,15 +343,7 @@ public class Eyes extends EyesBase {
         logger.log(String.format("CheckWindow(%d, '%s')", matchTimeout, tag));
 
         super.checkWindowBase(
-                new RegionProvider() {
-                    public Region getRegion() {
-                        return Region.EMPTY;
-                    }
-
-                    public CoordinatesType getCoordinatesType() {
-                        return null;
-                    }
-                },
+                NullRegionProvider.INSTANCE,
                 tag,
                 false,
                 matchTimeout
@@ -429,16 +420,7 @@ public class Eyes extends EyesBase {
         }
 
         MatchWindowDataWithScreenshot result =
-                super.testResponseTimeBase(
-                        new RegionProvider() {
-                            public Region getRegion() {
-                                return Region.EMPTY;
-                            }
-
-                            public CoordinatesType getCoordinatesType() {
-                                return null;
-                            }
-                        },
+                super.testResponseTimeBase(NullRegionProvider.INSTANCE,
                         runnableAction,
                         deadline,
                         timeout,
@@ -611,13 +593,7 @@ public class Eyes extends EyesBase {
                 public Region getRegion() {
                     return targetRegion;
                 }
-
-                @Override
-                public CoordinatesType getCoordinatesType() {
-                    return CoordinatesType.CONTEXT_RELATIVE;
-                }
             }, name, false, checkSettings);
-
         } else if (seleniumCheckTarget != null) {
             By targetSelector = seleniumCheckTarget.getTargetSelector();
             if (targetSelector != null) {
@@ -647,27 +623,12 @@ public class Eyes extends EyesBase {
                         public Region getRegion() {
                             Point p = element.getLocation();
                             Dimension d = element.getSize();
-                            return new Region(p.getX(), p.getY(), d.getWidth(), d.getHeight());
-                        }
-
-                        @Override
-                        public CoordinatesType getCoordinatesType() {
-                            return CoordinatesType.CONTEXT_RELATIVE;
+                            return new Region(p.getX(), p.getY(), d.getWidth(), d.getHeight(), CoordinatesType.CONTEXT_RELATIVE);
                         }
                     }, name, false, checkSettings);
                 }
             } else {
-                this.checkWindowBase(new RegionProvider() {
-                    @Override
-                    public Region getRegion() {
-                        return Region.EMPTY;
-                    }
-
-                    @Override
-                    public CoordinatesType getCoordinatesType() {
-                        return null;
-                    }
-                }, name, false, checkSettings);
+                this.checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
             }
         }
 
@@ -732,30 +693,15 @@ public class Eyes extends EyesBase {
                     BufferedImage screenshotImage = ImageUtils.imageFromBytes(screenshotBytes);
 
                     // FIXME - Scaling should be handled in a single place instead
-                    ScaleProvider scaleProvider = updateScalingParams().getScaleProvider(screenshotImage.getWidth());
+                    updateScalingParams().getScaleProvider(screenshotImage.getWidth());
 
                     final EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
 
                     logger.verbose("replacing regionToCheck");
-                    regionToCheck = new RegionProvider() {
-                        @Override
-                        public Region getRegion() {
-                            return screenshot.getFrameWindow();
-                        }
-
-                        @Override
-                        public CoordinatesType getCoordinatesType() {
-                            return CoordinatesType.SCREENSHOT_AS_IS;
-                        }
-                    };
+                    regionToCheck = screenshot.getFrameWindow();
                 }
 
                 return Region.EMPTY;
-            }
-
-            @Override
-            public CoordinatesType getCoordinatesType() {
-                return CoordinatesType.SCREENSHOT_AS_IS;
             }
         }, name, false, checkSettings);
 
@@ -775,12 +721,7 @@ public class Eyes extends EyesBase {
         checkWindowBase(new RegionProvider() {
             @Override
             public Region getRegion() {
-                return new Region(elementLocation, elementSize);
-            }
-
-            @Override
-            public CoordinatesType getCoordinatesType() {
-                return CoordinatesType.CONTEXT_RELATIVE;
+                return new Region(elementLocation, elementSize, CoordinatesType.CONTEXT_RELATIVE);
             }
         }, name, false, checkSettings);
 
@@ -792,7 +733,7 @@ public class Eyes extends EyesBase {
     private void checkElement(WebElement element, String name, ICheckSettings checkSettings) {
 
         final EyesRemoteWebElement eyesElement = (element instanceof EyesRemoteWebElement) ?
-                (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, (RemoteWebElement) element);
+                (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
 
         PositionProvider originalPositionProvider = positionProvider;
         PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
@@ -817,35 +758,13 @@ public class Eyes extends EyesBase {
             final int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
 
             logger.verbose("replacing regionToCheck");
-            regionToCheck = new RegionProvider() {
-                @Override
-                public Region getRegion() {
-                    return new Region(
-                            rect.getLeft() + borderLeftWidth,
-                            rect.getTop() + borderTopWidth,
-                            eyesElement.getClientWidth(),
-                            eyesElement.getClientHeight());
-                }
-
-                @Override
-                public CoordinatesType getCoordinatesType() {
-                    return CoordinatesType.CONTEXT_RELATIVE;
-                }
-            };
+            regionToCheck = new Region(rect.getLeft() + borderLeftWidth, rect.getTop() + borderTopWidth,
+                    eyesElement.getClientWidth(), eyesElement.getClientHeight(),
+                    CoordinatesType.CONTEXT_RELATIVE);
 
             logger.verbose(String.format("Element region: %s", regionToCheck));
 
-            checkWindowBase(new RegionProvider() {
-                @Override
-                public Region getRegion() {
-                    return Region.EMPTY;
-                }
-
-                @Override
-                public CoordinatesType getCoordinatesType() {
-                    return null;
-                }
-            }, name, false, checkSettings);
+            checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
         } finally {
             eyesElement.setOverflow(originalOverflow);
 
@@ -853,7 +772,7 @@ public class Eyes extends EyesBase {
 
             scrollPositionProvider.setPosition(originalScrollPosition);
             positionProvider = originalPositionProvider;
-            regionToCheck = new NullRegionProvider();
+            regionToCheck = Region.EMPTY;
             elementPositionProvider = null;
         }
     }
@@ -887,15 +806,7 @@ public class Eyes extends EyesBase {
 
         super.checkWindowBase(
                 new RegionProvider() {
-
-                    public Region getRegion() {
-                        return region;
-                    }
-
-                    public CoordinatesType getCoordinatesType() {
-                        // If we're given a region, it is relative to the frame's viewport.
-                        return CoordinatesType.CONTEXT_AS_IS;
-                    }
+                    public Region getRegion() { return region; }
                 },
                 tag,
                 false,
@@ -955,11 +866,9 @@ public class Eyes extends EyesBase {
      * @throws TestFailedException if a mismatch is detected and
      *                             immediate failure reports are enabled
      */
-    public void checkRegion(final WebElement element, int matchTimeout,
-                            String tag) {
+    public void checkRegion(final WebElement element, int matchTimeout, String tag) {
         if (getIsDisabled()) {
-            logger.log(String.format("CheckRegion(element, %d, '%s'): Ignored",
-                    matchTimeout, tag));
+            logger.log(String.format("CheckRegion(element, %d, '%s'): Ignored", matchTimeout, tag));
             return;
         }
 
@@ -976,18 +885,11 @@ public class Eyes extends EyesBase {
 
         super.checkWindowBase(
                 new RegionProvider() {
-
                     public Region getRegion() {
                         Point p = element.getLocation();
                         Dimension d = element.getSize();
                         return new Region(p.getX(), p.getY(), d.getWidth(),
-                                d.getHeight());
-                    }
-
-                    public CoordinatesType getCoordinatesType() {
-                        // If we're given a region, it is relative to the
-                        // frame's viewport.
-                        return CoordinatesType.CONTEXT_RELATIVE;
+                                d.getHeight(), CoordinatesType.CONTEXT_RELATIVE);
                     }
                 },
                 tag,
@@ -1329,10 +1231,9 @@ public class Eyes extends EyesBase {
                         "Failed to extract device pixel ratio! Using default.");
                 devicePixelRatio = DEFAULT_DEVICE_PIXEL_RATIO;
             }
-            logger.verbose(String.format("Device pixel ratio: %f",
-                    devicePixelRatio));
+            logger.verbose(String.format("Device pixel ratio: %f", devicePixelRatio));
 
-            logger.verbose("Setting scale provider..");
+            logger.verbose("Setting scale provider...");
             try {
                 factory = new ContextBasedScaleProviderFactory(positionProvider.getEntireSize(), getViewportSize(),
                         devicePixelRatio, scaleProviderHandler);
@@ -1358,42 +1259,30 @@ public class Eyes extends EyesBase {
      */
     protected void checkCurrentFrame(int matchTimeout, String tag) {
         try {
-            logger.verbose(String.format("CheckCurrentFrame(%d, '%s')",
-                    matchTimeout, tag));
+            logger.verbose(String.format("CheckCurrentFrame(%d, '%s')", matchTimeout, tag));
 
             checkFrameOrElement = true;
 
             logger.verbose("Getting screenshot as base64..");
             String screenshot64 = driver.getScreenshotAs(OutputType.BASE64);
             logger.verbose("Done! Creating image object...");
-            BufferedImage screenshotImage =
-                    ImageUtils.imageFromBase64(screenshot64);
+            BufferedImage screenshotImage = ImageUtils.imageFromBase64(screenshot64);
 
             // FIXME - Scaling should be handled in a single place instead
             ScaleProvider scaleProvider = updateScalingParams().getScaleProvider(screenshotImage.getWidth());
 
             screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
             logger.verbose("Done! Building required object...");
-            final EyesWebDriverScreenshot screenshot =
-                    new EyesWebDriverScreenshot(logger, driver,
-                            screenshotImage);
+            final EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
             logger.verbose("Done!");
 
             logger.verbose("replacing regionToCheck");
-            regionToCheck = new RegionProvider() {
-                public Region getRegion() {
-                    return screenshot.getFrameWindow();
-                }
+            regionToCheck = screenshot.getFrameWindow();
 
-                public CoordinatesType getCoordinatesType() {
-                    return CoordinatesType.SCREENSHOT_AS_IS;
-                }
-            };
-
-            super.checkWindowBase(new NullRegionProvider(), tag, false, matchTimeout);
+            super.checkWindowBase(NullRegionProvider.INSTANCE, tag, false, matchTimeout);
         } finally {
             checkFrameOrElement = false;
-            regionToCheck = null;
+            regionToCheck = Region.EMPTY;
         }
     }
 
@@ -1659,8 +1548,7 @@ public class Eyes extends EyesBase {
      * {@code tag} defaults to {@code null}.
      */
     public void checkRegionInFrame(String[] framePath, By selector) {
-        checkRegionInFrame(framePath, selector, USE_DEFAULT_MATCH_TIMEOUT,
-                null);
+        checkRegionInFrame(framePath, selector, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
     /**
@@ -1696,8 +1584,7 @@ public class Eyes extends EyesBase {
         if (element instanceof EyesRemoteWebElement) {
             eyesElement = (EyesRemoteWebElement) element;
         } else {
-            eyesElement = new EyesRemoteWebElement(logger,
-                    driver, (RemoteWebElement) element);
+            eyesElement = new EyesRemoteWebElement(logger, driver, element);
         }
 
         PositionProvider originalPositionProvider = getPositionProvider();
@@ -1712,37 +1599,24 @@ public class Eyes extends EyesBase {
             Point p = eyesElement.getLocation();
             Dimension d = element.getSize();
 
-            int borderLeftWidth = eyesElement.getBorderLeftWidth();
-            int borderRightWidth = eyesElement.getBorderRightWidth();
-            int borderTopWidth = eyesElement.getBorderTopWidth();
-            int borderBottomWidth = eyesElement.getBorderBottomWidth();
+            int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
+            int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
 
-            final Region elementRegion = new Region(
-                    p.getX() + borderLeftWidth,
-                    p.getY() + borderTopWidth,
-                    d.getWidth() - borderLeftWidth - borderRightWidth,
-                    d.getHeight() - borderTopWidth - borderBottomWidth);
+            int elementWidth = eyesElement.getClientWidth();
+            int elementHeight = eyesElement.getClientHeight();
+
+            final Region elementRegion = new Region(p.getX() + borderLeftWidth, p.getY() + borderTopWidth,
+                    elementWidth, elementHeight, CoordinatesType.CONTEXT_RELATIVE);
 
             logger.verbose("Element region: " + elementRegion);
 
             logger.verbose("replacing regionToCheck");
-            regionToCheck = new RegionProvider() {
-                public Region getRegion() {
-                    return elementRegion;
-                }
+            regionToCheck = elementRegion;
 
-                public CoordinatesType getCoordinatesType() {
-                    return CoordinatesType.CONTEXT_RELATIVE;
-                }
-            };
             super.checkWindowBase(
                     new RegionProvider() {
                         public Region getRegion() {
                             return Region.EMPTY;
-                        }
-
-                        public CoordinatesType getCoordinatesType() {
-                            return null;
                         }
                     },
                     tag,
@@ -2004,25 +1878,14 @@ public class Eyes extends EyesBase {
                 FrameChain originalFrame = driver.getFrameChain();
                 driver.switchTo().defaultContent();
                 FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger);
-                BufferedImage fullPageImage = algo.getStitchedRegion
-                        (imageProvider,
-                                new RegionProvider() {
-                                    public Region getRegion() {
-                                        return Region.EMPTY;
-                                    }
-
-                                    public CoordinatesType getCoordinatesType() {
-                                        return null;
-                                    }
-                                },
-                                new ScrollPositionProvider(logger, this.jsExecutor),
-                                positionProvider, scaleProviderFactory,
-                                cutProviderHandler.get(),
-                                getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory);
+                BufferedImage fullPageImage = algo.getStitchedRegion(imageProvider, Region.EMPTY,
+                        new ScrollPositionProvider(logger, this.jsExecutor),
+                        positionProvider, scaleProviderFactory,
+                        cutProviderHandler.get(),
+                        getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory);
 
                 ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
-                result = new EyesWebDriverScreenshot(logger, driver,
-                        fullPageImage);
+                result = new EyesWebDriverScreenshot(logger, driver, fullPageImage);
             } else {
                 logger.verbose("Screenshot requested...");
                 String screenshot64 = driver.getScreenshotAs(OutputType.BASE64);

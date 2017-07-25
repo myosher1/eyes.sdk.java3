@@ -77,13 +77,11 @@ public class ResponseTimeAlgorithm {
      * @param logger The logger to use.
      * @param serverConnector The server connector to use.
      * @param runningSession The current session.
-     * @param appOutputProvider A provider which enables us to capture a
-     *                          screenshot.
+     * @param appOutputProvider A provider which enables us to capture a screenshot.
      * @param regionProvider Which part of the screenshot we wish to compare.
      * @param startTime The start time for the test. should be the result of
      *                  a call to {@link System#currentTimeMillis()}.
-     * @param deadline The expected time by which the application
-     *                        should have been loaded. (Seconds)
+     * @param deadline The expected time by which the application should have been loaded. (Seconds)
      */
     public static void runNewProgressionSession(Logger logger,
             ServerConnector serverConnector, RunningSession runningSession,
@@ -101,7 +99,7 @@ public class ResponseTimeAlgorithm {
 
         logger.verbose("Taking screenshot...");
         AppOutputWithScreenshot appOutputWithScreenshot =
-                appOutputProvider.getAppOutput(regionProvider, null);
+                appOutputProvider.getAppOutput(regionProvider.getRegion(), null);
         logger.verbose("Screenshot taken.");
         long elapsedTime =
                 GeneralUtils.getFullSecondsElapsedTimeMillis(startTime,
@@ -139,20 +137,14 @@ public class ResponseTimeAlgorithm {
      *
      * @param logger The logger to use.
      * @param serverConnector The server connector to use for the matching.
-     * @param runningSession The current session in which we perform the
-     *                       matching.
-     * @param appOutputProvider A provider which enables us to capture a
-     *                          screenshot.
+     * @param runningSession The current session in which we perform the matching.
+     * @param appOutputProvider A provider which enables us to capture a screenshot.
      * @param regionProvider Which part of the screenshot we wish to compare.
-     * @param startTime The start time for the test. should be the result of
-     *                  a call to {@code System.currentTimeMillis()}.
-     * @param deadline The expected time by which the application
-     *                        should have been loaded. (Seconds)
-     * @param timeout The maximum time waiting for the application to load.
-     *                   (Seconds)
+     * @param startTime The start time for the test. should be the result of a call to {@code System.currentTimeMillis()}.
+     * @param deadline The expected time by which the application should have been loaded. (Seconds)
+     * @param timeout The maximum time waiting for the application to load. (Seconds)
      * @param matchInterval The interval between performing matches.
-     * @param collectedData A container in which we will store all the captured
-     *                      screenshots.
+     * @param collectedData A container in which we will store all the captured screenshots.
      * @return The result of the initial search.
      */
     private static ResponseTimeInitialMatchSearchResult
@@ -235,7 +227,7 @@ public class ResponseTimeAlgorithm {
             lastScreenshotRequestTime = System.currentTimeMillis();
             // Get the screenshot and build the match data.
             AppOutputWithScreenshot appOutputWithScreenshot =
-                    appOutputProvider.getAppOutput(regionProvider,
+                    appOutputProvider.getAppOutput(regionProvider.getRegion(),
                             matcherTask.getLastScreenshot());
             elapsedTime =
                     GeneralUtils.getFullSecondsElapsedTimeMillis(startTime,

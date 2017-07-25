@@ -201,7 +201,6 @@ public abstract class EyesBase {
     }
 
     /**
-     *
      * @param appName The name of the application under test.
      */
     public void setAppName(String appName) {
@@ -209,7 +208,6 @@ public abstract class EyesBase {
     }
 
     /**
-     *
      * @return The name of the application under test.
      */
     public String getAppName() {
@@ -455,7 +453,6 @@ public abstract class EyesBase {
 
     /**
      * Manually set the the sizes to cut from an image before it's validated.
-     *
      * @param cutProvider the provider doing the cut.
      */
     public void setImageCut(CutProvider cutProvider) {
@@ -484,7 +481,6 @@ public abstract class EyesBase {
     }
 
     /**
-     *
      * @return The ratio used to scale the images being validated.
      */
     public double getScaleRatio() {
@@ -933,9 +929,8 @@ public abstract class EyesBase {
     /**
      * See {@link #checkWindowBase(RegionProvider, String, boolean, int)}.
      * {@code retryTimeout} defaults to {@code USE_DEFAULT_TIMEOUT}.
-     *
      * @param regionProvider Returns the region to check or the empty rectangle to check the entire window.
-     * @param tag An optional tag to be associated with the snapshot.
+     * @param tag            An optional tag to be associated with the snapshot.
      * @param ignoreMismatch Whether to ignore this check if a mismatch is found.
      * @return The result of matching the output with the expected output.
      */
@@ -988,6 +983,25 @@ public abstract class EyesBase {
         ArgumentGuard.isValidState(getIsOpen(), "Eyes not open");
         ArgumentGuard.notNull(regionProvider, "regionProvider");
 
+        ensureRunningSession();
+
+        result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings);
+
+        logger.verbose("MatchWindow Done!");
+
+        if (!ignoreMismatch) {
+            clearUserInputs();
+            lastScreenshot = result.getScreenshot();
+        }
+
+        validateResult(tag, result);
+
+        logger.verbose("Done!");
+        return result;
+    }
+
+    private MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch, ICheckSettings checkSettings) {
+        MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
         int retryTimeout = -1;
@@ -1002,24 +1016,12 @@ public abstract class EyesBase {
             imageMatchSettings.setIgnoreCaret(checkSettingsInternal.getIgnoreCaret());
         }
 
-        ensureRunningSession();
-
         logger.verbose(String.format("CheckWindowBase(%s, '%s', %b, %d)", regionProvider.getClass(), tag, ignoreMismatch, retryTimeout));
 
         logger.verbose("Calling match window...");
-        result = matchWindowTask.matchWindow(getUserInputs(), lastScreenshot, regionProvider, tag,
+        result = matchWindowTask.matchWindow(getUserInputs(), regionProvider.getRegion(), tag,
                 shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, imageMatchSettings, retryTimeout);
 
-        logger.verbose("MatchWindow Done!");
-
-        if (!ignoreMismatch) {
-            clearUserInputs();
-            lastScreenshot = result.getScreenshot();
-        }
-
-        validateResult(tag, result);
-
-        logger.verbose("Done!");
         return result;
     }
 
@@ -1088,13 +1090,10 @@ public abstract class EyesBase {
         // A callback which will call getAppOutput
         AppOutputProvider appOutputProvider = new AppOutputProvider() {
             public AppOutputWithScreenshot getAppOutput(
-                    RegionProvider regionProvider_,
+                    Region region,
                     EyesScreenshot lastScreenshot_) {
-                // FIXME - If we use compression here it hurts us later
-                // (because of another screenshot order).
-//                return getAppOutputWithScreenshot(regionProvider_,
-//                        lastScreenshot_);
-                return getAppOutputWithScreenshot(regionProvider_, null);
+                // FIXME - If we use compression here it hurts us later (because of another screenshot order).
+                return getAppOutputWithScreenshot(region, null);
             }
         };
 
@@ -1137,7 +1136,7 @@ public abstract class EyesBase {
      *                     tests), or {@code null} to use the default.
      */
     protected void openBase(String appName, String testName,
-                         RectangleSize viewportSize, SessionType sessionType) {
+                            RectangleSize viewportSize, SessionType sessionType) {
 
         logger.getLogHandler().open();
 
@@ -1198,8 +1197,8 @@ public abstract class EyesBase {
                 // A callback which will call getAppOutput
                 new AppOutputProvider() {
                     @Override
-                    public AppOutputWithScreenshot getAppOutput(RegionProvider regionProvider, EyesScreenshot lastScreenshot) {
-                        return getAppOutputWithScreenshot(regionProvider, lastScreenshot);
+                    public AppOutputWithScreenshot getAppOutput(Region region, EyesScreenshot lastScreenshot) {
+                        return getAppOutputWithScreenshot(region, lastScreenshot);
                     }
                 }
         );
@@ -1452,15 +1451,12 @@ public abstract class EyesBase {
     }
 
     /**
-     * @param regionProvider A callback for getting the region of the
-     *                       screenshot which will be set in the
-     *                       application output.
-     * @param lastScreenshot Previous application screenshot (used for
-     *                       compression) or {@code null} if not available.
+     * @param region         A callback for getting the region of the screenshot which will be set in the application output.
+     * @param lastScreenshot Previous application screenshot (used for compression) or {@code null} if not available.
      * @return The updated app output and screenshot.
      */
     private AppOutputWithScreenshot getAppOutputWithScreenshot(
-            RegionProvider regionProvider, EyesScreenshot lastScreenshot) {
+            Region region, EyesScreenshot lastScreenshot) {
 
         logger.verbose("getting screenshot...");
         // Getting the screenshot (abstract function implemented by each SDK).
@@ -1468,10 +1464,8 @@ public abstract class EyesBase {
         logger.verbose("Done getting screenshot!");
 
         // Cropping by region if necessary
-        Region region = regionProvider.getRegion();
         if (!region.isEmpty()) {
-            screenshot = screenshot.getSubScreenshot(region,
-                    regionProvider.getCoordinatesType(), false);
+            screenshot = screenshot.getSubScreenshot(region, region.getCoordinatesType(), false);
         }
 
         logger.verbose("Compressing screenshot...");
@@ -1479,8 +1473,7 @@ public abstract class EyesBase {
         logger.verbose("Done! Getting title...");
         String title = getTitle();
         logger.verbose("Done!");
-        AppOutputWithScreenshot result = new AppOutputWithScreenshot(
-                new AppOutput(title, compressResult), screenshot);
+        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult), screenshot);
         logger.verbose("Done!");
         return result;
     }
@@ -1497,8 +1490,7 @@ public abstract class EyesBase {
         ArgumentGuard.notNull(screenshot, "screenshot");
 
         BufferedImage screenshotImage = screenshot.getImage();
-        byte[] uncompressed =
-                ImageUtils.encodeAsPng(screenshotImage);
+        byte[] uncompressed = ImageUtils.encodeAsPng(screenshotImage);
 
         BufferedImage source = (lastScreenshot != null) ?
                 lastScreenshot.getImage() : null;

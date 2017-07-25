@@ -22,7 +22,7 @@ public class FullPageCaptureAlgorithm {
     }
 
     private static void saveDebugScreenshotPart(DebugScreenshotsProvider debugScreenshotsProvider, BufferedImage image,
-                                               Region region, String name) {
+                                                Region region, String name) {
         String suffix = "part-" + name + "-" + region.getLeft() + "_" + region.getTop() + "_" + region.getWidth() + "x"
                 + region.getHeight();
         debugScreenshotsProvider.save(image, suffix);
@@ -30,33 +30,31 @@ public class FullPageCaptureAlgorithm {
 
     /**
      * Returns a stitching of a region.
-     *
-     * @param imageProvider The provider for the screenshot.
-     * @param regionProvider A provider of the region to stitch.
-     *                       If {@code getRegion} returns {@code Region.EMPTY}, the entire image will be stitched.
-     * @param originProvider A provider for scrolling to initial position before starting the actual stitching.
-     * @param positionProvider A provider of the scrolling implementation.
-     * @param scaleProviderFactory A factory for getting the scale provider.
+     * @param imageProvider         The provider for the screenshot.
+     * @param region                The region to stitch. If {@code Region.EMPTY}, the entire image will be stitched.
+     * @param originProvider        A provider for scrolling to initial position before starting the actual stitching.
+     * @param positionProvider      A provider of the scrolling implementation.
+     * @param scaleProviderFactory  A factory for getting the scale provider.
      * @param waitBeforeScreenshots Time to wait before each screenshot (milliseconds).
-     * @param screenshotFactory The factory to use for creating screenshots from the images.
+     * @param screenshotFactory     The factory to use for creating screenshots from the images.
      * @return An image which represents the stitched region.
      */
 
     public BufferedImage getStitchedRegion(ImageProvider imageProvider,
-               RegionProvider regionProvider, PositionProvider originProvider,
-               PositionProvider positionProvider, ScaleProviderFactory scaleProviderFactory,
-               CutProvider cutProvider, int waitBeforeScreenshots, DebugScreenshotsProvider debugScreenshotsProvider,
-               EyesScreenshotFactory screenshotFactory) {
+                                           Region region, PositionProvider originProvider,
+                                           PositionProvider positionProvider, ScaleProviderFactory scaleProviderFactory,
+                                           CutProvider cutProvider, int waitBeforeScreenshots, DebugScreenshotsProvider debugScreenshotsProvider,
+                                           EyesScreenshotFactory screenshotFactory) {
         logger.verbose("getStitchedRegion()");
 
-        ArgumentGuard.notNull(regionProvider, "regionProvider");
+        ArgumentGuard.notNull(region, "regionProvider");
         ArgumentGuard.notNull(positionProvider, "positionProvider");
 
-        logger.verbose(String.format("getStitchedRegion: regionProvider: %s ; originProvider: %s ; positionProvider: %s ; cutProvider: %s",
-                regionProvider.getClass(), originProvider.getClass(), positionProvider.getClass(), cutProvider.getClass()));
+        logger.verbose(String.format("getStitchedRegion: originProvider: %s ; positionProvider: %s ; cutProvider: %s",
+                originProvider.getClass(), positionProvider.getClass(), cutProvider.getClass()));
 
-        logger.verbose(String.format("Region to check: %s", regionProvider.getRegion()));
-        logger.verbose(String.format("Coordinates type: %s", regionProvider.getCoordinatesType()));
+        logger.verbose(String.format("Region to check: %s", region));
+        logger.verbose(String.format("Coordinates type: %s", region.getCoordinatesType()));
 
         // TODO use scaling overlap offset.
         final int SCALE_MARGIN_PX = 5;
@@ -99,11 +97,11 @@ public class FullPageCaptureAlgorithm {
         EyesScreenshot screenshot = screenshotFactory.makeScreenshot(image);
         logger.verbose("Done! Getting region in screenshot...");
 
-        Region regionInScreenshot = getRegionInScreenshot(regionProvider, image, pixelRatio, screenshot);
+        Region regionInScreenshot = getRegionInScreenshot(region, image, pixelRatio, screenshot);
 
         if (!regionInScreenshot.isEmpty()) {
             image = ImageUtils.getImagePart(image, regionInScreenshot);
-            saveDebugScreenshotPart(debugScreenshotsProvider, image, regionProvider.getRegion(), "cropped");
+            saveDebugScreenshotPart(debugScreenshotsProvider, image, region, "cropped");
         }
 
         image = ImageUtils.scaleImage(image, scaleProvider);
@@ -168,7 +166,7 @@ public class FullPageCaptureAlgorithm {
         // Take screenshot and stitch for each screenshot part.
         logger.verbose("Getting the rest of the image parts...");
         BufferedImage partImage = null;
-        for (Region partRegion: imageParts) {
+        for (Region partRegion : imageParts) {
             // Skipping screenshot for 0,0 (already taken)
             if (partRegion.getLeft() == 0 && partRegion.getTop() == 0) {
                 continue;
@@ -241,9 +239,9 @@ public class FullPageCaptureAlgorithm {
         return stitchedImage;
     }
 
-    private Region getRegionInScreenshot(RegionProvider regionProvider, BufferedImage image, double pixelRatio, EyesScreenshot screenshot) {
+    private Region getRegionInScreenshot(Region region, BufferedImage image, double pixelRatio, EyesScreenshot screenshot) {
         // Region regionInScreenshot = screenshot.convertRegionLocation(regionProvider.getRegion(), regionProvider.getCoordinatesType(), CoordinatesType.SCREENSHOT_AS_IS);
-        Region regionInScreenshot = screenshot.getIntersectedRegion(regionProvider.getRegion(), regionProvider.getCoordinatesType(), CoordinatesType.SCREENSHOT_AS_IS);
+        Region regionInScreenshot = screenshot.getIntersectedRegion(region, region.getCoordinatesType(), CoordinatesType.SCREENSHOT_AS_IS);
 
         logger.verbose("Done! Region in screenshot: " + regionInScreenshot);
         regionInScreenshot = regionInScreenshot.scale(pixelRatio);

@@ -6,8 +6,5 @@ public class NullRegionProvider implements RegionProvider {
         return Region.EMPTY;
     }
 
-    @Override
-    public CoordinatesType getCoordinatesType() {
-        return CoordinatesType.CONTEXT_AS_IS;
-    }
+    public static final NullRegionProvider INSTANCE = new NullRegionProvider();
 }

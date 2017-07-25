@@ -367,8 +367,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         logger.verbose("getDefaultContentViewportSize()");
 
         if (defaultContentViewportSize != null && !forceQuery) {
-            logger.verbose("Using cached viewport size: "
-                    + defaultContentViewportSize);
+            logger.verbose("Using cached viewport size: " + defaultContentViewportSize);
             return defaultContentViewportSize;
         }
 
@@ -380,8 +379,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         }
 
         logger.verbose("Extracting viewport size...");
-        defaultContentViewportSize =
-                EyesSeleniumUtils.getViewportSizeOrDisplaySize(logger, this);
+        defaultContentViewportSize = EyesSeleniumUtils.getViewportSizeOrDisplaySize(logger, this);
         logger.verbose("Done! Viewport size: " + defaultContentViewportSize);
 
         if (currentFrames.size() > 0) {
@@ -420,8 +418,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     public String getUserAgent() {
         String userAgent;
         try {
-            userAgent = (String) this.driver.executeScript(
-                    "return navigator.userAgent");
+            userAgent = (String) this.driver.executeScript("return navigator.userAgent");
             logger.verbose("user agent: "+ userAgent);
         } catch (Exception e) {
             logger.verbose("Failed to obtain user-agent string");
