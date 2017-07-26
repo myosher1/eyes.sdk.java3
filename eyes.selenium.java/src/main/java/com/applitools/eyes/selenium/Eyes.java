@@ -9,16 +9,19 @@ import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.selenium.fluent.FrameLocator;
 import com.applitools.eyes.selenium.fluent.ISeleniumCheckTarget;
 import com.applitools.eyes.selenium.fluent.ISeleniumFrameCheckTarget;
-import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.utils.*;
-import org.apache.tools.ant.taskdefs.Tar;
+import com.applitools.utils.ArgumentGuard;
+import com.applitools.utils.ImageUtils;
+import com.applitools.utils.PropertyHandler;
+import com.applitools.utils.SimplePropertyHandler;
 import org.openqa.selenium.*;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.RemoteWebElement;
 
 import java.awt.image.BufferedImage;
 import java.net.URI;
-import java.util.Calendar;
+import java.security.acl.LastOwnerException;
 import java.util.List;
 
 /**
@@ -33,7 +36,6 @@ public class Eyes extends EyesBase {
     public static final double UNKNOWN_DEVICE_PIXEL_RATIO = 0;
     public static final double DEFAULT_DEVICE_PIXEL_RATIO = 1;
 
-
     private static final int USE_DEFAULT_MATCH_TIMEOUT = -1;
 
     // Seconds
@@ -47,17 +49,16 @@ public class Eyes extends EyesBase {
     private EyesWebDriver driver;
     private boolean dontGetTitle;
 
-
     private boolean forceFullPageScreenshot;
     private boolean checkFrameOrElement;
-    private RegionProvider regionToCheck;
+    private Region regionToCheck = null;
     private boolean hideScrollbars;
     private ImageRotation rotation;
     private double devicePixelRatio;
     private StitchMode stitchMode;
     private int waitBeforeScreenshots;
     private RegionVisibilityStrategy regionVisibilityStrategy;
-
+    private ElementPositionProvider elementPositionProvider;
     private SeleniumJavaScriptExecutor jsExecutor;
 
     /**
@@ -69,7 +70,6 @@ public class Eyes extends EyesBase {
         super(serverUrl);
 
         checkFrameOrElement = false;
-        regionToCheck = null;
         forceFullPageScreenshot = false;
         dontGetTitle = false;
         hideScrollbars = false;
@@ -79,7 +79,6 @@ public class Eyes extends EyesBase {
         regionVisibilityStrategy = new MoveToRegionVisibilityStrategy(logger);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Creates a new Eyes instance that interacts with the Eyes cloud
      * service.
@@ -93,18 +92,15 @@ public class Eyes extends EyesBase {
         return "eyes.selenium.java/3.13";
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * ﻿Forces a full page screenshot (by scrolling and stitching) if the
      * browser only ﻿supports viewport screenshots).
-     *
      * @param shouldForce Whether to force a full page screenshot or not.
      */
     public void setForceFullPageScreenshot(boolean shouldForce) {
         forceFullPageScreenshot = shouldForce;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * @return Whether Eyes should force a full page screenshot.
      */
@@ -112,11 +108,9 @@ public class Eyes extends EyesBase {
         return forceFullPageScreenshot;
     }
 
-    @SuppressWarnings("unused")
     /**
      * Sets the time to wait just before taking a screenshot (e.g., to allow
      * positioning to stabilize when performing a full page stitching).
-     *
      * @param waitBeforeScreenshots The time to wait (Milliseconds). Values
      *                              smaller or equal to 0, will cause the
      *                              default value to be used.
@@ -129,33 +123,26 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("unused")
     /**
-     *
      * @return The time to wait just before taking a screenshot.
      */
     public int getWaitBeforeScreenshots() {
         return waitBeforeScreenshots;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Turns on/off the automatic scrolling to a region being checked by
      * {@code checkRegion}.
-     *
-     * @param shouldScroll Whether to automatically scroll to a region being
-     *                     validated.
+     * @param shouldScroll Whether to automatically scroll to a region being validated.
      */
     public void setScrollToRegion(boolean shouldScroll) {
         if (shouldScroll) {
-            regionVisibilityStrategy =
-                    new MoveToRegionVisibilityStrategy(logger);
+            regionVisibilityStrategy = new MoveToRegionVisibilityStrategy(logger);
         } else {
             regionVisibilityStrategy = new NopRegionVisibilityStrategy(logger);
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * @return Whether to automatically scroll to a region being validated.
      */
@@ -164,15 +151,14 @@ public class Eyes extends EyesBase {
                 NopRegionVisibilityStrategy);
     }
 
-    @SuppressWarnings("unused")
     /**
      * Set the type of stitching used for full page screenshots. When the
      * page includes fixed position header/sidebar, use {@link StitchMode#CSS}.
      * Default is {@link StitchMode#SCROLL}.
-     *
      * @param mode The stitch mode to set.
      */
     public void setStitchMode(StitchMode mode) {
+        logger.verbose("setting stitch mode to " + mode);
         stitchMode = mode;
         if (driver != null) {
             switch (mode) {
@@ -192,7 +178,6 @@ public class Eyes extends EyesBase {
         return stitchMode;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Hide the scrollbars when taking screenshots.
      * @param shouldHide Whether to hide the scrollbars or not.
@@ -201,27 +186,21 @@ public class Eyes extends EyesBase {
         hideScrollbars = shouldHide;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
-     *
      * @return Whether or not scrollbars are hidden when taking screenshots.
      */
     public boolean getHideScrollbars() {
         return hideScrollbars;
     }
 
-    @SuppressWarnings("unused")
     /**
-     *
      * @return The image rotation data.
      */
     public ImageRotation getRotation() {
         return rotation;
     }
 
-    @SuppressWarnings("unused")
     /**
-     *
      * @param rotation The image rotation data.
      */
     public void setRotation(ImageRotation rotation) {
@@ -231,9 +210,7 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("unused")
     /**
-     *
      * @return The device pixel ratio, or {@link #UNKNOWN_DEVICE_PIXEL_RATIO}
      * if the DPR is not known yet or if it wasn't possible to extract it.
      */
@@ -241,7 +218,6 @@ public class Eyes extends EyesBase {
         return devicePixelRatio;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #open(WebDriver, String, String, RectangleSize, SessionType)}.
      * {@code sessionType} defaults to {@code null}.
@@ -251,7 +227,6 @@ public class Eyes extends EyesBase {
         return open(driver, appName, testName, viewportSize, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #open(WebDriver, String, String, SessionType)}.
      * {@code viewportSize} defaults to {@code null}.
@@ -313,28 +288,25 @@ public class Eyes extends EyesBase {
 
     private void initPositionProvider() {
         // Setting the correct position provider.
-        switch (getStitchMode()) {
+        StitchMode stitchMode = getStitchMode();
+        logger.verbose("initializing position provider. stitchMode: " + stitchMode);
+        switch (stitchMode) {
             case CSS:
-                setPositionProvider(
-                        new CssTranslatePositionProvider(logger, this.jsExecutor));
+                setPositionProvider(new CssTranslatePositionProvider(logger, this.jsExecutor));
                 break;
             default:
-                setPositionProvider(
-                        new ScrollPositionProvider(logger, this.jsExecutor));
+                setPositionProvider(new ScrollPositionProvider(logger, this.jsExecutor));
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #open(WebDriver, String, String, RectangleSize)}.
      * {@code viewportSize} defaults to {@code null}.
      */
-    protected WebDriver open(WebDriver driver, String appName, String testName,
-                             SessionType sessionType) {
+    protected WebDriver open(WebDriver driver, String appName, String testName, SessionType sessionType) {
         return open(driver, appName, testName, null, sessionType);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkWindow(String)}.
      * {@code tag} defaults to {@code null}.
@@ -356,8 +328,7 @@ public class Eyes extends EyesBase {
     /**
      * Takes a snapshot of the application under test and matches it with
      * the expected output.
-     * @param matchTimeout The amount of time to retry matching
-     *                     (Milliseconds).
+     * @param matchTimeout The amount of time to retry matching (Milliseconds).
      * @param tag          An optional tag to be associated with the snapshot.
      * @throws TestFailedException Thrown if a mismatch is detected and
      *                             immediate failure reports are enabled.
@@ -365,24 +336,14 @@ public class Eyes extends EyesBase {
     public void checkWindow(int matchTimeout, String tag) {
 
         if (getIsDisabled()) {
-            logger.log(String.format("CheckWindow(%d, '%s'): Ignored",
-                    matchTimeout, tag));
+            logger.log(String.format("CheckWindow(%d, '%s'): Ignored", matchTimeout, tag));
             return;
         }
 
-        logger.log(String.format("CheckWindow(%d, '%s')", matchTimeout,
-                tag));
+        logger.log(String.format("CheckWindow(%d, '%s')", matchTimeout, tag));
 
         super.checkWindowBase(
-                new RegionProvider() {
-                    public Region getRegion() {
-                        return Region.EMPTY;
-                    }
-
-                    public CoordinatesType getCoordinatesType() {
-                        return null;
-                    }
-                },
+                NullRegionProvider.INSTANCE,
                 tag,
                 false,
                 matchTimeout
@@ -394,8 +355,7 @@ public class Eyes extends EyesBase {
      * @param driver       The web driver that controls the browser hosting
      *                     the application under test.
      * @param appName      The name of the application under test.
-     * @param testName     The test name (will also be used as the tag name
-     *                     for the step).
+     * @param testName     The test name (will also be used as the tag name for the step).
      * @param viewportSize The required browser's viewport size
      *                     (i.e., the visible part of the document's body) or
      *                     {@code null} to use the current window's viewport.
@@ -411,7 +371,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testWindow(WebDriver, String, String, RectangleSize)}.
      * {@code viewportSize} defaults to {@code null}.
@@ -430,7 +389,6 @@ public class Eyes extends EyesBase {
         testWindow(driver, null, testName, viewportSize);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testWindow(WebDriver, String, RectangleSize)}.
      * {@code viewportSize} defaults to {@code null}.
@@ -439,17 +397,14 @@ public class Eyes extends EyesBase {
         testWindow(driver, testName, (RectangleSize) null);
     }
 
-    @SuppressWarnings("unused")
     /**
      * Run a visual performance test.
-     * @param driver The driver to use.
-     * @param appName The name of the application being tested.
+     * @param driver   The driver to use.
+     * @param appName  The name of the application being tested.
      * @param testName The test name.
-     * @param action Actions to be performed in parallel to starting the test.
-     * @param deadline The expected time until the application
-     *                        should have been loaded. (Seconds)
-     * @param timeout The maximum time until the application should have been
-     *                   loaded. (Seconds)
+     * @param action   Actions to be performed in parallel to starting the test.
+     * @param deadline The expected time until the application should have been loaded. (Seconds)
+     * @param timeout  The maximum time until the application should have been loaded. (Seconds)
      */
     public void testResponseTime(final WebDriver driver, String appName,
                                  String testName, final WebDriverAction action,
@@ -465,16 +420,7 @@ public class Eyes extends EyesBase {
         }
 
         MatchWindowDataWithScreenshot result =
-                super.testResponseTimeBase(
-                        new RegionProvider() {
-                            public Region getRegion() {
-                                return Region.EMPTY;
-                            }
-
-                            public CoordinatesType getCoordinatesType() {
-                                return null;
-                            }
-                        },
+                super.testResponseTimeBase(NullRegionProvider.INSTANCE,
                         runnableAction,
                         deadline,
                         timeout,
@@ -497,10 +443,9 @@ public class Eyes extends EyesBase {
         closeResponseTime(deadlineExceeded);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action,
@@ -509,12 +454,10 @@ public class Eyes extends EyesBase {
                 (deadline + RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
-     *
+     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action) {
@@ -524,11 +467,10 @@ public class Eyes extends EyesBase {
                         RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
      * {@code action} defaults to {@code null}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, int deadline) {
@@ -536,11 +478,10 @@ public class Eyes extends EyesBase {
                 (deadline + RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      * {@code action} defaults to {@code null}.
      */
     public void testResponseTime(WebDriver driver, String appName,
@@ -551,12 +492,10 @@ public class Eyes extends EyesBase {
                         RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
     }
 
-    @SuppressWarnings("unused")
     /**
      * Similar to {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)},
      * except this method sets the viewport size before starting the
      * performance test.
-     *
      * @param viewportSize The required viewport size.
      */
     public void testResponseTime(WebDriver driver, String appName,
@@ -571,10 +510,9 @@ public class Eyes extends EyesBase {
         testResponseTime(driver, appName, testName, action, deadline, timeout);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action,
@@ -584,11 +522,10 @@ public class Eyes extends EyesBase {
                 viewportSize);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action,
@@ -600,7 +537,6 @@ public class Eyes extends EyesBase {
                 viewportSize);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
      * {@code action} defaults to {@code null}.
@@ -612,10 +548,9 @@ public class Eyes extends EyesBase {
                 viewportSize);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, int, int, RectangleSize)}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, int deadline,
@@ -625,11 +560,10 @@ public class Eyes extends EyesBase {
                 viewportSize);
     }
 
-    @SuppressWarnings("unused")
     /**
      * See {@link #testResponseTime(WebDriver, String, String, int, int, RectangleSize)}.
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_TIMEOUT}.
+     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, RectangleSize viewportSize) {
@@ -642,6 +576,8 @@ public class Eyes extends EyesBase {
 
     public void check(String name, ICheckSettings checkSettings) {
         ArgumentGuard.notNull(checkSettings, "checkSettings");
+
+        logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
@@ -657,13 +593,7 @@ public class Eyes extends EyesBase {
                 public Region getRegion() {
                     return targetRegion;
                 }
-
-                @Override
-                public CoordinatesType getCoordinatesType() {
-                    return CoordinatesType.CONTEXT_RELATIVE;
-                }
             }, name, false, checkSettings);
-
         } else if (seleniumCheckTarget != null) {
             By targetSelector = seleniumCheckTarget.getTargetSelector();
             if (targetSelector != null) {
@@ -688,37 +618,17 @@ public class Eyes extends EyesBase {
                     this.driver.switchTo().parentFrame();
                     switchedToFrameCount--;
 
-                    //regionVisibilityStrategy_.MoveToRegion(PositionProvider, new Location(element.Location));
-
                     this.checkWindowBase(new RegionProvider() {
                         @Override
                         public Region getRegion() {
                             Point p = element.getLocation();
-                            Location loc = new Location(p.getX(), p.getY());
                             Dimension d = element.getSize();
-                            RectangleSize rs = new RectangleSize(d.width, d.height);
-                            return new Region(loc, rs);
-                        }
-
-                        @Override
-                        public CoordinatesType getCoordinatesType() {
-                            return CoordinatesType.CONTEXT_RELATIVE;
+                            return new Region(p.getX(), p.getY(), d.getWidth(), d.getHeight(), CoordinatesType.CONTEXT_RELATIVE);
                         }
                     }, name, false, checkSettings);
-                    //regionVisibilityStrategy_.ReturnToOriginalPosition(PositionProvider);
                 }
             } else {
-                this.checkWindowBase(new RegionProvider() {
-                    @Override
-                    public Region getRegion() {
-                        return Region.EMPTY;
-                    }
-
-                    @Override
-                    public CoordinatesType getCoordinatesType() {
-                        return null;
-                    }
-                }, name, false, checkSettings);
+                this.checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
             }
         }
 
@@ -726,6 +636,8 @@ public class Eyes extends EyesBase {
             this.driver.switchTo().parentFrame();
             switchedToFrameCount--;
         }
+
+        logger.verbose("done!");
     }
 
     private int switchToFrame(ISeleniumCheckTarget checkTarget) {
@@ -766,15 +678,105 @@ public class Eyes extends EyesBase {
     }
 
     private void checkFullFrameOrElement(String name, ICheckSettings checkSettings) {
+        checkFrameOrElement = true;
+
+        logger.verbose("checkFullFrameOrElement()");
+
+        checkWindowBase(new RegionProvider() {
+            @Override
+            public Region getRegion() {
+                if (checkFrameOrElement) {
+                    ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor);
+                    spp.setPosition(Location.ZERO);
+
+                    byte[] screenshotBytes = driver.getScreenshotAs(OutputType.BYTES);
+                    BufferedImage screenshotImage = ImageUtils.imageFromBytes(screenshotBytes);
+
+                    // FIXME - Scaling should be handled in a single place instead
+                    updateScalingParams().getScaleProvider(screenshotImage.getWidth());
+
+                    final EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
+
+                    logger.verbose("replacing regionToCheck");
+                    regionToCheck = screenshot.getFrameWindow();
+                }
+
+                return Region.EMPTY;
+            }
+        }, name, false, checkSettings);
+
+        checkFrameOrElement = false;
     }
 
     private void checkRegion(By targetSelector, String name, ICheckSettings checkSettings) {
+        ArgumentGuard.notNull(targetSelector, "selector");
+
+        final WebElement element = driver.getRemoteWebDriver().findElement(targetSelector);
+        Point p = element.getLocation();
+        final Location elementLocation = new Location(p.getX(), p.getY());
+        Dimension s = element.getSize();
+        final RectangleSize elementSize = new RectangleSize(s.getWidth(), s.getHeight());
+        regionVisibilityStrategy.moveToRegion(getPositionProvider(), elementLocation);
+
+        checkWindowBase(new RegionProvider() {
+            @Override
+            public Region getRegion() {
+                return new Region(elementLocation, elementSize, CoordinatesType.CONTEXT_RELATIVE);
+            }
+        }, name, false, checkSettings);
+
+        logger.verbose("Done! trying to scroll back to original position..");
+        regionVisibilityStrategy.returnToOriginalPosition(positionProvider);
+        logger.verbose("Done!");
     }
 
     private void checkElement(WebElement element, String name, ICheckSettings checkSettings) {
+
+        final EyesRemoteWebElement eyesElement = (element instanceof EyesRemoteWebElement) ?
+                (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
+
+        PositionProvider originalPositionProvider = positionProvider;
+        PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
+        Location originalScrollPosition = scrollPositionProvider.getCurrentPosition();
+
+        Point p = eyesElement.getLocation();
+        scrollPositionProvider.setPosition(new Location(p.getX(), p.getY()));
+
+        String originalOverflow = eyesElement.getOverflow();
+
+        try {
+            checkFrameOrElement = true;
+            String displayStyle = eyesElement.getComputedStyle("display");
+            if (!displayStyle.equals("inline")) {
+                elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
+            }
+            eyesElement.setOverflow("hidden");
+            //Rectangle rect = eyesElement.GetClientBounds();
+            final Region rect = eyesElement.getBounds();
+
+            final int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
+            final int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
+
+            logger.verbose("replacing regionToCheck");
+            regionToCheck = new Region(rect.getLeft() + borderLeftWidth, rect.getTop() + borderTopWidth,
+                    eyesElement.getClientWidth(), eyesElement.getClientHeight(),
+                    CoordinatesType.CONTEXT_RELATIVE);
+
+            logger.verbose(String.format("Element region: %s", regionToCheck));
+
+            checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
+        } finally {
+            eyesElement.setOverflow(originalOverflow);
+
+            checkFrameOrElement = false;
+
+            scrollPositionProvider.setPosition(originalScrollPosition);
+            positionProvider = originalPositionProvider;
+            regionToCheck = Region.EMPTY;
+            elementPositionProvider = null;
+        }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegion(Region, int, String)}.
      * {@code tag} defaults to {@code null}.
@@ -784,44 +786,27 @@ public class Eyes extends EyesBase {
         checkRegion(region, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
-     * Takes a snapshot of the application under test and matches a specific
-     * region within it with the expected output.
-     *
-     * @param region       A non empty region representing the screen region to
-     *                     check.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * Takes a snapshot of the application under test and matches a specific region within it with the expected output.
+     * @param region       A non empty region representing the screen region to check.
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
-     * @throws TestFailedException Thrown if a mismatch is detected and
-     *                             immediate failure reports are enabled.
+     * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
     public void checkRegion(final Region region, int matchTimeout, String tag) {
 
         if (getIsDisabled()) {
-            logger.log(String.format("CheckRegion([%s], %d, '%s'): Ignored",
-                    region, matchTimeout, tag));
+            logger.log(String.format("CheckRegion([%s], %d, '%s'): Ignored", region, matchTimeout, tag));
             return;
         }
 
         ArgumentGuard.notNull(region, "region");
 
-        logger.verbose(String.format("CheckRegion([%s], %d, '%s')", region,
-                matchTimeout, tag));
+        logger.verbose(String.format("CheckRegion([%s], %d, '%s')", region, matchTimeout, tag));
 
         super.checkWindowBase(
                 new RegionProvider() {
-
-                    public Region getRegion() {
-                        return region;
-                    }
-
-                    public CoordinatesType getCoordinatesType() {
-                        // If we're given a region, it is relative to the
-                        // frame's viewport.
-                        return CoordinatesType.CONTEXT_AS_IS;
-                    }
+                    public Region getRegion() { return region; }
                 },
                 tag,
                 false,
@@ -829,7 +814,6 @@ public class Eyes extends EyesBase {
         );
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegion(WebElement, String)}.
      * {@code tag} defaults to {@code null}.
@@ -838,7 +822,6 @@ public class Eyes extends EyesBase {
         checkRegion(element, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(org.openqa.selenium.WebElement)}, otherwise
@@ -852,7 +835,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegion(WebElement, int, String)}.
      * Default match timeout is used.
@@ -861,7 +843,6 @@ public class Eyes extends EyesBase {
         checkRegion(element, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * if {@code stitchContent} is {@code false} then behaves the same {@link
      * #checkRegion(org.openqa.selenium.WebElement, String)}. Otherwise
@@ -876,23 +857,18 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Takes a snapshot of the application under test and matches a region of
      * a specific element with the expected region output.
-     *
      * @param element      The element which represents the region to check.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
      * @throws TestFailedException if a mismatch is detected and
      *                             immediate failure reports are enabled
      */
-    public void checkRegion(final WebElement element, int matchTimeout,
-                            String tag) {
+    public void checkRegion(final WebElement element, int matchTimeout, String tag) {
         if (getIsDisabled()) {
-            logger.log(String.format("CheckRegion(element, %d, '%s'): Ignored",
-                    matchTimeout, tag));
+            logger.log(String.format("CheckRegion(element, %d, '%s'): Ignored", matchTimeout, tag));
             return;
         }
 
@@ -909,18 +885,11 @@ public class Eyes extends EyesBase {
 
         super.checkWindowBase(
                 new RegionProvider() {
-
                     public Region getRegion() {
                         Point p = element.getLocation();
                         Dimension d = element.getSize();
                         return new Region(p.getX(), p.getY(), d.getWidth(),
-                                d.getHeight());
-                    }
-
-                    public CoordinatesType getCoordinatesType() {
-                        // If we're given a region, it is relative to the
-                        // frame's viewport.
-                        return CoordinatesType.CONTEXT_RELATIVE;
+                                d.getHeight(), CoordinatesType.CONTEXT_RELATIVE);
                     }
                 },
                 tag,
@@ -932,7 +901,6 @@ public class Eyes extends EyesBase {
         logger.verbose("Done!");
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * if {@code stitchContent} is {@code false} then behaves the same {@link
      * #checkRegion(org.openqa.selenium.WebElement, int, String)}. Otherwise
@@ -947,7 +915,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegion(By, String)}.
      * {@code tag} defaults to {@code null}.
@@ -956,7 +923,6 @@ public class Eyes extends EyesBase {
         checkRegion(selector, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(org.openqa.selenium.By)}. Otherwise, behaves the
@@ -970,7 +936,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegion(By, int, String)}.
      * Default match timeout is used.
@@ -979,7 +944,6 @@ public class Eyes extends EyesBase {
         checkRegion(selector, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(org.openqa.selenium.By, String)}. Otherwise,
@@ -993,14 +957,11 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Takes a snapshot of the application under test and matches a region
      * specified by the given selector with the expected region output.
-     *
      * @param selector     Selects the region to check.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the screenshot.
      * @throws TestFailedException if a mismatch is detected and
      *                             immediate failure reports are enabled
@@ -1016,7 +977,6 @@ public class Eyes extends EyesBase {
         checkRegion(driver.findElement(selector), matchTimeout, tag);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(org.openqa.selenium.By, int, String)}. Otherwise,
@@ -1031,7 +991,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(int, By, String)}.
      * {@code tag} defaults to {@code null}.
@@ -1040,17 +999,14 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(frameIndex, selector, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(int, By, String)}.
      * {@code tag} defaults to {@code null}.
      */
-    public void checkRegionInFrame(int frameIndex, By selector, boolean
-            stitchContent) {
+    public void checkRegionInFrame(int frameIndex, By selector, boolean stitchContent) {
         checkRegionInFrame(frameIndex, selector, null, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(int, By, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
@@ -1059,24 +1015,20 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(frameIndex, selector, tag, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * Default match timeout is used.
      */
-    public void checkRegionInFrame(int frameIndex, By selector, String tag,
-                                   boolean stitchContent) {
+    public void checkRegionInFrame(int frameIndex, By selector, String tag, boolean stitchContent) {
         checkRegionInFrame(frameIndex, selector, USE_DEFAULT_MATCH_TIMEOUT,
                 tag, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
      */
-    public void checkRegionInFrame(int frameIndex, By selector,
-                                   int matchTimeout, String tag) {
+    public void checkRegionInFrame(int frameIndex, By selector, int matchTimeout, String tag) {
         checkRegionInFrame(frameIndex, selector, matchTimeout, tag, false);
     }
 
@@ -1087,8 +1039,7 @@ public class Eyes extends EyesBase {
      *                      as would be used in a call to
      *                      driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
-     * @param matchTimeout  The amount of time to retry matching.
-     *                      (Milliseconds)
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the snapshot.
      * @param stitchContent If {@code true}, stitch the internal content of
      *                      the region (i.e., perform
@@ -1113,9 +1064,8 @@ public class Eyes extends EyesBase {
         driver.switchTo().parentFrame();
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
-     * See {@link #checkRegionInFrame(String, By)}.
+     * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector) {
@@ -1123,15 +1073,13 @@ public class Eyes extends EyesBase {
     }
 
     /**
-     * See {@link #checkRegionInFrame(String, By, String, boolean)}.
+     * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code tag} defaults to {@code null}.
      */
-    public void checkRegionInFrame(String frameNameOrId, By selector,
-                                   boolean stitchContent) {
+    public void checkRegionInFrame(String frameNameOrId, By selector, boolean stitchContent) {
         checkRegionInFrame(frameNameOrId, selector, null, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
@@ -1142,7 +1090,6 @@ public class Eyes extends EyesBase {
                 tag, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * Default match timeout is used
@@ -1153,7 +1100,6 @@ public class Eyes extends EyesBase {
                 tag, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
@@ -1163,20 +1109,17 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(frameNameOrId, selector, matchTimeout, tag, false);
     }
 
-
     /**
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
      * @param frameNameOrId The name or id of the frame to switch to. (as would
      *                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
-     * @param matchTimeout  The amount of time to retry matching.
-     *                      (Milliseconds)
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the snapshot.
      * @param stitchContent If {@code true}, stitch the internal content of
      *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the
-     *                      region.
+     *                      {@link #checkElement(By, int, String)} on the region.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    int matchTimeout, String tag,
@@ -1196,7 +1139,6 @@ public class Eyes extends EyesBase {
         driver.switchTo().parentFrame();
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(WebElement, By, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
@@ -1205,27 +1147,22 @@ public class Eyes extends EyesBase {
         checkRegionInFrame(frameReference, selector, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code tag} defaults to {@code null}.
      */
-    public void checkRegionInFrame(WebElement frameReference, By selector,
-                                   boolean stitchContent) {
+    public void checkRegionInFrame(WebElement frameReference, By selector, boolean stitchContent) {
         checkRegionInFrame(frameReference, selector, null, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
      */
-    public void checkRegionInFrame(WebElement frameReference, By selector,
-                                   String tag) {
+    public void checkRegionInFrame(WebElement frameReference, By selector, String tag) {
         checkRegionInFrame(frameReference, selector, tag, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(WebElement, By, int, String, boolean)}.
      * Default match timeout is used.
@@ -1236,7 +1173,6 @@ public class Eyes extends EyesBase {
                 tag, stitchContent);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(WebElement, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
@@ -1279,7 +1215,6 @@ public class Eyes extends EyesBase {
         driver.switchTo().parentFrame();
     }
 
-
     /**
      * Updates the state of scaling related parameters.
      */
@@ -1296,10 +1231,9 @@ public class Eyes extends EyesBase {
                         "Failed to extract device pixel ratio! Using default.");
                 devicePixelRatio = DEFAULT_DEVICE_PIXEL_RATIO;
             }
-            logger.verbose(String.format("Device pixel ratio: %f",
-                    devicePixelRatio));
+            logger.verbose(String.format("Device pixel ratio: %f", devicePixelRatio));
 
-            logger.verbose("Setting scale provider..");
+            logger.verbose("Setting scale provider...");
             try {
                 factory = new ContextBasedScaleProviderFactory(positionProvider.getEntireSize(), getViewportSize(),
                         devicePixelRatio, scaleProviderHandler);
@@ -1320,64 +1254,38 @@ public class Eyes extends EyesBase {
 
     /**
      * Verifies the current frame.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
      */
     protected void checkCurrentFrame(int matchTimeout, String tag) {
         try {
-            logger.verbose(String.format("CheckCurrentFrame(%d, '%s')",
-                    matchTimeout, tag));
+            logger.verbose(String.format("CheckCurrentFrame(%d, '%s')", matchTimeout, tag));
 
             checkFrameOrElement = true;
 
             logger.verbose("Getting screenshot as base64..");
             String screenshot64 = driver.getScreenshotAs(OutputType.BASE64);
             logger.verbose("Done! Creating image object...");
-            BufferedImage screenshotImage =
-                    ImageUtils.imageFromBase64(screenshot64);
+            BufferedImage screenshotImage = ImageUtils.imageFromBase64(screenshot64);
 
             // FIXME - Scaling should be handled in a single place instead
             ScaleProvider scaleProvider = updateScalingParams().getScaleProvider(screenshotImage.getWidth());
 
             screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
             logger.verbose("Done! Building required object...");
-            final EyesWebDriverScreenshot screenshot =
-                    new EyesWebDriverScreenshot(logger, driver,
-                            screenshotImage);
+            final EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
             logger.verbose("Done!");
 
-            regionToCheck = new RegionProvider() {
-                public Region getRegion() {
-                    return screenshot.getFrameWindow();
-                }
+            logger.verbose("replacing regionToCheck");
+            regionToCheck = screenshot.getFrameWindow();
 
-                public CoordinatesType getCoordinatesType() {
-                    return CoordinatesType.SCREENSHOT_AS_IS;
-                }
-            };
-
-            super.checkWindowBase(
-                    new RegionProvider() {
-                        public Region getRegion() {
-                            return Region.EMPTY;
-                        }
-
-                        public CoordinatesType getCoordinatesType() {
-                            return null;
-                        }
-                    },
-                    tag,
-                    false,
-                    matchTimeout
-            );
+            super.checkWindowBase(NullRegionProvider.INSTANCE, tag, false, matchTimeout);
         } finally {
             checkFrameOrElement = false;
-            regionToCheck = null;
+            regionToCheck = Region.EMPTY;
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(String, int, String)}.
      * {@code tag} defaults to {@code null}. Default match timeout is used.
@@ -1386,7 +1294,6 @@ public class Eyes extends EyesBase {
         checkFrame(frameNameOrId, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(String, int, String)}.
      * Default match timeout is used.
@@ -1401,8 +1308,7 @@ public class Eyes extends EyesBase {
      * @param frameNameOrId The name or id of the frame to check. (The same
      *                      name/id as would be used in a call to
      *                      driver.switchTo().frame()).
-     * @param matchTimeout  The amount of time to retry matching.
-     *                      (Milliseconds)
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the match.
      */
     public void checkFrame(String frameNameOrId, int matchTimeout, String tag) {
@@ -1429,7 +1335,6 @@ public class Eyes extends EyesBase {
         logger.verbose("Done!");
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(int, int, String)}.
      * {@code tag} defaults to {@code null}. Default match timeout is used.
@@ -1438,7 +1343,6 @@ public class Eyes extends EyesBase {
         checkFrame(frameIndex, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(int, int, String)}.
      * Default match timeout is used.
@@ -1453,8 +1357,7 @@ public class Eyes extends EyesBase {
      * @param frameIndex   The index of the frame to switch to. (The same index
      *                     as would be used in a call to
      *                     driver.switchTo().frame()).
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the match.
      */
     public void checkFrame(int frameIndex, int matchTimeout, String tag) {
@@ -1481,7 +1384,6 @@ public class Eyes extends EyesBase {
 
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(WebElement, int, String)}.
      * {@code tag} defaults to {@code null}.
@@ -1491,7 +1393,6 @@ public class Eyes extends EyesBase {
         checkFrame(frameReference, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(WebElement, int, String)}.
      * Default match timeout is used.
@@ -1519,8 +1420,7 @@ public class Eyes extends EyesBase {
 
         ArgumentGuard.notNull(frameReference, "frameReference");
 
-        logger.log(String.format("CheckFrame(element, %d, '%s')",
-                matchTimeout, tag));
+        logger.log(String.format("CheckFrame(element, %d, '%s')", matchTimeout, tag));
 
         logger.verbose("Switching to frame based on element reference...");
         driver.switchTo().frame(frameReference);
@@ -1571,7 +1471,6 @@ public class Eyes extends EyesBase {
         logger.verbose("Done!");
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(String[], int, String)}.
      * Default match timeout is used.
@@ -1580,7 +1479,6 @@ public class Eyes extends EyesBase {
         checkFrame(framesPath, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkFrame(String[], int, String)}.
      * Default match timeout is used.
@@ -1594,23 +1492,18 @@ public class Eyes extends EyesBase {
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
      * @param framePath     The path to the frame to check. This is a list of
-     *                      frame names/IDs (where each frame is nested in the
-     *                      previous frame).
+     *                      frame names/IDs (where each frame is nested in the previous frame).
      * @param selector      A Selector specifying the region to check.
      * @param matchTimeout  The amount of time to retry matching (milliseconds).
      * @param tag           An optional tag to be associated with the snapshot.
-     * @param stitchContent Whether or not to stitch the internal content of
-     *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the
-     *                      region.
+     * @param stitchContent Whether or not to stitch the internal content of the
+     *                      region (i.e., perform {@link #checkElement(By, int, String)} on the region.
      */
     public void checkRegionInFrame(String[] framePath, By selector,
                                    int matchTimeout, String tag,
                                    boolean stitchContent) {
         if (getIsDisabled()) {
-            logger.log(String.format(
-                    "checkRegionInFrame(framePath, selector, %d, '%s'): Ignored",
-                    matchTimeout, tag));
+            logger.log(String.format("checkRegionInFrame(framePath, selector, %d, '%s'): Ignored", matchTimeout, tag));
             return;
         }
         ArgumentGuard.notNull(framePath, "framePath");
@@ -1622,12 +1515,10 @@ public class Eyes extends EyesBase {
         // and call check frame.
         logger.verbose("Switching to parent frame according to frames path..");
         String[] parentFramePath = new String[framePath.length - 1];
-        System.arraycopy(framePath, 0, parentFramePath, 0,
-                parentFramePath.length);
+        System.arraycopy(framePath, 0, parentFramePath, 0, parentFramePath.length);
         ((EyesTargetLocator) (driver.switchTo())).frames(parentFramePath);
         logger.verbose("Done! Calling checkRegionInFrame..");
-        checkRegionInFrame(framePath[framePath.length - 1], selector,
-                matchTimeout, tag, stitchContent);
+        checkRegionInFrame(framePath[framePath.length - 1], selector, matchTimeout, tag, stitchContent);
         logger.verbose("Done! switching back to default content..");
         driver.switchTo().defaultContent();
         logger.verbose("Done! Switching into the original frame..");
@@ -1639,30 +1530,25 @@ public class Eyes extends EyesBase {
      * See {@link #checkRegionInFrame(String[], By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
      */
-    public void checkRegionInFrame(String[] framePath, By selector,
-                                   int matchTimeout, String tag) {
+    public void checkRegionInFrame(String[] framePath, By selector, int matchTimeout, String tag) {
         checkRegionInFrame(framePath, selector, matchTimeout, tag, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(String[], By, int, String)}.
      * Default match timeout is used.
      */
-    public void checkRegionInFrame(String[] framePath, By selector,
-                                   String tag) {
+    public void checkRegionInFrame(String[] framePath, By selector, String tag) {
         checkRegionInFrame(framePath, selector, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkRegionInFrame(String[], By, int, String)}.
      * Default match timeout is used.
      * {@code tag} defaults to {@code null}.
      */
     public void checkRegionInFrame(String[] framePath, By selector) {
-        checkRegionInFrame(framePath, selector, USE_DEFAULT_MATCH_TIMEOUT,
-                null);
+        checkRegionInFrame(framePath, selector, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
     /**
@@ -1685,14 +1571,12 @@ public class Eyes extends EyesBase {
      * Takes a snapshot of the application under test and matches a specific
      * element with the expected region output.
      * @param element      The element to check.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
      * @throws TestFailedException if a mismatch is detected and
      *                             immediate failure reports are enabled
      */
-    protected void checkElement(final WebElement element, int matchTimeout,
-                                String tag) {
+    protected void checkElement(final WebElement element, int matchTimeout, String tag) {
         String originalOverflow = null;
         EyesRemoteWebElement eyesElement;
 
@@ -1700,15 +1584,13 @@ public class Eyes extends EyesBase {
         if (element instanceof EyesRemoteWebElement) {
             eyesElement = (EyesRemoteWebElement) element;
         } else {
-            eyesElement = new EyesRemoteWebElement(logger,
-                    driver, (RemoteWebElement) element);
+            eyesElement = new EyesRemoteWebElement(logger, driver, element);
         }
 
         PositionProvider originalPositionProvider = getPositionProvider();
         try {
             checkFrameOrElement = true;
-            setPositionProvider(new ElementPositionProvider(logger, driver,
-                    element));
+            setPositionProvider(new ElementPositionProvider(logger, driver, element));
 
             // Set overflow to "hidden".
             originalOverflow = eyesElement.getOverflow();
@@ -1717,36 +1599,24 @@ public class Eyes extends EyesBase {
             Point p = eyesElement.getLocation();
             Dimension d = element.getSize();
 
-            int borderLeftWidth = eyesElement.getBorderLeftWidth();
-            int borderRightWidth = eyesElement.getBorderRightWidth();
-            int borderTopWidth = eyesElement.getBorderTopWidth();
-            int borderBottomWidth = eyesElement.getBorderBottomWidth();
+            int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
+            int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
 
-            final Region elementRegion = new Region(
-                    p.getX() + borderLeftWidth,
-                    p.getY() + borderTopWidth,
-                    d.getWidth() - borderLeftWidth - borderRightWidth,
-                    d.getHeight() - borderTopWidth - borderBottomWidth);
+            int elementWidth = eyesElement.getClientWidth();
+            int elementHeight = eyesElement.getClientHeight();
+
+            final Region elementRegion = new Region(p.getX() + borderLeftWidth, p.getY() + borderTopWidth,
+                    elementWidth, elementHeight, CoordinatesType.CONTEXT_RELATIVE);
 
             logger.verbose("Element region: " + elementRegion);
 
-            regionToCheck = new RegionProvider() {
-                public Region getRegion() {
-                    return elementRegion;
-                }
+            logger.verbose("replacing regionToCheck");
+            regionToCheck = elementRegion;
 
-                public CoordinatesType getCoordinatesType() {
-                    return CoordinatesType.CONTEXT_RELATIVE;
-                }
-            };
             super.checkWindowBase(
                     new RegionProvider() {
                         public Region getRegion() {
                             return Region.EMPTY;
-                        }
-
-                        public CoordinatesType getCoordinatesType() {
-                            return null;
                         }
                     },
                     tag,
@@ -1784,8 +1654,7 @@ public class Eyes extends EyesBase {
      * Takes a snapshot of the application under test and matches an element
      * specified by the given selector with the expected region output.
      * @param selector     Selects the element to check.
-     * @param matchTimeout The amount of time to retry matching.
-     *                     (Milliseconds)
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the screenshot.
      * @throws TestFailedException if a mismatch is detected and
      *                             immediate failure reports are enabled
@@ -1793,9 +1662,7 @@ public class Eyes extends EyesBase {
     protected void checkElement(By selector, int matchTimeout, String tag) {
 
         if (getIsDisabled()) {
-            logger.log(String.format(
-                    "CheckElement(selector, %d, '%s'): Ignored",
-                    matchTimeout, tag));
+            logger.log(String.format("CheckElement(selector, %d, '%s'): Ignored", matchTimeout, tag));
             return;
         }
 
@@ -1805,12 +1672,10 @@ public class Eyes extends EyesBase {
     /**
      * Adds a mouse trigger.
      * @param action  Mouse action.
-     * @param control The control on which the trigger is activated (context
-     *                relative coordinates).
+     * @param control The control on which the trigger is activated (context relative coordinates).
      * @param cursor  The cursor's position relative to the control.
      */
-    protected void addMouseTrigger(MouseAction action, Region control,
-                                   Location cursor) {
+    protected void addMouseTrigger(MouseAction action, Region control, Location cursor) {
         if (getIsDisabled()) {
             logger.verbose(String.format("Ignoring %s (disabled)", action));
             return;
@@ -1818,15 +1683,13 @@ public class Eyes extends EyesBase {
 
         // Triggers are actually performed on the previous window.
         if (lastScreenshot == null) {
-            logger.verbose(String.format("Ignoring %s (no screenshot)",
-                    action));
+            logger.verbose(String.format("Ignoring %s (no screenshot)", action));
             return;
         }
 
         if (!FrameChain.isSameFrameChain(driver.getFrameChain(),
                 ((EyesWebDriverScreenshot) lastScreenshot).getFrameChain())) {
-            logger.verbose(String.format("Ignoring %s (different frame)",
-                    action));
+            logger.verbose(String.format("Ignoring %s (different frame)", action));
             return;
         }
 
@@ -1854,15 +1717,13 @@ public class Eyes extends EyesBase {
 
         // Triggers are actually performed on the previous window.
         if (lastScreenshot == null) {
-            logger.verbose(String.format("Ignoring %s (no screenshot)",
-                    action));
+            logger.verbose(String.format("Ignoring %s (no screenshot)", action));
             return;
         }
 
         if (!FrameChain.isSameFrameChain(driver.getFrameChain(),
                 ((EyesWebDriverScreenshot) lastScreenshot).getFrameChain())) {
-            logger.verbose(String.format("Ignoring %s (different frame)",
-                    action));
+            logger.verbose(String.format("Ignoring %s (different frame)", action));
             return;
         }
 
@@ -1887,15 +1748,13 @@ public class Eyes extends EyesBase {
         }
 
         if (lastScreenshot == null) {
-            logger.verbose(String.format("Ignoring '%s' (no screenshot)",
-                    text));
+            logger.verbose(String.format("Ignoring '%s' (no screenshot)", text));
             return;
         }
 
         if (!FrameChain.isSameFrameChain(driver.getFrameChain(),
                 ((EyesWebDriverScreenshot) lastScreenshot).getFrameChain())) {
-            logger.verbose(String.format("Ignoring '%s' (different frame)",
-                    text));
+            logger.verbose(String.format("Ignoring '%s' (different frame)", text));
             return;
         }
 
@@ -1918,29 +1777,26 @@ public class Eyes extends EyesBase {
         Point pl = element.getLocation();
         Dimension ds = element.getSize();
 
-        Region elementRegion = new Region(pl.getX(), pl.getY(), ds.getWidth(),
-                ds.getHeight());
+        Region elementRegion = new Region(pl.getX(), pl.getY(), ds.getWidth(), ds.getHeight());
 
         addTextTrigger(elementRegion, text);
     }
 
-    @Override
     /**
      * Use this method only if you made a previous call to {@link #open
      * (WebDriver, String, String)} or one of its variants.
-     *
+     * <p>
      * {@inheritDoc}
      */
+    @Override
     protected RectangleSize getViewportSize() {
         return driver.getDefaultContentViewportSize();
     }
 
-    @SuppressWarnings("unused")
     /**
      * Call this method if for some
      * reason you don't want to call {@link #open(WebDriver, String, String)}
      * (or one of its variants) yet.
-     *
      * @param driver The driver to use for getting the viewport.
      * @return The viewport size of the current context.
      */
@@ -1949,13 +1805,13 @@ public class Eyes extends EyesBase {
         return EyesSeleniumUtils.getViewportSizeOrDisplaySize(new Logger(), driver);
     }
 
-    @Override
     /**
      * Use this method only if you made a previous call to {@link #open
      * (WebDriver, String, String)} or one of its variants.
-     *
+     * <p>
      * {@inheritDoc}
      */
+    @Override
     protected void setViewportSize(RectangleSize size) {
         FrameChain originalFrame = driver.getFrameChain();
         driver.switchTo().defaultContent();
@@ -1969,8 +1825,7 @@ public class Eyes extends EyesBase {
             throw new TestFailedException("Failed to set the viewport size", e);
         }
         ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
-        this.viewportSize = new RectangleSize(size.getWidth(),
-                size.getHeight());
+        this.viewportSize = new RectangleSize(size.getWidth(), size.getHeight());
     }
 
     /**
@@ -1999,56 +1854,38 @@ public class Eyes extends EyesBase {
                 originalOverflow =
                         EyesSeleniumUtils.hideScrollbars(driver, 200);
             } catch (EyesDriverOperationException e) {
-                logger.log("WARNING: Failed to hide scrollbars! Error: "
-                        + e.getMessage());
+                logger.log("WARNING: Failed to hide scrollbars! Error: " + e.getMessage());
             }
         }
         try {
-            ImageProvider imageProvider =
-                    new TakesScreenshotImageProvider(logger, driver);
-            EyesScreenshotFactory screenshotFactory =
-                    new EyesWebDriverScreenshotFactory(logger, driver);
+            ImageProvider imageProvider = new TakesScreenshotImageProvider(logger, driver);
+            EyesScreenshotFactory screenshotFactory = new EyesWebDriverScreenshotFactory(logger, driver);
             if (checkFrameOrElement) {
                 logger.verbose("Check frame/element requested");
-                FullPageCaptureAlgorithm algo =
-                        new FullPageCaptureAlgorithm(logger);
+                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger);
                 BufferedImage entireFrameOrElement =
                         algo.getStitchedRegion(imageProvider, regionToCheck,
-                                positionProvider, positionProvider,
+                                positionProvider, elementPositionProvider == null ? positionProvider : elementPositionProvider,
                                 scaleProviderFactory,
                                 cutProviderHandler.get(),
                                 getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory);
                 logger.verbose("Building screenshot object...");
-                result = new EyesWebDriverScreenshot(logger, driver,
-                        entireFrameOrElement,
-                        new RectangleSize(entireFrameOrElement.getWidth(),
-                                entireFrameOrElement.getHeight()));
+                result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
+                        new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
             } else if (forceFullPageScreenshot) {
                 logger.verbose("Full page screenshot requested.");
                 // Save the current frame path.
                 FrameChain originalFrame = driver.getFrameChain();
                 driver.switchTo().defaultContent();
-                FullPageCaptureAlgorithm algo =
-                        new FullPageCaptureAlgorithm(logger);
-                BufferedImage fullPageImage = algo.getStitchedRegion
-                        (imageProvider,
-                                new RegionProvider() {
-                                    public Region getRegion() {
-                                        return Region.EMPTY;
-                                    }
-
-                                    public CoordinatesType getCoordinatesType() {
-                                        return null;
-                                    }
-                                },
-                                new ScrollPositionProvider(logger, this.jsExecutor),
-                                positionProvider, scaleProviderFactory,
-                                cutProviderHandler.get(),
-                                getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory);
+                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger);
+                BufferedImage fullPageImage = algo.getStitchedRegion(imageProvider, Region.EMPTY,
+                        new ScrollPositionProvider(logger, this.jsExecutor),
+                        positionProvider, scaleProviderFactory,
+                        cutProviderHandler.get(),
+                        getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory);
 
                 ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
-                result = new EyesWebDriverScreenshot(logger, driver,
-                        fullPageImage);
+                result = new EyesWebDriverScreenshot(logger, driver, fullPageImage);
             } else {
                 logger.verbose("Screenshot requested...");
                 String screenshot64 = driver.getScreenshotAs(OutputType.BASE64);
@@ -2078,8 +1915,7 @@ public class Eyes extends EyesBase {
                     EyesSeleniumUtils.setOverflow(driver, originalOverflow);
                 } catch (EyesDriverOperationException e) {
                     // Bummer, but we'll continue with the screenshot anyway :)
-                    logger.log("WARNING: Failed to revert overflow! Error: "
-                            + e.getMessage());
+                    logger.log("WARNING: Failed to revert overflow! Error: " + e.getMessage());
                 }
             }
         }

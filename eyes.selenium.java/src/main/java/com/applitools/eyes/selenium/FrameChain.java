@@ -24,8 +24,7 @@ public class FrameChain implements Iterable<Frame>{
      * Compares two frame chains.
      * @param c1 Frame chain to be compared against c2.
      * @param c2 Frame chain to be compared against c1.
-     * @return True if both frame chains represent the same frame,
-     *         false otherwise.
+     * @return True if both frame chains represent the same frame, false otherwise.
      */
     public static boolean isSameFrameChain(FrameChain c1, FrameChain c2) {
         int lc1 = c1.frames.size();
@@ -41,7 +40,7 @@ public class FrameChain implements Iterable<Frame>{
 
         //noinspection ForLoopReplaceableByForEach
         for(int i = 0; i<lc1; ++i) {
-            if (!c1Iterator.next().getId().equals(c2Iterator.next().getId())) {
+            if (!c1Iterator.next().getReference().equals(c2Iterator.next().getReference())) {
                 return false;
             }
         }
@@ -56,27 +55,26 @@ public class FrameChain implements Iterable<Frame>{
     public FrameChain(Logger logger) {
         ArgumentGuard.notNull(logger, "logger");
         this.logger = logger;
-        frames = new LinkedList<Frame>();
+        frames = new LinkedList<>();
     }
 
     /**
      * Creates a frame chain which is a copy of the current frame.
      * @param logger A Logger instance.
-     * @param other A frame chain from which the current frame chain will be
-     *              created.
+     * @param other A frame chain from which the current frame chain will be created.
      */
     public FrameChain(Logger logger, FrameChain other) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(other, "other");
         this.logger = logger;
-        logger.verbose(String.format("Frame chain copy constructor (size %d)",
-                        other.size()));
-        frames = new LinkedList<Frame>();
+        logger.verbose(String.format("Frame chain copy constructor (size %d)", other.size()));
+        frames = new LinkedList<>();
         for (Frame otherFrame: other.frames) {
             frames.add(new Frame(logger, otherFrame.getReference(),
-                    otherFrame.getId(), otherFrame.getLocation(),
-                    otherFrame.getSize(),
-                    otherFrame.getParentScrollPosition()));
+                    otherFrame.getLocation(),
+                    otherFrame.getSize(), otherFrame.getInnerSize(),
+                    otherFrame.getParentScrollPosition(),
+                    otherFrame.getOriginalLocation()));
         }
         logger.verbose("Done!");
     }
@@ -123,7 +121,6 @@ public class FrameChain implements Iterable<Frame>{
      *
      * @return The location of the current frame in the page.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public Location getCurrentFrameOffset() {
         Location result = new Location(0 ,0);
 
@@ -138,7 +135,6 @@ public class FrameChain implements Iterable<Frame>{
      *
      * @return The outermost frame's location, or NoFramesException.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public Location getDefaultContentScrollPosition() {
         if (frames.size() == 0) {
             throw new NoFramesException("No frames in frame chain");
@@ -159,6 +155,17 @@ public class FrameChain implements Iterable<Frame>{
 
     /**
      *
+     * @return The inner size of the current frame.
+     */
+    public RectangleSize getCurrentFrameInnerSize() {
+        logger.verbose("GetCurrentFrameInnerSize()");
+        RectangleSize result = frames.get(frames.size() - 1).getInnerSize();
+        logger.verbose("Done!");
+        return result;
+    }
+
+    /**
+     *
      * @return An iterator to go over the frames in the chain.
      */
     public Iterator<Frame> iterator() {
@@ -173,10 +180,8 @@ public class FrameChain implements Iterable<Frame>{
             }
 
             public void remove() {
-                throw new EyesException(
-                        "Remove is forbidden using the iterator!");
+                throw new EyesException("Remove is forbidden using the iterator!");
             }
         };
     }
-
 }

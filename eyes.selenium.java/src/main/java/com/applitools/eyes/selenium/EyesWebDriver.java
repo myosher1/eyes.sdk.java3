@@ -239,8 +239,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     }
 
     public Mouse getMouse() {
-        return new EyesMouse(logger, this,
-                driver.getMouse());
+        return new EyesMouse(logger, this, driver.getMouse());
     }
 
     public Keyboard getKeyboard() {
@@ -283,8 +282,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         return findElement(By.partialLinkText(partialLinkText));
     }
 
-    public List<WebElement> findElementsByPartialLinkText(String
-                                                                  partialLinkText) {
+    public List<WebElement> findElementsByPartialLinkText(String partialLinkText) {
         return findElements(By.partialLinkText(partialLinkText));
     }
 
@@ -325,11 +323,10 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
                             driver.manage().window().getSize(), script, args);
 
             if (trigger != null) {
-                // TODO - Daniel, additional type of triggers
+                // TODO - Daniel, additional types of triggers
                 if (trigger instanceof MouseTrigger) {
                     MouseTrigger mt = (MouseTrigger) trigger;
-                    eyes.addMouseTrigger(mt.getMouseAction(),
-                            mt.getControl(), mt.getLocation());
+                    eyes.addMouseTrigger(mt.getMouseAction(), mt.getControl(), mt.getLocation());
                 }
             }
         }
@@ -370,20 +367,19 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         logger.verbose("getDefaultContentViewportSize()");
 
         if (defaultContentViewportSize != null && !forceQuery) {
-            logger.verbose("Using cached viewport size: "
-                    + defaultContentViewportSize);
+            logger.verbose("Using cached viewport size: " + defaultContentViewportSize);
             return defaultContentViewportSize;
         }
 
-        FrameChain currentFrames = getFrameChain();
+        FrameChain currentFrames = new FrameChain(logger, getFrameChain());
+
         // Optimization
         if (currentFrames.size() > 0) {
             switchTo().defaultContent();
         }
 
         logger.verbose("Extracting viewport size...");
-        defaultContentViewportSize =
-                EyesSeleniumUtils.getViewportSizeOrDisplaySize(logger, this);
+        defaultContentViewportSize = EyesSeleniumUtils.getViewportSizeOrDisplaySize(logger, this);
         logger.verbose("Done! Viewport size: " + defaultContentViewportSize);
 
         if (currentFrames.size() > 0) {
@@ -401,11 +397,10 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     }
 
     /**
-     *
-     * @return A copy of the current frame chain.
+     * @return The current frame chain.
      */
     public FrameChain getFrameChain() {
-        return new FrameChain(logger, frameChain);
+        return frameChain;
     }
 
     public <X> X getScreenshotAs(OutputType<X> xOutputType)
@@ -423,8 +418,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     public String getUserAgent() {
         String userAgent;
         try {
-            userAgent = (String) this.driver.executeScript(
-                    "return navigator.userAgent");
+            userAgent = (String) this.driver.executeScript("return navigator.userAgent");
             logger.verbose("user agent: "+ userAgent);
         } catch (Exception e) {
             logger.verbose("Failed to obtain user-agent string");

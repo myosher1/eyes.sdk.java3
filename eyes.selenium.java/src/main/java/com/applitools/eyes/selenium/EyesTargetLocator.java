@@ -35,8 +35,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     /**
      * Will be called before switching into a frame.
      * @param targetType  The type of frame we're about to switch into.
-     * @param targetFrame The element about to be switched to,
-     *                    if available. Otherwise, null.
+     * @param targetFrame The element about to be switched to, if available. Otherwise, null.
      */
     public void willSwitchToFrame(
             EyesTargetLocator.TargetType targetType,
@@ -54,23 +53,37 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
             default: // Switching into a frame
                 logger.verbose("Frame");
 
-                String frameId = ((EyesRemoteWebElement)
-                        targetFrame).getId();
+                EyesRemoteWebElement eyesFrame = (targetFrame instanceof EyesRemoteWebElement) ?
+                        (EyesRemoteWebElement)targetFrame : new EyesRemoteWebElement(logger, driver, targetFrame);
+
+                String frameId = eyesFrame.getId();
                 Point pl = targetFrame.getLocation();
                 Dimension ds = targetFrame.getSize();
+
+                int clientWidth =  eyesFrame.getClientWidth();
+                int clientHeight = eyesFrame.getClientHeight();
+
+                Location location = new Location(pl.getX(), pl.getY());
+
                 // Get the frame's content location.
                 Location contentLocation = new
                         BordersAwareElementContentLocationProvider
                         ().getLocation(logger, targetFrame,
-                        new Location(pl.getX(), pl.getY()));
+                        location);
+
+                Location originalLocation = scrollPosition.getCurrentPosition();
+                scrollPosition.setPosition(location);
+
                 Location currentLocation = scrollPosition.getCurrentPosition();
+
                 driver.getFrameChain().push(new Frame(logger, targetFrame,
-                        frameId,
                         contentLocation,
                         new RectangleSize(ds.getWidth(), ds.getHeight()),
-                        currentLocation));
+                        new RectangleSize(clientWidth, clientHeight),
+                        currentLocation,
+                        originalLocation));
         }
-        logger.verbose("Done!");
+        logger.verbose("Done! FrameChain size: " + driver.getFrameChain().size());
     }
 
     /**
@@ -80,7 +93,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     public void willSwitchToWindow(String nameOrHandle) {
         logger.verbose("willSwitchToWindow()");
         driver.getFrameChain().clear();
-        logger.verbose("Done!");
+        logger.verbose("Done! FrameChain size: " + driver.getFrameChain().size());
     }
 
     /**
@@ -104,11 +117,9 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         logger.verbose(String.format("EyesTargetLocator.frame(%d)", index));
         // Finding the target element so and reporting it using onWillSwitch.
         logger.verbose("Getting frames list...");
-        List<WebElement> frames = driver.findElementsByCssSelector(
-                "frame, iframe");
+        List<WebElement> frames = driver.findElementsByCssSelector("frame, iframe");
         if (index > frames.size()) {
-            throw new NoSuchFrameException(String.format(
-                    "Frame index [%d] is invalid!", index));
+            throw new NoSuchFrameException(String.format("Frame index [%d] is invalid!", index));
         }
         logger.verbose("Done! getting the specific frame...");
         WebElement targetFrame = frames.get(index);
@@ -177,7 +188,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     public WebDriver frames(FrameChain frameChain) {
         logger.verbose("EyesTargetLocator.frames(frameChain)");
         for (Frame frame : frameChain) {
-            logger.verbose("Scrolling by parent scroll position..");
+            logger.verbose("Scrolling by parent scroll position...");
             scrollPosition.setPosition(frame.getParentScrollPosition());
             logger.verbose("Done! Switching to frame...");
             driver.switchTo().frame(frame.getReference());
@@ -208,9 +219,9 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
 
     public WebDriver window(String nameOrHandle) {
         logger.verbose("EyesTargetLocator.frames()");
-        logger.verbose("Making preparations..");
+        logger.verbose("Making preparations...");
         willSwitchToWindow(nameOrHandle);
-        logger.verbose("Done! Switching to window..");
+        logger.verbose("Done! Switching to window...");
         targetLocator.window(nameOrHandle);
         logger.verbose("Done!");
         return driver;
@@ -219,9 +230,9 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     public WebDriver defaultContent() {
         logger.verbose("EyesTargetLocator.defaultContent()");
         if (driver.getFrameChain().size() != 0) {
-            logger.verbose("Making preparations..");
+            logger.verbose("Making preparations...");
             willSwitchToFrame(TargetType.DEFAULT_CONTENT, null);
-            logger.verbose("Done! Switching to default content..");
+            logger.verbose("Done! Switching to default content...");
             targetLocator.defaultContent();
             logger.verbose("Done!");
         }
@@ -230,20 +241,19 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
 
     public WebElement activeElement() {
         logger.verbose("EyesTargetLocator.activeElement()");
-        logger.verbose("Switching to element..");
+        logger.verbose("Switching to element...");
         WebElement element = targetLocator.activeElement();
         if (!(element instanceof RemoteWebElement)) {
             throw new EyesException("Not a remote web element!");
         }
-        EyesRemoteWebElement result = new EyesRemoteWebElement(logger, driver,
-                (RemoteWebElement) element);
+        EyesRemoteWebElement result = new EyesRemoteWebElement(logger, driver, (RemoteWebElement) element);
         logger.verbose("Done!");
         return result;
     }
 
     public Alert alert() {
         logger.verbose("EyesTargetLocator.alert()");
-        logger.verbose("Switching to alert..");
+        logger.verbose("Switching to alert...");
         Alert result = targetLocator.alert();
         logger.verbose("Done!");
         return result;

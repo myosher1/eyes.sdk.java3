@@ -5,7 +5,7 @@ import org.openqa.selenium.By;
 public class FrameLocator implements ISeleniumFrameCheckTarget{
     private By frameSelector;
     private String frameNameOrId;
-    private int frameIndex;
+    private Integer frameIndex;
 
     @Override
     public Integer getFrameIndex() {

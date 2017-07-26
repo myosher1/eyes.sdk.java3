@@ -20,51 +20,47 @@ public class Frame {
     // index or by passing the relevant web element.
     protected final Logger logger;
     protected final WebElement reference;
-    protected final String id;
     protected final Location location;
     protected final RectangleSize size;
+    protected final RectangleSize innerSize;
     protected final Location parentScrollPosition;
+    protected final Location originalLocation;
 
     /**
-     * @param logger A Logger instance.
-     * @param reference The web element for the frame, used as a reference to
-     *                  switch into the frame.
-     * @param frameId The id of the frame. Can be used later for comparing
-     *                two frames.
-     * @param location The location of the frame within the current frame.
-     * @param size The frame element size (i.e., the size of the frame on the
-     *             screen, not the internal document size).
-     * @param parentScrollPosition The scroll position the frame's parent was
-     *                             in when the frame was switched to.
+     * @param logger               A Logger instance.
+     * @param reference            The web element for the frame, used as a reference to switch into the frame.
+     * @param location             The location of the frame within the current frame.
+     * @param size                 The frame element size (i.e., the size of the frame on the screen, not the internal document size).
+     * @param innerSize            The frame element inner size (i.e., the size of the frame actual size, without borders).
+     * @param parentScrollPosition The scroll position the frame's parent was in when the frame was switched to.
+     * @param originalLocation     The scroll location of the frame.
      */
     public Frame(Logger logger, WebElement reference,
-                 String frameId, Location location, RectangleSize size,
-                 Location parentScrollPosition) {
+                 Location location, RectangleSize size, RectangleSize innerSize,
+                 Location parentScrollPosition, Location originalLocation) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(reference, "reference");
-        ArgumentGuard.notNull(frameId, "frameId");
         ArgumentGuard.notNull(location, "location");
         ArgumentGuard.notNull(size, "size");
+        ArgumentGuard.notNull(innerSize, "innerSize");
         ArgumentGuard.notNull(parentScrollPosition, "parentScrollPosition");
+        ArgumentGuard.notNull(originalLocation, "originalLocation");
 
         logger.verbose(String.format(
-                "Frame(logger, reference, %s, %s, %s, %s)", frameId,
-                location, size, parentScrollPosition));
+                "Frame(logger, reference, %s, %s, %s, %s)",
+                location, size, innerSize, parentScrollPosition));
 
         this.logger = logger;
         this.reference = reference;
-        this.id = frameId;
-        this.parentScrollPosition = parentScrollPosition;
-        this.size = size;
         this.location = location;
+        this.size = size;
+        this.innerSize = innerSize;
+        this.parentScrollPosition = parentScrollPosition;
+        this.originalLocation = originalLocation;
     }
 
     public WebElement getReference() {
         return reference;
-    }
-
-    public String getId() {
-        return id;
     }
 
     public Location getLocation() {
@@ -75,7 +71,16 @@ public class Frame {
         return size;
     }
 
+    public RectangleSize getInnerSize() {
+        return innerSize;
+    }
+
     public Location getParentScrollPosition() {
         return parentScrollPosition;
     }
+
+    public Location getOriginalLocation() {
+        return originalLocation;
+    }
+
 }

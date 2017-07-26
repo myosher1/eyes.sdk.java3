@@ -19,8 +19,7 @@ public class Eyes extends EyesBase {
     /**
      * Creates a new (possibly disabled) Eyes instance that interacts
      * with the Eyes Server at the specified url.
-     *
-     * @param serverUrl  The Eyes server URL.
+     * @param serverUrl The Eyes server URL.
      */
     public Eyes(URI serverUrl) {
         super(serverUrl);
@@ -36,7 +35,6 @@ public class Eyes extends EyesBase {
 
     /**
      * Get the base agent id.
-     *
      * @return Base agent id.
      */
     @Override
@@ -44,36 +42,29 @@ public class Eyes extends EyesBase {
         return "eyes.images.java-jboss/3.13";
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Starts a test.
-     *
-     * @param appName        The name of the application under test.
-     * @param testName       The test name.
-     * @param dimensions      Determines the resolution used for the baseline.
-     *                       {@code null} will automatically grab the
-     *                       resolution from the image.
+     * @param appName    The name of the application under test.
+     * @param testName   The test name.
+     * @param dimensions Determines the resolution used for the baseline.
+     *                   {@code null} will automatically grab the resolution from the image.
      */
     public void open(String appName, String testName,
-            RectangleSize dimensions) {
+                     RectangleSize dimensions) {
         openBase(appName, testName, dimensions, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * ﻿Starts a new test without setting the viewport size of the AUT.
-     *
-     * @param appName        The name of the application under test.
-     * @param testName       The test name.
+     * @param appName  The name of the application under test.
+     * @param testName The test name.
      * @see #open(String, String, RectangleSize)
      */
     public void open(String appName, String testName) {
         open(appName, testName, null);
     }
 
-
     @Deprecated
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Superseded by {@link #checkImage(java.awt.image.BufferedImage)}.
      */
@@ -82,7 +73,6 @@ public class Eyes extends EyesBase {
     }
 
     @Deprecated
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Superseded by {@link #checkImage(java.awt.image.BufferedImage, String)}.
      */
@@ -91,17 +81,15 @@ public class Eyes extends EyesBase {
     }
 
     @Deprecated
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Superseded by {@link #checkImage(java.awt.image.BufferedImage, String,
      * boolean)}.
      */
     public boolean checkWindow(BufferedImage image, String tag,
-                            boolean ignoreMismatch) {
+                               boolean ignoreMismatch) {
         return checkImage(image, tag, ignoreMismatch);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkImage(BufferedImage, String)}.
      * {@code tag} defaults to {@code null}.
@@ -110,7 +98,6 @@ public class Eyes extends EyesBase {
         return checkImage(image, null);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkImage(BufferedImage, String, boolean)}.
      * {@code ignoreMismatch} defaults to {@code false}.
@@ -121,47 +108,29 @@ public class Eyes extends EyesBase {
 
     /**
      * Matches the input image with the next expected image.
-     *
-     * @param image The image to perform visual validation for.
-     * @param tag An optional tag to be associated with the validation
-     *            checkpoint.
-     * @param ignoreMismatch True if the server should ignore a negative
-     *                       result for the visual validation.
+     * @param image          The image to perform visual validation for.
+     * @param tag            An optional tag to be associated with the validation checkpoint.
+     * @param ignoreMismatch True if the server should ignore a negative result for the visual validation.
      * @return True if the image matched the expected output, false otherwise.
-     * @throws TestFailedException Thrown if a mismatch is detected and
-     *                              immediate failure reports are enabled.
+     * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
     public boolean checkImage(BufferedImage image, String tag,
                               boolean ignoreMismatch) {
         if (getIsDisabled()) {
-            logger.verbose(String.format(
-                    "CheckImage(Image, '%s', %b): Ignored", tag,
-                    ignoreMismatch));
+            logger.verbose(String.format("CheckImage(Image, '%s', %b): Ignored", tag, ignoreMismatch));
             return false;
         }
         ArgumentGuard.notNull(image, "image cannot be null!");
 
-        logger.verbose(String.format("CheckImage(Image, '%s', %b)",
-                tag, ignoreMismatch));
+        logger.verbose(String.format("CheckImage(Image, '%s', %b)", tag, ignoreMismatch));
 
         if (viewportSize == null) {
-            setViewportSize(
-                    new RectangleSize(image.getWidth(), image.getHeight())
-            );
+            setViewportSize(new RectangleSize(image.getWidth(), image.getHeight()));
         }
 
-        return checkImage_(new RegionProvider() {
-            public Region getRegion() {
-                return Region.EMPTY;
-            }
-
-            public CoordinatesType getCoordinatesType() {
-                return null;
-            }
-        }, image, tag, ignoreMismatch);
+        return checkImage_(NullRegionProvider.INSTANCE, image, tag, ignoreMismatch);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkImage(String, String)}.
      * {@code tag} defaults to {@code null}.
@@ -173,9 +142,8 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkImage(String, String, boolean)}.
      * {@code ignoreMismatch} defaults to {@code false}.
-     *
      * @param path The path to the image to check.
-     * @param tag The tag to be associated with the visual checkpoint.
+     * @param tag  The tag to be associated with the visual checkpoint.
      * @return Whether or not the image matched the baseline.
      */
     public boolean checkImage(String path, String tag) {
@@ -184,28 +152,21 @@ public class Eyes extends EyesBase {
 
     /**
      * Matches the image stored in the input file with the next expected image.
-     *
+     * <p>
      * See {@link #checkImage(BufferedImage, String, boolean)}.
-     *
-     * @param path The base64 representation of the image's raw bytes.
-     * @param tag An optional tag to be associated with the validation
-     *            checkpoint.
-     * @param ignoreMismatch True if the server should ignore a negative
-     *                       result for the visual validation.
+     * @param path           The base64 representation of the image's raw bytes.
+     * @param tag            An optional tag to be associated with the validation checkpoint.
+     * @param ignoreMismatch True if the server should ignore a negative result for the visual validation.
      * @return Whether or not the image matched the baseline.
      */
-    public boolean checkImage(String path, String tag,
-                              boolean ignoreMismatch) {
+    public boolean checkImage(String path, String tag, boolean ignoreMismatch) {
         return checkImage(ImageUtils.imageFromFile(path), tag, ignoreMismatch);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * See {@link #checkImage(byte[], String)}.
      * {@code tag} defaults to {@code null}.
-     *
-     * @param image The raw png bytes of the image to perform visual validation
-     *              for.
+     * @param image The raw png bytes of the image to perform visual validation for.
      * @return Whether or not the image matched the baseline.
      */
     public boolean checkImage(byte[] image) {
@@ -215,11 +176,8 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkImage(byte[], String, boolean)}.
      * {@code ignoreMismatch} defaults to {@code false}.
-     *
-     * @param image The raw png bytes of the image to perform visual validation
-     *              for.
-     * @param tag An optional tag to be associated with the validation
-     *            checkpoint.
+     * @param image The raw png bytes of the image to perform visual validation for.
+     * @param tag   An optional tag to be associated with the validation checkpoint.
      * @return Whether or not the image matched the baseline.
      */
     public boolean checkImage(byte[] image, String tag) {
@@ -229,34 +187,24 @@ public class Eyes extends EyesBase {
     /**
      * Matches the input image with the next expected image.
      * See {@link #checkImage(BufferedImage, String, boolean)}.
-     *
-     * @param image The raw png bytes of the image to perform visual validation
-     *              for.
-     * @param tag An optional tag to be associated with the validation
-     *            checkpoint.
+     * @param image The raw png bytes of the image to perform visual validation for.
+     * @param tag   An optional tag to be associated with the validation checkpoint.
      * @return Whether or not the image matched the baseline.
      */
-    public boolean checkImage(byte[] image, String tag,
-                              boolean ignoreMismatch) {
-        return checkImage(ImageUtils.imageFromBytes(image), tag,
-                ignoreMismatch);
+    public boolean checkImage(byte[] image, String tag, boolean ignoreMismatch) {
+        return checkImage(ImageUtils.imageFromBytes(image), tag, ignoreMismatch);
     }
 
     /**
      * Perform visual validation for the current image.
-     *
-     * @param image The image to perform visual validation for.
-     * @param region The region to validate within the image.
-     * @param tag An optional tag to be associated with the validation
-     *            checkpoint.
-     * @param ignoreMismatch True if the server should ignore a negative
-     *                       result for the visual validation.
-     * @throws TestFailedException Thrown if a mismatch is detected and
-     *                              immediate failure reports are enabled.
+     * @param image          The image to perform visual validation for.
+     * @param region         The region to validate within the image.
+     * @param tag            An optional tag to be associated with the validation checkpoint.
+     * @param ignoreMismatch True if the server should ignore a negative result for the visual validation.
      * @return Whether or not the image matched the baseline.
+     * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
-    public boolean checkRegion(BufferedImage image, final Region region,
-                               String tag, boolean ignoreMismatch) {
+    public boolean checkRegion(BufferedImage image, final Region region, String tag, boolean ignoreMismatch) {
         if (getIsDisabled()) {
             logger.verbose(String.format(
                     "CheckRegion(Image, [%s], '%s', %b): Ignored",
@@ -266,74 +214,54 @@ public class Eyes extends EyesBase {
         ArgumentGuard.notNull(image, "image cannot be null!");
         ArgumentGuard.notNull(region, "region cannot be null!");
 
-        logger.verbose(String.format("CheckRegion(Image, [%s], '%s', %b)",
-                region, tag, ignoreMismatch));
+        logger.verbose(String.format("CheckRegion(Image, [%s], '%s', %b)", region, tag, ignoreMismatch));
 
         if (viewportSize == null) {
-            setViewportSize(
-                    new RectangleSize(image.getWidth(), image.getHeight())
-            );
+            setViewportSize(new RectangleSize(image.getWidth(), image.getHeight()));
         }
 
         return checkImage_(new RegionProvider() {
             public Region getRegion() {
                 return region;
             }
-
-            public CoordinatesType getCoordinatesType() {
-                return CoordinatesType.SCREENSHOT_AS_IS;
-            }
         }, image, tag, ignoreMismatch);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Perform visual validation for a region in a given image. Does not
      * ignore mismatches.
-     *
-     * @param image The image to perform visual validation for.
+     * @param image  The image to perform visual validation for.
      * @param region The region to validate within the image.
-     * @param tag An optional tag to be associated with the validation
-     *            checkpoint.
-     * @throws TestFailedException Thrown if a mismatch is detected and
-     *                              immediate failure reports are enabled.
+     * @param tag    An optional tag to be associated with the validation checkpoint.
+     * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
-    public void checkRegion(BufferedImage image, Region region, String tag){
+    public void checkRegion(BufferedImage image, Region region, String tag) {
         checkRegion(image, region, tag, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
-     * Perform visual validation of a region for a given image. Tag is empty
-     * and mismatches are not ignored.
-     *
-     * @param image The image to perform visual validation for.
+     * Perform visual validation of a region for a given image. Tag is empty and mismatches are not ignored.
+     * @param image  The image to perform visual validation for.
      * @param region The region to validate within the image.
-     * @throws TestFailedException Thrown if a mismatch is detected and
-     *                              immediate failure reports are enabled.
+     * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
-    public void checkRegion(BufferedImage image, Region region){
+    public void checkRegion(BufferedImage image, Region region) {
         checkRegion(image, region, null, false);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Adds a mouse trigger.
-     *
      * @param action  Mouse action.
      * @param control The control on which the trigger is activated (context
      *                relative coordinates).
      * @param cursor  The cursor's position relative to the control.
      */
-    public void addMouseTrigger(MouseAction action, Region control,
-            Location cursor) {
+    public void addMouseTrigger(MouseAction action, Region control, Location cursor) {
         addMouseTriggerBase(action, control, cursor);
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Adds a keyboard trigger.
-     *
      * @param control The control's context-relative region.
      * @param text    The trigger's text.
      */
@@ -351,19 +279,16 @@ public class Eyes extends EyesBase {
 
     /**
      * Set the viewport size.
-     *
      * @param size The required viewport size.
      */
     @Override
     public void setViewportSize(RectangleSize size) {
         ArgumentGuard.notNull(size, "size");
-        this.viewportSize = new RectangleSize(size.getWidth(),
-                size.getHeight());
+        this.viewportSize = new RectangleSize(size.getWidth(), size.getHeight());
     }
 
     /**
      * Get the inferred environment.
-     *
      * @return Inferred environment.
      */
     @Override
@@ -371,10 +296,8 @@ public class Eyes extends EyesBase {
         return inferred != null ? inferred : "";
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Sets the inferred environment for the test.
-     *
      * @param inferred The inferred environment string.
      */
     public void setInferredEnvironment(String inferred) {
@@ -383,7 +306,6 @@ public class Eyes extends EyesBase {
 
     /**
      * Get the screenshot.
-     *
      * @return The screenshot.
      */
     @Override
@@ -393,28 +315,20 @@ public class Eyes extends EyesBase {
 
     /**
      * Get the title.
-     *
      * @return The title.
      */
     @Override
     protected String getTitle() {
-
         return title;
     }
 
-
     /**
      * See {@link #checkImage_(RegionProvider, String, boolean)}.
-     *
      * @param regionProvider The region for which verification will be
-     *                       performed. see
-     *                       {@link #checkWindowBase(RegionProvider, String,
-     *                       boolean, int)}.
-     * @param image The image to perform visual validation for.
-     * @param tag An optional tag to be associated with the validation
-     *            checkpoint.
-     * @param ignoreMismatch True if the server should ignore a negative
-     *                       result for the visual validation.
+     *                       performed. see {@link #checkWindowBase(RegionProvider, String, boolean, int)}.
+     * @param image          The image to perform visual validation for.
+     * @param tag            An optional tag to be associated with the validation checkpoint.
+     * @param ignoreMismatch True if the server should ignore a negative result for the visual validation.
      * @return True if the image matched the expected output, false otherwise.
      */
     private boolean checkImage_(RegionProvider regionProvider,
@@ -434,25 +348,18 @@ public class Eyes extends EyesBase {
     /**
      * Internal function for performing an image verification for a region of
      * a buffered image.
-     *
      * @param regionProvider The region for which verification will be
-     *                       performed. see
-     *                       {@link #checkWindowBase(RegionProvider, String,
-     *                       boolean, int)}.
-     * @param tag An optional tag to be associated with the validation
-     *            checkpoint.
-     * @param ignoreMismatch True if the server should ignore a negative
-     *                       result for the visual validation.
+     *                       performed. see {@link #checkWindowBase(RegionProvider, String, boolean, int)}.
+     * @param tag            An optional tag to be associated with the validation checkpoint.
+     * @param ignoreMismatch True if the server should ignore a negative result for the visual validation.
      * @return True if the image matched the expected output, false otherwise.
      */
-    private boolean checkImage_(RegionProvider regionProvider, String tag,
-                                boolean ignoreMismatch) {
+    private boolean checkImage_(RegionProvider regionProvider, String tag, boolean ignoreMismatch) {
 
         // Set the title to be linked to the screenshot.
         title = (tag != null) ? tag : "";
 
-        MatchResult mr = checkWindowBase(regionProvider, tag,
-                ignoreMismatch);
+        MatchResult mr = checkWindowBase(regionProvider, tag, ignoreMismatch);
 
         return mr.getAsExpected();
     }
