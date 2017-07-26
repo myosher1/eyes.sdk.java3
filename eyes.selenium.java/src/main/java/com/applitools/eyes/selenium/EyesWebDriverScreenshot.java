@@ -86,8 +86,11 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         ArgumentGuard.notNull(driver, "driver");
         this.logger = logger;
         this.driver = driver;
+
+        IEyesJsExecutor jsExecutor = new SeleniumJavaScriptExecutor(this.driver);
         ScrollPositionProvider positionProvider =
-                new ScrollPositionProvider(logger, driver);
+                new ScrollPositionProvider(logger, jsExecutor);
+
         RectangleSize viewportSize = driver.getDefaultContentViewportSize();
         frameChain = driver.getFrameChain();
         // If we're inside a frame, then the frame size is given by the frame
