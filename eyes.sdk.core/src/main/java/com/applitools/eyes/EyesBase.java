@@ -73,7 +73,6 @@ public abstract class EyesBase {
     private boolean saveNewTests, saveFailedTests;
 
     protected DebugScreenshotsProvider debugScreenshotsProvider;
-    private boolean isViewportSizeSet;
 
     /**
      * Creates a new {@code EyesBase}instance that interacts with the Eyes
@@ -1436,17 +1435,10 @@ public abstract class EyesBase {
     }
 
     private void ensureViewportSize() {
-        if (!isViewportSizeSet) {
-            try {
-                if (viewportSize == null) {
-                    viewportSize = getViewportSize();
-                } else {
-                    setViewportSize(viewportSize);
-                }
-                isViewportSizeSet = true;
-            } catch (NullPointerException e) {
-                isViewportSizeSet = false;
-            }
+        if (viewportSize == null) {
+            viewportSize = getViewportSize();
+        } else {
+            setViewportSize(viewportSize);
         }
     }
 
