@@ -1,63 +1,25 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.FileLogger;
-import com.applitools.eyes.LogHandler;
-import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.selenium.fluent.Target;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.ExternalResource;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-
-import java.net.URI;
 
 @RunWith(JUnit4.class)
-public class TestFluentApi {
+public class TestFluentApi extends TestSetup {
 
-    private static Eyes eyes;
-    private static WebDriver driver;
-    private static LogHandler logHandler;
-
-    @BeforeClass
-    public static void OneTimeSetUp() {
-
-        // Initialize the eyes SDK and set your private API key.
-        eyes = new Eyes();
-        eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
-        eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
-
-        logHandler = new FileLogger("c:\\temp\\logs\\Java\\TestElement.log", true, true);
-        eyes.setLogHandler(logHandler);
-        eyes.setForceFullPageScreenshot(true);
-        eyes.setStitchMode(StitchMode.CSS);
-
-        eyes.setHideScrollbars(true);
-
-        eyes.setDebugScreenshotsPath("c:\\temp\\logs");
-        eyes.setSaveDebugScreenshots(true);
-
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("disable-infobars");
-        ChromeDriver chromeDriver = new ChromeDriver(options);
-
-        driver = eyes.open(chromeDriver, "Eyes Selenium SDK - Fluent API", "Eyes Selenium SDK - Fluent API",
-                new RectangleSize(800, 599));
-
-        //string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        driver.navigate().to("http://applitools.github.io/demo/TestPages/FramesTestPage/");
-    }
-
-    @AfterClass
-    public static void tearDown() {
-        eyes.close();
-        driver.quit();
-    }
+    @ClassRule
+    public static final TestRule setTestSuitName = new ExternalResource() {
+        @Override
+        protected void before() throws Throwable {
+            testSuitName = "Eyes Selenium SDK - Fluent API - Java";
+        }
+    };
 
     @Test
     public void TestCheckWindowWithIgnoreRegion_Fluent() {
@@ -107,28 +69,27 @@ public class TestFluentApi {
     }
 
     @Test
-    public void TestCheckRegionInFrame2_Fluent()
-    {
+    public void TestCheckRegionInFrame2_Fluent() {
         eyes.check("Fluent - Inner frame div 1", Target.frame("frame1")
-               .region(By.id("inner-frame-div"))
-               .fully()
-               .timeout(5000)
-               .ignore(new Region(50, 50, 100, 100)));
+                .region(By.id("inner-frame-div"))
+                .fully()
+                .timeout(5000)
+                .ignore(new Region(50, 50, 100, 100)));
 
         eyes.check("Fluent - Inner frame div 2", Target.frame("frame1")
-               .region(By.id("inner-frame-div"))
-               .fully()
-               .ignore(new Region(50, 50, 100, 100))
-               .ignore(new Region(70, 170, 90, 90)));
+                .region(By.id("inner-frame-div"))
+                .fully()
+                .ignore(new Region(50, 50, 100, 100))
+                .ignore(new Region(70, 170, 90, 90)));
 
         eyes.check("Fluent - Inner frame div 3", Target.frame("frame1")
-               .region(By.id("inner-frame-div"))
-               .fully()
-               .timeout(5000));
+                .region(By.id("inner-frame-div"))
+                .fully()
+                .timeout(5000));
 
         eyes.check("Fluent - Inner frame div 4", Target.frame("frame1")
-               .region(By.id("inner-frame-div"))
-               .fully());
+                .region(By.id("inner-frame-div"))
+                .fully());
 
         eyes.check("Fluent - Full frame with floating region", Target.frame("frame1")
                 .fully()
