@@ -108,6 +108,21 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * For EyesWebDriver instances, returns the underlying WebDriver. For all other types - return the driver received
+     * as parameter.
+     *
+     * @param driver The driver instance for which to get the underlying WebDriver.
+     * @return The underlying WebDriver
+     */
+    public static WebDriver getUnderlyingDriver(WebDriver driver) {
+        if (driver instanceof EyesWebDriver) {
+            driver = ((EyesWebDriver) driver).getRemoteWebDriver();
+        }
+
+        return driver;
+    }
+
+    /**
      *
      * @param driver The driver for which to check if it represents a mobile
      *               device.
@@ -115,6 +130,7 @@ public class EyesSeleniumUtils {
      * platform. {@code false} otherwise.
      */
     public static boolean isMobileDevice(WebDriver driver) {
+        driver = getUnderlyingDriver(driver);
         return driver instanceof AppiumDriver;
     }
 
@@ -461,6 +477,7 @@ public class EyesSeleniumUtils {
      * {@code false} otherwise.
      */
     public static boolean isAndroid(WebDriver driver) {
+        driver = getUnderlyingDriver(driver);
         return driver instanceof AndroidDriver;
     }
 
@@ -471,6 +488,7 @@ public class EyesSeleniumUtils {
      * {@code false} otherwise.
      */
     public static boolean isIOS(WebDriver driver) {
+        driver = getUnderlyingDriver(driver);
         return driver instanceof IOSDriver;
     }
 

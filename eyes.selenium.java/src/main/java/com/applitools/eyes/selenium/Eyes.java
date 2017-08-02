@@ -1235,8 +1235,9 @@ public class Eyes extends EyesBase {
 
             logger.verbose("Setting scale provider...");
             try {
-                factory = new ContextBasedScaleProviderFactory(positionProvider.getEntireSize(), getViewportSize(),
-                        devicePixelRatio, scaleProviderHandler);
+                factory = new ContextBasedScaleProviderFactory(logger, positionProvider.getEntireSize(),
+                        getViewportSize(), devicePixelRatio, EyesSeleniumUtils.isMobileDevice(driver),
+                        scaleProviderHandler);
             } catch (Exception e) {
                 // This can happen in Appium for example.
                 logger.verbose("Failed to set ContextBasedScaleProvider.");
@@ -1986,7 +1987,6 @@ public class Eyes extends EyesBase {
 
                     logger.verbose("Setting OS: " + os);
                     appEnv.setOs(os);
-                    logger.verbose("Setting scale method for mobile.");
                 }
             } else {
                 logger.log("No mobile OS detected.");
