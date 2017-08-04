@@ -30,7 +30,7 @@ public abstract class EyesBase {
     protected ServerConnector serverConnector;
     protected RunningSession runningSession;
     protected SessionStartInfo sessionStartInfo;
-    protected RectangleSize viewportSize;
+    protected PropertyHandler<RectangleSize> viewportSizeHandler;
     protected EyesScreenshot lastScreenshot;
     protected PropertyHandler<ScaleProvider> scaleProviderHandler;
     protected PropertyHandler<CutProvider> cutProviderHandler;
@@ -95,7 +95,8 @@ public abstract class EyesBase {
         cutProviderHandler = new SimplePropertyHandler<>();
         cutProviderHandler.set(new NullCutProvider());
         positionProvider = new InvalidPositionProvider();
-        viewportSize = null;
+        viewportSizeHandler = new SimplePropertyHandler<>();
+        viewportSizeHandler.set(null);
         serverConnector = ServerConnectorFactory.create(logger,
                 getBaseAgentId(), serverUrl);
         matchTimeout = DEFAULT_MATCH_TIMEOUT;
@@ -1164,7 +1165,7 @@ public abstract class EyesBase {
 
             this.currentAppName = appName != null ? appName : this.appName;
             this.testName = testName;
-            this.viewportSize = viewportSize;
+            viewportSizeHandler.set(viewportSize);
             this.sessionType =
                     sessionType != null ? sessionType : SessionType.SEQUENTIAL;
             scaleProviderHandler.set(new NullScaleProvider());
@@ -1239,6 +1240,26 @@ public abstract class EyesBase {
      * @param size The required viewport size.
      */
     protected abstract void setViewportSize(RectangleSize size);
+
+    /**
+     * Define the viewport size as {@code size} without doing any actual action on the
+     *
+     * @param explicitViewportSize The size of the viewport. {@code null} disables the explicit size.
+     */
+    public void setExplicitViewportSize(RectangleSize explicitViewportSize) {
+        if(explicitViewportSize == null) {
+            viewportSizeHandler = new SimplePropertyHandler<>();
+            viewportSizeHandler.set(null);
+            this.isViewportSizeSet = false;
+
+            return;
+        }
+
+        logger.verbose("Viewport size explicitly set to " + explicitViewportSize);
+        viewportSizeHandler = new ReadOnlyPropertyHandler<>(logger,
+                new RectangleSize(explicitViewportSize.getWidth(), explicitViewportSize.getHeight()));
+        this.isViewportSizeSet = true;
+    }
 
     /**
      * @return The inferred environment string
@@ -1392,7 +1413,7 @@ public abstract class EyesBase {
         }
 
         appEnv.setInferred(getInferredEnvironment());
-        appEnv.setDisplaySize(viewportSize);
+        appEnv.setDisplaySize(viewportSizeHandler.get());
         return appEnv;
     }
 
@@ -1438,10 +1459,13 @@ public abstract class EyesBase {
     private void ensureViewportSize() {
         if (!isViewportSizeSet) {
             try {
-                if (viewportSize == null) {
-                    viewportSize = getViewportSize();
+                if (viewportSizeHandler.get() == null) {
+                    // If it's read-only, no point in making the getViewportSize() call..
+                    if (!(viewportSizeHandler instanceof ReadOnlyPropertyHandler)) {
+                        viewportSizeHandler.set(getViewportSize());
+                    }
                 } else {
-                    setViewportSize(viewportSize);
+                    setViewportSize(viewportSizeHandler.get());
                 }
                 isViewportSizeSet = true;
             } catch (NullPointerException e) {

@@ -9,10 +9,7 @@ import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.selenium.fluent.FrameLocator;
 import com.applitools.eyes.selenium.fluent.ISeleniumCheckTarget;
 import com.applitools.eyes.selenium.fluent.ISeleniumFrameCheckTarget;
-import com.applitools.utils.ArgumentGuard;
-import com.applitools.utils.ImageUtils;
-import com.applitools.utils.PropertyHandler;
-import com.applitools.utils.SimplePropertyHandler;
+import com.applitools.utils.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
@@ -1236,7 +1233,7 @@ public class Eyes extends EyesBase {
             logger.verbose("Setting scale provider...");
             try {
                 factory = new ContextBasedScaleProviderFactory(logger, positionProvider.getEntireSize(),
-                        getViewportSize(), devicePixelRatio, EyesSeleniumUtils.isMobileDevice(driver),
+                        viewportSizeHandler.get(), devicePixelRatio, EyesSeleniumUtils.isMobileDevice(driver),
                         scaleProviderHandler);
             } catch (Exception e) {
                 // This can happen in Appium for example.
@@ -1814,6 +1811,11 @@ public class Eyes extends EyesBase {
      */
     @Override
     protected void setViewportSize(RectangleSize size) {
+        if (viewportSizeHandler instanceof ReadOnlyPropertyHandler) {
+            logger.verbose("Ignored (explicitly viewport size given)");
+            return;
+        }
+
         FrameChain originalFrame = driver.getFrameChain();
         driver.switchTo().defaultContent();
 
@@ -1826,7 +1828,7 @@ public class Eyes extends EyesBase {
             throw new TestFailedException("Failed to set the viewport size", e);
         }
         ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
-        this.viewportSize = new RectangleSize(size.getWidth(), size.getHeight());
+        viewportSizeHandler.set(new RectangleSize(size.getWidth(), size.getHeight()));
     }
 
     /**
