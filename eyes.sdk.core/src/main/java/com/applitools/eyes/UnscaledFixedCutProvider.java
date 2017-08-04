@@ -5,11 +5,9 @@ import com.applitools.utils.ImageUtils;
 import java.awt.image.BufferedImage;
 
 /**
- * Cut provider based on fixed cut values, run AFTER scaling (so coordinates should be normalized).
+ * Cut provider based on fixed cut values, run BEFORE scaling.
  */
-@SuppressWarnings("WeakerAccess")
-public class FixedCutProvider implements CutProvider {
-
+public class UnscaledFixedCutProvider implements CutProvider {
     private final int header;
     private final int footer;
     private final int left;
@@ -22,7 +20,8 @@ public class FixedCutProvider implements CutProvider {
      * @param left The left to cut in pixels.
      * @param right The right to cut in pixels.
      */
-    public FixedCutProvider(int header, int footer, int left, int right) {
+    @SuppressWarnings("WeakerAccess")
+    public UnscaledFixedCutProvider(int header, int footer, int left, int right) {
         this.header = header;
         this.footer = footer;
         this.left = left;
@@ -58,11 +57,6 @@ public class FixedCutProvider implements CutProvider {
     }
 
     public CutProvider scale(double scaleRatio) {
-        int scaledHeader = (int) Math.ceil(header * scaleRatio);
-        int scaledFooter = (int) Math.ceil(footer * scaleRatio);
-        int scaledLeft = (int) Math.ceil(left * scaleRatio);
-        int scaledRight = (int) Math.ceil(right * scaleRatio);
-
-        return new FixedCutProvider(scaledHeader, scaledFooter, scaledLeft, scaledRight);
+        return new UnscaledFixedCutProvider(header, footer, left, right);
     }
 }
