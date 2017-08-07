@@ -6,9 +6,9 @@ matrix:
           language: java
           jdk: oraclejdk8
           env: DISPLAY=':0.0'   
-          install: cd eyes.selenium.java/;mvn test
+          script: cd eyes.selenium.java/;mvn test
         - os: osx
           language: java
           osx_image: xcode8
           env: DISPLAY=':0.0'  
-          install: cd eyes.selenium.java/;mvn test
+          script: cd eyes.selenium.java/;mvn test
