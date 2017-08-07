@@ -62,7 +62,9 @@ public class ElementsFramesTest {
 
     private static WebDriver createDriver(Platform platform, String browserName) throws java.net.MalformedURLException
     {
-        final String URL = System.getenv("SAUCELABS_URL");
+        final String SAUCE_ACCESS_KEY = System.getenv("SAUCE_ACCESS_KEY");
+        final String SAUCE_USERNAME = System.getenv("SAUCE_USERNAME");
+        final String URL = "https://" + SAUCE_USERNAME + ":" + SAUCE_ACCESS_KEY + "@ondemand.saucelabs.com:443/wd/hub";
         WebDriver driver = null;
 
         if (URL != null) {
