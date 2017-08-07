@@ -52,7 +52,6 @@ public class ElementsFramesTest {
     @BeforeClass
     public static void setUp () throws URISyntaxException, java.net.MalformedURLException {
         eyes = new Eyes();
-        eyes.setLogHandler(new FileLogger("/tmp/applitools.log", true, true));
         eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
         eyes.setLogHandler(new StdoutLogHandler(true));
         eyes.setStitchMode(StitchMode.CSS);
