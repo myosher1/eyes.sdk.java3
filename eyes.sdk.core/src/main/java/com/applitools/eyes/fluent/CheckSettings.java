@@ -55,6 +55,10 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         );
     }
 
+    protected void floating(GetFloatingRegion regionProvider){
+        this.floatingRegions.add(regionProvider);
+    }
+
     /**
      * {@inheritDoc}
      */

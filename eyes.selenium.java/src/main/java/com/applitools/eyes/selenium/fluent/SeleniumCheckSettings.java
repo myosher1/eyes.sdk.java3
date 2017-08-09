@@ -73,4 +73,8 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return this;
     }
 
+    public ICheckSettings floating(By regionSelector, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
+        floating(new FloatingRegionBySelector(regionSelector, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
+        return this;
+    }
 }

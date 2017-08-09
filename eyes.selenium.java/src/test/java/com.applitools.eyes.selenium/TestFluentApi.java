@@ -108,10 +108,17 @@ public class TestFluentApi extends TestSetup {
                 .fully());
     }
 
-     @Test
-    public void TestCheckWindowWithIgnoreBySelector_Fluent()
-    {
+    @Test
+    public void TestCheckWindowWithIgnoreBySelector_Fluent() {
         eyes.check("Fluent - Window with ignore region by selector", Target.window()
                 .ignore(By.id("overflowing-div")));
     }
+
+    @Test
+    public void TestCheckWindowWithFloatingBySelector_Fluent()
+    {
+        eyes.check("Fluent - Window with ignore region by selector", Target.window()
+                .floating(By.id("overflowing-div"), 3, 3, 20, 30));
+    }
+
 }
