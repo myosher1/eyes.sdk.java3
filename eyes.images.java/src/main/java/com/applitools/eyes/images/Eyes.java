@@ -124,7 +124,7 @@ public class Eyes extends EyesBase {
 
         logger.verbose(String.format("CheckImage(Image, '%s', %b)", tag, ignoreMismatch));
 
-        if (viewportSize == null) {
+        if (viewportSizeHandler.get() == null) {
             setViewportSize(new RectangleSize(image.getWidth(), image.getHeight()));
         }
 
@@ -216,7 +216,7 @@ public class Eyes extends EyesBase {
 
         logger.verbose(String.format("CheckRegion(Image, [%s], '%s', %b)", region, tag, ignoreMismatch));
 
-        if (viewportSize == null) {
+        if (viewportSizeHandler.get() == null) {
             setViewportSize(new RectangleSize(image.getWidth(), image.getHeight()));
         }
 
@@ -274,7 +274,7 @@ public class Eyes extends EyesBase {
      */
     @Override
     public RectangleSize getViewportSize() {
-        return viewportSize;
+        return viewportSizeHandler.get();
     }
 
     /**
@@ -284,7 +284,7 @@ public class Eyes extends EyesBase {
     @Override
     public void setViewportSize(RectangleSize size) {
         ArgumentGuard.notNull(size, "size");
-        this.viewportSize = new RectangleSize(size.getWidth(), size.getHeight());
+        viewportSizeHandler.set(new RectangleSize(size.getWidth(), size.getHeight()));
     }
 
     /**
