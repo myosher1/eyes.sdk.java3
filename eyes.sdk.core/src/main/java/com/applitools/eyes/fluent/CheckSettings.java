@@ -13,17 +13,17 @@ import java.util.List;
 public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
 
     private Region targetRegion;
-    private List<Region> ignoreRegions = new ArrayList<>();
+    private List<GetRegion> ignoreRegions = new ArrayList<>();
     private MatchLevel matchLevel;
     private Boolean ignoreCaret;
     private boolean stitchContent = false;
-    private List<FloatingMatchSettings> floatingRegions = new ArrayList<>();
+    private List<GetFloatingRegion> floatingRegions = new ArrayList<>();
     private int timeout = -1;
 
-    protected CheckSettings() { }
+    protected CheckSettings() {
+    }
 
-    protected CheckSettings(Region region)
-    {
+    protected CheckSettings(Region region) {
         this.targetRegion = region;
     }
 
@@ -31,23 +31,27 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      * For internal use only.
      * @param timeout timeout
      */
-    public CheckSettings(int timeout)
-    {
+    public CheckSettings(int timeout) {
         this.timeout = timeout;
     }
 
     protected void ignore(Region region) {
-        ignoreRegions.add(region);
+        this.ignore(new IgnoreRegionByRectangle(region));
     }
 
-    protected void floating_(Region region, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset){
+    protected void ignore(GetRegion regionProvider) {
+        ignoreRegions.add(regionProvider);
+    }
+
+    protected void floating_(Region region, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
         this.floatingRegions.add(
-                new FloatingMatchSettings(
-                        region.getLeft(),
-                        region.getTop(),
-                        region.getLeft()+region.getWidth(),
-                        region.getTop()+region.getHeight(),
-                        maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset)
+                new FloatingRegionByRectangle(
+                        new Region(
+                                region.getLeft(),
+                                region.getTop(),
+                                region.getLeft() + region.getWidth(),
+                                region.getTop() + region.getHeight()
+                        ), maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset)
         );
     }
 
@@ -77,7 +81,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings floating(int maxOffset, Region... regions) {
-        for (Region r:regions) {
+        for (Region r : regions) {
             this.floating_(r, maxOffset, maxOffset, maxOffset, maxOffset);
         }
         return this;
@@ -185,13 +189,13 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     }
 
     @Override
-    public Region[] getIgnoreRegions() {
-        return this.ignoreRegions.toArray(new Region[0]);
+    public GetRegion[] getIgnoreRegions() {
+        return this.ignoreRegions.toArray(new GetRegion[0]);
     }
 
     @Override
-    public FloatingMatchSettings[] getFloatingRegions() {
-        return this.floatingRegions.toArray(new FloatingMatchSettings[0]);
+    public GetFloatingRegion[] getFloatingRegions() {
+        return this.floatingRegions.toArray(new GetFloatingRegion[0]);
     }
 
     @Override

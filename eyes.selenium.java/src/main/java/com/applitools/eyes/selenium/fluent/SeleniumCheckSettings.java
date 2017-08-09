@@ -13,14 +13,14 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     private By targetSelector;
     private List<FrameLocator> frameChain = new ArrayList<>();
 
-    SeleniumCheckSettings() { }
+    SeleniumCheckSettings() {
+    }
 
     SeleniumCheckSettings(Region region) {
         super(region);
     }
 
-    SeleniumCheckSettings(By targetSelector)
-    {
+    SeleniumCheckSettings(By targetSelector) {
         this.targetSelector = targetSelector;
     }
 
@@ -34,39 +34,43 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return this.frameChain;
     }
 
-    public SeleniumCheckSettings frame(By by)
-    {
+    public SeleniumCheckSettings frame(By by) {
         FrameLocator fl = new FrameLocator();
         fl.setFrameSelector(by);
         this.frameChain.add(fl);
         return this;
     }
 
-    public SeleniumCheckSettings frame(String frameNameOrId)
-    {
+    public SeleniumCheckSettings frame(String frameNameOrId) {
         FrameLocator fl = new FrameLocator();
         fl.setFrameNameOrId(frameNameOrId);
         this.frameChain.add(fl);
         return this;
     }
 
-    public SeleniumCheckSettings frame(int index)
-    {
+    public SeleniumCheckSettings frame(int index) {
         FrameLocator fl = new FrameLocator();
         fl.setFrameIndex(index);
         this.frameChain.add(fl);
         return this;
     }
 
-    public ICheckSettings region(Region region)
-    {
+    public ICheckSettings region(Region region) {
         super.updateTargetRegion(region);
         return this;
     }
 
-    public ICheckSettings region(By by)
-    {
+    public ICheckSettings region(By by) {
         this.targetSelector = by;
         return this;
     }
+
+    public ICheckSettings ignore(By... regionSelectors) {
+        for (By selector : regionSelectors) {
+            ignore(new IgnoreRegionBySelector(selector));
+        }
+
+        return this;
+    }
+
 }

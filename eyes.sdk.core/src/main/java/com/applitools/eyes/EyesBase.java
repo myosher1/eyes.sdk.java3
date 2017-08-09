@@ -1,8 +1,6 @@
 package com.applitools.eyes;
 
-import com.applitools.eyes.fluent.CheckSettings;
-import com.applitools.eyes.fluent.ICheckSettings;
-import com.applitools.eyes.fluent.ICheckSettingsInternal;
+import com.applitools.eyes.fluent.*;
 import com.applitools.utils.*;
 import org.apache.commons.codec.binary.Base64;
 
@@ -1012,8 +1010,21 @@ public abstract class EyesBase {
             MatchLevel matchLevel = checkSettingsInternal.getMatchLevel();
             matchLevel = (matchLevel == null) ? getDefaultMatchSettings().getMatchLevel() : matchLevel;
             imageMatchSettings = new ImageMatchSettings(matchLevel, null);
-            imageMatchSettings.setFloatingRegions(checkSettingsInternal.getFloatingRegions());
-            imageMatchSettings.setIgnoreRegions(checkSettingsInternal.getIgnoreRegions());
+
+            List<Region> ignoreRegions = new ArrayList<>();
+            for (GetRegion ignoreRegionProvider : checkSettingsInternal.getIgnoreRegions())
+            {
+                ignoreRegions.add(ignoreRegionProvider.getRegion(this));
+            }
+            imageMatchSettings.setIgnoreRegions(ignoreRegions.toArray(new Region[0]));
+
+            List<FloatingMatchSettings> floatingRegions = new ArrayList<>();
+            for (GetFloatingRegion floatingRegionProvider : checkSettingsInternal.getFloatingRegions())
+            {
+                floatingRegions.add(floatingRegionProvider.getRegion(this));
+            }
+            imageMatchSettings.setFloatingRegions(floatingRegions.toArray(new FloatingMatchSettings[0]));
+
             imageMatchSettings.setIgnoreCaret(checkSettingsInternal.getIgnoreCaret());
         }
 

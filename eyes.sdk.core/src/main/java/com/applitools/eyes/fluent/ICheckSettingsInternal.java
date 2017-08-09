@@ -9,7 +9,7 @@ public interface ICheckSettingsInternal {
     int getTimeout();
     boolean getStitchContent();
     MatchLevel getMatchLevel();
-    Region[] getIgnoreRegions();
-    FloatingMatchSettings[] getFloatingRegions();
+    GetRegion[] getIgnoreRegions();
+    GetFloatingRegion[] getFloatingRegions();
     Boolean getIgnoreCaret();
 }

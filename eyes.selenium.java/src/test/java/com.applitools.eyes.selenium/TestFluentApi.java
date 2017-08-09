@@ -107,4 +107,11 @@ public class TestFluentApi extends TestSetup {
                 .frame("frame1-1")
                 .fully());
     }
+
+     @Test
+    public void TestCheckWindowWithIgnoreBySelector_Fluent()
+    {
+        eyes.check("Fluent - Window with ignore region by selector", Target.window()
+                .ignore(By.id("overflowing-div")));
+    }
 }
