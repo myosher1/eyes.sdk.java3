@@ -417,6 +417,6 @@ public class Region {
 
     @Override
     public String toString() {
-        return "(" + left + ", " + top + ") " + width + "x" + height;
+        return "(" + left + ", " + top + ") " + width + "x" + height + ", " + coordinatesType;
     }
 }

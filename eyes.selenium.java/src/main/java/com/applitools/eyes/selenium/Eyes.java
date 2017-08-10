@@ -14,11 +14,9 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.RemoteWebElement;
 
 import java.awt.image.BufferedImage;
 import java.net.URI;
-import java.security.acl.LastOwnerException;
 import java.util.List;
 
 /**
@@ -87,6 +85,10 @@ public class Eyes extends EyesBase {
     @Override
     public String getBaseAgentId() {
         return "eyes.selenium.java/3.14";
+    }
+
+    public WebDriver getDriver(){
+        return driver;
     }
 
     /**

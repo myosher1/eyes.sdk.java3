@@ -6,17 +6,17 @@ import org.openqa.selenium.By;
 
 public class Target {
 
-    public static ICheckSettings window()
+    public static SeleniumCheckSettings window()
     {
         return new SeleniumCheckSettings();
     }
 
-    public static ICheckSettings region(Region region)
+    public static SeleniumCheckSettings region(Region region)
     {
         return new SeleniumCheckSettings(region);
     }
 
-    public static ICheckSettings region(By by)
+    public static SeleniumCheckSettings region(By by)
     {
         return new SeleniumCheckSettings(by);
     }
