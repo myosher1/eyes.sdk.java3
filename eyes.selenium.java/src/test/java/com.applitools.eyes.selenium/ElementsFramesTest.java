@@ -1,3 +1,5 @@
+package com.applitools.eyes.selenium;
+
 import com.applitools.eyes.*;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.StitchMode;

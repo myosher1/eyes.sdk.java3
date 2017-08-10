@@ -60,8 +60,12 @@ public class TestSetup {
         }
 
         protected void finished(Description description) {
-            eyes.close();
-            driver.quit();
+            try {
+                eyes.close();
+            } finally {
+                eyes.abortIfNotClosed();
+                driver.quit();
+            }
         }
     };
 }

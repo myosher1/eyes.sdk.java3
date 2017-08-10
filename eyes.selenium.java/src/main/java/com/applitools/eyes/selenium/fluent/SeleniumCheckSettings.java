@@ -2,8 +2,12 @@ package com.applitools.eyes.selenium.fluent;
 
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.CheckSettings;
-import com.applitools.eyes.fluent.ICheckSettings;
+import com.applitools.eyes.fluent.FloatingRegionByRectangle;
+import com.applitools.eyes.fluent.IgnoreRegionByRectangle;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.Point;
+import org.openqa.selenium.WebElement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,8 +17,7 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     private By targetSelector;
     private List<FrameLocator> frameChain = new ArrayList<>();
 
-    SeleniumCheckSettings() {
-    }
+    SeleniumCheckSettings() { }
 
     SeleniumCheckSettings(Region region) {
         super(region);
@@ -55,17 +58,17 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return this;
     }
 
-    public ICheckSettings region(Region region) {
+    public SeleniumCheckSettings region(Region region) {
         super.updateTargetRegion(region);
         return this;
     }
 
-    public ICheckSettings region(By by) {
+    public SeleniumCheckSettings region(By by) {
         this.targetSelector = by;
         return this;
     }
 
-    public ICheckSettings ignore(By... regionSelectors) {
+    public SeleniumCheckSettings ignore(By... regionSelectors) {
         for (By selector : regionSelectors) {
             ignore(new IgnoreRegionBySelector(selector));
         }
@@ -73,8 +76,27 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return this;
     }
 
-    public ICheckSettings floating(By regionSelector, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
+    public SeleniumCheckSettings ignore(WebElement... elements) {
+        for (WebElement element : elements) {
+            Point loc = element.getLocation();
+            Dimension dim = element.getSize();
+            Region region = new Region(loc.getX(), loc.getY(), dim.getWidth(), dim.getHeight());
+            ignore(new IgnoreRegionByRectangle(region));
+        }
+
+        return this;
+    }
+
+    public SeleniumCheckSettings floating(By regionSelector, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
         floating(new FloatingRegionBySelector(regionSelector, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
+        return this;
+    }
+
+    public SeleniumCheckSettings floating(WebElement element, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
+        Point loc = element.getLocation();
+        Dimension dim = element.getSize();
+        Region region = new Region(loc.getX(), loc.getY(), dim.getWidth(), dim.getHeight());
+        floating(new FloatingRegionByRectangle(region, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
         return this;
     }
 }
