@@ -145,8 +145,14 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     private ScreenshotType updateScreenshotType(ScreenshotType screenshotType, BufferedImage image) {
         if (screenshotType == null) {
             RectangleSize viewportSize = driver.getDefaultContentViewportSize();
-            double pixelRatio = driver.getEyes().getDevicePixelRatio();
-            viewportSize = viewportSize.scale(pixelRatio);
+
+            boolean scaleViewport = driver.getEyes().shouldStitchContent();
+
+            if (scaleViewport) {
+                double pixelRatio = driver.getEyes().getDevicePixelRatio();
+                viewportSize = viewportSize.scale(pixelRatio);
+            }
+
             if (image.getWidth() <= viewportSize.getWidth() && image.getHeight() <= viewportSize.getHeight()) {
                 screenshotType = ScreenshotType.VIEWPORT;
             } else {
