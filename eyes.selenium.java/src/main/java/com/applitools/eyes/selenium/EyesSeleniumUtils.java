@@ -27,7 +27,7 @@ public class EyesSeleniumUtils {
 
     // See Applitools WiKi for explanation.
     private static final String JS_GET_VIEWPORT_SIZE =
-            "var height = undefined;"
+                  "var height = undefined;"
                 + "var width = undefined;"
                 + "  if (window.innerHeight) {height = window.innerHeight;}"
                 + "  else if (document.documentElement "
@@ -289,8 +289,7 @@ public class EyesSeleniumUtils {
      * @return The viewport size of the current context, or the display size
      *          if the viewport size cannot be retrieved.
      */
-    public static RectangleSize getViewportSizeOrDisplaySize(Logger logger, WebDriver
-            driver) {
+    public static RectangleSize getViewportSizeOrDisplaySize(Logger logger, WebDriver driver) {
         logger.verbose("getViewportSizeOrDisplaySize()");
 
         try {
@@ -328,8 +327,7 @@ public class EyesSeleniumUtils {
         final int RETRIES = 3;
 
         int retriesLeft = RETRIES;
-        Dimension dRequiredSize = new Dimension(requiredSize.getWidth(),
-                requiredSize.getHeight());
+        Dimension dRequiredSize = new Dimension(requiredSize.getWidth(), requiredSize.getHeight());
         Dimension dCurrentSize;
         RectangleSize currentSize;
         do {
@@ -365,8 +363,7 @@ public class EyesSeleniumUtils {
      * @param driver The web driver to use.
      * @param size The size to set as the viewport size.
      */
-    public static void setViewportSize(Logger logger, WebDriver driver,
-                                RectangleSize size) {
+    public static void setViewportSize(Logger logger, WebDriver driver, RectangleSize size) {
 
         ArgumentGuard.notNull(size, "size");
 

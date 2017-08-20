@@ -1174,11 +1174,12 @@ public abstract class EyesBase {
             logOpenBase();
             validateSessionOpen();
 
+            this.isViewportSizeSet = false;
+
             this.currentAppName = appName != null ? appName : this.appName;
             this.testName = testName;
             viewportSizeHandler.set(viewportSize);
-            this.sessionType =
-                    sessionType != null ? sessionType : SessionType.SEQUENTIAL;
+            this.sessionType = sessionType != null ? sessionType : SessionType.SEQUENTIAL;
             scaleProviderHandler.set(new NullScaleProvider());
 
             ensureRunningSession();
@@ -1186,7 +1187,7 @@ public abstract class EyesBase {
             isOpen = true;
 
         } catch (EyesException e) {
-            logger.log(String.format("%s", e.getMessage()));
+            logger.log(e.getMessage());
             logger.getLogHandler().close();
             throw e;
         }
@@ -1500,7 +1501,7 @@ public abstract class EyesBase {
 
         // Cropping by region if necessary
         if (!region.isEmpty()) {
-            screenshot = screenshot.getSubScreenshot(region, region.getCoordinatesType(), false);
+            screenshot = screenshot.getSubScreenshot(region, false);
         }
 
         logger.verbose("Compressing screenshot...");
