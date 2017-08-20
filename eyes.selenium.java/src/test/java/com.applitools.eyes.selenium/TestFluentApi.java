@@ -9,6 +9,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 @RunWith(JUnit4.class)
 public class TestFluentApi extends TestSetup {
@@ -121,4 +122,17 @@ public class TestFluentApi extends TestSetup {
                 .floating(By.id("overflowing-div"), 3, 3, 20, 30));
     }
 
+    @Test
+    public void TestCheckElementFully_Fluent()
+    {
+        WebElement element = chromeDriver.findElement(By.id("overflowing-div-image"));
+        eyes.check("Fluent - Region by element - fully", Target.region(element).fully());
+    }
+
+    @Test
+    public void TestCheckElement_Fluent()
+    {
+        WebElement element = chromeDriver.findElement(By.id("overflowing-div-image"));
+        eyes.check("Fluent - Region by element", Target.region(element));
+    }
 }

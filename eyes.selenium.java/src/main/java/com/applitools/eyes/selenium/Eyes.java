@@ -9,6 +9,7 @@ import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.selenium.fluent.FrameLocator;
 import com.applitools.eyes.selenium.fluent.ISeleniumCheckTarget;
 import com.applitools.eyes.selenium.fluent.ISeleniumFrameCheckTarget;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.utils.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.Dimension;
@@ -95,7 +96,7 @@ public class Eyes extends EyesBase {
         return "eyes.selenium.java/3.14";
     }
 
-    public WebDriver getDriver(){
+    public WebDriver getDriver() {
         return driver;
     }
 
@@ -603,18 +604,15 @@ public class Eyes extends EyesBase {
             }, name, false, checkSettings);
         } else if (seleniumCheckTarget != null) {
             By targetSelector = seleniumCheckTarget.getTargetSelector();
-            if (targetSelector != null) {
+            WebElement targetElement = seleniumCheckTarget.getTargetElement();
+            if (targetElement == null && targetSelector != null) {
+                targetElement = this.driver.findElement(targetSelector);
+            }
+            if (targetElement != null) {
                 if (stitchContent) {
-                    checkElement(this.driver.findElement(targetSelector), name, checkSettings);
+                    this.checkElement(targetElement, name, checkSettings);
                 } else {
-                    if (switchedToFrameCount == 0) {
-                        WebElement target = this.driver.getRemoteWebDriver().findElement(targetSelector);
-                        Point pl = target.getLocation();
-                        Location loc = new Location(pl.x, pl.y);
-                        ScrollPositionProvider spp = new ScrollPositionProvider(this.logger, this.jsExecutor);
-                        spp.setPosition(loc);
-                    }
-                    this.checkRegion(targetSelector, name, checkSettings);
+                    this.checkRegion(targetElement, name, checkSettings);
                 }
             } else if (seleniumCheckTarget.getFrameChain().size() > 0) {
                 if (stitchContent) {
@@ -717,15 +715,13 @@ public class Eyes extends EyesBase {
         checkFrameOrElement = false;
     }
 
-    private void checkRegion(By targetSelector, String name, ICheckSettings checkSettings) {
-        ArgumentGuard.notNull(targetSelector, "selector");
+    private void checkRegion(WebElement element, String name, ICheckSettings checkSettings) {
+        ArgumentGuard.notNull(element, "element");
 
-        final WebElement element = driver.getRemoteWebDriver().findElement(targetSelector);
         Point p = element.getLocation();
         final Location elementLocation = new Location(p.getX(), p.getY());
         Dimension s = element.getSize();
         final RectangleSize elementSize = new RectangleSize(s.getWidth(), s.getHeight());
-        regionVisibilityStrategy.moveToRegion(getPositionProvider(), elementLocation);
 
         checkWindowBase(new RegionProvider() {
             @Override
@@ -735,55 +731,6 @@ public class Eyes extends EyesBase {
         }, name, false, checkSettings);
 
         logger.verbose("Done! trying to scroll back to original position..");
-        regionVisibilityStrategy.returnToOriginalPosition(positionProvider);
-        logger.verbose("Done!");
-    }
-
-    private void checkElement(WebElement element, String name, ICheckSettings checkSettings) {
-
-        final EyesRemoteWebElement eyesElement = (element instanceof EyesRemoteWebElement) ?
-                (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
-
-        PositionProvider originalPositionProvider = positionProvider;
-        PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
-        Location originalScrollPosition = scrollPositionProvider.getCurrentPosition();
-
-        Point p = eyesElement.getLocation();
-        scrollPositionProvider.setPosition(new Location(p.getX(), p.getY()));
-
-        String originalOverflow = eyesElement.getOverflow();
-
-        try {
-            checkFrameOrElement = true;
-            String displayStyle = eyesElement.getComputedStyle("display");
-            if (!displayStyle.equals("inline")) {
-                elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
-            }
-            eyesElement.setOverflow("hidden");
-            //Rectangle rect = eyesElement.GetClientBounds();
-            final Region rect = eyesElement.getBounds();
-
-            final int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
-            final int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
-
-            logger.verbose("replacing regionToCheck");
-            regionToCheck = new Region(rect.getLeft() + borderLeftWidth, rect.getTop() + borderTopWidth,
-                    eyesElement.getClientWidth(), eyesElement.getClientHeight(),
-                    CoordinatesType.CONTEXT_RELATIVE);
-
-            logger.verbose(String.format("Element region: %s", regionToCheck));
-
-            checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
-        } finally {
-            eyesElement.setOverflow(originalOverflow);
-
-            checkFrameOrElement = false;
-
-            scrollPositionProvider.setPosition(originalScrollPosition);
-            positionProvider = originalPositionProvider;
-            regionToCheck = Region.EMPTY;
-            elementPositionProvider = null;
-        }
     }
 
     /**
@@ -815,7 +762,9 @@ public class Eyes extends EyesBase {
 
         super.checkWindowBase(
                 new RegionProvider() {
-                    public Region getRegion() { return region; }
+                    public Region getRegion() {
+                        return region;
+                    }
                 },
                 tag,
                 false,
@@ -1592,37 +1541,32 @@ public class Eyes extends EyesBase {
         checkElement(element, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
-    /**
-     * Takes a snapshot of the application under test and matches a specific
-     * element with the expected region output.
-     * @param element      The element to check.
-     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
-     * @param tag          An optional tag to be associated with the snapshot.
-     * @throws TestFailedException if a mismatch is detected and
-     *                             immediate failure reports are enabled
-     */
-    protected void checkElement(final WebElement element, int matchTimeout, String tag) {
-        String originalOverflow = null;
-        EyesRemoteWebElement eyesElement;
+    private void checkElement(WebElement element, String name, ICheckSettings checkSettings) {
 
         // Since the element might already have been found using EyesWebDriver.
-        if (element instanceof EyesRemoteWebElement) {
-            eyesElement = (EyesRemoteWebElement) element;
-        } else {
-            eyesElement = new EyesRemoteWebElement(logger, driver, element);
-        }
+        final EyesRemoteWebElement eyesElement = (element instanceof EyesRemoteWebElement) ?
+                (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
 
-        PositionProvider originalPositionProvider = getPositionProvider();
+        PositionProvider originalPositionProvider = positionProvider;
+        PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
+        Location originalScrollPosition = scrollPositionProvider.getCurrentPosition();
+
+        String originalOverflow = null;
+
+        Point p = eyesElement.getLocation();
+        //scrollPositionProvider.setPosition(new Location(p.getX(), p.getY()));
+
         try {
             checkFrameOrElement = true;
-            setPositionProvider(new ElementPositionProvider(logger, driver, element));
+
+            String displayStyle = eyesElement.getComputedStyle("display");
+            if (!displayStyle.equals("inline")) {
+                elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
+            }
 
             // Set overflow to "hidden".
             originalOverflow = eyesElement.getOverflow();
             eyesElement.setOverflow("hidden");
-
-            Point p = eyesElement.getLocation();
-            Dimension d = element.getSize();
 
             int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
             int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
@@ -1638,25 +1582,31 @@ public class Eyes extends EyesBase {
             logger.verbose("replacing regionToCheck");
             regionToCheck = elementRegion;
 
-            super.checkWindowBase(
-                    new RegionProvider() {
-                        public Region getRegion() {
-                            return Region.EMPTY;
-                        }
-                    },
-                    tag,
-                    false,
-                    matchTimeout
-            );
+            checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
         } finally {
             if (originalOverflow != null) {
                 eyesElement.setOverflow(originalOverflow);
             }
 
             checkFrameOrElement = false;
-            setPositionProvider(originalPositionProvider);
-            regionToCheck = null;
+
+            scrollPositionProvider.setPosition(originalScrollPosition);
+            positionProvider = originalPositionProvider;
+            regionToCheck = Region.EMPTY;
+            elementPositionProvider = null;
         }
+    }
+
+    /**
+     * Takes a snapshot of the application under test and matches a specific
+     * element with the expected region output.
+     * @param element      The element to check.
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
+     * @param tag          An optional tag to be associated with the snapshot.
+     * @throws TestFailedException if a mismatch is detected and immediate failure reports are enabled
+     */
+    protected void checkElement(WebElement element, int matchTimeout, String tag) {
+        checkElement(element, tag, Target.region(element).timeout(matchTimeout));
     }
 
     /**
