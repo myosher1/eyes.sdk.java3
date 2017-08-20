@@ -1174,6 +1174,8 @@ public abstract class EyesBase {
             logOpenBase();
             validateSessionOpen();
 
+            this.isViewportSizeSet = false;
+
             this.currentAppName = appName != null ? appName : this.appName;
             this.testName = testName;
             viewportSizeHandler.set(viewportSize);
