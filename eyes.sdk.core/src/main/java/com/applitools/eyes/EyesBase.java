@@ -1177,8 +1177,7 @@ public abstract class EyesBase {
             this.currentAppName = appName != null ? appName : this.appName;
             this.testName = testName;
             viewportSizeHandler.set(viewportSize);
-            this.sessionType =
-                    sessionType != null ? sessionType : SessionType.SEQUENTIAL;
+            this.sessionType = sessionType != null ? sessionType : SessionType.SEQUENTIAL;
             scaleProviderHandler.set(new NullScaleProvider());
 
             ensureRunningSession();
@@ -1186,7 +1185,7 @@ public abstract class EyesBase {
             isOpen = true;
 
         } catch (EyesException e) {
-            logger.log(String.format("%s", e.getMessage()));
+            logger.log(e.getMessage());
             logger.getLogHandler().close();
             throw e;
         }

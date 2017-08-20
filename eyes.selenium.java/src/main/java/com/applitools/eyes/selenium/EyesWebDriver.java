@@ -34,9 +34,8 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     /**
      * Rotates the image as necessary. The rotation is either manually forced
      * by passing a non-null ImageRotation, or automatically inferred.
-     *
-     * @param driver The underlying driver which produced the screenshot.
-     * @param image The image to normalize.
+     * @param driver   The underlying driver which produced the screenshot.
+     * @param image    The image to normalize.
      * @param rotation The degrees by which to rotate the image:
      *                 positive values = clockwise rotation,
      *                 negative values = counter-clockwise,
@@ -86,9 +85,10 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         this.logger = logger;
         this.eyes = eyes;
         this.driver = driver;
-        elementsIds = new HashMap<String, WebElement>();
+
+        this.elementsIds = new HashMap<>();
         this.frameChain = new FrameChain(logger);
-        defaultContentViewportSize = null;
+        this.defaultContentViewportSize = null;
 
         // initializing "touch" if possible
         ExecuteMethod executeMethod = null;
@@ -130,7 +130,6 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     }
 
     /**
-     *
      * @param rotation The image rotation data.
      */
     public void setRotation(ImageRotation rotation) {
@@ -179,17 +178,14 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     public WebElement findElement(By by) {
         WebElement webElement = driver.findElement(by);
         if (webElement instanceof RemoteWebElement) {
-            webElement = new EyesRemoteWebElement(logger, this,
-                    (RemoteWebElement) webElement);
+            webElement = new EyesRemoteWebElement(logger, this, webElement);
 
             // For Remote web elements, we can keep the IDs,
             // for Id based lookup (mainly used for Javascript related
             // activities).
-            elementsIds.put(((RemoteWebElement) webElement).getId(),
-                    webElement);
+            elementsIds.put(((RemoteWebElement) webElement).getId(), webElement);
         } else {
-            throw new EyesException(String.format(
-                    "findElement: Element is not a RemoteWebElement: %s", by));
+            throw new EyesException("findElement: Element is not a RemoteWebElement: " + by);
         }
 
         return webElement;
@@ -201,7 +197,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
      * @return Maps of IDs for found elements.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public Map<String, WebElement> getElementIds () {
+    public Map<String, WebElement> getElementIds() {
         return elementsIds;
     }
 
@@ -359,12 +355,11 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
 
 
     /**
-     * @param forceQuery If true, we will perform the query even if we have a
-     *                   cached viewport size.
+     * @param forceQuery If true, we will perform the query even if we have a cached viewport size.
      * @return The viewport size of the default content (outer most frame).
      */
     public RectangleSize getDefaultContentViewportSize(boolean forceQuery) {
-        logger.verbose("getDefaultContentViewportSize()");
+        logger.verbose("getDefaultContentViewportSize(forceQuery: " + forceQuery + ")");
 
         if (defaultContentViewportSize != null && !forceQuery) {
             logger.verbose("Using cached viewport size: " + defaultContentViewportSize);
@@ -419,7 +414,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         String userAgent;
         try {
             userAgent = (String) this.driver.executeScript("return navigator.userAgent");
-            logger.verbose("user agent: "+ userAgent);
+            logger.verbose("user agent: " + userAgent);
         } catch (Exception e) {
             logger.verbose("Failed to obtain user-agent string");
             userAgent = null;
