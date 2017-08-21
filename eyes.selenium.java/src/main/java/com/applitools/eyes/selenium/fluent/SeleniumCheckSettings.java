@@ -15,6 +15,7 @@ import java.util.List;
 public class SeleniumCheckSettings extends CheckSettings implements ISeleniumCheckTarget {
 
     private By targetSelector;
+    private WebElement targetElement;
     private List<FrameLocator> frameChain = new ArrayList<>();
 
     SeleniumCheckSettings() { }
@@ -27,9 +28,18 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         this.targetSelector = targetSelector;
     }
 
+    SeleniumCheckSettings(WebElement targetElement) {
+        this.targetElement = targetElement;
+    }
+
     @Override
     public By getTargetSelector() {
         return this.targetSelector;
+    }
+
+    @Override
+    public WebElement getTargetElement(){
+        return this.targetElement;
     }
 
     @Override
