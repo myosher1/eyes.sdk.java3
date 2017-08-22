@@ -15,10 +15,11 @@ import java.net.URI;
 public class TestSetup {
 
     protected static Eyes eyes;
+    protected static WebDriver webDriver;
+    protected static String testSuitName;
+
     private static WebDriver driver;
     private static LogHandler logHandler;
-
-    protected static String testSuitName;
 
     @BeforeClass
     public static void OneTimeSetUp() {
@@ -46,9 +47,9 @@ public class TestSetup {
         protected void starting(Description description) {
             ChromeOptions options = new ChromeOptions();
             options.addArguments("disable-infobars");
-            ChromeDriver chromeDriver = new ChromeDriver(options);
+            webDriver = new ChromeDriver(options);
 
-            driver = eyes.open(chromeDriver,
+            driver = eyes.open(webDriver,
                     "Eyes Selenium SDK",
                     description.getMethodName(),
                     new RectangleSize(800, 599)
