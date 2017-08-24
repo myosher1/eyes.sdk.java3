@@ -72,6 +72,7 @@ public abstract class EyesBase {
 
     protected DebugScreenshotsProvider debugScreenshotsProvider;
     private boolean isViewportSizeSet;
+    protected int stitchingOverlap = 50;
 
     /**
      * Creates a new {@code EyesBase}instance that interacts with the Eyes
@@ -562,6 +563,21 @@ public abstract class EyesBase {
     }
 
     /**
+     * Returns the stitching overlap in pixels.
+     */
+    public int getStitchOverlap() {
+        return this.stitchingOverlap;
+    }
+
+    /**
+     * Sets the stitching overlap in pixels.
+     * @param pixels The width (in pixels) of the overlap.
+     */
+    public void setStitchOverlap(int pixels) {
+        this.stitchingOverlap = pixels;
+    }
+
+    /**
      * See {@link #close(boolean)}.
      * {@code throwEx} defaults to {@code true}.
      * @return The test results.
@@ -1007,25 +1023,17 @@ public abstract class EyesBase {
         ImageMatchSettings imageMatchSettings = null;
         if (checkSettingsInternal != null) {
             retryTimeout = checkSettingsInternal.getTimeout();
+
             MatchLevel matchLevel = checkSettingsInternal.getMatchLevel();
             matchLevel = (matchLevel == null) ? getDefaultMatchSettings().getMatchLevel() : matchLevel;
+
             imageMatchSettings = new ImageMatchSettings(matchLevel, null);
 
-            List<Region> ignoreRegions = new ArrayList<>();
-            for (GetRegion ignoreRegionProvider : checkSettingsInternal.getIgnoreRegions())
-            {
-                ignoreRegions.add(ignoreRegionProvider.getRegion(this));
-            }
-            imageMatchSettings.setIgnoreRegions(ignoreRegions.toArray(new Region[0]));
+            collectIgnoreRegions(checkSettingsInternal, imageMatchSettings);
+            collectFloatingRegions(checkSettingsInternal, imageMatchSettings);
 
-            List<FloatingMatchSettings> floatingRegions = new ArrayList<>();
-            for (GetFloatingRegion floatingRegionProvider : checkSettingsInternal.getFloatingRegions())
-            {
-                floatingRegions.add(floatingRegionProvider.getRegion(this));
-            }
-            imageMatchSettings.setFloatingRegions(floatingRegions.toArray(new FloatingMatchSettings[0]));
-
-            imageMatchSettings.setIgnoreCaret(checkSettingsInternal.getIgnoreCaret());
+            Boolean ignoreCaret = checkSettingsInternal.getIgnoreCaret();
+            imageMatchSettings.setIgnoreCaret((ignoreCaret == null) ? getDefaultMatchSettings().getIgnoreCaret() : ignoreCaret);
         }
 
         logger.verbose(String.format("CheckWindowBase(%s, '%s', %b, %d)", regionProvider.getClass(), tag, ignoreMismatch, retryTimeout));
@@ -1035,6 +1043,22 @@ public abstract class EyesBase {
                 shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, imageMatchSettings, retryTimeout);
 
         return result;
+    }
+
+    private void collectIgnoreRegions(ICheckSettingsInternal checkSettingsInternal, ImageMatchSettings imageMatchSettings) {
+        List<Region> ignoreRegions = new ArrayList<>();
+        for (GetRegion ignoreRegionProvider : checkSettingsInternal.getIgnoreRegions()) {
+            ignoreRegions.add(ignoreRegionProvider.getRegion(this));
+        }
+        imageMatchSettings.setIgnoreRegions(ignoreRegions.toArray(new Region[0]));
+    }
+
+    private void collectFloatingRegions(ICheckSettingsInternal checkSettingsInternal, ImageMatchSettings imageMatchSettings) {
+        List<FloatingMatchSettings> floatingRegions = new ArrayList<>();
+        for (GetFloatingRegion floatingRegionProvider : checkSettingsInternal.getFloatingRegions()) {
+            floatingRegions.add(floatingRegionProvider.getRegion(this));
+        }
+        imageMatchSettings.setFloatingRegions(floatingRegions.toArray(new FloatingMatchSettings[0]));
     }
 
     private void validateResult(String tag, MatchResult result) {

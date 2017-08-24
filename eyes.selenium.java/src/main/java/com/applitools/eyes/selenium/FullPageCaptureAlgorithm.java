@@ -7,11 +7,8 @@ import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
-import java.util.Calendar;
 
 public class FullPageCaptureAlgorithm {
-    // This should pretty much cover all scroll bars (and some fixed position footer elements :).
-    private static final int MAX_SCROLL_BAR_SIZE = 50;
     private static final int MIN_SCREENSHOT_PART_HEIGHT = 10;
 
     private final Logger logger;
@@ -37,6 +34,7 @@ public class FullPageCaptureAlgorithm {
      * @param scaleProviderFactory  A factory for getting the scale provider.
      * @param waitBeforeScreenshots Time to wait before each screenshot (milliseconds).
      * @param screenshotFactory     The factory to use for creating screenshots from the images.
+     * @param stitchingOverlap      The width of the overlapping parts when stitching an image.
      * @return An image which represents the stitched region.
      */
 
@@ -44,7 +42,7 @@ public class FullPageCaptureAlgorithm {
                                            Region region, PositionProvider originProvider,
                                            PositionProvider positionProvider, ScaleProviderFactory scaleProviderFactory,
                                            CutProvider cutProvider, int waitBeforeScreenshots, DebugScreenshotsProvider debugScreenshotsProvider,
-                                           EyesScreenshotFactory screenshotFactory) {
+                                           EyesScreenshotFactory screenshotFactory, int stitchingOverlap) {
         logger.verbose("getStitchedRegion()");
 
         ArgumentGuard.notNull(region, "regionProvider");
@@ -55,9 +53,6 @@ public class FullPageCaptureAlgorithm {
 
         logger.verbose(String.format("Region to check: %s", region));
         logger.verbose(String.format("Coordinates type: %s", region.getCoordinatesType()));
-
-        // TODO use scaling overlap offset.
-        final int SCALE_MARGIN_PX = 5;
 
         // Saving the original position (in case we were already in the outermost frame).
         PositionMemento originalPosition = originProvider.getState();
@@ -135,8 +130,7 @@ public class FullPageCaptureAlgorithm {
         // position footers.
         RectangleSize partImageSize =
                 new RectangleSize(image.getWidth(),
-                        Math.max(image.getHeight() - MAX_SCROLL_BAR_SIZE,
-                                MIN_SCREENSHOT_PART_HEIGHT));
+                        Math.max(image.getHeight() - stitchingOverlap, MIN_SCREENSHOT_PART_HEIGHT));
 
         logger.verbose(String.format("Total size: %s, image part size: %s", entireSize, partImageSize));
 

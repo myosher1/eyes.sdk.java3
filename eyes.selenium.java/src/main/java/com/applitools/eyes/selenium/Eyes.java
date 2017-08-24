@@ -1848,7 +1848,8 @@ public class Eyes extends EyesBase {
                                 positionProvider, elementPositionProvider == null ? positionProvider : elementPositionProvider,
                                 scaleProviderFactory,
                                 cutProviderHandler.get(),
-                                getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory);
+                                getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
+                                getStitchOverlap());
                 logger.verbose("Building screenshot object...");
                 result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
                         new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
@@ -1862,7 +1863,8 @@ public class Eyes extends EyesBase {
                         new ScrollPositionProvider(logger, this.jsExecutor),
                         positionProvider, scaleProviderFactory,
                         cutProviderHandler.get(),
-                        getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory);
+                        getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
+                        getStitchOverlap());
 
                 ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
                 result = new EyesWebDriverScreenshot(logger, driver, fullPageImage);
