@@ -142,7 +142,7 @@ public class EyesSeleniumUtils {
     public static boolean isLandscapeOrientation(WebDriver driver) {
         // We can only find orientation for mobile devices.
         if (isMobileDevice(driver)) {
-            AppiumDriver<?> appiumDriver = (AppiumDriver<?>) driver;
+            AppiumDriver<?> appiumDriver = (AppiumDriver<?>) getUnderlyingDriver(driver);
 
             String originalContext = null;
             try {
