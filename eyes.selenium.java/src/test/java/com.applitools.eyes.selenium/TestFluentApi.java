@@ -2,25 +2,14 @@ package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.Region;
 import com.applitools.eyes.selenium.fluent.Target;
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.ExternalResource;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 @RunWith(JUnit4.class)
-public class TestFluentApi extends TestSetup {
-
-    @ClassRule
-    public static final TestRule setTestSuitName = new ExternalResource() {
-        @Override
-        protected void before() throws Throwable {
-            testSuitName = "Eyes Selenium SDK - Fluent API - Java";
-        }
-    };
+public abstract class TestFluentApi extends TestSetup {
 
     @Test
     public void TestCheckWindowWithIgnoreRegion_Fluent() {
@@ -29,7 +18,6 @@ public class TestFluentApi extends TestSetup {
                 .timeout(5000)
                 .ignore(new Region(50, 50, 100, 100)));
     }
-
 
     @Test
     public void TestCheckRegionWithIgnoreRegion_Fluent() {

@@ -1,23 +1,12 @@
 package com.applitools.eyes.selenium;
 
-import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.ExternalResource;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.openqa.selenium.By;
 
 @RunWith(JUnit4.class)
-public class TestClassicApi extends TestSetup {
-
-    @ClassRule
-    public static final TestRule setTestSuitName = new ExternalResource() {
-        @Override
-        protected void before() throws Throwable {
-            testSuitName = "Eyes Selenium SDK - Classic API - Java";
-        }
-    };
+public abstract class TestClassicApi extends TestSetup {
 
     @Test
     public void TestCheckWindow() {
