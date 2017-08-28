@@ -1,10 +1,11 @@
 /*
  * Applitools SDK for Selenium integration.
  */
-package com.applitools.eyes.selenium;
+package com.applitools.eyes.selenium.wrappers;
 
 import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
+import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.eyes.Region;
 import com.applitools.utils.ArgumentGuard;

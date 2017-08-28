@@ -1,7 +1,9 @@
-package com.applitools.eyes.selenium;
+package com.applitools.eyes.selenium.triggers;
 
 import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
+import com.applitools.eyes.selenium.EyesSeleniumUtils;
+import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.eyes.Region;
 import com.applitools.utils.ArgumentGuard;

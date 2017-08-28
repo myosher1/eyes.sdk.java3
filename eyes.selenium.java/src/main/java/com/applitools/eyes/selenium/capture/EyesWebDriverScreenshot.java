@@ -1,10 +1,16 @@
 /*
  * Applitools software.
  */
-package com.applitools.eyes.selenium;
+package com.applitools.eyes.selenium.capture;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.exceptions.CoordinatesTypeConversionException;
+import com.applitools.eyes.selenium.*;
+import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
+import com.applitools.eyes.selenium.frames.Frame;
+import com.applitools.eyes.selenium.frames.FrameChain;
+import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
+import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.ImageUtils;
 import org.openqa.selenium.Dimension;

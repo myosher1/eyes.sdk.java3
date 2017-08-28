@@ -1,8 +1,10 @@
-package com.applitools.eyes.selenium;
+package com.applitools.eyes.selenium.positioning;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.positioning.PositionProvider;
+import com.applitools.eyes.selenium.wrappers.EyesRemoteWebElement;
+import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.*;
 

@@ -1,4 +1,4 @@
-package com.applitools.eyes.selenium;
+package com.applitools.eyes.selenium.capture;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.capture.EyesScreenshotFactory;
@@ -7,6 +7,7 @@ import com.applitools.eyes.debug.DebugScreenshotsProvider;
 import com.applitools.eyes.positioning.CutProvider;
 import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.positioning.PositionProvider;
+import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.applitools.utils.ImageUtils;

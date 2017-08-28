@@ -1,6 +1,13 @@
-package com.applitools.eyes.selenium;
+package com.applitools.eyes.selenium.wrappers;
 
 import com.applitools.eyes.*;
+import com.applitools.eyes.selenium.AppiumJsCommandExtractor;
+import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.EyesSeleniumUtils;
+import com.applitools.eyes.selenium.frames.FrameChain;
+import com.applitools.eyes.selenium.positioning.ImageRotation;
+import com.applitools.eyes.selenium.triggers.EyesKeyboard;
+import com.applitools.eyes.selenium.triggers.EyesMouse;
 import com.applitools.eyes.triggers.MouseTrigger;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.ImageUtils;

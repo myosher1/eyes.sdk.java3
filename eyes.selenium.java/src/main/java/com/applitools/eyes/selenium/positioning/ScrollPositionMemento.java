@@ -1,19 +1,19 @@
-package com.applitools.eyes.selenium;
+package com.applitools.eyes.selenium.positioning;
 
 import com.applitools.eyes.Location;
 import com.applitools.eyes.positioning.PositionMemento;
 
 /**
- * Encapsulates state for {@link ElementPositionProvider} instances.
+ * Encapsulates state for {@link ScrollPositionProvider} instances.
  */
-public class ElementPositionMemento extends PositionMemento {
+public class ScrollPositionMemento extends PositionMemento {
     private final Location position;
 
     /**
      *
      * @param l The current location to be saved.
      */
-    public ElementPositionMemento(Location l) {
+    public ScrollPositionMemento(Location l) {
         position = new Location(l);
     }
 
