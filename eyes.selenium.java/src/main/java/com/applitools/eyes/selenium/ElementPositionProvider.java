@@ -1,9 +1,10 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.*;
+import com.applitools.eyes.positioning.PositionMemento;
+import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.*;
-import org.openqa.selenium.remote.RemoteWebElement;
 
 public class ElementPositionProvider implements PositionProvider {
     private final Logger logger;

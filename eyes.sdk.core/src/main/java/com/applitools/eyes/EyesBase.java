@@ -1,6 +1,20 @@
 package com.applitools.eyes;
 
+import com.applitools.eyes.capture.AppOutputProvider;
+import com.applitools.eyes.capture.AppOutputWithScreenshot;
+import com.applitools.eyes.debug.DebugScreenshotsProvider;
+import com.applitools.eyes.debug.FileDebugScreenshotsProvider;
+import com.applitools.eyes.debug.NullDebugScreenshotProvider;
+import com.applitools.eyes.diagnostics.ResponseTimeAlgorithm;
+import com.applitools.eyes.exceptions.NewTestException;
+import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.*;
+import com.applitools.eyes.positioning.*;
+import com.applitools.eyes.scaling.FixedScaleProvider;
+import com.applitools.eyes.scaling.NullScaleProvider;
+import com.applitools.eyes.triggers.MouseAction;
+import com.applitools.eyes.triggers.MouseTrigger;
+import com.applitools.eyes.triggers.TextTrigger;
 import com.applitools.utils.*;
 import org.apache.commons.codec.binary.Base64;
 

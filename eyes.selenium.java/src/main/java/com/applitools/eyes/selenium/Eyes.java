@@ -4,12 +4,22 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.*;
+import com.applitools.eyes.capture.EyesScreenshotFactory;
+import com.applitools.eyes.capture.ImageProvider;
+import com.applitools.eyes.diagnostics.TimedAppOutput;
+import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
+import com.applitools.eyes.positioning.NullRegionProvider;
+import com.applitools.eyes.positioning.PositionProvider;
+import com.applitools.eyes.positioning.RegionProvider;
+import com.applitools.eyes.scaling.FixedScaleProviderFactory;
+import com.applitools.eyes.scaling.NullScaleProvider;
 import com.applitools.eyes.selenium.fluent.FrameLocator;
 import com.applitools.eyes.selenium.fluent.ISeleniumCheckTarget;
 import com.applitools.eyes.selenium.fluent.ISeleniumFrameCheckTarget;
 import com.applitools.eyes.selenium.fluent.Target;
+import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.utils.*;
 import org.openqa.selenium.*;
 import org.openqa.selenium.Dimension;

@@ -1,7 +1,7 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.Location;
-import com.applitools.eyes.PositionMemento;
+import com.applitools.eyes.positioning.PositionMemento;
 
 /**
  * Encapsulates state for {@link ElementPositionProvider} instances.

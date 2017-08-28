@@ -5,7 +5,7 @@ package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.MouseAction;
+import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.eyes.Region;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.interactions.TouchScreen;

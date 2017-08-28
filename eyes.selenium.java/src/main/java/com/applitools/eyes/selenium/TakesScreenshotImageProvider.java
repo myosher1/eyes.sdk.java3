@@ -1,6 +1,6 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.ImageProvider;
+import com.applitools.eyes.capture.ImageProvider;
 import com.applitools.eyes.Logger;
 import com.applitools.utils.ImageUtils;
 import org.openqa.selenium.OutputType;

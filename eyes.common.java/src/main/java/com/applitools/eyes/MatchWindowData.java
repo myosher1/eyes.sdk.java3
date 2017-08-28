@@ -13,7 +13,7 @@ public class MatchWindowData {
     /**
      * Encapsulates the "Options" section of the MatchExpectedOutput body data.
      */
-    static class Options {
+    public static class Options {
         private final Trigger[] userInputs;
         private final String name;
         private final boolean ignoreMismatch;
