@@ -560,6 +560,8 @@ public abstract class EyesBase {
         return debugScreenshotsProvider.getPrefix();
     }
 
+    public DebugScreenshotsProvider getDebugScreenshotsProvider() { return debugScreenshotsProvider; }
+
     /**
      * @return Whether to ignore or the blinking caret or not when comparing images.
      */
