@@ -1323,15 +1323,17 @@ public class Eyes extends EyesBase {
         logger.log(String.format("CheckFrame(%s, %d, '%s')",
                 frameNameOrId, matchTimeout, tag));
 
-        logger.verbose("Switching to frame with name/id: " + frameNameOrId +
-                " ...");
-        driver.switchTo().frame(frameNameOrId);
-        logger.verbose("Done.");
+//        logger.verbose("Switching to frame with name/id: " + frameNameOrId + " ...");
+//        driver.switchTo().frame(frameNameOrId);
+//        logger.verbose("Done.");
+//
+//        checkCurrentFrame(matchTimeout, tag);
+//
+//        logger.verbose("Switching back to parent frame");
+//        driver.switchTo().parentFrame();
 
-        checkCurrentFrame(matchTimeout, tag);
+        check(tag, Target.frame(frameNameOrId).timeout(matchTimeout));
 
-        logger.verbose("Switching back to parent frame");
-        driver.switchTo().parentFrame();
         logger.verbose("Done!");
     }
 
@@ -1372,15 +1374,17 @@ public class Eyes extends EyesBase {
         logger.log(String.format("CheckFrame(%d, %d, '%s')",
                 frameIndex, matchTimeout, tag));
 
-        logger.verbose("Switching to frame with index: " + frameIndex + " ...");
-        driver.switchTo().frame(frameIndex);
-        logger.verbose("Done!");
+        check(tag, Target.frame(frameIndex).timeout(matchTimeout));
 
-        checkCurrentFrame(matchTimeout, tag);
-
-        logger.verbose("Switching back to parent frame...");
-        driver.switchTo().parentFrame();
-        logger.verbose("Done!");
+//        logger.verbose("Switching to frame with index: " + frameIndex + " ...");
+//        driver.switchTo().frame(frameIndex);
+//        logger.verbose("Done!");
+//
+//        checkCurrentFrame(matchTimeout, tag);
+//
+//        logger.verbose("Switching back to parent frame...");
+//        driver.switchTo().parentFrame();
+//        logger.verbose("Done!");
 
     }
 

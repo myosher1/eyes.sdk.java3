@@ -3,6 +3,7 @@ package com.applitools.eyes.selenium.capture;
 import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.Region;
 import com.applitools.eyes.capture.ImageProvider;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.frames.Frame;
@@ -38,12 +39,15 @@ public class FirefoxScreenshotImageProvider implements ImageProvider {
         EyesWebDriver eyesWebDriver = (EyesWebDriver) eyes.getDriver();
         FrameChain frameChain = eyesWebDriver.getFrameChain();
         if (frameChain.size() > 0) {
+
             //Frame frame = frameChain.peek();
-            Location loc = eyes.getRegionToCheck().getLocation();
-            logger.verbose("");
+            //Region region = eyes.getRegionToCheck();
+
+            EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, eyesWebDriver, image);
+
+            Location loc = screenshot.getFrameWindow().getLocation();
             logger.verbose("");
             logger.verbose("frame.getLocation(): " + loc);
-            logger.verbose("");
             logger.verbose("");
 
             RectangleSize viewportSize = eyes.getViewportSize();
