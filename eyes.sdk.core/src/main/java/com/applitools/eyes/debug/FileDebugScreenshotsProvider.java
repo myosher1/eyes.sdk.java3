@@ -11,7 +11,7 @@ import java.util.Calendar;
  */
 public class FileDebugScreenshotsProvider extends DebugScreenshotsProvider {
 
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss");
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
 
     @Override
     public void save(BufferedImage image, String suffix) {
