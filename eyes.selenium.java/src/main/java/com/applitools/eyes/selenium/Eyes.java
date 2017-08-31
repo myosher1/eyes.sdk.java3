@@ -1902,9 +1902,8 @@ public class Eyes extends EyesBase {
                 result = new EyesWebDriverScreenshot(logger, driver, fullPageImage);
             } else {
                 logger.verbose("Screenshot requested...");
-                String screenshot64 = driver.getScreenshotAs(OutputType.BASE64);
+                BufferedImage screenshotImage = imageProvider.getImage();
                 logger.verbose("Done! Creating image object...");
-                BufferedImage screenshotImage = ImageUtils.imageFromBase64(screenshot64);
 
                 debugScreenshotsProvider.save(screenshotImage, "original");
 
