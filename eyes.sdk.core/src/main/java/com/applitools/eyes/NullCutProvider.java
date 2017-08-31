@@ -1,4 +1,4 @@
-package com.applitools.eyes.positioning;
+package com.applitools.eyes;
 
 /**
  * A cut provider which does nothing.
