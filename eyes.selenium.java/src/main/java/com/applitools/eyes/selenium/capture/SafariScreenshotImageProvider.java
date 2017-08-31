@@ -39,7 +39,11 @@ public class SafariScreenshotImageProvider implements ImageProvider {
 
             PositionProvider positionProvider = eyes.getElementPositionProvider();
             Location loc = positionProvider.getCurrentPosition();
-            
+
+            if (loc == null) {
+                loc = new Location(0,0);
+            }
+
             RectangleSize viewportSize = eyes.getViewportSize();
             double scaleRatio = eyes.getDevicePixelRatio();
 
@@ -49,8 +53,8 @@ public class SafariScreenshotImageProvider implements ImageProvider {
                     image.getType());
 
             cutImage.getRaster().setRect(
-                    (int) Math.ceil(loc.getX() * scaleRatio),
-                    (int) Math.ceil(loc.getY() * scaleRatio),
+                    (int) Math.ceil(-loc.getX() * scaleRatio),
+                    (int) Math.ceil(-loc.getY() * scaleRatio),
                     image.getData());
 
             return cutImage;
