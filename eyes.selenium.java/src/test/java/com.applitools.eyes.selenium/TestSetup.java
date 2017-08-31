@@ -61,7 +61,7 @@ public abstract class TestSetup {
 
             if (runRemotely) {
                 try {
-                    webDriver = new RemoteWebDriver(new URL("http://192.168.1.11:4444/wd/hub"), caps);
+                    webDriver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), caps);
                 } catch (MalformedURLException ex) { }
             }
 
