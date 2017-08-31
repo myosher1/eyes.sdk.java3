@@ -560,6 +560,8 @@ public abstract class EyesBase {
         return debugScreenshotsProvider.getPrefix();
     }
 
+    public DebugScreenshotsProvider getDebugScreenshotsProvider() { return debugScreenshotsProvider; }
+
     /**
      * @return Whether to ignore or the blinking caret or not when comparing images.
      */
@@ -1540,6 +1542,7 @@ public abstract class EyesBase {
         // Cropping by region if necessary
         if (!region.isEmpty()) {
             screenshot = screenshot.getSubScreenshot(region, false);
+            debugScreenshotsProvider.save(screenshot.getImage(),"SUB_SCREENSHOT");
         }
 
         logger.verbose("Compressing screenshot...");

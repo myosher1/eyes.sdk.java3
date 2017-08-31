@@ -15,10 +15,7 @@ import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.positioning.RegionProvider;
 import com.applitools.eyes.scaling.FixedScaleProviderFactory;
 import com.applitools.eyes.scaling.NullScaleProvider;
-import com.applitools.eyes.selenium.capture.EyesWebDriverScreenshot;
-import com.applitools.eyes.selenium.capture.EyesWebDriverScreenshotFactory;
-import com.applitools.eyes.selenium.capture.FullPageCaptureAlgorithm;
-import com.applitools.eyes.selenium.capture.TakesScreenshotImageProvider;
+import com.applitools.eyes.selenium.capture.*;
 import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.eyes.selenium.fluent.FrameLocator;
 import com.applitools.eyes.selenium.fluent.ISeleniumCheckTarget;
@@ -26,10 +23,7 @@ import com.applitools.eyes.selenium.fluent.ISeleniumFrameCheckTarget;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.selenium.frames.Frame;
 import com.applitools.eyes.selenium.frames.FrameChain;
-import com.applitools.eyes.selenium.positioning.CssTranslatePositionProvider;
-import com.applitools.eyes.selenium.positioning.ElementPositionProvider;
-import com.applitools.eyes.selenium.positioning.ImageRotation;
-import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
+import com.applitools.eyes.selenium.positioning.*;
 import com.applitools.eyes.selenium.regionVisibility.MoveToRegionVisibilityStrategy;
 import com.applitools.eyes.selenium.regionVisibility.NopRegionVisibilityStrategy;
 import com.applitools.eyes.selenium.regionVisibility.RegionVisibilityStrategy;
@@ -74,6 +68,10 @@ public class Eyes extends EyesBase {
 
     private boolean forceFullPageScreenshot;
     private boolean checkFrameOrElement;
+
+    public Region getRegionToCheck() {
+        return regionToCheck;
+    }
 
     private Region regionToCheck = null;
     private boolean hideScrollbars;
@@ -1049,6 +1047,7 @@ public class Eyes extends EyesBase {
                     frameIndex, matchTimeout, tag));
             return;
         }
+
         driver.switchTo().frame(frameIndex);
         this.stitchContent = stitchContent;
         if (stitchContent) {
@@ -1324,15 +1323,17 @@ public class Eyes extends EyesBase {
         logger.log(String.format("CheckFrame(%s, %d, '%s')",
                 frameNameOrId, matchTimeout, tag));
 
-        logger.verbose("Switching to frame with name/id: " + frameNameOrId +
-                " ...");
-        driver.switchTo().frame(frameNameOrId);
-        logger.verbose("Done.");
+//        logger.verbose("Switching to frame with name/id: " + frameNameOrId + " ...");
+//        driver.switchTo().frame(frameNameOrId);
+//        logger.verbose("Done.");
+//
+//        checkCurrentFrame(matchTimeout, tag);
+//
+//        logger.verbose("Switching back to parent frame");
+//        driver.switchTo().parentFrame();
 
-        checkCurrentFrame(matchTimeout, tag);
+        check(tag, Target.frame(frameNameOrId).timeout(matchTimeout));
 
-        logger.verbose("Switching back to parent frame");
-        driver.switchTo().parentFrame();
         logger.verbose("Done!");
     }
 
@@ -1373,15 +1374,17 @@ public class Eyes extends EyesBase {
         logger.log(String.format("CheckFrame(%d, %d, '%s')",
                 frameIndex, matchTimeout, tag));
 
-        logger.verbose("Switching to frame with index: " + frameIndex + " ...");
-        driver.switchTo().frame(frameIndex);
-        logger.verbose("Done!");
+        check(tag, Target.frame(frameIndex).timeout(matchTimeout));
 
-        checkCurrentFrame(matchTimeout, tag);
-
-        logger.verbose("Switching back to parent frame...");
-        driver.switchTo().parentFrame();
-        logger.verbose("Done!");
+//        logger.verbose("Switching to frame with index: " + frameIndex + " ...");
+//        driver.switchTo().frame(frameIndex);
+//        logger.verbose("Done!");
+//
+//        checkCurrentFrame(matchTimeout, tag);
+//
+//        logger.verbose("Switching back to parent frame...");
+//        driver.switchTo().parentFrame();
+//        logger.verbose("Done!");
 
     }
 
@@ -1556,7 +1559,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkElement(WebElement, String)}.
      * {@code tag} defaults to {@code null}.
      */
-    protected void checkElement(WebElement element) {
+    public void checkElement(WebElement element) {
         checkElement(element, null);
     }
 
@@ -1564,7 +1567,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkElement(WebElement, int, String)}.
      * Default match timeout is used.
      */
-    protected void checkElement(WebElement element, String tag) {
+    public void checkElement(WebElement element, String tag) {
         checkElement(element, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
@@ -1632,7 +1635,7 @@ public class Eyes extends EyesBase {
      * @param tag          An optional tag to be associated with the snapshot.
      * @throws TestFailedException if a mismatch is detected and immediate failure reports are enabled
      */
-    protected void checkElement(WebElement element, int matchTimeout, String tag) {
+    public void checkElement(WebElement element, int matchTimeout, String tag) {
         checkElement(element, tag, Target.region(element).timeout(matchTimeout));
     }
 
@@ -1640,7 +1643,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkElement(By, String)}.
      * {@code tag} defaults to {@code null}.
      */
-    protected void checkElement(By selector) {
+    public void checkElement(By selector) {
         checkElement(selector, null);
     }
 
@@ -1648,7 +1651,7 @@ public class Eyes extends EyesBase {
      * See {@link #checkElement(By, int, String)}.
      * Default match timeout is used.
      */
-    protected void checkElement(By selector, String tag) {
+    public void checkElement(By selector, String tag) {
         checkElement(selector, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
@@ -1661,7 +1664,7 @@ public class Eyes extends EyesBase {
      * @throws TestFailedException if a mismatch is detected and
      *                             immediate failure reports are enabled
      */
-    protected void checkElement(By selector, int matchTimeout, String tag) {
+    public void checkElement(By selector, int matchTimeout, String tag) {
 
         if (getIsDisabled()) {
             logger.log(String.format("CheckElement(selector, %d, '%s'): Ignored", matchTimeout, tag));
@@ -1791,7 +1794,7 @@ public class Eyes extends EyesBase {
      * {@inheritDoc}
      */
     @Override
-    protected RectangleSize getViewportSize() {
+    public RectangleSize getViewportSize() {
         return driver.getDefaultContentViewportSize();
     }
 
@@ -1847,6 +1850,7 @@ public class Eyes extends EyesBase {
         EyesSeleniumUtils.setViewportSize(new Logger(), driver, size);
     }
 
+
     @Override
     protected EyesScreenshot getScreenshot() {
 
@@ -1865,14 +1869,15 @@ public class Eyes extends EyesBase {
             }
         }
         try {
-            ImageProvider imageProvider = new TakesScreenshotImageProvider(logger, driver);
+            UserAgent ua = UserAgent.ParseUserAgentString(driver.getUserAgent(), true);
+            ImageProvider imageProvider = ImageProviderFactory.getImageProvider(ua, this, logger, driver);
             EyesScreenshotFactory screenshotFactory = new EyesWebDriverScreenshotFactory(logger, driver);
             if (checkFrameOrElement) {
                 logger.verbose("Check frame/element requested");
                 FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger);
                 BufferedImage entireFrameOrElement =
                         algo.getStitchedRegion(imageProvider, regionToCheck,
-                                positionProvider, elementPositionProvider == null ? positionProvider : elementPositionProvider,
+                                positionProvider, getElementPositionProvider(),
                                 scaleProviderFactory,
                                 cutProviderHandler.get(),
                                 getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
@@ -1897,9 +1902,8 @@ public class Eyes extends EyesBase {
                 result = new EyesWebDriverScreenshot(logger, driver, fullPageImage);
             } else {
                 logger.verbose("Screenshot requested...");
-                String screenshot64 = driver.getScreenshotAs(OutputType.BASE64);
+                BufferedImage screenshotImage = imageProvider.getImage();
                 logger.verbose("Done! Creating image object...");
-                BufferedImage screenshotImage = ImageUtils.imageFromBase64(screenshot64);
 
                 debugScreenshotsProvider.save(screenshotImage, "original");
 
@@ -2003,4 +2007,12 @@ public class Eyes extends EyesBase {
         logger.log("Done!");
         return appEnv;
     }
+
+    /**
+     * @return The currently set position provider.
+     */
+    public PositionProvider getElementPositionProvider() {
+        return  elementPositionProvider == null ? positionProvider : elementPositionProvider;
+    }
+
 }
