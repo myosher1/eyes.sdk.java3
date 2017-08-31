@@ -1,12 +1,12 @@
 package com.applitools.eyes.selenium.capture;
 
-import com.applitools.eyes.Location;
-import com.applitools.eyes.Logger;
-import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.*;
 import com.applitools.eyes.capture.ImageProvider;
 import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.SeleniumJavaScriptExecutor;
 import com.applitools.eyes.selenium.frames.FrameChain;
+import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ImageUtils;
 import org.openqa.selenium.OutputType;
@@ -19,11 +19,13 @@ public class SafariScreenshotImageProvider implements ImageProvider {
     private final Eyes eyes;
     private final Logger logger;
     private final TakesScreenshot tsInstance;
+    private final IEyesJsExecutor jsExecutor;
 
     public SafariScreenshotImageProvider(Eyes eyes, Logger logger, TakesScreenshot tsInstance) {
         this.eyes = eyes;
         this.logger = logger;
         this.tsInstance = tsInstance;
+        this.jsExecutor = new SeleniumJavaScriptExecutor((EyesWebDriver) eyes.getDriver());
     }
 
     @Override
@@ -37,25 +39,22 @@ public class SafariScreenshotImageProvider implements ImageProvider {
 
         if (!eyes.getForceFullPageScreenshot()) {
 
-            PositionProvider positionProvider = eyes.getElementPositionProvider();
-            Location loc = positionProvider.getCurrentPosition();
+            Location loc;
+            FrameChain currentFrameChain = ((EyesWebDriver) eyes.getDriver()).getFrameChain();
 
-            if (loc == null) {
-                loc = new Location(0,0);
+            if (currentFrameChain.size() == 0) {
+                PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor);
+                loc = positionProvider.getCurrentPosition();
+            } else {
+                loc = currentFrameChain.getDefaultContentScrollPosition();
             }
 
-            RectangleSize viewportSize = eyes.getViewportSize();
             double scaleRatio = eyes.getDevicePixelRatio();
+            RectangleSize viewportSize = eyes.getViewportSize();
+            viewportSize = viewportSize.scale(scaleRatio);
+            loc = loc.scale(scaleRatio);
 
-            BufferedImage cutImage = new BufferedImage(
-                    (int) Math.ceil(viewportSize.getWidth() * scaleRatio),
-                    (int) Math.ceil(viewportSize.getHeight() * scaleRatio),
-                    image.getType());
-
-            cutImage.getRaster().setRect(
-                    (int) Math.ceil(-loc.getX() * scaleRatio),
-                    (int) Math.ceil(-loc.getY() * scaleRatio),
-                    image.getData());
+            BufferedImage cutImage = ImageUtils.cropImage(image, new Region(loc,viewportSize));
 
             return cutImage;
         }
