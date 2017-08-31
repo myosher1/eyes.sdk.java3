@@ -1877,7 +1877,7 @@ public class Eyes extends EyesBase {
                 FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger);
                 BufferedImage entireFrameOrElement =
                         algo.getStitchedRegion(imageProvider, regionToCheck,
-                                positionProvider, elementPositionProvider == null ? positionProvider : elementPositionProvider,
+                                positionProvider, getElementPositionProvider(),
                                 scaleProviderFactory,
                                 cutProviderHandler.get(),
                                 getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
@@ -2008,4 +2008,12 @@ public class Eyes extends EyesBase {
         logger.log("Done!");
         return appEnv;
     }
+
+    /**
+     * @return The currently set position provider.
+     */
+    public PositionProvider getElementPositionProvider() {
+        return  elementPositionProvider == null ? positionProvider : elementPositionProvider;
+    }
+
 }
