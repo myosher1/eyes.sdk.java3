@@ -50,18 +50,20 @@ public class FirefoxScreenshotImageProvider implements ImageProvider {
             logger.verbose("frame.getLocation(): " + loc);
             logger.verbose("");
 
-            RectangleSize viewportSize = eyes.getViewportSize();
             double scaleRatio = eyes.getDevicePixelRatio();
+            RectangleSize viewportSize = eyes.getViewportSize();
+            viewportSize = viewportSize.scale(scaleRatio);
+            loc = loc.scale(scaleRatio);
 
             BufferedImage fullImage;
             fullImage = new BufferedImage(
-                    (int) Math.ceil(viewportSize.getWidth() * scaleRatio),
-                    (int) Math.ceil(viewportSize.getHeight() * scaleRatio),
+                    viewportSize.getWidth(),
+                    viewportSize.getHeight(),
                     image.getType());
 
             fullImage.getRaster().setRect(
-                    (int) Math.ceil(loc.getX() * scaleRatio),
-                    (int) Math.ceil(loc.getY() * scaleRatio),
+                    loc.getX(),
+                    loc.getY(),
                     image.getData());
 
             return fullImage;
