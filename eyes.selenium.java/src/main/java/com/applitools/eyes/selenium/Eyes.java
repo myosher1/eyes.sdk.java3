@@ -83,6 +83,7 @@ public class Eyes extends EyesBase {
     private ElementPositionProvider elementPositionProvider;
     private SeleniumJavaScriptExecutor jsExecutor;
 
+    private ImageProvider imageProvider;
 
     private boolean stitchContent = false;
 
@@ -293,6 +294,9 @@ public class Eyes extends EyesBase {
         }
 
         initDriver(driver);
+
+        UserAgent ua = UserAgent.ParseUserAgentString(this.driver.getUserAgent(), true);
+        imageProvider = ImageProviderFactory.getImageProvider(ua, this, logger, this.driver);
 
         openBase(appName, testName, viewportSize, sessionType);
         ArgumentGuard.notNull(driver, "driver");
@@ -721,11 +725,16 @@ public class Eyes extends EyesBase {
                     ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor);
                     spp.setPosition(Location.ZERO);
 
-                    byte[] screenshotBytes = driver.getScreenshotAs(OutputType.BYTES);
-                    BufferedImage screenshotImage = ImageUtils.imageFromBytes(screenshotBytes);
-
                     // FIXME - Scaling should be handled in a single place instead
-                    updateScalingParams().getScaleProvider(screenshotImage.getWidth());
+                    ScaleProviderFactory scaleProviderFactory = updateScalingParams();
+
+                    BufferedImage screenshotImage = imageProvider.getImage();
+                    //byte[] screenshotBytes = driver.getScreenshotAs(OutputType.BYTES);
+                    //BufferedImage screenshotImage = ImageUtils.imageFromBytes(screenshotBytes);
+
+                    debugScreenshotsProvider.save(screenshotImage, "checkFulFrameOrElement");
+
+                    scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
 
                     final EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
 
@@ -1869,8 +1878,6 @@ public class Eyes extends EyesBase {
             }
         }
         try {
-            UserAgent ua = UserAgent.ParseUserAgentString(driver.getUserAgent(), true);
-            ImageProvider imageProvider = ImageProviderFactory.getImageProvider(ua, this, logger, driver);
             EyesScreenshotFactory screenshotFactory = new EyesWebDriverScreenshotFactory(logger, driver);
             if (checkFrameOrElement) {
                 logger.verbose("Check frame/element requested");
