@@ -1341,7 +1341,7 @@ public class Eyes extends EyesBase {
 //        logger.verbose("Switching back to parent frame");
 //        driver.switchTo().parentFrame();
 
-        check(tag, Target.frame(frameNameOrId).timeout(matchTimeout));
+        check(tag, Target.frame(frameNameOrId).timeout(matchTimeout).fully());
 
         logger.verbose("Done!");
     }
@@ -1383,7 +1383,7 @@ public class Eyes extends EyesBase {
         logger.log(String.format("CheckFrame(%d, %d, '%s')",
                 frameIndex, matchTimeout, tag));
 
-        check(tag, Target.frame(frameIndex).timeout(matchTimeout));
+        check(tag, Target.frame(frameIndex).timeout(matchTimeout).fully());
 
 //        logger.verbose("Switching to frame with index: " + frameIndex + " ...");
 //        driver.switchTo().frame(frameIndex);
