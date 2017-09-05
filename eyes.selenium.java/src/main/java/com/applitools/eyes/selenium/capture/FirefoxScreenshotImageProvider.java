@@ -15,6 +15,12 @@ import org.openqa.selenium.TakesScreenshot;
 
 import java.awt.image.BufferedImage;
 
+/**
+ * This class is needed because in certain versions of firefox, a frame screenshot only brings the frame viewport.
+ * To solve this issue, we create an image with the full size of the browser viewport and place the frame image
+ * on it in the appropriate place.
+ *
+ */
 public class FirefoxScreenshotImageProvider implements ImageProvider {
 
     private final Eyes eyes;
@@ -46,9 +52,7 @@ public class FirefoxScreenshotImageProvider implements ImageProvider {
             EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, eyesWebDriver, image);
 
             Location loc = screenshot.getFrameWindow().getLocation();
-            logger.verbose("");
             logger.verbose("frame.getLocation(): " + loc);
-            logger.verbose("");
 
             double scaleRatio = eyes.getDevicePixelRatio();
             RectangleSize viewportSize = eyes.getViewportSize();
