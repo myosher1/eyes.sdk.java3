@@ -503,12 +503,20 @@ public abstract class EyesBase {
 
     /**
      * Adds a property to be sent to the server.
+     *
      * @param name  The property name.
      * @param value The property value.
      */
     public void addProperty(String name, String value) {
         PropertyData pd = new PropertyData(name, value);
         properties.add(pd);
+    }
+
+    /**
+     * Clears the list of custom properties.
+     */
+    public void clearProperties() {
+        properties.clear();
     }
 
     /**
