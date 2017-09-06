@@ -18,6 +18,10 @@ public class FirefoxRegionPositionCompensation implements RegionPositionCompensa
 
     @Override
     public Region compensateRegionPosition(Region region, double pixelRatio) {
+        if (pixelRatio == 1) {
+            return region;
+        }
+
         EyesWebDriver eyesWebDriver = (EyesWebDriver) eyes.getDriver();
         FrameChain frameChain = eyesWebDriver.getFrameChain();
         if (frameChain.size() > 0) {
