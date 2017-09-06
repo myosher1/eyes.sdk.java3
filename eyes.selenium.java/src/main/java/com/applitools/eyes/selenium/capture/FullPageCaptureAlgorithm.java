@@ -8,6 +8,8 @@ import com.applitools.eyes.positioning.CutProvider;
 import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
+import com.applitools.eyes.selenium.positioning.NullRegionPositionCompensation;
+import com.applitools.eyes.selenium.positioning.RegionPositionCompensation;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.applitools.utils.ImageUtils;
@@ -19,10 +21,13 @@ public class FullPageCaptureAlgorithm {
     private static final int MIN_SCREENSHOT_PART_HEIGHT = 10;
 
     private final Logger logger;
+    private final UserAgent userAgent;
 
-    public FullPageCaptureAlgorithm(Logger logger) {
+    public FullPageCaptureAlgorithm(Logger logger, UserAgent userAgent) {
         ArgumentGuard.notNull(logger, "logger");
+        ArgumentGuard.notNull(userAgent, "userAgent");
         this.logger = logger;
+        this.userAgent = userAgent;
     }
 
     private static void saveDebugScreenshotPart(DebugScreenshotsProvider debugScreenshotsProvider, BufferedImage image,
@@ -42,14 +47,15 @@ public class FullPageCaptureAlgorithm {
      * @param waitBeforeScreenshots Time to wait before each screenshot (milliseconds).
      * @param screenshotFactory     The factory to use for creating screenshots from the images.
      * @param stitchingOverlap      The width of the overlapping parts when stitching an image.
+     * @param regionPositionCompensation A strategy for compensating region positions for some browsers.
      * @return An image which represents the stitched region.
      */
-
     public BufferedImage getStitchedRegion(ImageProvider imageProvider,
                                            Region region, PositionProvider originProvider,
                                            PositionProvider positionProvider, ScaleProviderFactory scaleProviderFactory,
                                            CutProvider cutProvider, int waitBeforeScreenshots, DebugScreenshotsProvider debugScreenshotsProvider,
-                                           EyesScreenshotFactory screenshotFactory, int stitchingOverlap) {
+                                           EyesScreenshotFactory screenshotFactory, int stitchingOverlap,
+                                           RegionPositionCompensation regionPositionCompensation) {
         logger.verbose("getStitchedRegion()");
 
         ArgumentGuard.notNull(region, "regionProvider");
@@ -99,7 +105,7 @@ public class FullPageCaptureAlgorithm {
         EyesScreenshot screenshot = screenshotFactory.makeScreenshot(image);
         logger.verbose("Done! Getting region in screenshot...");
 
-        Region regionInScreenshot = getRegionInScreenshot(region, image, pixelRatio, screenshot);
+        Region regionInScreenshot = getRegionInScreenshot(region, image, pixelRatio, screenshot, regionPositionCompensation);
 
         if (!regionInScreenshot.isEmpty()) {
             image = ImageUtils.getImagePart(image, regionInScreenshot);
@@ -240,13 +246,20 @@ public class FullPageCaptureAlgorithm {
         return stitchedImage;
     }
 
-    private Region getRegionInScreenshot(Region region, BufferedImage image, double pixelRatio, EyesScreenshot screenshot) {
+    private Region getRegionInScreenshot(Region region, BufferedImage image, double pixelRatio,
+                                         EyesScreenshot screenshot, RegionPositionCompensation regionPositionCompensation) {
         // Region regionInScreenshot = screenshot.convertRegionLocation(regionProvider.getRegion(), regionProvider.getCoordinatesType(), CoordinatesType.SCREENSHOT_AS_IS);
         Region regionInScreenshot = screenshot.getIntersectedRegion(region, region.getCoordinatesType(), CoordinatesType.SCREENSHOT_AS_IS);
 
         logger.verbose("Done! Region in screenshot: " + regionInScreenshot);
         regionInScreenshot = regionInScreenshot.scale(pixelRatio);
         logger.verbose("Scaled region: " + regionInScreenshot);
+
+        if (regionPositionCompensation == null) {
+            regionPositionCompensation = new NullRegionPositionCompensation();
+        }
+
+        regionInScreenshot = regionPositionCompensation.compensateRegionPosition(regionInScreenshot, pixelRatio);
 
         // Handling a specific case where the region is actually larger than
         // the screenshot (e.g., when body width/height are set to 100%, and

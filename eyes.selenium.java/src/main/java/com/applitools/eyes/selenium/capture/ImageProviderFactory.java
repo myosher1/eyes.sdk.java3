@@ -19,9 +19,7 @@ public class ImageProviderFactory {
             catch (NumberFormatException e) {
                 return new TakesScreenshotImageProvider(logger, tsInstance);
             }
-        }
-
-        if (ua.getBrowser().equals(BrowserNames.Safari)) {
+        } else if (ua.getBrowser().equals(BrowserNames.Safari)) {
             return new SafariScreenshotImageProvider(eyes, logger, tsInstance);
         }
 

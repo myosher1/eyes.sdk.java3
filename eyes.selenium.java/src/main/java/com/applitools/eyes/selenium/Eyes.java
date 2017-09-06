@@ -83,6 +83,9 @@ public class Eyes extends EyesBase {
     private ElementPositionProvider elementPositionProvider;
     private SeleniumJavaScriptExecutor jsExecutor;
 
+    private UserAgent userAgent;
+    private ImageProvider imageProvider;
+    private RegionPositionCompensation regionPositionCompensation;
 
     private boolean stitchContent = false;
 
@@ -293,6 +296,10 @@ public class Eyes extends EyesBase {
         }
 
         initDriver(driver);
+
+        userAgent = UserAgent.ParseUserAgentString(this.driver.getUserAgent(), true);
+        imageProvider = ImageProviderFactory.getImageProvider(userAgent, this, logger, this.driver);
+        regionPositionCompensation = RegionPositionCompensationFactory.getRegionPositionCompensation(userAgent, this, logger);
 
         openBase(appName, testName, viewportSize, sessionType);
         ArgumentGuard.notNull(driver, "driver");
@@ -721,11 +728,16 @@ public class Eyes extends EyesBase {
                     ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor);
                     spp.setPosition(Location.ZERO);
 
-                    byte[] screenshotBytes = driver.getScreenshotAs(OutputType.BYTES);
-                    BufferedImage screenshotImage = ImageUtils.imageFromBytes(screenshotBytes);
-
                     // FIXME - Scaling should be handled in a single place instead
-                    updateScalingParams().getScaleProvider(screenshotImage.getWidth());
+                    ScaleProviderFactory scaleProviderFactory = updateScalingParams();
+
+                    BufferedImage screenshotImage = imageProvider.getImage();
+                    //byte[] screenshotBytes = driver.getScreenshotAs(OutputType.BYTES);
+                    //BufferedImage screenshotImage = ImageUtils.imageFromBytes(screenshotBytes);
+
+                    debugScreenshotsProvider.save(screenshotImage, "checkFulFrameOrElement");
+
+                    scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
 
                     final EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
 
@@ -1320,17 +1332,7 @@ public class Eyes extends EyesBase {
 
         ArgumentGuard.notNull(frameNameOrId, "frameNameOrId");
 
-        logger.log(String.format("CheckFrame(%s, %d, '%s')",
-                frameNameOrId, matchTimeout, tag));
-
-//        logger.verbose("Switching to frame with name/id: " + frameNameOrId + " ...");
-//        driver.switchTo().frame(frameNameOrId);
-//        logger.verbose("Done.");
-//
-//        checkCurrentFrame(matchTimeout, tag);
-//
-//        logger.verbose("Switching back to parent frame");
-//        driver.switchTo().parentFrame();
+        logger.log(String.format("CheckFrame(%s, %d, '%s')", frameNameOrId, matchTimeout, tag));
 
         check(tag, Target.frame(frameNameOrId).timeout(matchTimeout).fully());
 
@@ -1364,28 +1366,15 @@ public class Eyes extends EyesBase {
      */
     public void checkFrame(int frameIndex, int matchTimeout, String tag) {
         if (getIsDisabled()) {
-            logger.log(String.format("CheckFrame(%d, %d, '%s'): Ignored",
-                    frameIndex, matchTimeout, tag));
+            logger.log(String.format("CheckFrame(%d, %d, '%s'): Ignored", frameIndex, matchTimeout, tag));
             return;
         }
 
         ArgumentGuard.greaterThanOrEqualToZero(frameIndex, "frameIndex");
 
-        logger.log(String.format("CheckFrame(%d, %d, '%s')",
-                frameIndex, matchTimeout, tag));
+        logger.log(String.format("CheckFrame(%d, %d, '%s')", frameIndex, matchTimeout, tag));
 
         check(tag, Target.frame(frameIndex).timeout(matchTimeout).fully());
-
-//        logger.verbose("Switching to frame with index: " + frameIndex + " ...");
-//        driver.switchTo().frame(frameIndex);
-//        logger.verbose("Done!");
-//
-//        checkCurrentFrame(matchTimeout, tag);
-//
-//        logger.verbose("Switching back to parent frame...");
-//        driver.switchTo().parentFrame();
-//        logger.verbose("Done!");
-
     }
 
     /**
@@ -1417,8 +1406,7 @@ public class Eyes extends EyesBase {
     public void checkFrame(WebElement frameReference, int matchTimeout,
                            String tag) {
         if (getIsDisabled()) {
-            logger.log(String.format("checkFrame(element, %d, '%s'): Ignored",
-                    matchTimeout, tag));
+            logger.log(String.format("checkFrame(element, %d, '%s'): Ignored", matchTimeout, tag));
             return;
         }
 
@@ -1869,19 +1857,17 @@ public class Eyes extends EyesBase {
             }
         }
         try {
-            UserAgent ua = UserAgent.ParseUserAgentString(driver.getUserAgent(), true);
-            ImageProvider imageProvider = ImageProviderFactory.getImageProvider(ua, this, logger, driver);
             EyesScreenshotFactory screenshotFactory = new EyesWebDriverScreenshotFactory(logger, driver);
             if (checkFrameOrElement) {
                 logger.verbose("Check frame/element requested");
-                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger);
+                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
                 BufferedImage entireFrameOrElement =
                         algo.getStitchedRegion(imageProvider, regionToCheck,
                                 positionProvider, getElementPositionProvider(),
                                 scaleProviderFactory,
                                 cutProviderHandler.get(),
                                 getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
-                                getStitchOverlap());
+                                getStitchOverlap(), regionPositionCompensation);
                 logger.verbose("Building screenshot object...");
                 result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
                         new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
@@ -1890,13 +1876,13 @@ public class Eyes extends EyesBase {
                 // Save the current frame path.
                 FrameChain originalFrame = driver.getFrameChain();
                 driver.switchTo().defaultContent();
-                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger);
+                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
                 BufferedImage fullPageImage = algo.getStitchedRegion(imageProvider, Region.EMPTY,
                         new ScrollPositionProvider(logger, this.jsExecutor),
                         positionProvider, scaleProviderFactory,
                         cutProviderHandler.get(),
                         getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
-                        getStitchOverlap());
+                        getStitchOverlap(), regionPositionCompensation);
 
                 ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
                 result = new EyesWebDriverScreenshot(logger, driver, fullPageImage);
