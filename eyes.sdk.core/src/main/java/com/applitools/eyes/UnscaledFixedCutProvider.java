@@ -1,6 +1,5 @@
 package com.applitools.eyes;
 
-import com.applitools.eyes.positioning.CutProvider;
 import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
