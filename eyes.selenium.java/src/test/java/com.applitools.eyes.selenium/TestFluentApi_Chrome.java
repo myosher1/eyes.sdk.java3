@@ -22,6 +22,7 @@ public class TestFluentApi_Chrome extends TestFluentApi {
         protected void before() throws Throwable {
             testSuitName = "Eyes Selenium SDK - Fluent API - Java - Chrome";
             forceFullPageScreenshot = false;
+            runRemotely = true;
         }
     };
 
@@ -35,7 +36,6 @@ public class TestFluentApi_Chrome extends TestFluentApi {
             //Run locally
             //-----------
             //webDriver = new ChromeDriver(options);
-
 
             //Run Remotely
             //------------
