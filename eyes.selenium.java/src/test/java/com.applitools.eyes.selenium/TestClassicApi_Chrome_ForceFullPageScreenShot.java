@@ -22,6 +22,7 @@ public class TestClassicApi_Chrome_ForceFullPageScreenShot extends TestClassicAp
         protected void before() throws Throwable {
             testSuitName = "Eyes Selenium SDK - Classic API - Java - Chrome - ForceFPS";
             forceFullPageScreenshot = true;
+            runRemotely = true;
         }
     };
 
@@ -35,7 +36,6 @@ public class TestClassicApi_Chrome_ForceFullPageScreenShot extends TestClassicAp
             //Run locally
             //-----------
             //webDriver = new ChromeDriver(options);
-
 
             //Run Remotely
             //------------

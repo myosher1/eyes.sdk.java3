@@ -21,6 +21,7 @@ public class TestFluentApi_Firefox extends TestFluentApi {
         protected void before() throws Throwable {
             testSuitName = "Eyes Selenium SDK - Fluent API - Java - Firefox";
             forceFullPageScreenshot = false;
+            runRemotely = true;
         }
     };
 

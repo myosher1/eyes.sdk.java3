@@ -21,6 +21,7 @@ public class TestClassicApi_Firefox extends TestClassicApi {
         protected void before() throws Throwable {
             testSuitName = "Eyes Selenium SDK - Classic API - Java - Firefox";
             forceFullPageScreenshot = false;
+            runRemotely = true;
         }
     };
 
