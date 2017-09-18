@@ -58,8 +58,7 @@ public class FullPageCaptureAlgorithm {
         logger.verbose(String.format("getStitchedRegion: originProvider: %s ; positionProvider: %s ; cutProvider: %s",
                 originProvider.getClass(), positionProvider.getClass(), cutProvider.getClass()));
 
-        logger.verbose(String.format("Region to check: %s", region));
-        logger.verbose(String.format("Coordinates type: %s", region.getCoordinatesType()));
+        logger.verbose("Region to check: " + region);
 
         // Saving the original position (in case we were already in the outermost frame).
         PositionMemento originalPosition = originProvider.getState();
@@ -95,8 +94,10 @@ public class FullPageCaptureAlgorithm {
         debugScreenshotsProvider.save(image, "original-cut");
 
         logger.verbose("Done! Creating screenshot object...");
+
         // We need the screenshot to be able to convert the region to screenshot coordinates.
         EyesScreenshot screenshot = screenshotFactory.makeScreenshot(image);
+
         logger.verbose("Done! Getting region in screenshot...");
 
         Region regionInScreenshot = getRegionInScreenshot(region, image, pixelRatio, screenshot);
