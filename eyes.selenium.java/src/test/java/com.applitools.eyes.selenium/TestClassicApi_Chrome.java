@@ -37,7 +37,6 @@ public class TestClassicApi_Chrome extends TestClassicApi {
             //-----------
             //webDriver = new ChromeDriver(options);
 
-
             //Run Remotely
             //------------
             caps = DesiredCapabilities.chrome();

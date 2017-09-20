@@ -68,7 +68,7 @@ public abstract class TestSetup {
             driver = eyes.open(webDriver,
                     testSuitName,
                     description.getMethodName(),
-                    new RectangleSize(800, 599)
+                    new RectangleSize(800, 600)
             );
 
             driver.navigate().to("http://applitools.github.io/demo/TestPages/FramesTestPage/");

@@ -21,6 +21,7 @@ public class TestClassicApi_Firefox_ForceFullPageScreenshot extends TestClassicA
         protected void before() throws Throwable {
             testSuitName = "Eyes Selenium SDK - Classic API - Java - Firefox - ForceFPS";
             forceFullPageScreenshot = true;
+            runRemotely = true;
         }
     };
 
