@@ -88,6 +88,7 @@ public class Eyes extends EyesBase {
     private RegionPositionCompensation regionPositionCompensation;
 
     private boolean stitchContent = false;
+    protected int stitchingOverlap = 50;
 
     public boolean shouldStitchContent() {
         return stitchContent;
@@ -213,6 +214,22 @@ public class Eyes extends EyesBase {
     public StitchMode getStitchMode() {
         return stitchMode;
     }
+
+    /**
+     * Returns the stitching overlap in pixels.
+     */
+    public int getStitchOverlap() {
+        return this.stitchingOverlap;
+    }
+
+    /**
+     * Sets the stitching overlap in pixels.
+     * @param pixels The width (in pixels) of the overlap.
+     */
+    public void setStitchOverlap(int pixels) {
+        this.stitchingOverlap = pixels;
+    }
+
 
     /**
      * Hide the scrollbars when taking screenshots.

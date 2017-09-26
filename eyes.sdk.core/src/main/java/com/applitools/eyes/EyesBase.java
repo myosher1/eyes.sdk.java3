@@ -86,7 +86,6 @@ public abstract class EyesBase {
 
     protected DebugScreenshotsProvider debugScreenshotsProvider;
     private boolean isViewportSizeSet;
-    protected int stitchingOverlap = 50;
 
     /**
      * Creates a new {@code EyesBase}instance that interacts with the Eyes
@@ -584,21 +583,6 @@ public abstract class EyesBase {
      */
     public void setIgnoreCaret(boolean value) {
         defaultMatchSettings.setIgnoreCaret(value);
-    }
-
-    /**
-     * Returns the stitching overlap in pixels.
-     */
-    public int getStitchOverlap() {
-        return this.stitchingOverlap;
-    }
-
-    /**
-     * Sets the stitching overlap in pixels.
-     * @param pixels The width (in pixels) of the overlap.
-     */
-    public void setStitchOverlap(int pixels) {
-        this.stitchingOverlap = pixels;
     }
 
     /**
