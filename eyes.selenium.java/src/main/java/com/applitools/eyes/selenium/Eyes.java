@@ -1871,7 +1871,7 @@ public class Eyes extends EyesBase {
                 logger.verbose("Building screenshot object...");
                 result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
                         new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
-            } else if (forceFullPageScreenshot) {
+            } else if (forceFullPageScreenshot || stitchContent) {
                 logger.verbose("Full page screenshot requested.");
                 // Save the current frame path.
                 FrameChain originalFrame = new FrameChain(logger, driver.getFrameChain());
