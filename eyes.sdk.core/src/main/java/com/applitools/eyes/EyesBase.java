@@ -1006,8 +1006,6 @@ public abstract class EyesBase {
         ArgumentGuard.isValidState(getIsOpen(), "Eyes not open");
         ArgumentGuard.notNull(regionProvider, "regionProvider");
 
-        ensureRunningSession();
-
         result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings);
 
         logger.verbose("MatchWindow Done!");
