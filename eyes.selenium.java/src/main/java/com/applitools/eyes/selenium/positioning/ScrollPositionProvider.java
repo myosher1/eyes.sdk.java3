@@ -34,7 +34,7 @@ public class ScrollPositionProvider implements PositionProvider {
             result = EyesSeleniumUtils.getCurrentScrollPosition(executor);
         } catch (WebDriverException e) {
             throw new EyesDriverOperationException(
-                    "Failed to extract current scroll position!", e);
+                    "Failed to extract current scroll position! Error: " + e);
         }
         logger.verbose("Current position: " + result);
         return result;
