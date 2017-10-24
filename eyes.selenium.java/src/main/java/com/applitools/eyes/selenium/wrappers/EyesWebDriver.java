@@ -119,7 +119,6 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         return eyes;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     public RemoteWebDriver getRemoteWebDriver() {
         return driver;
     }
@@ -128,7 +127,6 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         return touch;
     }
 
-    @SuppressWarnings("unused")
     /**
      *
      * @return The image rotation data.
