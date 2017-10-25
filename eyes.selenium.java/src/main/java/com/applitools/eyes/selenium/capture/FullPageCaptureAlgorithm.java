@@ -58,7 +58,7 @@ public class FullPageCaptureAlgorithm {
                                            RegionPositionCompensation regionPositionCompensation) {
         logger.verbose("getStitchedRegion()");
 
-        ArgumentGuard.notNull(region, "regionProvider");
+        ArgumentGuard.notNull(region, "region");
         ArgumentGuard.notNull(positionProvider, "positionProvider");
 
         logger.verbose(String.format("getStitchedRegion: originProvider: %s ; positionProvider: %s ; cutProvider: %s",
