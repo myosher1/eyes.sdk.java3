@@ -20,11 +20,11 @@ public final class WixExample {
 
         WebDriver driver = new ChromeDriver(options);
         Eyes eyes = new Eyes();
-        eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
+//        eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
         eyes.setMatchTimeout(0);
 
-        eyes.setDebugScreenshotsPath("c:\\temp\\logs");
-        eyes.setSaveDebugScreenshots(true);
+//        eyes.setDebugScreenshotsPath("c:\\temp\\logs");
+//        eyes.setSaveDebugScreenshots(true);
 
         eyes.setForceFullPageScreenshot(false);
 
