@@ -19,6 +19,7 @@ public class TestResults {
     private int noneMatches;
     private String url;
     private boolean isNew;
+    private TestResultsStatus status;
 
     /**
      * @return The total number of test steps.
@@ -116,6 +117,13 @@ public class TestResults {
     }
 
     /**
+     * @return The result status.
+     */
+    public TestResultsStatus getStatus() {
+        return status;
+    }
+
+    /**
      * @param steps The number of visual checkpoints in the test.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -165,8 +173,8 @@ public class TestResults {
 
     /**
      * @param strictMatches The number of matches performed with match
-     *                     level set to
-     *                     {@link com.applitools.eyes.MatchLevel#STRICT}
+     *                      level set to
+     *                      {@link com.applitools.eyes.MatchLevel#STRICT}
      */
     @SuppressWarnings("UnusedDeclaration")
     void setStrictMatches(int strictMatches) {
@@ -176,8 +184,8 @@ public class TestResults {
 
     /**
      * @param contentMatches The number of matches performed with match
-     *                     level set to
-     *                     {@link com.applitools.eyes.MatchLevel#CONTENT}
+     *                       level set to
+     *                       {@link com.applitools.eyes.MatchLevel#CONTENT}
      */
     @SuppressWarnings("UnusedDeclaration")
     void setContentMatches(int contentMatches) {
@@ -187,8 +195,8 @@ public class TestResults {
 
     /**
      * @param layoutMatches The number of matches performed with match
-     *                     level set to
-     *                     {@link com.applitools.eyes.MatchLevel#LAYOUT}
+     *                      level set to
+     *                      {@link com.applitools.eyes.MatchLevel#LAYOUT}
      */
     @SuppressWarnings("UnusedDeclaration")
     void setLayoutMatches(int layoutMatches) {
@@ -198,8 +206,8 @@ public class TestResults {
 
     /**
      * @param noneMatches The number of matches performed with match
-     *                     level set to
-     *                     {@link com.applitools.eyes.MatchLevel#NONE}
+     *                    level set to
+     *                    {@link com.applitools.eyes.MatchLevel#NONE}
      */
     @SuppressWarnings("UnusedDeclaration")
     void setNoneMatches(int noneMatches) {
@@ -221,6 +229,13 @@ public class TestResults {
         this.isNew = isNew;
     }
 
+    /**
+     * @param status The new test result status.
+     */
+    void setStatus(TestResultsStatus status) {
+        this.status = status;
+    }
+
     @Override
     public String toString() {
         String isNewTestStr = isNew ? "New test" : "Existing test";
@@ -229,4 +244,5 @@ public class TestResults {
                 + ", mismatches:" + getMismatches() + ", missing: "
                 + getMissing() + "] , URL: " + getUrl();
     }
+
 }

@@ -6,6 +6,7 @@ import com.applitools.eyes.debug.DebugScreenshotsProvider;
 import com.applitools.eyes.debug.FileDebugScreenshotsProvider;
 import com.applitools.eyes.debug.NullDebugScreenshotProvider;
 import com.applitools.eyes.diagnostics.ResponseTimeAlgorithm;
+import com.applitools.eyes.exceptions.DiffsFoundException;
 import com.applitools.eyes.exceptions.NewTestException;
 import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.*;
@@ -632,47 +633,32 @@ public abstract class EyesBase {
             boolean save = (isNewSession && saveNewTests)
                     || (!isNewSession && saveFailedTests);
             logger.verbose("Automatically save test? " + String.valueOf(save));
-            TestResults results =
-                    serverConnector.stopSession(runningSession, false,
-                            save);
+            TestResults results = serverConnector.stopSession(runningSession, false, save);
 
             results.setNew(isNewSession);
             results.setUrl(sessionResultsUrl);
             logger.verbose(results.toString());
 
-            String instructions;
-            if (!isNewSession &&
-                    (0 < results.getMismatches() || 0 < results.getMissing())) {
-
-                logger.log("--- Failed test ended. See details at "
-                        + sessionResultsUrl);
-
-                if (throwEx) {
-                    String message =
-                            "'" + sessionStartInfo.getScenarioIdOrName()
-                                    + "' of '"
-                                    + sessionStartInfo.getAppIdOrName()
-                                    + "'. See details at " + sessionResultsUrl;
-                    throw new TestFailedException(results, message);
+            if (results.getStatus() == TestResultsStatus.Unresolved) {
+                if (results.isNew()) {
+                    String instructions = "Please approve the new baseline at " + sessionResultsUrl;
+                    logger.log("--- New test ended. " + instructions);
+                    if (throwEx && !saveNewTests)
+                    {
+                        String message = "'" + sessionStartInfo.getScenarioIdOrName()
+                                + "' of '" + sessionStartInfo.getAppIdOrName()
+                                + "'. " + instructions;
+                        throw new NewTestException(results, message);
+                    }
                 }
-                return results;
-            }
-
-            if (isNewSession) {
-                instructions = "Please approve the new baseline at "
-                        + sessionResultsUrl;
-
-                logger.log("--- New test ended. " + instructions);
-
-                if (throwEx) {
-                    String message =
-                            "'" + sessionStartInfo.getScenarioIdOrName()
-                                    + "' of '" + sessionStartInfo
-                                    .getAppIdOrName()
-                                    + "'. " + instructions;
-                    throw new NewTestException(results, message);
+                else
+                {
+                    logger.log("--- Failed test ended. See details at " + sessionResultsUrl);
+                    if (throwEx)
+                    {
+                        throw new DiffsFoundException(results, sessionStartInfo.getScenarioIdOrName(), sessionStartInfo.getAppIdOrName(), sessionResultsUrl);
+                    }
                 }
-                return results;
             }
 
             // Test passed
