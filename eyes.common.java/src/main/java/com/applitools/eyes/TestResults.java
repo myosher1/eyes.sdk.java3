@@ -111,9 +111,8 @@ public class TestResults {
     /**
      * @return Whether or not this test passed.
      */
-    @SuppressWarnings("UnusedDeclaration")
     public boolean isPassed() {
-        return (!isNew() && getMismatches() == 0 && getMissing() == 0);
+        return status == TestResultsStatus.Passed;
     }
 
     /**
@@ -126,7 +125,6 @@ public class TestResults {
     /**
      * @param steps The number of visual checkpoints in the test.
      */
-    @SuppressWarnings("UnusedDeclaration")
     void setSteps(int steps) {
         ArgumentGuard.greaterThanOrEqualToZero(steps, "steps");
         this.steps = steps;

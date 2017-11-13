@@ -506,7 +506,6 @@ public abstract class EyesBase {
 
     /**
      * Adds a property to be sent to the server.
-     *
      * @param name  The property name.
      * @param value The property value.
      */
@@ -571,7 +570,9 @@ public abstract class EyesBase {
         return debugScreenshotsProvider.getPrefix();
     }
 
-    public DebugScreenshotsProvider getDebugScreenshotsProvider() { return debugScreenshotsProvider; }
+    public DebugScreenshotsProvider getDebugScreenshotsProvider() {
+        return debugScreenshotsProvider;
+    }
 
     /**
      * @return Whether to ignore or the blinking caret or not when comparing images.
@@ -639,30 +640,37 @@ public abstract class EyesBase {
             results.setUrl(sessionResultsUrl);
             logger.verbose(results.toString());
 
-            if (results.getStatus() == TestResultsStatus.Unresolved) {
+            TestResultsStatus status = results.getStatus();
+            if (status == TestResultsStatus.Unresolved) {
                 if (results.isNew()) {
                     String instructions = "Please approve the new baseline at " + sessionResultsUrl;
                     logger.log("--- New test ended. " + instructions);
-                    if (throwEx && !saveNewTests)
-                    {
+                    if (throwEx) {
                         String message = "'" + sessionStartInfo.getScenarioIdOrName()
                                 + "' of '" + sessionStartInfo.getAppIdOrName()
                                 + "'. " + instructions;
                         throw new NewTestException(results, message);
                     }
-                }
-                else
-                {
+                } else {
                     logger.log("--- Failed test ended. See details at " + sessionResultsUrl);
-                    if (throwEx)
-                    {
+                    if (throwEx) {
                         throw new DiffsFoundException(results, sessionStartInfo.getScenarioIdOrName(), sessionStartInfo.getAppIdOrName(), sessionResultsUrl);
                     }
                 }
-            }
+            } else if (status == TestResultsStatus.Failed) {
+                logger.log("--- Failed test ended. See details at " + sessionResultsUrl);
 
-            // Test passed
-            logger.log("--- Test passed. See details at " + sessionResultsUrl);
+                if (throwEx) {
+                    String message = "'" + sessionStartInfo.getScenarioIdOrName()
+                            + "' of '" + sessionStartInfo.getAppIdOrName()
+                            + "'. See details at " + sessionResultsUrl;
+
+                    throw new TestFailedException(results, message);
+                }
+            } else {
+                // Test passed
+                logger.log("--- Test passed. See details at " + sessionResultsUrl);
+            }
 
             return results;
         } finally {
@@ -1274,11 +1282,10 @@ public abstract class EyesBase {
 
     /**
      * Define the viewport size as {@code size} without doing any actual action on the
-     *
      * @param explicitViewportSize The size of the viewport. {@code null} disables the explicit size.
      */
     public void setExplicitViewportSize(RectangleSize explicitViewportSize) {
-        if(explicitViewportSize == null) {
+        if (explicitViewportSize == null) {
             viewportSizeHandler = new SimplePropertyHandler<>();
             viewportSizeHandler.set(null);
             this.isViewportSizeSet = false;
@@ -1521,7 +1528,7 @@ public abstract class EyesBase {
         // Cropping by region if necessary
         if (!region.isEmpty()) {
             screenshot = screenshot.getSubScreenshot(region, false);
-            debugScreenshotsProvider.save(screenshot.getImage(),"SUB_SCREENSHOT");
+            debugScreenshotsProvider.save(screenshot.getImage(), "SUB_SCREENSHOT");
         }
 
         logger.verbose("Compressing screenshot...");
