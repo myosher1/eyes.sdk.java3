@@ -1,6 +1,5 @@
 package com.applitools.eyes.images;
 
-import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.LogHandler;
 import com.applitools.eyes.StdoutLogHandler;
 import org.junit.AfterClass;
