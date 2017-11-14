@@ -20,9 +20,9 @@ public class TestFluentApi_Chrome extends TestFluentApi {
     public static final TestRule setTestSuitName = new ExternalResource() {
         @Override
         protected void before() throws Throwable {
-            testSuitName = "Eyes Selenium SDK - Fluent API - Java - Chrome";
+            testSuitName = "Eyes Selenium SDK - Fluent API";
+            testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
             forceFullPageScreenshot = false;
-            runRemotely = true;
         }
     };
 
@@ -32,10 +32,12 @@ public class TestFluentApi_Chrome extends TestFluentApi {
         public Statement apply(Statement statement, Description description) {
             ChromeOptions options = new ChromeOptions();
             options.addArguments("disable-infobars");
+            options.addArguments("headless");
 
             //Run locally
             //-----------
             //webDriver = new ChromeDriver(options);
+
 
             //Run Remotely
             //------------

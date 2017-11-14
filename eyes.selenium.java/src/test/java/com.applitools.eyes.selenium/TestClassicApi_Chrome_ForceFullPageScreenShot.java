@@ -20,9 +20,9 @@ public class TestClassicApi_Chrome_ForceFullPageScreenShot extends TestClassicAp
     public static final TestRule setTestSuitName = new ExternalResource() {
         @Override
         protected void before() throws Throwable {
-            testSuitName = "Eyes Selenium SDK - Classic API - Java - Chrome - ForceFPS";
+            testSuitName = "Eyes Selenium SDK - Classic API - ForceFPS";
+            testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
             forceFullPageScreenshot = true;
-            runRemotely = true;
         }
     };
 
@@ -31,11 +31,12 @@ public class TestClassicApi_Chrome_ForceFullPageScreenShot extends TestClassicAp
         @Override
         public Statement apply(Statement statement, Description description) {
             ChromeOptions options = new ChromeOptions();
-            options.addArguments("disable-infobars");
+            options.addArguments("disable-infobars", "headless");
 
             //Run locally
             //-----------
             //webDriver = new ChromeDriver(options);
+
 
             //Run Remotely
             //------------

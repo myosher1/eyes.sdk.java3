@@ -36,6 +36,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     private final TouchScreen touch;
     private final Map<String, WebElement> elementsIds;
     private final FrameChain frameChain;
+
     private ImageRotation rotation;
     private RectangleSize defaultContentViewportSize;
 
@@ -47,8 +48,8 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
      * @param rotation The degrees by which to rotate the image:
      *                 positive values = clockwise rotation,
      *                 negative values = counter-clockwise,
-     *                 0 = force no rotation, null = rotate automatically
-     *                 when needed.
+     *                 0 = force no rotation,
+     *                 null = rotate automatically as needed.
      * @return A normalized image.
      */
     public static BufferedImage normalizeRotation(Logger logger,
@@ -372,11 +373,12 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
             return defaultContentViewportSize;
         }
 
+        EyesTargetLocator switchTo = (EyesTargetLocator)switchTo();
         FrameChain currentFrames = new FrameChain(logger, getFrameChain());
 
         // Optimization
         if (currentFrames.size() > 0) {
-            switchTo().defaultContent();
+            switchTo.defaultContent();
         }
 
         logger.verbose("Extracting viewport size...");
@@ -384,7 +386,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         logger.verbose("Done! Viewport size: " + defaultContentViewportSize);
 
         if (currentFrames.size() > 0) {
-            ((EyesTargetLocator) switchTo()).frames(currentFrames);
+            switchTo.frames(currentFrames);
         }
         return defaultContentViewportSize;
     }
@@ -394,7 +396,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
      * {@code forceQuery} defaults to {@code false}.
      */
     public RectangleSize getDefaultContentViewportSize() {
-        return getDefaultContentViewportSize(false);
+        return getDefaultContentViewportSize(true);
     }
 
     /**

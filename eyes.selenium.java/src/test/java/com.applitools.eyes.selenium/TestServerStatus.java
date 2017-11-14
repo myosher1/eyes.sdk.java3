@@ -4,7 +4,6 @@ import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.exceptions.DiffsFoundException;
 import com.applitools.eyes.exceptions.NewTestException;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.sun.jna.platform.win32.Guid;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +15,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.UUID;
 
 
 @RunWith(JUnit4.class)
@@ -61,14 +61,14 @@ public class TestServerStatus {
 
     @Test(expected = NewTestException.class)
     public void TestSessionSummary_Status_New() throws MalformedURLException {
-       String guid = "_" + Guid.GUID.newGuid().toGuidString();
+        String uuid = "_" + UUID.randomUUID().toString();
 
-       WebDriver driver = eyes.open(webDriver,
-                TestServerStatus.class.getSimpleName() + guid,
-                TestServerStatus.class.getSimpleName() + guid, new RectangleSize(800, 599));
+        WebDriver driver = eyes.open(webDriver,
+                TestServerStatus.class.getSimpleName() + uuid,
+                TestServerStatus.class.getSimpleName() + uuid, new RectangleSize(800, 599));
 
         driver.get("http://applitools.github.io/demo/TestPages/FramesTestPage/");
-        eyes.check("TestSessionSummary_Status_New" + guid, Target.window());
+        eyes.check("TestSessionSummary_Status_New" + uuid, Target.window());
         teardown();
     }
 }

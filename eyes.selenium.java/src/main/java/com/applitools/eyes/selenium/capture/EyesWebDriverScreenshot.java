@@ -11,12 +11,12 @@ import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.eyes.selenium.frames.Frame;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
+import com.applitools.eyes.selenium.wrappers.EyesTargetLocator;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.ImageUtils;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.awt.image.BufferedImage;
@@ -40,32 +40,29 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     // The part of the frame window which is visible in the screenshot
     private final Region frameWindow;
 
-    private Location getDefaultContentScrollPosition() {
-        IEyesJsExecutor jsExecutor = new SeleniumJavaScriptExecutor(this.driver);
+    private static Location getDefaultContentScrollPosition(Logger logger, FrameChain currentFrames, EyesWebDriver driver) {
+        IEyesJsExecutor jsExecutor = new SeleniumJavaScriptExecutor(driver);
         PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor);
-        FrameChain currentFrames = getFrameChain();
         if (currentFrames.size() == 0) {
             return positionProvider.getCurrentPosition();
         }
 
-        WebDriver.TargetLocator switchTo = driver.getRemoteWebDriver().switchTo();
+        FrameChain originalFC = new FrameChain(logger, currentFrames);
 
+        EyesTargetLocator switchTo = (EyesTargetLocator)driver.switchTo();
         switchTo.defaultContent();
-
         Location defaultContentScrollPosition = positionProvider.getCurrentPosition();
-
-        for (Frame frame : currentFrames) {
-            WebElement frameElement = frame.getReference();
-            switchTo.frame(frameElement);
-        }
+        switchTo.frames(originalFC);
 
         return defaultContentScrollPosition;
     }
 
-    private Location calcFrameLocationInScreenshot(Logger logger,
-            FrameChain frameChain, ScreenshotType screenshotType) {
+    public static Location calcFrameLocationInScreenshot(Logger logger, EyesWebDriver driver,
+                                                         FrameChain frameChain, ScreenshotType screenshotType) {
 
-        logger.verbose("Getting first frame..");
+        Location windowScroll = getDefaultContentScrollPosition(logger, frameChain, driver);
+
+        logger.verbose("Getting first frame...");
         Iterator<Frame> frameIterator = frameChain.iterator();
         Frame firstFrame = frameIterator.next();
         logger.verbose("Done!");
@@ -73,7 +70,6 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
         // We only consider scroll of the default content if this is a viewport screenshot.
         if (screenshotType == ScreenshotType.VIEWPORT) {
-            Location windowScroll = this.getDefaultContentScrollPosition();
             locationInScreenshot = locationInScreenshot.offset(-windowScroll.getX(), -windowScroll.getY());
         }
 
@@ -85,22 +81,23 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             logger.verbose("Done!");
             Location frameLocation = frame.getLocation();
             // For inner frames we must consider the scroll
-            Location frameParentScrollPosition = frame.getParentScrollPosition();
+            Location frameOriginalLocation = frame.getOriginalLocation();
             // Offsetting the location in the screenshot
             locationInScreenshot = locationInScreenshot.offset(
-                    frameLocation.getX() - frameParentScrollPosition.getX(),
-                    frameLocation.getY() - frameParentScrollPosition.getY());
+                    frameLocation.getX() - frameOriginalLocation.getX(),
+                    frameLocation.getY() - frameOriginalLocation.getY());
         }
         logger.verbose("Done!");
+
         return locationInScreenshot;
     }
 
     /**
-     * @param logger                     A Logger instance.
-     * @param driver                     The web driver used to get the screenshot.
-     * @param image                      The actual screenshot image.
-     * @param screenshotType             (Optional) The screenshot's type (e.g., viewport/full page).
-     * @param frameLocationInScreenshot  (Optional) The current frame's location in the screenshot.
+     * @param logger                    A Logger instance.
+     * @param driver                    The web driver used to get the screenshot.
+     * @param image                     The actual screenshot image.
+     * @param screenshotType            (Optional) The screenshot's type (e.g., viewport/full page).
+     * @param frameLocationInScreenshot (Optional) The current frame's location in the screenshot.
      */
     public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver, BufferedImage image,
                                    ScreenshotType screenshotType, Location frameLocationInScreenshot) {
@@ -112,8 +109,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
         this.screenshotType = updateScreenshotType(screenshotType, image);
 
-        IEyesJsExecutor jsExecutor = new SeleniumJavaScriptExecutor(this.driver);
-        ScrollPositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor);
+        PositionProvider positionProvider = driver.getEyes().getPositionProvider();
 
         frameChain = driver.getFrameChain();
         RectangleSize frameSize = getFrameSize(positionProvider);
@@ -134,28 +130,28 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
     private Location getUpdatedFrameLocationInScreenshot(Logger logger, Location frameLocationInScreenshot) {
         logger.verbose(String.format("frameLocationInScreenshot: %s", frameLocationInScreenshot));
-        // This is used for frame related calculations.
-        if (frameLocationInScreenshot == null) {
-            if (frameChain.size() > 0) {
-                frameLocationInScreenshot = calcFrameLocationInScreenshot(logger, frameChain, this.screenshotType);
-            } else {
-                frameLocationInScreenshot = new Location(0, 0);
-            }
+        if (frameChain.size() > 0) {
+            frameLocationInScreenshot = calcFrameLocationInScreenshot(logger, this.driver, frameChain, this.screenshotType);
+        } else if (frameLocationInScreenshot == null) {
+            frameLocationInScreenshot = new Location(0, 0);
         }
         return frameLocationInScreenshot;
     }
 
-    private Location getUpdatedScrollPosition(ScrollPositionProvider positionProvider) {
+    private static Location getUpdatedScrollPosition(PositionProvider positionProvider) {
         Location sp;
         try {
             sp = positionProvider.getCurrentPosition();
+            if (sp == null) {
+                sp = new Location(0,0);
+            }
         } catch (EyesDriverOperationException e) {
             sp = new Location(0, 0);
         }
         return sp;
     }
 
-    private RectangleSize getFrameSize(ScrollPositionProvider positionProvider) {
+    private RectangleSize getFrameSize(PositionProvider positionProvider) {
         RectangleSize frameSize;
         if (frameChain.size() != 0) {
             frameSize = frameChain.getCurrentFrameInnerSize();
@@ -174,7 +170,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
     private ScreenshotType updateScreenshotType(ScreenshotType screenshotType, BufferedImage image) {
         if (screenshotType == null) {
-            RectangleSize viewportSize = driver.getDefaultContentViewportSize();
+            RectangleSize viewportSize = driver.getEyes().getViewportSize();
 
             boolean scaleViewport = driver.getEyes().shouldStitchContent();
 
@@ -196,21 +192,21 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
      * See {@link #EyesWebDriverScreenshot(Logger, EyesWebDriver, BufferedImage, ScreenshotType, Location)}.
      * {@code screenshotType} defaults to {@code null}.
      * {@code frameLocationInScreenshot} defaults to {@code null}.
-     *
      * @param logger A Logger instance.
      * @param driver The web driver used to get the screenshot.
-     * @param image The actual screenshot image.
+     * @param image  The actual screenshot image.
      */
     public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver, BufferedImage image) {
         this(logger, driver, image, null, null);
     }
 
     // TODO replace "entireFrameSize" as frame window ctor identifier
+
     /**
      * Creates a frame(!) window screenshot.
-     * @param logger A Logger instance.
-     * @param driver The web driver used to get the screenshot.
-     * @param image The actual screenshot image.
+     * @param logger          A Logger instance.
+     * @param driver          The web driver used to get the screenshot.
+     * @param image           The actual screenshot image.
      * @param entireFrameSize The full internal size of the frame.
      */
     public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver,
@@ -255,8 +251,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         ArgumentGuard.notNull(region, "region");
 
         // We calculate intersection based on as-is coordinates.
-        Region asIsSubScreenshotRegion = getIntersectedRegion(region,
-                region.getCoordinatesType(), CoordinatesType.SCREENSHOT_AS_IS);
+        Region asIsSubScreenshotRegion = getIntersectedRegion(region, CoordinatesType.SCREENSHOT_AS_IS);
 
         if (asIsSubScreenshotRegion.isEmpty() ||
                 (throwIfClipped &&
@@ -270,20 +265,8 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         BufferedImage subScreenshotImage =
                 ImageUtils.getImagePart(image, asIsSubScreenshotRegion);
 
-        // The frame location in the sub screenshot is the negative of the
-        // context-as-is location of the region.
-        Location contextAsIsRegionLocation =
-                convertLocation(asIsSubScreenshotRegion.getLocation(),
-                        CoordinatesType.SCREENSHOT_AS_IS,
-                        CoordinatesType.CONTEXT_AS_IS);
-
-        Location frameLocationInSubScreenshot =
-                new Location(-contextAsIsRegionLocation.getX(),
-                        -contextAsIsRegionLocation.getY());
-
-        EyesWebDriverScreenshot result = new EyesWebDriverScreenshot(logger,
-                driver, subScreenshotImage, screenshotType,
-                frameLocationInSubScreenshot);
+        EyesWebDriverScreenshot result = new EyesWebDriverScreenshot(logger, driver, subScreenshotImage,
+                new RectangleSize(subScreenshotImage.getWidth(), subScreenshotImage.getHeight()));
 
         logger.verbose("Done!");
         return result;
@@ -291,7 +274,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
     @Override
     public Location convertLocation(Location location,
-            CoordinatesType from, CoordinatesType to) {
+                                    CoordinatesType from, CoordinatesType to) {
 
         ArgumentGuard.notNull(location, "location");
         ArgumentGuard.notNull(from, "from");
@@ -311,7 +294,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
                 screenshotType == ScreenshotType.ENTIRE_FRAME) {
             if ((from == CoordinatesType.CONTEXT_RELATIVE
                     || from == CoordinatesType.CONTEXT_AS_IS)
-                        && to == CoordinatesType.SCREENSHOT_AS_IS) {
+                    && to == CoordinatesType.SCREENSHOT_AS_IS) {
 
                 // If this is not a sub-screenshot, this will have no effect.
                 result = result.offset(frameLocationInScreenshot.getX(),
@@ -319,7 +302,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
             } else if (from == CoordinatesType.SCREENSHOT_AS_IS &&
                     (to == CoordinatesType.CONTEXT_RELATIVE
-                            || to == CoordinatesType.CONTEXT_AS_IS)){
+                            || to == CoordinatesType.CONTEXT_AS_IS)) {
 
                 result = result.offset(-frameLocationInScreenshot.getX(),
                         -frameLocationInScreenshot.getY());
@@ -348,12 +331,14 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             case CONTEXT_RELATIVE:
                 switch (to) {
                     case SCREENSHOT_AS_IS:
+
                         // First, convert context-relative to context-as-is.
                         result = result.offset(-currentFrameScrollPosition.getX(),
                                 -currentFrameScrollPosition.getY());
                         // Now convert context-as-is to screenshot-as-is.
                         result = result.offset(frameLocationInScreenshot.getX(),
                                 frameLocationInScreenshot.getY());
+
                         break;
 
                     case CONTEXT_AS_IS:
@@ -411,12 +396,13 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
     @Override
     public Region getIntersectedRegion(Region region,
-                                          CoordinatesType originalCoordinatesType,
-                                          CoordinatesType resultCoordinatesType) {
+                                       CoordinatesType resultCoordinatesType) {
 
         if (region.isEmpty()) {
             return new Region(region);
         }
+
+        CoordinatesType originalCoordinatesType = region.getCoordinatesType();
 
         Region intersectedRegion = convertRegionLocation(region,
                 originalCoordinatesType, CoordinatesType.SCREENSHOT_AS_IS);
@@ -444,7 +430,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
         // If the intersection is empty we don't want to convert the
         // coordinates.
-        if(intersectedRegion.isEmpty()) {
+        if (intersectedRegion.isEmpty()) {
             return intersectedRegion;
         }
 
@@ -457,7 +443,6 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
     /**
      * Gets the elements region in the screenshot.
-     *
      * @param element The element which region we want to intersect.
      * @return The intersected region, in {@code SCREENSHOT_AS_IS} coordinates
      * type.
