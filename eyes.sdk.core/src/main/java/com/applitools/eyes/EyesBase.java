@@ -87,6 +87,7 @@ public abstract class EyesBase {
 
     protected DebugScreenshotsProvider debugScreenshotsProvider;
     private boolean isViewportSizeSet;
+    protected int stitchingOverlap = 50;
 
     /**
      * Creates a new {@code EyesBase}instance that interacts with the Eyes
@@ -106,15 +107,9 @@ public abstract class EyesBase {
 
         Region.initLogger(logger);
 
-        scaleProviderHandler = new SimplePropertyHandler<>();
-        scaleProviderHandler.set(new NullScaleProvider());
-        cutProviderHandler = new SimplePropertyHandler<>();
-        cutProviderHandler.set(new NullCutProvider());
-        positionProvider = new InvalidPositionProvider();
-        viewportSizeHandler = new SimplePropertyHandler<>();
-        viewportSizeHandler.set(null);
-        serverConnector = ServerConnectorFactory.create(logger,
-                getBaseAgentId(), serverUrl);
+        initProviders();
+
+        serverConnector = ServerConnectorFactory.create(logger, getBaseAgentId(), serverUrl);
         matchTimeout = DEFAULT_MATCH_TIMEOUT;
         runningSession = null;
         defaultMatchSettings = new ImageMatchSettings();
@@ -129,7 +124,16 @@ public abstract class EyesBase {
         debugScreenshotsProvider = new NullDebugScreenshotProvider();
     }
 
-    @SuppressWarnings("UnusedDeclaration")
+    private void initProviders() {
+        scaleProviderHandler = new SimplePropertyHandler<>();
+        scaleProviderHandler.set(new NullScaleProvider());
+        cutProviderHandler = new SimplePropertyHandler<>();
+        cutProviderHandler.set(new NullCutProvider());
+        positionProvider = new InvalidPositionProvider();
+        viewportSizeHandler = new SimplePropertyHandler<>();
+        viewportSizeHandler.set(null);
+    }
+
     /**
      * Sets the user given agent id of the SDK. {@code null} is referred to
      * as no id.
@@ -506,6 +510,7 @@ public abstract class EyesBase {
 
     /**
      * Adds a property to be sent to the server.
+     *
      * @param name  The property name.
      * @param value The property value.
      */
@@ -570,9 +575,7 @@ public abstract class EyesBase {
         return debugScreenshotsProvider.getPrefix();
     }
 
-    public DebugScreenshotsProvider getDebugScreenshotsProvider() {
-        return debugScreenshotsProvider;
-    }
+    public DebugScreenshotsProvider getDebugScreenshotsProvider() { return debugScreenshotsProvider; }
 
     /**
      * @return Whether to ignore or the blinking caret or not when comparing images.
@@ -588,6 +591,21 @@ public abstract class EyesBase {
      */
     public void setIgnoreCaret(boolean value) {
         defaultMatchSettings.setIgnoreCaret(value);
+    }
+
+    /**
+     * Returns the stitching overlap in pixels.
+     */
+    public int getStitchOverlap() {
+        return this.stitchingOverlap;
+    }
+
+    /**
+     * Sets the stitching overlap in pixels.
+     * @param pixels The width (in pixels) of the overlap.
+     */
+    public void setStitchOverlap(int pixels) {
+        this.stitchingOverlap = pixels;
     }
 
     /**
@@ -643,29 +661,20 @@ public abstract class EyesBase {
             TestResultsStatus status = results.getStatus();
             if (status == TestResultsStatus.Unresolved) {
                 if (results.isNew()) {
-                    String instructions = "Please approve the new baseline at " + sessionResultsUrl;
-                    logger.log("--- New test ended. " + instructions);
+                    logger.log("--- New test ended. Please approve the new baseline at " + sessionResultsUrl);
                     if (throwEx) {
-                        String message = "'" + sessionStartInfo.getScenarioIdOrName()
-                                + "' of '" + sessionStartInfo.getAppIdOrName()
-                                + "'. " + instructions;
-                        throw new NewTestException(results, message);
+                        throw new NewTestException(results, sessionStartInfo);
                     }
                 } else {
                     logger.log("--- Failed test ended. See details at " + sessionResultsUrl);
                     if (throwEx) {
-                        throw new DiffsFoundException(results, sessionStartInfo.getScenarioIdOrName(), sessionStartInfo.getAppIdOrName(), sessionResultsUrl);
+                        throw new DiffsFoundException(results, sessionStartInfo);
                     }
                 }
             } else if (status == TestResultsStatus.Failed) {
                 logger.log("--- Failed test ended. See details at " + sessionResultsUrl);
-
                 if (throwEx) {
-                    String message = "'" + sessionStartInfo.getScenarioIdOrName()
-                            + "' of '" + sessionStartInfo.getAppIdOrName()
-                            + "'. See details at " + sessionResultsUrl;
-
-                    throw new TestFailedException(results, message);
+                    throw new TestFailedException(results, sessionStartInfo);
                 }
             } else {
                 // Test passed
@@ -1003,7 +1012,7 @@ public abstract class EyesBase {
         ArgumentGuard.isValidState(getIsOpen(), "Eyes not open");
         ArgumentGuard.notNull(regionProvider, "regionProvider");
 
-        result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings);
+        result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings, this);
 
         logger.verbose("MatchWindow Done!");
 
@@ -1018,48 +1027,54 @@ public abstract class EyesBase {
         return result;
     }
 
-    private MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch, ICheckSettings checkSettings) {
+    private static MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
+                                           ICheckSettings checkSettings, EyesBase self) {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
         int retryTimeout = -1;
+        ImageMatchSettings defaultMatchSettings = self.getDefaultMatchSettings();
         ImageMatchSettings imageMatchSettings = null;
         if (checkSettingsInternal != null) {
             retryTimeout = checkSettingsInternal.getTimeout();
 
             MatchLevel matchLevel = checkSettingsInternal.getMatchLevel();
-            matchLevel = (matchLevel == null) ? getDefaultMatchSettings().getMatchLevel() : matchLevel;
+            matchLevel = (matchLevel == null) ? defaultMatchSettings.getMatchLevel() : matchLevel;
 
             imageMatchSettings = new ImageMatchSettings(matchLevel, null);
 
-            collectIgnoreRegions(checkSettingsInternal, imageMatchSettings);
-            collectFloatingRegions(checkSettingsInternal, imageMatchSettings);
+            collectIgnoreRegions(checkSettingsInternal, imageMatchSettings, self);
+            collectFloatingRegions(checkSettingsInternal, imageMatchSettings, self);
 
             Boolean ignoreCaret = checkSettingsInternal.getIgnoreCaret();
-            imageMatchSettings.setIgnoreCaret((ignoreCaret == null) ? getDefaultMatchSettings().getIgnoreCaret() : ignoreCaret);
+            imageMatchSettings.setIgnoreCaret((ignoreCaret == null) ? defaultMatchSettings.getIgnoreCaret() : ignoreCaret);
         }
 
-        logger.verbose(String.format("CheckWindowBase(%s, '%s', %b, %d)", regionProvider.getClass(), tag, ignoreMismatch, retryTimeout));
+        self.logger.verbose(String.format("CheckWindowBase(%s, '%s', %b, %d)",
+                regionProvider.getClass(), tag, ignoreMismatch, retryTimeout));
 
-        logger.verbose("Calling match window...");
-        result = matchWindowTask.matchWindow(getUserInputs(), regionProvider.getRegion(), tag,
-                shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, imageMatchSettings, retryTimeout);
+        self.logger.verbose("Calling match window...");
+        result = self.matchWindowTask.matchWindow(self.getUserInputs(), regionProvider.getRegion(), tag,
+                self.shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, imageMatchSettings, retryTimeout);
 
         return result;
     }
 
-    private void collectIgnoreRegions(ICheckSettingsInternal checkSettingsInternal, ImageMatchSettings imageMatchSettings) {
+    private static void collectIgnoreRegions(ICheckSettingsInternal checkSettingsInternal,
+                                      ImageMatchSettings imageMatchSettings, EyesBase self) {
+
         List<Region> ignoreRegions = new ArrayList<>();
         for (GetRegion ignoreRegionProvider : checkSettingsInternal.getIgnoreRegions()) {
-            ignoreRegions.add(ignoreRegionProvider.getRegion(this));
+            ignoreRegions.add(ignoreRegionProvider.getRegion(self));
         }
         imageMatchSettings.setIgnoreRegions(ignoreRegions.toArray(new Region[0]));
     }
 
-    private void collectFloatingRegions(ICheckSettingsInternal checkSettingsInternal, ImageMatchSettings imageMatchSettings) {
+    private static void collectFloatingRegions(ICheckSettingsInternal checkSettingsInternal,
+                                               ImageMatchSettings imageMatchSettings, EyesBase self) {
         List<FloatingMatchSettings> floatingRegions = new ArrayList<>();
         for (GetFloatingRegion floatingRegionProvider : checkSettingsInternal.getFloatingRegions()) {
-            floatingRegions.add(floatingRegionProvider.getRegion(this));
+            floatingRegions.add(floatingRegionProvider.getRegion(self));
         }
         imageMatchSettings.setFloatingRegions(floatingRegions.toArray(new FloatingMatchSettings[0]));
     }
@@ -1201,13 +1216,14 @@ public abstract class EyesBase {
             logOpenBase();
             validateSessionOpen();
 
+            initProviders();
+
             this.isViewportSizeSet = false;
 
             this.currentAppName = appName != null ? appName : this.appName;
             this.testName = testName;
             viewportSizeHandler.set(viewportSize);
             this.sessionType = sessionType != null ? sessionType : SessionType.SEQUENTIAL;
-            scaleProviderHandler.set(new NullScaleProvider());
 
             ensureRunningSession();
 
@@ -1282,10 +1298,11 @@ public abstract class EyesBase {
 
     /**
      * Define the viewport size as {@code size} without doing any actual action on the
+     *
      * @param explicitViewportSize The size of the viewport. {@code null} disables the explicit size.
      */
     public void setExplicitViewportSize(RectangleSize explicitViewportSize) {
-        if (explicitViewportSize == null) {
+        if(explicitViewportSize == null) {
             viewportSizeHandler = new SimplePropertyHandler<>();
             viewportSizeHandler.set(null);
             this.isViewportSizeSet = false;
@@ -1358,9 +1375,8 @@ public abstract class EyesBase {
             return;
         }
 
-        control = lastScreenshot.getIntersectedRegion(control,
-                CoordinatesType.CONTEXT_RELATIVE,
-                CoordinatesType.SCREENSHOT_AS_IS);
+        control = lastScreenshot.getIntersectedRegion(control, CoordinatesType.SCREENSHOT_AS_IS);
+
         if (control.isEmpty()) {
             logger.verbose(String.format("Ignoring '%s' (out of bounds)",
                     text));
@@ -1413,9 +1429,7 @@ public abstract class EyesBase {
         }
 
         Region controlScreenshotIntersect =
-                lastScreenshot.getIntersectedRegion(control,
-                        CoordinatesType.CONTEXT_RELATIVE,
-                        CoordinatesType.SCREENSHOT_AS_IS);
+                lastScreenshot.getIntersectedRegion(control, CoordinatesType.SCREENSHOT_AS_IS);
 
         // If the region is NOT empty, we'll give the coordinates relative to
         // the control.
@@ -1513,7 +1527,7 @@ public abstract class EyesBase {
     }
 
     /**
-     * @param region         A callback for getting the region of the screenshot which will be set in the application output.
+     * @param region         The region of the screenshot which will be set in the application output.
      * @param lastScreenshot Previous application screenshot (used for compression) or {@code null} if not available.
      * @return The updated app output and screenshot.
      */
@@ -1528,7 +1542,7 @@ public abstract class EyesBase {
         // Cropping by region if necessary
         if (!region.isEmpty()) {
             screenshot = screenshot.getSubScreenshot(region, false);
-            debugScreenshotsProvider.save(screenshot.getImage(), "SUB_SCREENSHOT");
+            debugScreenshotsProvider.save(screenshot.getImage(),"SUB_SCREENSHOT");
         }
 
         logger.verbose("Compressing screenshot...");

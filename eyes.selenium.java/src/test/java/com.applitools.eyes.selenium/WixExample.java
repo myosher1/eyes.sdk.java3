@@ -1,12 +1,13 @@
 package com.applitools.eyes.selenium;
 
+import com.applitools.eyes.LogHandler;
+import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.selenium.fluent.Target;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-import java.net.URI;
 import java.net.URISyntaxException;
 
 public final class WixExample {
@@ -23,8 +24,11 @@ public final class WixExample {
 //        eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
         eyes.setMatchTimeout(0);
 
-//        eyes.setDebugScreenshotsPath("c:\\temp\\logs");
-//        eyes.setSaveDebugScreenshots(true);
+        LogHandler logHandler = new StdoutLogHandler(true);
+        eyes.setLogHandler(logHandler);
+
+        eyes.setDebugScreenshotsPath("c:\\temp\\logs");
+        eyes.setSaveDebugScreenshots(true);
 
         eyes.setForceFullPageScreenshot(false);
 

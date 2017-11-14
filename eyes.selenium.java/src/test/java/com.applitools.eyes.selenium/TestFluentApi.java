@@ -57,6 +57,7 @@ public abstract class TestFluentApi extends TestSetup {
                 .fully());
     }
 
+    /*
     @Test
     public void TestCheckRegionInFrame2_Fluent() {
         eyes.check("Fluent - Inner frame div 1", Target.frame("frame1")
@@ -85,6 +86,7 @@ public abstract class TestFluentApi extends TestSetup {
                 .layout()
                 .floating(25, new Region(200, 200, 150, 150)));
     }
+    */
 
     @Test
     public void TestCheckFrameInFrame_Fully_Fluent2() {

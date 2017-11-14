@@ -45,7 +45,6 @@ import java.util.List;
  * The main API gateway for the SDK.
  */
 public class Eyes extends EyesBase {
-
     public interface WebDriverAction {
         void drive(WebDriver driver);
     }
@@ -73,7 +72,12 @@ public class Eyes extends EyesBase {
         return regionToCheck;
     }
 
+    public void setRegionToCheck(Region regionToCheck) {
+        this.regionToCheck = regionToCheck;
+    }
+
     private Region regionToCheck = null;
+
     private boolean hideScrollbars;
     private ImageRotation rotation;
     private double devicePixelRatio;
@@ -86,9 +90,9 @@ public class Eyes extends EyesBase {
     private UserAgent userAgent;
     private ImageProvider imageProvider;
     private RegionPositionCompensation regionPositionCompensation;
+    private WebElement targetElement = null;
 
     private boolean stitchContent = false;
-    protected int stitchingOverlap = 50;
 
     public boolean shouldStitchContent() {
         return stitchContent;
@@ -184,8 +188,7 @@ public class Eyes extends EyesBase {
      * @return Whether to automatically scroll to a region being validated.
      */
     public boolean getScrollToRegion() {
-        return !(regionVisibilityStrategy instanceof
-                NopRegionVisibilityStrategy);
+        return !(regionVisibilityStrategy instanceof NopRegionVisibilityStrategy);
     }
 
     /**
@@ -198,13 +201,7 @@ public class Eyes extends EyesBase {
         logger.verbose("setting stitch mode to " + mode);
         stitchMode = mode;
         if (driver != null) {
-            switch (mode) {
-                case CSS:
-                    setPositionProvider(new CssTranslatePositionProvider(logger, this.jsExecutor));
-                    break;
-                default:
-                    setPositionProvider(new ScrollPositionProvider(logger, this.jsExecutor));
-            }
+            initPositionProvider();
         }
     }
 
@@ -214,22 +211,6 @@ public class Eyes extends EyesBase {
     public StitchMode getStitchMode() {
         return stitchMode;
     }
-
-    /**
-     * Returns the stitching overlap in pixels.
-     */
-    public int getStitchOverlap() {
-        return this.stitchingOverlap;
-    }
-
-    /**
-     * Sets the stitching overlap in pixels.
-     * @param pixels The width (in pixels) of the overlap.
-     */
-    public void setStitchOverlap(int pixels) {
-        this.stitchingOverlap = pixels;
-    }
-
 
     /**
      * Hide the scrollbars when taking screenshots.
@@ -401,6 +382,8 @@ public class Eyes extends EyesBase {
         }
 
         logger.log(String.format("CheckWindow(%d, '%s')", matchTimeout, tag));
+
+        this.regionToCheck = null;
 
         super.checkWindowBase(
                 NullRegionProvider.INSTANCE,
@@ -648,6 +631,8 @@ public class Eyes extends EyesBase {
 
         int switchedToFrameCount = this.switchToFrame(seleniumCheckTarget);
 
+        this.regionToCheck = null;
+
         if (targetRegion != null) {
             this.checkWindowBase(new RegionProvider() {
                 @Override
@@ -662,28 +647,18 @@ public class Eyes extends EyesBase {
                 targetElement = this.driver.findElement(targetSelector);
             }
             if (targetElement != null) {
-                if (stitchContent) {
-                    this.checkElement(targetElement, name, checkSettings);
+                this.targetElement = targetElement;
+                if (this.stitchContent) {
+                    this.checkElement(name, checkSettings);
                 } else {
-                    this.checkRegion(targetElement, name, checkSettings);
+                    this.checkRegion(name, checkSettings);
                 }
+                this.targetElement = null;
             } else if (seleniumCheckTarget.getFrameChain().size() > 0) {
-                if (stitchContent) {
+                if (this.stitchContent) {
                     this.checkFullFrameOrElement(name, checkSettings);
                 } else {
-                    Frame frame = this.driver.getFrameChain().peek();
-                    final WebElement element = frame.getReference();
-                    this.driver.switchTo().parentFrame();
-                    switchedToFrameCount--;
-
-                    this.checkWindowBase(new RegionProvider() {
-                        @Override
-                        public Region getRegion() {
-                            Point p = element.getLocation();
-                            Dimension d = element.getSize();
-                            return new Region(p.getX(), p.getY(), d.getWidth(), d.getHeight(), CoordinatesType.CONTEXT_RELATIVE);
-                        }
-                    }, name, false, checkSettings);
+                    this.checkFrameFluent(name, checkSettings);
                 }
             } else {
                 this.checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
@@ -698,6 +673,19 @@ public class Eyes extends EyesBase {
         this.stitchContent = false;
 
         logger.verbose("check - done!");
+    }
+
+    protected void checkFrameFluent(String name, ICheckSettings checkSettings) {
+        FrameChain frameChain = new FrameChain(logger, this.driver.getFrameChain());
+        Frame targetFrame = frameChain.pop();
+        this.targetElement = targetFrame.getReference();
+
+        EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
+        switchTo.framesDoScroll(frameChain);
+
+        this.checkRegion(name, checkSettings);
+
+        this.targetElement = null;
     }
 
     private int switchToFrame(ISeleniumCheckTarget checkTarget) {
@@ -716,20 +704,22 @@ public class Eyes extends EyesBase {
     }
 
     private boolean switchToFrame(ISeleniumFrameCheckTarget frameTarget) {
+        WebDriver.TargetLocator switchTo = this.driver.switchTo();
+
         if (frameTarget.getFrameIndex() != null) {
-            this.driver.switchTo().frame(frameTarget.getFrameIndex());
+            switchTo.frame(frameTarget.getFrameIndex());
             return true;
         }
 
         if (frameTarget.getFrameNameOrId() != null) {
-            this.driver.switchTo().frame(frameTarget.getFrameNameOrId());
+            switchTo.frame(frameTarget.getFrameNameOrId());
             return true;
         }
 
         if (frameTarget.getFrameSelector() != null) {
             WebElement frameElement = this.driver.findElement(frameTarget.getFrameSelector());
             if (frameElement != null) {
-                this.driver.switchTo().frame(frameElement);
+                switchTo.frame(frameElement);
                 return true;
             }
         }
@@ -746,24 +736,25 @@ public class Eyes extends EyesBase {
             @Override
             public Region getRegion() {
                 if (checkFrameOrElement) {
-                    ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor);
-                    spp.setPosition(Location.ZERO);
+
+                    FrameChain fc = ensureFrameVisible();
 
                     // FIXME - Scaling should be handled in a single place instead
                     ScaleProviderFactory scaleProviderFactory = updateScalingParams();
 
                     BufferedImage screenshotImage = imageProvider.getImage();
-                    //byte[] screenshotBytes = driver.getScreenshotAs(OutputType.BYTES);
-                    //BufferedImage screenshotImage = ImageUtils.imageFromBytes(screenshotBytes);
 
-                    debugScreenshotsProvider.save(screenshotImage, "checkFulFrameOrElement");
+                    debugScreenshotsProvider.save(screenshotImage, "checkFullFrameOrElement");
 
                     scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
+
+                    EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
+                    switchTo.frames(fc);
 
                     final EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
 
                     logger.verbose("replacing regionToCheck");
-                    regionToCheck = screenshot.getFrameWindow();
+                    setRegionToCheck(screenshot.getFrameWindow());
                 }
 
                 return Region.EMPTY;
@@ -773,21 +764,69 @@ public class Eyes extends EyesBase {
         checkFrameOrElement = false;
     }
 
-    private void checkRegion(WebElement element, String name, ICheckSettings checkSettings) {
-        ArgumentGuard.notNull(element, "element");
+    private FrameChain ensureFrameVisible() {
+        FrameChain originalFC = new FrameChain(logger, driver.getFrameChain());
+        FrameChain fc = new FrameChain(logger, driver.getFrameChain());
+        while (fc.size() > 0) {
+            driver.getRemoteWebDriver().switchTo().parentFrame();
+            Frame frame = fc.pop();
+            this.positionProvider.setPosition(frame.getLocation());
+        }
+        ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
+        return originalFC;
+    }
 
-        Point p = element.getLocation();
-        final Location elementLocation = new Location(p.getX(), p.getY());
-        Dimension s = element.getSize();
-        final RectangleSize elementSize = new RectangleSize(s.getWidth(), s.getHeight());
+    private void ensureElementVisible(WebElement element) {
+        if (this.targetElement == null) {
+            // No element? we must be checking the window.
+            return;
+        }
 
+        FrameChain originalFC = new FrameChain(logger, driver.getFrameChain());
+        EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
+
+        EyesRemoteWebElement eyesRemoteWebElement = new EyesRemoteWebElement(logger, driver, element);
+        Region elementBounds = eyesRemoteWebElement.getBounds();
+
+        Location currentFrameOffset = originalFC.getCurrentFrameOffset();
+        elementBounds = elementBounds.offset(currentFrameOffset.getX(), currentFrameOffset.getY());
+
+        Region viewportBounds = getViewportScrollBounds();
+
+        if (!viewportBounds.contains(elementBounds)) {
+            ensureFrameVisible();
+
+            Point p = element.getLocation();
+            Location elementLocation = new Location(p.getX(), p.getY());
+
+            if (originalFC.size() > 0 && !element.equals(originalFC.peek())) {
+                switchTo.frames(originalFC);
+            }
+
+            this.positionProvider.setPosition(elementLocation);
+        }
+    }
+
+    private Region getViewportScrollBounds() {
+        FrameChain originalFrameChain = new FrameChain(logger, driver.getFrameChain());
+        EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
+        switchTo.defaultContent();
+        ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor);
+        Location location = spp.getCurrentPosition();
+        Region viewportBounds = new Region(location, getViewportSize());
+        switchTo.frames(originalFrameChain);
+        return viewportBounds;
+    }
+
+    private void checkRegion(String name, ICheckSettings checkSettings) {
         checkWindowBase(new RegionProvider() {
             @Override
             public Region getRegion() {
-                return new Region(elementLocation, elementSize, CoordinatesType.CONTEXT_RELATIVE);
+                Point p = targetElement.getLocation();
+                Dimension d = targetElement.getSize();
+                return new Region(p.getX(), p.getY(), d.getWidth(), d.getHeight(), CoordinatesType.CONTEXT_RELATIVE);
             }
         }, name, false, checkSettings);
-
         logger.verbose("Done! trying to scroll back to original position..");
     }
 
@@ -895,6 +934,8 @@ public class Eyes extends EyesBase {
 
         logger.log(String.format("CheckRegion(element, %d, '%s')",
                 matchTimeout, tag));
+
+        this.regionToCheck = null;
 
         // If needed, scroll to the top/left of the element (additional help
         // to make sure it's visible).
@@ -1267,15 +1308,13 @@ public class Eyes extends EyesBase {
 
             logger.verbose("Setting scale provider...");
             try {
-                factory = new ContextBasedScaleProviderFactory(logger, positionProvider.getEntireSize(),
-                        viewportSizeHandler.get(), devicePixelRatio, EyesSeleniumUtils.isMobileDevice(driver),
-                        scaleProviderHandler);
+                factory = getScaleProviderFactory();
+
             } catch (Exception e) {
                 // This can happen in Appium for example.
                 logger.verbose("Failed to set ContextBasedScaleProvider.");
                 logger.verbose("Using FixedScaleProvider instead...");
-                factory = new FixedScaleProviderFactory(1 / devicePixelRatio,
-                        scaleProviderHandler);
+                factory = new FixedScaleProviderFactory(1 / devicePixelRatio, scaleProviderHandler);
             }
             logger.verbose("Done!");
             return factory;
@@ -1283,6 +1322,12 @@ public class Eyes extends EyesBase {
         // If we already have a scale provider set, we'll just use it, and pass a mock as provider handler.
         PropertyHandler<ScaleProvider> nullProvider = new SimplePropertyHandler<>();
         return new ScaleProviderIdentityFactory(scaleProviderHandler.get(), nullProvider);
+    }
+
+    private ScaleProviderFactory getScaleProviderFactory() {
+        return new ContextBasedScaleProviderFactory(logger, positionProvider.getEntireSize(),
+                viewportSizeHandler.get(), devicePixelRatio, false,
+                scaleProviderHandler);
     }
 
     /**
@@ -1310,12 +1355,12 @@ public class Eyes extends EyesBase {
             logger.verbose("Done!");
 
             logger.verbose("replacing regionToCheck");
-            regionToCheck = screenshot.getFrameWindow();
+            setRegionToCheck(screenshot.getFrameWindow());
 
             super.checkWindowBase(NullRegionProvider.INSTANCE, tag, false, matchTimeout);
         } finally {
             checkFrameOrElement = false;
-            regionToCheck = Region.EMPTY;
+            regionToCheck = null;
         }
     }
 
@@ -1580,11 +1625,17 @@ public class Eyes extends EyesBase {
         checkElement(element, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
+    private void checkElement(String name, ICheckSettings checkSettings) {
+        this.checkElement(this.targetElement, name, checkSettings);
+    }
+
     private void checkElement(WebElement element, String name, ICheckSettings checkSettings) {
 
         // Since the element might already have been found using EyesWebDriver.
         final EyesRemoteWebElement eyesElement = (element instanceof EyesRemoteWebElement) ?
                 (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
+
+        this.regionToCheck = null;
 
         PositionProvider originalPositionProvider = positionProvider;
         PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
@@ -1592,7 +1643,7 @@ public class Eyes extends EyesBase {
 
         String originalOverflow = null;
 
-        Point p = eyesElement.getLocation();
+        Point pl = eyesElement.getLocation();
 
         try {
             checkFrameOrElement = true;
@@ -1606,13 +1657,14 @@ public class Eyes extends EyesBase {
             originalOverflow = eyesElement.getOverflow();
             eyesElement.setOverflow("hidden");
 
-            int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
-            int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
-
             int elementWidth = eyesElement.getClientWidth();
             int elementHeight = eyesElement.getClientHeight();
 
-            final Region elementRegion = new Region(p.getX() + borderLeftWidth, p.getY() + borderTopWidth,
+            int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
+            int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
+
+            final Region elementRegion = new Region(
+                    pl.getX() + borderLeftWidth, pl.getY() + borderTopWidth,
                     elementWidth, elementHeight, CoordinatesType.CONTEXT_RELATIVE);
 
             logger.verbose("Element region: " + elementRegion);
@@ -1630,7 +1682,7 @@ public class Eyes extends EyesBase {
 
             scrollPositionProvider.setPosition(originalScrollPosition);
             positionProvider = originalPositionProvider;
-            regionToCheck = Region.EMPTY;
+            regionToCheck = null;
             elementPositionProvider = null;
         }
     }
@@ -1803,7 +1855,11 @@ public class Eyes extends EyesBase {
      */
     @Override
     public RectangleSize getViewportSize() {
-        return driver.getDefaultContentViewportSize();
+        RectangleSize viewportSize = viewportSizeHandler.get();
+        if (viewportSize == null) {
+            viewportSize = driver.getDefaultContentViewportSize();
+        }
+        return viewportSize;
     }
 
     /**
@@ -1878,9 +1934,16 @@ public class Eyes extends EyesBase {
         }
         try {
             EyesScreenshotFactory screenshotFactory = new EyesWebDriverScreenshotFactory(logger, driver);
+
+            FrameChain originalFrameChain = new FrameChain(logger, driver.getFrameChain());
+            FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
+            EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
+
             if (checkFrameOrElement) {
                 logger.verbose("Check frame/element requested");
-                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
+
+                switchTo.framesDoScroll(originalFrameChain);
+
                 BufferedImage entireFrameOrElement =
                         algo.getStitchedRegion(imageProvider, regionToCheck,
                                 positionProvider, getElementPositionProvider(),
@@ -1888,43 +1951,48 @@ public class Eyes extends EyesBase {
                                 cutProviderHandler.get(),
                                 getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
                                 getStitchOverlap(), regionPositionCompensation);
+
                 logger.verbose("Building screenshot object...");
                 result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
                         new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
             } else if (forceFullPageScreenshot || stitchContent) {
                 logger.verbose("Full page screenshot requested.");
+
                 // Save the current frame path.
-                FrameChain originalFrame = new FrameChain(logger, driver.getFrameChain());
+                Location originalFramePosition = originalFrameChain.size() > 0 ? originalFrameChain.getDefaultContentScrollPosition() : new Location(0, 0);
 
-                Location originalFramePosition = originalFrame.size() > 0 ? originalFrame.getDefaultContentScrollPosition() : new Location(0,0);
+                switchTo.defaultContent();
 
-                driver.switchTo().defaultContent();
-                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
-                BufferedImage fullPageImage = algo.getStitchedRegion(imageProvider, Region.EMPTY,
-                        new ScrollPositionProvider(logger, this.jsExecutor),
-                        positionProvider, scaleProviderFactory,
-                        cutProviderHandler.get(),
-                        getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
-                        getStitchOverlap(), regionPositionCompensation);
+                BufferedImage fullPageImage =
+                        algo.getStitchedRegion(imageProvider, Region.EMPTY,
+                                new ScrollPositionProvider(logger, this.jsExecutor),
+                                positionProvider, scaleProviderFactory,
+                                cutProviderHandler.get(),
+                                getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
+                                getStitchOverlap(), regionPositionCompensation);
 
-                ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
+                switchTo.frames(originalFrameChain);
                 result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);
             } else {
+                ensureElementVisible(this.targetElement);
+
                 logger.verbose("Screenshot requested...");
                 BufferedImage screenshotImage = imageProvider.getImage();
-                logger.verbose("Done! Creating image object...");
-
                 debugScreenshotsProvider.save(screenshotImage, "original");
 
                 ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
-                logger.verbose("Done!");
-                screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
+                if (scaleProvider.getScaleRatio()!=1.0) {
+                    logger.verbose("scaling...");
+                    screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
+                    debugScreenshotsProvider.save(screenshotImage, "scaled");
+                }
 
-                debugScreenshotsProvider.save(screenshotImage, "scaled");
-
-                screenshotImage = cutProviderHandler.get().cut(screenshotImage);
-
-                debugScreenshotsProvider.save(screenshotImage, "cut");
+                CutProvider cutProvider = cutProviderHandler.get();
+                if (!(cutProvider instanceof NullCutProvider)) {
+                    logger.verbose("cutting...");
+                    screenshotImage = cutProvider.cut(screenshotImage);
+                    debugScreenshotsProvider.save(screenshotImage, "cut");
+                }
 
                 logger.verbose("Creating screenshot object...");
                 result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
@@ -2021,7 +2089,7 @@ public class Eyes extends EyesBase {
      * @return The currently set position provider.
      */
     public PositionProvider getElementPositionProvider() {
-        return  elementPositionProvider == null ? positionProvider : elementPositionProvider;
+        return elementPositionProvider == null ? positionProvider : elementPositionProvider;
     }
 
 }
