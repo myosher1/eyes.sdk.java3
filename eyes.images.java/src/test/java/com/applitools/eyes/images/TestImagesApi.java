@@ -20,7 +20,7 @@ public class TestImagesApi {
 
         // Initialize the eyes SDK and set your private API key.
         eyes = new Eyes();
-        eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
+//        eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
         eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
 
         //logHandler = new FileLogger("c:\\temp\\logs\\TestElement.log", true, true);
