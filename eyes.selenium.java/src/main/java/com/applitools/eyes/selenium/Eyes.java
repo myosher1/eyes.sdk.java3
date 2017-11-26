@@ -1936,7 +1936,6 @@ public class Eyes extends EyesBase {
             EyesScreenshotFactory screenshotFactory = new EyesWebDriverScreenshotFactory(logger, driver);
 
             FrameChain originalFrameChain = new FrameChain(logger, driver.getFrameChain());
-            FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
             EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
 
             if (checkFrameOrElement) {
@@ -1944,6 +1943,7 @@ public class Eyes extends EyesBase {
 
                 switchTo.framesDoScroll(originalFrameChain);
 
+                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
                 BufferedImage entireFrameOrElement =
                         algo.getStitchedRegion(imageProvider, regionToCheck,
                                 positionProvider, getElementPositionProvider(),
@@ -1963,6 +1963,7 @@ public class Eyes extends EyesBase {
 
                 switchTo.defaultContent();
 
+                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
                 BufferedImage fullPageImage =
                         algo.getStitchedRegion(imageProvider, Region.EMPTY,
                                 new ScrollPositionProvider(logger, this.jsExecutor),
