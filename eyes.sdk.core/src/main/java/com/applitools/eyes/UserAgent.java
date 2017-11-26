@@ -1,8 +1,8 @@
 package com.applitools.eyes;
 
+import com.applitools.eyes.exceptions.NotSupportedException;
 import com.applitools.utils.ArgumentGuard;
 
-import javax.ws.rs.NotSupportedException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
