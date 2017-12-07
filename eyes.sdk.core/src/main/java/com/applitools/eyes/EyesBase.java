@@ -125,13 +125,18 @@ public abstract class EyesBase {
     }
 
     private void initProviders() {
-        scaleProviderHandler = new SimplePropertyHandler<>();
-        scaleProviderHandler.set(new NullScaleProvider());
-        cutProviderHandler = new SimplePropertyHandler<>();
-        cutProviderHandler.set(new NullCutProvider());
-        positionProvider = new InvalidPositionProvider();
-        viewportSizeHandler = new SimplePropertyHandler<>();
-        viewportSizeHandler.set(null);
+        if (scaleProviderHandler == null) {
+            setScaleRatio(null);
+        }
+        if (cutProviderHandler == null) {
+            setImageCut(null);
+        }
+        if (positionProvider == null) {
+            setPositionProvider(new InvalidPositionProvider());
+        }
+        if (viewportSizeHandler == null) {
+            setExplicitViewportSize(null);
+        }
     }
 
     /**
