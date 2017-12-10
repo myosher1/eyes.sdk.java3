@@ -68,6 +68,8 @@ public class Eyes extends EyesBase {
     private boolean forceFullPageScreenshot;
     private boolean checkFrameOrElement;
 
+    private String originalOverflow;
+
     public Region getRegionToCheck() {
         return regionToCheck;
     }
@@ -1914,6 +1916,25 @@ public class Eyes extends EyesBase {
         EyesSeleniumUtils.setViewportSize(new Logger(), driver, size);
     }
 
+    @Override
+    protected void beforeOpen() {
+        tryHideScrollbars();
+    }
+
+    @Override
+    protected void beforeMatchWindow() {
+        tryHideScrollbars();
+    }
+
+    private void tryHideScrollbars() {
+        if (this.hideScrollbars) {
+            try {
+                this.originalOverflow = EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+            } catch (EyesDriverOperationException e) {
+                logger.log("WARNING: Failed to hide scrollbars! Error: " + e.getMessage());
+            }
+        }
+    }
 
     @Override
     protected EyesScreenshot getScreenshot() {
