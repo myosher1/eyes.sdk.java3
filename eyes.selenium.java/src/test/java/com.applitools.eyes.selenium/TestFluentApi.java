@@ -1,6 +1,8 @@
 package com.applitools.eyes.selenium;
 
+import com.applitools.eyes.FloatingMatchSettings;
 import com.applitools.eyes.Region;
+import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.selenium.fluent.Target;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -110,6 +112,15 @@ public abstract class TestFluentApi extends TestSetup {
     {
         eyes.check("Fluent - Window with floating region by selector", Target.window()
                 .floating(By.id("overflowing-div"), 3, 3, 20, 30));
+    }
+
+    @Test
+    public void TestCheckWindowWithFloatingByRegion_Fluent() {
+        ICheckSettings settings = Target.window()
+                .floating(new Region(10, 10, 20, 20), 3, 3, 20, 30);
+        eyes.check("Fluent - Window with floating region by region", settings);
+
+        setExpectedFloatingsRegions(new FloatingMatchSettings(10, 10, 20, 20, 3, 3, 20, 30));
     }
 
     @Test
