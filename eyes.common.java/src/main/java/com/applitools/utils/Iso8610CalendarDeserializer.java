@@ -11,7 +11,7 @@ import java.text.ParseException;
 import java.util.Calendar;
 
 /**
- * Deserialize ISO8610 fomatted strings to {@link Calendar}.
+ * Deserialize ISO8610 formatted strings to {@link Calendar}.
  */
 public class Iso8610CalendarDeserializer extends JsonDeserializer<Calendar> {
     public Calendar deserialize(JsonParser jsonParser, DeserializationContext deserializationContext)
