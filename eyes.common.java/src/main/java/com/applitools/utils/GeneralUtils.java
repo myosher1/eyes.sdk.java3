@@ -62,7 +62,7 @@ public class GeneralUtils {
         ArgumentGuard.notNull(calendar, "calendar");
 
         SimpleDateFormat formatter =
-                new SimpleDateFormat(DATE_FORMAT_ISO8601_FOR_OUTPUT, Locale.US);
+                new SimpleDateFormat(DATE_FORMAT_ISO8601_FOR_OUTPUT, Locale.ENGLISH);
 
         // For the string to be formatted correctly you MUST also set
         // the time zone in the formatter! See:
@@ -84,7 +84,7 @@ public class GeneralUtils {
         ArgumentGuard.notNull(calendar, "calendar");
 
         SimpleDateFormat formatter =
-                new SimpleDateFormat(DATE_FORMAT_RFC1123, Locale.US);
+                new SimpleDateFormat(DATE_FORMAT_RFC1123, Locale.ENGLISH);
 
         // For the string to be formatted correctly you MUST also set
         // the time zone in the formatter! See:
