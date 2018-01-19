@@ -94,6 +94,15 @@ public abstract class EyesBase {
      * Server at the specified url.
      * @param serverUrl The Eyes server URL.
      */
+    public EyesBase(String serverUrl) throws URISyntaxException {
+        this(new URI(serverUrl));
+    }
+
+    /**
+     * Creates a new {@code EyesBase}instance that interacts with the Eyes
+     * Server at the specified url.
+     * @param serverUrl The Eyes server URL.
+     */
     public EyesBase(URI serverUrl) {
 
         if (isDisabled) {
@@ -173,6 +182,15 @@ public abstract class EyesBase {
         return serverConnector.getApiKey();
     }
 
+
+    /**
+     * Sets the current server URL used by the rest client.
+     * @param serverUrl The URI of the rest server, or {@code null} to use
+     *                  the default server.
+     */
+    public void setServerUrl(String serverUrl) throws URISyntaxException {
+        setServerUrl(new URI(serverUrl));
+    }
 
     /**
      * Sets the current server URL used by the rest client.
