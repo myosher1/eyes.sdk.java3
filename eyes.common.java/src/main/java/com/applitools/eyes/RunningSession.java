@@ -13,11 +13,13 @@ public class RunningSession {
     private boolean isNewSession;
     private String id;
     private String url;
+    private String baselineId;
+    private String batchId;
+    private String sessionId;
 
     public RunningSession() {
         isNewSession = false;
     }
-
 
     public boolean getIsNewSession() {
         return isNewSession;
@@ -41,5 +43,29 @@ public class RunningSession {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getBaselineId() {
+        return baselineId;
+    }
+
+    public void setBaselineId(String baselineId) {
+        this.baselineId = baselineId;
+    }
+
+    public String getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 }

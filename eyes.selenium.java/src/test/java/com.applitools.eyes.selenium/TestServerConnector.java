@@ -1,0 +1,42 @@
+package com.applitools.eyes.selenium;
+
+import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.TestResults;
+import com.applitools.eyes.selenium.fluent.Target;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+import java.net.MalformedURLException;
+import java.net.URI;
+
+@RunWith(JUnit4.class)
+public class TestServerConnector {
+
+    @Test
+    public void TestDelete() throws MalformedURLException {
+        Eyes eyes = new Eyes(URI.create("https://localhost.applitools.com"));
+        eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
+        WebDriver webDriver = new ChromeDriver();
+        try {
+            WebDriver driver = eyes.open(webDriver,
+                    TestServerConnector.class.getSimpleName(),
+                    TestServerConnector.class.getSimpleName(), new RectangleSize(800, 599));
+
+            driver.get("https://applitools.com/helloworld");
+
+            eyes.check("Hello", Target.window());
+
+            TestResults results = eyes.close();
+
+            results.delete();
+        }
+        finally {
+            webDriver.quit();
+            eyes.abortIfNotClosed();
+        }
+    }
+
+}

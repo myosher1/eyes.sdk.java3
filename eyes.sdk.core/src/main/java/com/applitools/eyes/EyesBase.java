@@ -699,6 +699,8 @@ public abstract class EyesBase {
                 logger.log("--- Test passed. See details at " + sessionResultsUrl);
             }
 
+            results.setServerConnector(this.serverConnector);
+
             return results;
         } finally {
             // Making sure that we reset the running session even if an
