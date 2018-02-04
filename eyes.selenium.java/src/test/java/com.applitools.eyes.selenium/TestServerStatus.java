@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -33,10 +34,12 @@ public class TestServerStatus {
         ChromeOptions options = new ChromeOptions();
         options.addArguments("disable-infobars");
 
-        DesiredCapabilities caps = DesiredCapabilities.chrome();
+        DesiredCapabilities caps = new DesiredCapabilities("chrome","", Platform.ANY);
         caps.setCapability(ChromeOptions.CAPABILITY, options);
+        caps.setCapability("username", System.getenv("SAUCE_USERNAME"));
+        caps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
 
-        webDriver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), caps);
+        webDriver = new RemoteWebDriver(new URL(System.getenv("SELENIUM_SERVER_URL")), caps);
     }
 
     private void teardown() {
