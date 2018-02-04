@@ -17,6 +17,7 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -82,7 +83,10 @@ public abstract class TestSetup {
 
             if (runRemotely) {
                 try {
-                    webDriver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), caps);
+                    caps.setCapability("username", System.getenv("SAUCE_USERNAME"));
+                    caps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
+
+                    webDriver = new RemoteWebDriver(new URL(System.getenv("SELENIUM_SERVER_URL")), caps);
                 } catch (MalformedURLException ex) { }
             }
 
