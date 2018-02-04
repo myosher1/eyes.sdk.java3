@@ -19,7 +19,7 @@ public class TestSpecialCases_Chrome_ForceFullPageScreenshot extends TestSpecial
         @Override
         protected void before() throws Throwable {
             testSuitName = "Eyes Selenium SDK - Special Cases - ForceFPS";
-            testedPageUrl = "file:///C:/Users/USER/devel/demo_pages/TestPages/WixLikeTestPage/index.html";
+            testedPageUrl = "http://applitools.github.io/demo/TestPages/WixLikeTestPage/index.html";
             hideScrollbars = true;
             forceFullPageScreenshot = true;
         }
