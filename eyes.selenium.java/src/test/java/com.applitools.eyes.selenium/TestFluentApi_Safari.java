@@ -23,7 +23,6 @@ public class TestFluentApi_Safari extends TestFluentApi {
             testSuitName = "Eyes Selenium SDK - Fluent API - Java - Safari";
             testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
             forceFullPageScreenshot = false;
-            runRemotely = false;
         }
     };
 
@@ -31,16 +30,10 @@ public class TestFluentApi_Safari extends TestFluentApi {
     public final TestRule beforeTest = new TestWatcher() {
         @Override
         public Statement apply(Statement statement, Description description) {
-            //Run locally
-            //-----------
-            SafariOptions options = new SafariOptions();
-            options.setUseTechnologyPreview(true);
-            webDriver = new SafariDriver(options);
-
-            //Run Remotely
-            //------------
+//            SafariOptions options = new SafariOptions();
+//            options.setUseTechnologyPreview(true);
+//            webDriver = new SafariDriver(options);
             caps = DesiredCapabilities.safari();
-
             return statement;
         }
     };

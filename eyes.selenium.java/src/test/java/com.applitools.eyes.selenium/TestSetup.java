@@ -43,7 +43,6 @@ public abstract class TestSetup {
     protected static String testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
 
     protected static boolean forceFullPageScreenshot = false;
-    protected static boolean runRemotely = true;
     protected static boolean hideScrollbars = true;
     protected static DesiredCapabilities caps;
     protected static BatchInfo batchInfo = new BatchInfo("Java3 Tests");
@@ -75,7 +74,7 @@ public abstract class TestSetup {
         eyes.setBatch(batchInfo);
     }
 
-    protected void setExpectedFloatingsRegions(FloatingMatchSettings... floatingMatchSettings){
+    protected void setExpectedFloatingsRegions(FloatingMatchSettings... floatingMatchSettings) {
         this.expectedFloatingsSet = new HashSet<>(Arrays.asList(floatingMatchSettings));
     }
 
@@ -83,13 +82,15 @@ public abstract class TestSetup {
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
 
-            if (runRemotely) {
-                try {
-                    caps.setCapability("username", System.getenv("SAUCE_USERNAME"));
-                    caps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
+            String seleniumServerUrl = System.getenv("SELENIUM_SERVER_URL");
+            if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
+                caps.setCapability("username", System.getenv("SAUCE_USERNAME"));
+                caps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
+            }
 
-                    webDriver = new RemoteWebDriver(new URL(System.getenv("SELENIUM_SERVER_URL")), caps);
-                } catch (MalformedURLException ex) { }
+            try {
+                webDriver = new RemoteWebDriver(new URL(seleniumServerUrl), caps);
+            } catch (MalformedURLException ex) {
             }
 
             String fps = eyes.getForceFullPageScreenshot() ? "_FPS" : "";
@@ -103,7 +104,7 @@ public abstract class TestSetup {
             driver.navigate().to(testedPageUrl);
             //eyes.getPositionProvider().setPosition(new Location(100,200));
 
-            eyes.setDebugScreenshotsPrefix("Java_" + description.getMethodName() + fps + "_" );
+            eyes.setDebugScreenshotsPrefix("Java_" + description.getMethodName() + fps + "_");
         }
 
         protected void finished(Description description) {

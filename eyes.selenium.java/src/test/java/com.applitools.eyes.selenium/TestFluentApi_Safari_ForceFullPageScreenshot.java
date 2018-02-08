@@ -23,7 +23,6 @@ public class TestFluentApi_Safari_ForceFullPageScreenshot extends TestFluentApi 
             testSuitName = "Eyes Selenium SDK - Fluent API - Java - Safari - ForceFPS";
             testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
             forceFullPageScreenshot = true;
-            runRemotely = false;
         }
     };
 
@@ -31,16 +30,11 @@ public class TestFluentApi_Safari_ForceFullPageScreenshot extends TestFluentApi 
     public final TestRule beforeTest = new TestWatcher() {
         @Override
         public Statement apply(Statement statement, Description description) {
-            //Run locally
-            //-----------
-            SafariOptions options = new SafariOptions();
-            options.setUseTechnologyPreview(true);
-            webDriver = new SafariDriver(options);
+//            SafariOptions options = new SafariOptions();
+//            options.setUseTechnologyPreview(true);
+//            webDriver = new SafariDriver(options);
 
-            //Run Remotely
-            //------------
             caps = DesiredCapabilities.safari();
-
             return statement;
         }
     };

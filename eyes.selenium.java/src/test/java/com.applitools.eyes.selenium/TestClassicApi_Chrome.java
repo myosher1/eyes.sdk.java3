@@ -22,7 +22,6 @@ public class TestClassicApi_Chrome extends TestClassicApi {
             testSuitName = "Eyes Selenium SDK - Classic API";
             testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
             forceFullPageScreenshot = false;
-            runRemotely = true;
         }
     };
 
