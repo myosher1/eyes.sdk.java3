@@ -3,9 +3,7 @@ package com.applitools.eyes.selenium;
 import com.applitools.eyes.*;
 import com.applitools.eyes.metadata.ActualAppOutput;
 import com.applitools.eyes.metadata.SessionResults;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
@@ -17,7 +15,6 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -49,6 +46,7 @@ public abstract class TestSetup {
     protected static boolean runRemotely = true;
     protected static boolean hideScrollbars = true;
     protected static DesiredCapabilities caps;
+    protected static BatchInfo batchInfo = new BatchInfo("Java3 Tests");
 
     private HashSet<FloatingMatchSettings> expectedFloatingsSet = new HashSet<>();
 
@@ -68,9 +66,13 @@ public abstract class TestSetup {
 
         eyes.setHideScrollbars(true);
 
-//        eyes.setDebugScreenshotsPath("c:\\temp\\logs");
-//        eyes.setSaveDebugScreenshots(true);
-        eyes.setBatch(new BatchInfo(testSuitName));
+        if (System.getenv("CI") != null) {
+            eyes.setDebugScreenshotsPath("c:\\temp\\logs");
+            eyes.setSaveDebugScreenshots(true);
+        }
+
+        //batchInfo = new BatchInfo(testSuitName);
+        eyes.setBatch(batchInfo);
     }
 
     protected void setExpectedFloatingsRegions(FloatingMatchSettings... floatingMatchSettings){
@@ -90,16 +92,18 @@ public abstract class TestSetup {
                 } catch (MalformedURLException ex) { }
             }
 
+            String fps = eyes.getForceFullPageScreenshot() ? "_FPS" : "";
+
             driver = eyes.open(webDriver,
                     testSuitName,
-                    description.getMethodName(),
+                    description.getMethodName() + fps,
                     new RectangleSize(800, 600)
             );
 
             driver.navigate().to(testedPageUrl);
             //eyes.getPositionProvider().setPosition(new Location(100,200));
 
-            eyes.setDebugScreenshotsPrefix("Java_" + description.getMethodName() + "_" );
+            eyes.setDebugScreenshotsPrefix("Java_" + description.getMethodName() + fps + "_" );
         }
 
         protected void finished(Description description) {
