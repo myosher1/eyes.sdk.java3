@@ -44,6 +44,7 @@ public class TestResults {
     private SessionUrls appUrls;
     private SessionUrls apiUrls;
     private StepInfo[] stepsInfo;
+    private ServerConnector serverConnector;
 
     public StepInfo[] getStepsInfo() {
         return stepsInfo;
@@ -398,6 +399,15 @@ public class TestResults {
      */
     void setStatus(TestResultsStatus status) {
         this.status = status;
+    }
+
+    void setServerConnector(ServerConnector serverConnector)
+    {
+        this.serverConnector = serverConnector;
+    }
+
+    public void delete(){
+        serverConnector.deleteSession(this);
     }
 
     @Override

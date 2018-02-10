@@ -1,6 +1,5 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.FixedCutProvider;
 import com.applitools.eyes.StdoutLogHandler;
 import java.awt.AWTException;
 import java.net.MalformedURLException;
@@ -24,8 +23,6 @@ public class FinalApplication_iOS {
     static WebElement wb;
     static long start = System.currentTimeMillis();
     static long stop;
-    final static int URL_BAR_SIZE = 64;
-    final static int NAVIGATION_BAR_SIZE = 44;
 
     static public void main(String[] args) throws MalformedURLException, InterruptedException, AWTException {
         DesiredCapabilities caps = DesiredCapabilities.iphone();

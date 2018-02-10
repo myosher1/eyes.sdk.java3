@@ -10,17 +10,15 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.Statement;
 import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.safari.SafariDriver;
-import org.openqa.selenium.safari.SafariOptions;
 
 @RunWith(JUnit4.class)
-public class TestFluentApi_Safari extends TestFluentApi {
+public class TestFluentApi_IE11 extends TestFluentApi {
 
     @ClassRule
     public static final TestRule setTestSuitName = new ExternalResource() {
         @Override
         protected void before() throws Throwable {
-            testSuitName = "Eyes Selenium SDK - Fluent API - Java - Safari";
+            testSuitName = "Eyes Selenium SDK - Fluent API";
             testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
             forceFullPageScreenshot = false;
         }
@@ -30,10 +28,8 @@ public class TestFluentApi_Safari extends TestFluentApi {
     public final TestRule beforeTest = new TestWatcher() {
         @Override
         public Statement apply(Statement statement, Description description) {
-//            SafariOptions options = new SafariOptions();
-//            options.setUseTechnologyPreview(true);
-//            webDriver = new SafariDriver(options);
-            caps = DesiredCapabilities.safari();
+            caps = DesiredCapabilities.internetExplorer();
+            caps.setVersion("11");
             return statement;
         }
     };

@@ -9,18 +9,17 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.Statement;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 @RunWith(JUnit4.class)
-public class TestSpecialCases_Chrome_ForceFullPageScreenshot extends TestSpecialCases {
+public class TestFluentApi_IE11_ForceFullPageScreenshot extends TestFluentApi {
+
     @ClassRule
     public static final TestRule setTestSuitName = new ExternalResource() {
         @Override
         protected void before() throws Throwable {
-            testSuitName = "Eyes Selenium SDK - Special Cases - ForceFPS";
-            testedPageUrl = "http://applitools.github.io/demo/TestPages/WixLikeTestPage/index.html";
-            hideScrollbars = true;
+            testSuitName = "Eyes Selenium SDK - Fluent API - ForceFPS";
+            testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
             forceFullPageScreenshot = true;
         }
     };
@@ -29,20 +28,8 @@ public class TestSpecialCases_Chrome_ForceFullPageScreenshot extends TestSpecial
     public final TestRule beforeTest = new TestWatcher() {
         @Override
         public Statement apply(Statement statement, Description description) {
-            ChromeOptions options = new ChromeOptions();
-            options.addArguments("disable-infobars");
-            options.addArguments("headless");
-
-            //Run locally
-            //-----------
-            //webDriver = new ChromeDriver(options);
-
-
-            //Run Remotely
-            //------------
-            caps = DesiredCapabilities.chrome();
-            caps.setCapability(ChromeOptions.CAPABILITY, options);
-
+            caps = DesiredCapabilities.internetExplorer();
+            caps.setVersion("11");
             return statement;
         }
     };
