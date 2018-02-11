@@ -8,6 +8,7 @@ import org.junit.runners.JUnit4;
 import org.junit.Test;
 import org.junit.Assert;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -168,6 +169,32 @@ public class TestRegion {
         Assert.assertNotEquals("Hashes should differ!", r1.hashCode(), r2.hashCode());
     }
 
+
+    @Test
+    public void test_Region_Deserialization() throws JsonProcessingException {
+        int left = 1;
+        int top = 2;
+        int width = 3;
+        int height = 4;
+        String jsonData =
+                "{"
+                        + "\"left\":" + String.valueOf(left) + ","
+                        + "\"top\":" + String.valueOf(top) + ","
+                        + "\"width\":" + String.valueOf(width) + ","
+                        + "\"height\":" + String.valueOf(height) + ","
+                        + "\"coordinatesType\":\"SCREENSHOT_AS_IS\""
+                        + "}";
+
+        try {
+            Region expectedDeserialization = new Region(left, top, width, height);
+            Region actualDeserialization = jsonMapper.readValue(jsonData, Region.class);
+            Assert.assertEquals("Region deserialization does not match!",
+                    expectedDeserialization, actualDeserialization);
+        } catch (IOException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
     @Test
     public void test_Region_Serialization() throws JsonProcessingException {
         int left = 1;
@@ -225,7 +252,7 @@ public class TestRegion {
         properties.add(new PropertyData(null, null));
 
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+3"));
-        calendar.set(2017, Calendar.JULY, 2,8,22,21 );
+        calendar.set(2017, Calendar.JULY, 2, 8, 22, 21);
         BatchInfo bi = new BatchInfo("batch name", calendar);
         bi.setId("37a587aa-17d0-4e86-bf0e-566656a84dda");
 

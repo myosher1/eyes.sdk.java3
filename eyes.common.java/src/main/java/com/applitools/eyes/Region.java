@@ -2,6 +2,7 @@ package com.applitools.eyes;
 
 import com.applitools.utils.ArgumentGuard;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -13,10 +14,15 @@ import java.util.List;
         "subRegions"})
 public class Region {
     private static Logger logger;
+    @JsonProperty("left")
     private int left;
+    @JsonProperty("top")
     private int top;
+    @JsonProperty("width")
     private int width;
+    @JsonProperty("height")
     private int height;
+    @JsonProperty("coordinatesType")
     private CoordinatesType coordinatesType;
 
     public static final Region EMPTY = new Region(0, 0, 0, 0, CoordinatesType.SCREENSHOT_AS_IS);
@@ -31,6 +37,10 @@ public class Region {
         width = EMPTY.getWidth();
         height = EMPTY.getHeight();
         this.coordinatesType = EMPTY.getCoordinatesType();
+    }
+
+    public Region(){
+        makeEmpty();
     }
 
     public Region(int left, int top, int width, int height) {
@@ -147,6 +157,8 @@ public class Region {
      * @return The region's coordinate type.
      */
     public CoordinatesType getCoordinatesType() { return this.coordinatesType; }
+
+    public void setCoordinatesType(CoordinatesType value) { this.coordinatesType = value; }
 
     /**
      * @param size The updated size of the region.
@@ -413,6 +425,23 @@ public class Region {
 
     public int getHeight() {
         return height;
+    }
+
+
+    public void setLeft(int value) {
+        left = value;
+    }
+
+    public void setTop(int value) {
+        top = value;
+    }
+
+    public void setWidth(int value) {
+        width = value;
+    }
+
+    public void setHeight(int value) {
+        height = value;
     }
 
     public Location getMiddleOffset() {
