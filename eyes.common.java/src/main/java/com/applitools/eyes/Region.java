@@ -1,6 +1,7 @@
 package com.applitools.eyes;
 
 import com.applitools.utils.ArgumentGuard;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -39,11 +40,11 @@ public class Region {
         this.coordinatesType = EMPTY.getCoordinatesType();
     }
 
-    public Region(){
-        makeEmpty();
-    }
-
-    public Region(int left, int top, int width, int height) {
+    @JsonCreator()
+    public Region(@JsonProperty("left") int left,
+                  @JsonProperty("top") int top,
+                  @JsonProperty("width") int width,
+                  @JsonProperty("height") int height) {
         this(left, top, width, height, CoordinatesType.SCREENSHOT_AS_IS);
     }
 

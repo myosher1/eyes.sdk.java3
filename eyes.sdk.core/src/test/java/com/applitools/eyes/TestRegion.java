@@ -1,6 +1,7 @@
 package com.applitools.eyes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -176,18 +177,18 @@ public class TestRegion {
         int top = 2;
         int width = 3;
         int height = 4;
-        String jsonData =
-                "{"
-                        + "\"left\":" + String.valueOf(left) + ","
-                        + "\"top\":" + String.valueOf(top) + ","
-                        + "\"width\":" + String.valueOf(width) + ","
-                        + "\"height\":" + String.valueOf(height) + ","
-                        + "\"coordinatesType\":\"SCREENSHOT_AS_IS\""
-                        + "}";
 
         try {
-            Region expectedDeserialization = new Region(left, top, width, height);
+            String jsonData =
+                    "{"
+                            + "\"left\":" + String.valueOf(left) + ","
+                            + "\"top\":" + String.valueOf(top) + ","
+                            + "\"width\":" + String.valueOf(width) + ","
+                            + "\"height\":" + String.valueOf(height)
+                            + "}";
+
             Region actualDeserialization = jsonMapper.readValue(jsonData, Region.class);
+            Region expectedDeserialization = new Region(left, top, width, height);
             Assert.assertEquals("Region deserialization does not match!",
                     expectedDeserialization, actualDeserialization);
         } catch (IOException e) {
