@@ -9,8 +9,7 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.Statement;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.firefox.FirefoxOptions;
 
 @RunWith(JUnit4.class)
 public class TestFluentApi_Firefox extends TestFluentApi {
@@ -29,13 +28,10 @@ public class TestFluentApi_Firefox extends TestFluentApi {
     public final TestRule beforeTest = new TestWatcher() {
         @Override
         public Statement apply(Statement statement, Description description) {
-            //Run locally
-            //-----------
-            //webDriver = new FirefoxDriver();
 
-            //Run Remotely
-            //------------
-            caps = DesiredCapabilities.firefox();
+            FirefoxOptions options = new FirefoxOptions();
+            options.setHeadless(true);
+            caps = options;
 
             return statement;
         }

@@ -14,6 +14,7 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -44,7 +45,8 @@ public abstract class TestSetup {
 
     protected static boolean forceFullPageScreenshot = false;
     protected static boolean hideScrollbars = true;
-    protected static DesiredCapabilities caps;
+    protected static Capabilities caps;
+    protected static DesiredCapabilities desiredCaps;
     protected static BatchInfo batchInfo = new BatchInfo("Java3 Tests");
 
     private HashSet<FloatingMatchSettings> expectedFloatingsSet = new HashSet<>();
@@ -84,8 +86,9 @@ public abstract class TestSetup {
 
             String seleniumServerUrl = System.getenv("SELENIUM_SERVER_URL");
             if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
-                caps.setCapability("username", System.getenv("SAUCE_USERNAME"));
-                caps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
+                desiredCaps.setCapability("username", System.getenv("SAUCE_USERNAME"));
+                desiredCaps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
+                caps.merge(desiredCaps);
             }
 
             try {

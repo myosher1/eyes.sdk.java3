@@ -31,18 +31,9 @@ public class TestClassicApi_Chrome_ForceFullPageScreenShot extends TestClassicAp
         @Override
         public Statement apply(Statement statement, Description description) {
             ChromeOptions options = new ChromeOptions();
-            options.addArguments("disable-infobars", "headless");
-
-            //Run locally
-            //-----------
-            //webDriver = new ChromeDriver(options);
-
-
-            //Run Remotely
-            //------------
-            caps = DesiredCapabilities.chrome();
-            caps.setCapability(ChromeOptions.CAPABILITY, options);
-
+            options.setHeadless(true);
+            options.addArguments("disable-infobars");
+            caps = options;
             return statement;
         }
     };
