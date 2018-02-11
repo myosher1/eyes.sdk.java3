@@ -9,7 +9,8 @@ import org.junit.Test;
 import org.junit.Assert;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 @RunWith(JUnit4.class)
 public class TestRegion {
@@ -44,45 +45,50 @@ public class TestRegion {
         Assert.assertEquals("height", region.getHeight(), height);
 
         // This should still be ok (another way to say "empty region")
-        new Region(1,2,0,0);
+        new Region(1, 2, 0, 0);
 
         // Making sure negative positions are valid.
         try {
-            new Region(-1,2,3,4);
+            new Region(-1, 2, 3, 4);
         } catch (IllegalArgumentException e) {
             Assert.fail("Left can be <= 0");
         }
 
         try {
-            new Region(1,-2,3,4);
+            new Region(1, -2, 3, 4);
         } catch (IllegalArgumentException e) {
             Assert.fail("Top can be <= 0");
         }
 
 
         try {
-            new Region(1,2,-1,0);
+            new Region(1, 2, -1, 0);
             Assert.fail("Width must be >=0");
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+        }
 
         try {
-            new Region(1,2,3,-1);
+            new Region(1, 2, 3, -1);
             Assert.fail("Height must be >=0");
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+        }
 
         try {
-            new Region(null, new RectangleSize(3,4));
+            new Region(null, new RectangleSize(3, 4));
             Assert.fail("Location must not be null!");
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+        }
 
         try {
-            new Region(new Location(1,2), null);
+            new Region(new Location(1, 2), null);
             Assert.fail("Size must not be null!");
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+        }
         try {
             new Region(null, null);
             Assert.fail("Location and size must not be null!");
-        } catch (IllegalArgumentException e) {}
+        } catch (IllegalArgumentException e) {
+        }
     }
 
     @Test
@@ -107,19 +113,19 @@ public class TestRegion {
 
     @Test
     public void testLocation() {
-        Region r = new Region (1, 2, 3, 4);
+        Region r = new Region(1, 2, 3, 4);
 
         Assert.assertEquals("invalid location", r.getLocation(), new Location(1, 2));
 
-        r.setLocation(new Location(5,6));
+        r.setLocation(new Location(5, 6));
         Assert.assertEquals("invalid location", r.getLocation(), new Location(5, 6));
     }
 
     @Test
     public void testContains() {
         Region region = new Region(1, 1, 10, 10);
-        Location containedLocation = new Location(2,5);
-        Location outsideLocation = new Location(20,5);
+        Location containedLocation = new Location(2, 5);
+        Location outsideLocation = new Location(20, 5);
 
         Assert.assertTrue("region contains containedLocation", region.contains(containedLocation));
         Assert.assertFalse("region doesn't contain location",
@@ -128,11 +134,12 @@ public class TestRegion {
 
     @Test
     public void testIntersect() {
-        Region r1,r2;
+        Region r1, r2;
+        Region.initLogger(new Logger());
         Location l1 = new Location(10, 10);
         Location l2 = new Location(20, 30);
-        RectangleSize s1 = new RectangleSize(50,100);
-        RectangleSize s2 = new RectangleSize(100,50);
+        RectangleSize s1 = new RectangleSize(50, 100);
+        RectangleSize s2 = new RectangleSize(100, 50);
 
         r1 = new Region(l1, s1);
         r2 = new Region(l2, s2);
@@ -144,7 +151,7 @@ public class TestRegion {
         Assert.assertEquals("intersected height", 50, r1.getHeight());
 
         // Regions which don't intersect should return an empty region.
-        r2.intersect(new Region(5,5, 10, 10));
+        r2.intersect(new Region(5, 5, 10, 10));
         Assert.assertEquals("no overlap", r2, Region.EMPTY);
     }
 
@@ -172,7 +179,8 @@ public class TestRegion {
                         + "\"left\":" + String.valueOf(left) + ","
                         + "\"top\":" + String.valueOf(top) + ","
                         + "\"width\":" + String.valueOf(width) + ","
-                        + "\"height\":" + String.valueOf(height)
+                        + "\"height\":" + String.valueOf(height) + ","
+                        + "\"coordinatesType\":\"SCREENSHOT_AS_IS\""
                         + "}";
 
         Region r = new Region(left, top, width, height);
@@ -194,7 +202,7 @@ public class TestRegion {
 
         String actualSerialization = jsonMapper.writeValueAsString(ims);
 
-        String expectedSerialization = "{\"matchLevel\":\"STRICT\",\"exact\":null,\"ignoreCaret\":null}";
+        String expectedSerialization = "{\"matchLevel\":\"STRICT\",\"exact\":null,\"ignoreCaret\":null,\"Ignore\":null,\"Floating\":null}";
 
         Assert.assertEquals("ImageMatchSettings serialization does not match!",
                 expectedSerialization, actualSerialization);
@@ -203,7 +211,7 @@ public class TestRegion {
 
         actualSerialization = jsonMapper.writeValueAsString(ims);
 
-        expectedSerialization = "{\"matchLevel\":\"STRICT\",\"exact\":null,\"ignoreCaret\":true}";
+        expectedSerialization = "{\"matchLevel\":\"STRICT\",\"exact\":null,\"ignoreCaret\":true,\"Ignore\":null,\"Floating\":null}";
 
         Assert.assertEquals("ImageMatchSettings serialization does not match!",
                 expectedSerialization, actualSerialization);
@@ -216,9 +224,14 @@ public class TestRegion {
         properties.add(new PropertyData("property name", "property value"));
         properties.add(new PropertyData(null, null));
 
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+3"));
+        calendar.set(2017, Calendar.JULY, 2,8,22,21 );
+        BatchInfo bi = new BatchInfo("batch name", calendar);
+        bi.setId("37a587aa-17d0-4e86-bf0e-566656a84dda");
+
         SessionStartInfo ssi = new SessionStartInfo("some agent", SessionType.SEQUENTIAL,
                 "my app", "1.0.0", "some scenario",
-                new BatchInfo("batch name"),
+                bi,
                 "some baseline name", "env name",
                 new AppEnvironment(),
                 new ImageMatchSettings(),
@@ -228,7 +241,7 @@ public class TestRegion {
 
         String actualSerialization = jsonMapper.writeValueAsString(ssi);
 
-        String expectedSerialization = "{\"agentId\":\"some agent\",\"sessionType\":\"SEQUENTIAL\",\"appIdOrName\":\"my app\",\"verId\":\"1.0.0\",\"scenarioIdOrName\":\"some scenario\",\"batchInfo\":{\"id\":\"37a587aa-17d0-4e86-bf0e-566656a84dda\",\"name\":\"batch name\",\"startedAt\":\"2017-07-02T11:22:21Z\"},\"baselineEnvName\":\"some baseline name\",\"environmentName\":\"env name\",\"environment\":{\"inferred\":null,\"os\":null,\"hostingApp\":null,\"displaySize\":null},\"branchName\":\"some branch name\",\"parentBranchName\":\"some parent branch name\",\"defaultMatchSettings\":{\"matchLevel\":\"STRICT\",\"exact\":null},\"properties\":[{\"name\":\"property name\",\"value\":\"property value\"},{\"name\":null,\"value\":null}]}";
+        String expectedSerialization = "{\"agentId\":\"some agent\",\"sessionType\":\"SEQUENTIAL\",\"appIdOrName\":\"my app\",\"verId\":\"1.0.0\",\"scenarioIdOrName\":\"some scenario\",\"batchInfo\":{\"id\":\"37a587aa-17d0-4e86-bf0e-566656a84dda\",\"name\":\"batch name\",\"startedAt\":\"2017-07-02T11:22:21Z\"},\"baselineEnvName\":\"some baseline name\",\"environmentName\":\"env name\",\"environment\":{\"inferred\":null,\"os\":null,\"hostingApp\":null,\"displaySize\":null},\"branchName\":\"some branch name\",\"parentBranchName\":\"some parent branch name\",\"defaultMatchSettings\":{\"matchLevel\":\"STRICT\",\"exact\":null,\"ignoreCaret\":null,\"Ignore\":null,\"Floating\":null},\"properties\":[{\"name\":\"property name\",\"value\":\"property value\"},{\"name\":null,\"value\":null}]}";
 
         Assert.assertEquals("SessionStartInfo serialization does not match!",
                 expectedSerialization, actualSerialization);
@@ -236,7 +249,7 @@ public class TestRegion {
 
     @Test
     public void testMiddleOffset() {
-        Region r = new Region(1,1,10,20);
+        Region r = new Region(1, 1, 10, 20);
 
         Location middleOffset = r.getMiddleOffset();
         Assert.assertEquals("X middle is not correct!", 5,
