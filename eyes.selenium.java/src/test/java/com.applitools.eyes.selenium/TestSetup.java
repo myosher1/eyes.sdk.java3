@@ -14,6 +14,7 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.junit.runners.Parameterized;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -28,9 +29,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 
-@RunWith(JUnit4.class)
+@RunWith(Parameterized.class)
 public abstract class TestSetup {
 
     private static LogHandler logHandler;
@@ -46,10 +48,15 @@ public abstract class TestSetup {
     protected static boolean forceFullPageScreenshot = false;
     protected static boolean hideScrollbars = true;
     protected static Capabilities caps;
-    protected static DesiredCapabilities desiredCaps;
+    protected static DesiredCapabilities desiredCaps = new DesiredCapabilities();
     protected static BatchInfo batchInfo = new BatchInfo("Java3 Tests");
 
     private HashSet<FloatingMatchSettings> expectedFloatingsSet = new HashSet<>();
+
+    @Parameterized.Parameters(name="{0}")
+    public static Collection<String> data() {
+        return Arrays.asList("Windows 10", "Linux", "macOS 10.13");
+    }
 
     @BeforeClass
     public static void OneTimeSetUp() {
@@ -73,12 +80,20 @@ public abstract class TestSetup {
         }
 
         //batchInfo = new BatchInfo(testSuitName);
+        String batchId = System.getenv("APPLITOOLS_BATCH_ID");
+        if (batchId != null) {
+            batchInfo.setId(batchId);
+        }
+
         eyes.setBatch(batchInfo);
     }
 
     protected void setExpectedFloatingsRegions(FloatingMatchSettings... floatingMatchSettings) {
         this.expectedFloatingsSet = new HashSet<>(Arrays.asList(floatingMatchSettings));
     }
+
+    @Parameterized.Parameter
+    public String platform;
 
     @Rule
     public TestRule watcher = new TestWatcher() {
@@ -88,6 +103,7 @@ public abstract class TestSetup {
             if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
                 desiredCaps.setCapability("username", System.getenv("SAUCE_USERNAME"));
                 desiredCaps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
+                desiredCaps.setCapability("platform", platform);
                 caps.merge(desiredCaps);
             }
 
@@ -97,17 +113,20 @@ public abstract class TestSetup {
             }
 
             String fps = eyes.getForceFullPageScreenshot() ? "_FPS" : "";
+            String testName = description.getMethodName() + fps;
+            testName = testName.replace('[','_')
+                               .replace(' ','_')
+                               .replace("]","");
 
             driver = eyes.open(webDriver,
                     testSuitName,
-                    description.getMethodName() + fps,
+                    testName,
                     new RectangleSize(800, 600)
             );
 
-            driver.navigate().to(testedPageUrl);
-            //eyes.getPositionProvider().setPosition(new Location(100,200));
+            driver.get(testedPageUrl);
 
-            eyes.setDebugScreenshotsPrefix("Java_" + description.getMethodName() + fps + "_");
+            eyes.setDebugScreenshotsPrefix("Java_" + testName + "_");
         }
 
         protected void finished(Description description) {

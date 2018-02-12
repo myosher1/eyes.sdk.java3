@@ -4,6 +4,5 @@ jdk: oraclejdk8
 
 script:
   - cd eyes.selenium.java
-  - docker-compose up -d
+  - export APPLITOOLS_BATCH_ID=`uuidgen -t`
   - mvn test
-  - docker-compose down

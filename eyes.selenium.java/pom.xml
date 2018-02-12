@@ -53,6 +53,9 @@
                 <version>2.20.1</version>
                 <configuration>
                     <groups>com.applitools.eyes.selenium.CI</groups>
+                    <!--<parallel>classes</parallel>-->
+                    <!--<threadCountClasses>2</threadCountClasses>-->
+                    <forkCount>3</forkCount>
                 </configuration>
             </plugin>
         </plugins>
