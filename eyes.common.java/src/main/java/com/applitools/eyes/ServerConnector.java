@@ -44,6 +44,14 @@ public interface ServerConnector {
                                    final boolean isAborted, final boolean save);
 
     /**
+     * Deletes the given test result
+     *
+     * @param testResults The session to delete by test results.
+     * @throws EyesException
+     */
+    void deleteSession(TestResults testResults);
+
+    /**
      * Matches the current window (held by the WebDriver) to the expected
      * window.
      *

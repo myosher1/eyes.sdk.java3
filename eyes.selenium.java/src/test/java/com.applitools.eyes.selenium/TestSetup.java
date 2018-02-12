@@ -3,9 +3,7 @@ package com.applitools.eyes.selenium;
 import com.applitools.eyes.*;
 import com.applitools.eyes.metadata.ActualAppOutput;
 import com.applitools.eyes.metadata.SessionResults;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
@@ -45,9 +43,9 @@ public abstract class TestSetup {
     protected static String testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
 
     protected static boolean forceFullPageScreenshot = false;
-    protected static boolean runRemotely = true;
     protected static boolean hideScrollbars = true;
     protected static DesiredCapabilities caps;
+    protected static BatchInfo batchInfo = new BatchInfo("Java3 Tests");
 
     private HashSet<FloatingMatchSettings> expectedFloatingsSet = new HashSet<>();
 
@@ -67,12 +65,16 @@ public abstract class TestSetup {
 
         eyes.setHideScrollbars(true);
 
-//        eyes.setDebugScreenshotsPath("c:\\temp\\logs");
-//        eyes.setSaveDebugScreenshots(true);
-        eyes.setBatch(new BatchInfo(testSuitName));
+        if (System.getenv("CI") != null) {
+            eyes.setDebugScreenshotsPath("c:\\temp\\logs");
+            eyes.setSaveDebugScreenshots(true);
+        }
+
+        //batchInfo = new BatchInfo(testSuitName);
+        eyes.setBatch(batchInfo);
     }
 
-    protected void setExpectedFloatingsRegions(FloatingMatchSettings... floatingMatchSettings){
+    protected void setExpectedFloatingsRegions(FloatingMatchSettings... floatingMatchSettings) {
         this.expectedFloatingsSet = new HashSet<>(Arrays.asList(floatingMatchSettings));
     }
 
@@ -80,22 +82,29 @@ public abstract class TestSetup {
     public TestRule watcher = new TestWatcher() {
         protected void starting(Description description) {
 
-            if (runRemotely) {
-                try {
-                    webDriver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), caps);
-                } catch (MalformedURLException ex) { }
+            String seleniumServerUrl = System.getenv("SELENIUM_SERVER_URL");
+            if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
+                caps.setCapability("username", System.getenv("SAUCE_USERNAME"));
+                caps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
             }
+
+            try {
+                webDriver = new RemoteWebDriver(new URL(seleniumServerUrl), caps);
+            } catch (MalformedURLException ex) {
+            }
+
+            String fps = eyes.getForceFullPageScreenshot() ? "_FPS" : "";
 
             driver = eyes.open(webDriver,
                     testSuitName,
-                    description.getMethodName(),
+                    description.getMethodName() + fps,
                     new RectangleSize(800, 600)
             );
 
             driver.navigate().to(testedPageUrl);
             //eyes.getPositionProvider().setPosition(new Location(100,200));
 
-            eyes.setDebugScreenshotsPrefix("Java_" + description.getMethodName() + "_" );
+            eyes.setDebugScreenshotsPrefix("Java_" + description.getMethodName() + fps + "_");
         }
 
         protected void finished(Description description) {

@@ -9,7 +9,6 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.Statement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
@@ -23,7 +22,6 @@ public class TestClassicApi_Chrome extends TestClassicApi {
             testSuitName = "Eyes Selenium SDK - Classic API";
             testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
             forceFullPageScreenshot = false;
-            runRemotely = true;
         }
     };
 
@@ -33,11 +31,6 @@ public class TestClassicApi_Chrome extends TestClassicApi {
         public Statement apply(Statement statement, Description description) {
             ChromeOptions options = new ChromeOptions();
             options.addArguments("disable-infobars", "headless");
-
-            //Run locally
-            //-----------
-            //webDriver = new ChromeDriver(options);
-
 
             //Run Remotely
             //------------

@@ -131,6 +131,14 @@ public abstract class TestFluentApi extends TestSetup {
     }
 
     @Test
+    public void TestCheckElementWithIgnoreRegionByElement_Fluent()
+    {
+        WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
+        WebElement ignoreElement = webDriver.findElement(By.id("overflowing-div"));
+        eyes.check("Fluent - Region by element - fully", Target.region(element).ignore(ignoreElement));
+    }
+
+    @Test
     public void TestCheckElement_Fluent()
     {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
