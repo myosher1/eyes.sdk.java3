@@ -74,7 +74,7 @@ public abstract class TestSetup {
 
         eyes.setHideScrollbars(true);
 
-        if (System.getenv("CI") != null) {
+        if (System.getenv("CI") == null) {
             eyes.setDebugScreenshotsPath("c:\\temp\\logs");
             eyes.setSaveDebugScreenshots(true);
         }
