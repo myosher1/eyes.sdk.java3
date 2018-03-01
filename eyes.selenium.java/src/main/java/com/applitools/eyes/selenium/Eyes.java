@@ -82,7 +82,7 @@ public class Eyes extends EyesBase {
     private double devicePixelRatio;
     private StitchMode stitchMode;
     private int waitBeforeScreenshots;
-    private RegionVisibilityStrategy regionVisibilityStrategy;
+    private PropertyHandler<RegionVisibilityStrategy> regionVisibilityStrategyHandler;
     private ElementPositionProvider elementPositionProvider;
     private SeleniumJavaScriptExecutor jsExecutor;
 
@@ -112,7 +112,8 @@ public class Eyes extends EyesBase {
         devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
         stitchMode = StitchMode.SCROLL;
         waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
-        regionVisibilityStrategy = new MoveToRegionVisibilityStrategy(logger);
+        regionVisibilityStrategyHandler = new SimplePropertyHandler<>();
+        regionVisibilityStrategyHandler.set(new MoveToRegionVisibilityStrategy(logger));
     }
 
     /**
@@ -177,9 +178,9 @@ public class Eyes extends EyesBase {
      */
     public void setScrollToRegion(boolean shouldScroll) {
         if (shouldScroll) {
-            regionVisibilityStrategy = new MoveToRegionVisibilityStrategy(logger);
+            regionVisibilityStrategyHandler = new ReadOnlyPropertyHandler<RegionVisibilityStrategy>(logger, new MoveToRegionVisibilityStrategy(logger));
         } else {
-            regionVisibilityStrategy = new NopRegionVisibilityStrategy(logger);
+            regionVisibilityStrategyHandler = new ReadOnlyPropertyHandler<RegionVisibilityStrategy>(logger, new NopRegionVisibilityStrategy(logger));
         }
     }
 
@@ -187,7 +188,7 @@ public class Eyes extends EyesBase {
      * @return Whether to automatically scroll to a region being validated.
      */
     public boolean getScrollToRegion() {
-        return !(regionVisibilityStrategy instanceof NopRegionVisibilityStrategy);
+        return !(regionVisibilityStrategyHandler.get() instanceof NopRegionVisibilityStrategy);
     }
 
     /**
@@ -323,6 +324,9 @@ public class Eyes extends EyesBase {
                     driver.getClass().getName() + ")";
             logger.log(errMsg);
             throw new EyesException(errMsg);
+        }
+        if (EyesSeleniumUtils.isMobileDevice(driver)) {
+            regionVisibilityStrategyHandler.set(new NopRegionVisibilityStrategy(logger));
         }
     }
 
@@ -832,6 +836,8 @@ public class Eyes extends EyesBase {
         // If needed, scroll to the top/left of the element (additional help
         // to make sure it's visible).
         Point locationAsPoint = targetElement.getLocation();
+        RegionVisibilityStrategy regionVisibilityStrategy = regionVisibilityStrategyHandler.get();
+
         regionVisibilityStrategy.moveToRegion(positionProvider,
                 new Location(locationAsPoint.getX(), locationAsPoint.getY()));
 
