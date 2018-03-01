@@ -68,6 +68,12 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return this;
     }
 
+    public SeleniumCheckSettings frame(WebElement frameReference) {
+        FrameLocator fl = new FrameLocator();
+        fl.setFrameReference(frameReference);
+        this.frameChain.add(fl);
+        return this;
+    }
     public SeleniumCheckSettings region(Region region) {
         super.updateTargetRegion(region);
         return this;
@@ -87,6 +93,7 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     }
 
     public SeleniumCheckSettings ignore(WebElement... elements) {
+        //TODO - FIXME - BUG - this is wrong in case of a cropped image!
         for (WebElement element : elements) {
             Point loc = element.getLocation();
             Dimension dim = element.getSize();
