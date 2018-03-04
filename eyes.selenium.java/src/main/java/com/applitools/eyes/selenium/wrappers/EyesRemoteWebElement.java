@@ -72,6 +72,9 @@ public class EyesRemoteWebElement extends RemoteWebElement {
             throw new EyesException("The input web element is not a RemoteWebElement.");
         }
 
+        setParent(eyesDriver.getRemoteWebDriver());
+        setId(this.webElement.getId());
+
         try {
             // We can't call the execute method directly because it is
             // protected, and we must override this function since we don't
@@ -238,17 +241,17 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     public WebDriver getWrappedDriver() {
         return eyesDriver;
     }
-
-    @Override
-    public String getId() {
-        return webElement.getId();
-    }
-
-    @Override
-    public void setParent(RemoteWebDriver parent) {
-        webElement.setParent(parent);
-    }
-
+//
+//    @Override
+//    public String getId() {
+//        return webElement.getId();
+//    }
+//
+//    @Override
+//    public void setParent(RemoteWebDriver parent) {
+//        webElement.setParent(parent);
+//    }
+/*
     @Override
     protected Response execute(String command, Map<String, ?> parameters) {
         // "execute" is a protected method, which is why we use reflection.
@@ -259,12 +262,12 @@ public class EyesRemoteWebElement extends RemoteWebElement {
             throw new EyesException("Failed to invoke 'execute' method!", e);
         }
 
-    }
-
-    @Override
-    public void setId(String id) {
-        webElement.setId(id);
-    }
+    }*/
+//
+//    @Override
+//    public void setId(String id) {
+//        webElement.setId(id);
+//    }
 
     @Override
     public void setFileDetector(FileDetector detector) {

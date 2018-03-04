@@ -34,4 +34,11 @@ public abstract class TestClassicApi extends TestSetup {
     public void TestCheckRegion2() {
         eyes.checkRegion(By.id("overflowing-div-image"), "minions", true);
     }
+
+    @Test
+    public void TestCheckInnerFrame(){
+        driver.switchTo().defaultContent();
+        driver.switchTo().frame(webDriver.findElement(By.name("frame1")));
+        eyes.checkFrame("frame1-1", "inner-frame");
+    }
 }

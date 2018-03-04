@@ -174,26 +174,19 @@ public class EyesSeleniumUtils {
     }
 
     /**
-     * Sets the overflow of the current context's document element.
+     * Sets the overflow of the current context's body.
      * @param executor The executor to use for setting the overflow.
      * @param value The overflow value to set.
      * @return The previous overflow value (could be {@code null} if undefined).
      */
     public static String setOverflow(JavascriptExecutor executor,
                                      String value) {
-        String script;
-        if (value == null) {
-            script =
-                "var origOverflow = document.documentElement.style.overflow; "
-                        + "document.documentElement.style.overflow = undefined;"
-                        + " return origOverflow";
-        } else {
-            script = String.format(
-                "var origOverflow = document.documentElement.style.overflow; " +
-                        "document.documentElement.style.overflow = \"%s\"; " +
-                        "return origOverflow",
-                value);
-        }
+        String script = String.format(
+                "var origOverflow = document.body.style.overflow; " +
+                        "document.body.style.overflow = '%s'; " +
+                        "return origOverflow;",
+                value == null ? "" : value);
+
         try {
             return (String) executor.executeScript(script);
         } catch (WebDriverException e) {
