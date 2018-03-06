@@ -21,6 +21,13 @@ public interface ICheckSettings {
     ICheckSettings fully();
 
     /**
+     * Defines whether the screenshot will contain the entire element or region, even if it's outside the view.
+     * @param fully defines whether the screenshot will contain the entire element or region.
+     * @return This instance of the settings object.
+     */
+    ICheckSettings fully(boolean fully);
+
+    /**
      * Adds a floating region. A floating region is a a region that can be placed within the boundaries of a bigger region.
      * @param maxOffset How much each of the content rectangles can move in any direction.
      * @param regions One or more content rectangles.

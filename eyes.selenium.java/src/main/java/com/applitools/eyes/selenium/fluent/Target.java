@@ -47,4 +47,11 @@ public class Target {
         settings.frame(index);
         return settings;
     }
+
+    public static SeleniumCheckSettings frame(WebElement webElement)
+    {
+        SeleniumCheckSettings settings = new SeleniumCheckSettings();
+        settings.frame(webElement);
+        return settings;
+    }
 }
