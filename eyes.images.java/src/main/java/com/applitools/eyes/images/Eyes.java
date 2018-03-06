@@ -358,6 +358,13 @@ public class Eyes extends EyesBase {
         // We verify that the image is indeed in the correct format.
         image = ImageUtils.normalizeImageType(image);
 
+        CutProvider cutProvider = cutProviderHandler.get();
+        if (!(cutProvider instanceof NullCutProvider)) {
+            logger.verbose("cutting...");
+            image = cutProvider.cut(image);
+            debugScreenshotsProvider.save(image, "cut");
+        }
+
         // Set the screenshot to be verified.
         screenshot = new EyesImagesScreenshot(image);
 
