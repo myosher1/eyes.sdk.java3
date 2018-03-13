@@ -782,6 +782,11 @@ public class Eyes extends EyesBase {
             return;
         }
 
+        if (EyesSeleniumUtils.isMobileDevice(driver.getRemoteWebDriver())) {
+            logger.log("NATIVE context identified, skipping 'ensure element visible'");
+            return;
+        }
+
         FrameChain originalFC = new FrameChain(logger, driver.getFrameChain());
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
 
@@ -815,7 +820,14 @@ public class Eyes extends EyesBase {
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
         switchTo.defaultContent();
         ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor);
-        Location location = spp.getCurrentPosition();
+        Location location = null;
+        try {
+            location = spp.getCurrentPosition();
+        } catch (EyesDriverOperationException e) {
+            logger.log("WARNING: " + e.getMessage());
+            logger.log("Assuming position is 0,0");
+            location = new Location(0, 0);
+        }
         Region viewportBounds = new Region(location, getViewportSize());
         switchTo.frames(originalFrameChain);
         return viewportBounds;
