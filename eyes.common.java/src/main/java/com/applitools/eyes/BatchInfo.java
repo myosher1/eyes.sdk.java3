@@ -29,8 +29,9 @@ public class BatchInfo {
      */
     public BatchInfo(String name, Calendar startedAt) {
         ArgumentGuard.notNull(startedAt, "startedAt");
-        this.id = UUID.randomUUID().toString();
-        this.name = name;
+        String envVarBatchId = System.getenv("APPLITOOLS_BATCH_ID");
+        this.id = envVarBatchId != null ? envVarBatchId : UUID.randomUUID().toString();
+        this.name = name != null ? name : System.getenv("APPLITOOLS_BATCH_NAME");
         this.startedAt = GeneralUtils.toISO8601DateTime(startedAt);
     }
 
