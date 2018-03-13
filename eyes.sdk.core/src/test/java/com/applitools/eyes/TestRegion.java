@@ -265,6 +265,9 @@ public class TestRegion {
                 new ImageMatchSettings(),
                 "some branch name",
                 "some parent branch name",
+                "some baseline branch name",
+                false,
+                false,
                 properties);
 
         String actualSerialization = jsonMapper.writeValueAsString(ssi);

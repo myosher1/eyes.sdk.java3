@@ -78,6 +78,9 @@ public abstract class EyesBase {
     private String environmentName;
     private String branchName;
     private String parentBranchName;
+    private String baselineBranchName;
+    private boolean compareWithParentBranch;
+    private boolean saveDiffs;
     private FailureReports failureReports;
     private final Queue<Trigger> userInputs;
     private final List<PropertyData> properties = new ArrayList<>();
@@ -315,6 +318,47 @@ public abstract class EyesBase {
      */
     public String getParentBranchName() {
         return parentBranchName;
+    }
+
+    /**
+     * Sets the branch under which new branches are created. (see {@link
+     * #setBranchName(String)}.
+     * @param branchName Branch name or {@code null} to specify the default branch.
+     */
+    public void setBaselineBranchName(String branchName) {
+        this.baselineBranchName = branchName;
+    }
+
+    /**
+     * @return The name of the current parent branch under which new branches
+     * will be created. (see {@link #setBaselineBranchName(String)}).
+     */
+    public String getBaselineBranchName() {
+        return baselineBranchName;
+    }
+
+    public void setCompareWithParentBranch(boolean compareWithParentBranch) {
+        this.compareWithParentBranch = compareWithParentBranch;
+    }
+
+    public boolean getCompareWithParentBranch() {
+        return this.compareWithParentBranch;
+    }
+
+    /**
+     * Automatically save differences as a baseline.
+     * @param saveDiffs Sets whether to automatically save differences as baseline.
+     */
+    public void setSaveDiffs(boolean saveDiffs) {
+        this.saveDiffs = saveDiffs;
+    }
+
+    /**
+     * Returns whether to automatically save differences as a baseline.
+     * @return Whether to automatically save differences as baseline.
+     */
+    public boolean getSaveDiffs() {
+        return this.saveDiffs;
     }
 
     /**
@@ -1560,7 +1604,13 @@ public abstract class EyesBase {
 
         sessionStartInfo = new SessionStartInfo(getBaseAgentId(), sessionType,
                 getAppName(), null, testName, testBatch, baselineEnvName, environmentName, appEnv,
-                defaultMatchSettings, branchName, parentBranchName, properties);
+                defaultMatchSettings,
+                branchName != null ? branchName : System.getenv("APPLITOOLS_BRANCH"),
+                parentBranchName != null ? parentBranchName : System.getenv("APPLITOOLS_PARENT_BRANCH"),
+                baselineBranchName != null ? baselineBranchName : System.getenv("APPLITOOLS_BASELINE_BRANCH"),
+                compareWithParentBranch,
+                saveDiffs,
+                properties);
 
         logger.verbose("Starting server session...");
         runningSession = serverConnector.startSession(sessionStartInfo);
