@@ -267,7 +267,6 @@ public class TestRegion {
                 "some parent branch name",
                 "some baseline branch name",
                 false,
-                false,
                 properties);
 
         String actualSerialization = jsonMapper.writeValueAsString(ssi);

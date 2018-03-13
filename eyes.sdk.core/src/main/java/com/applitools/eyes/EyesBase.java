@@ -79,7 +79,6 @@ public abstract class EyesBase {
     private String branchName;
     private String parentBranchName;
     private String baselineBranchName;
-    private boolean compareWithParentBranch;
     private boolean saveDiffs;
     private FailureReports failureReports;
     private final Queue<Trigger> userInputs;
@@ -335,14 +334,6 @@ public abstract class EyesBase {
      */
     public String getBaselineBranchName() {
         return baselineBranchName;
-    }
-
-    public void setCompareWithParentBranch(boolean compareWithParentBranch) {
-        this.compareWithParentBranch = compareWithParentBranch;
-    }
-
-    public boolean getCompareWithParentBranch() {
-        return this.compareWithParentBranch;
     }
 
     /**
@@ -1608,7 +1599,6 @@ public abstract class EyesBase {
                 branchName != null ? branchName : System.getenv("APPLITOOLS_BRANCH"),
                 parentBranchName != null ? parentBranchName : System.getenv("APPLITOOLS_PARENT_BRANCH"),
                 baselineBranchName != null ? baselineBranchName : System.getenv("APPLITOOLS_BASELINE_BRANCH"),
-                compareWithParentBranch,
                 saveDiffs,
                 properties);
 
