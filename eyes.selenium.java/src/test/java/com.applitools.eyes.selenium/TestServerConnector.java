@@ -18,7 +18,6 @@ public class TestServerConnector {
     @Test
     public void TestDelete() throws MalformedURLException {
         Eyes eyes = new Eyes(URI.create("https://localhost.applitools.com"));
-        eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
         WebDriver webDriver = new ChromeDriver();
         try {
             WebDriver driver = eyes.open(webDriver,

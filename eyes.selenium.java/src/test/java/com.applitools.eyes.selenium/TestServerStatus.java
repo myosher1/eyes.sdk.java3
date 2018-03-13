@@ -28,7 +28,6 @@ public class TestServerStatus {
     @Before
     public void setup() throws MalformedURLException {
         eyes = new Eyes();
-        eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
         eyes.setSaveNewTests(false);
 
         ChromeOptions options = new ChromeOptions();

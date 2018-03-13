@@ -29,7 +29,6 @@ public class TestImagesApi {
             eyes = new Eyes();
 
 //            eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
-            eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
 
 //            logHandler = new FileLogger("c:\\temp\\logs\\TestElement.log", true, true);
             LogHandler logHandler = new StdoutLogHandler(true);
