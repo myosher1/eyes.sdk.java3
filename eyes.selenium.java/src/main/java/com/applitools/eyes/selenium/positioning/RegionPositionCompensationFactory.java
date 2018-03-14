@@ -20,6 +20,10 @@ public class RegionPositionCompensationFactory {
             } else if (userAgent.getBrowser().equals(BrowserNames.Safari)) {
                 return new SafariRegionPositionCompensation();
             }
+            else if (userAgent.getBrowser().equals(BrowserNames.IE))
+            {
+                return new InternetExplorerRegionPositionCompensation();
+            }
         }
         return new NullRegionPositionCompensation();
     }

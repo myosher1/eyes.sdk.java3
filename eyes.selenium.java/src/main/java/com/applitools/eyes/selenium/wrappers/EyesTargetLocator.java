@@ -7,6 +7,7 @@ import com.applitools.eyes.EyesException;
 import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.selenium.SeleniumJavaScriptExecutor;
 import com.applitools.eyes.selenium.frames.Frame;
 import com.applitools.eyes.selenium.frames.FrameChain;
@@ -28,6 +29,8 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     private final SeleniumJavaScriptExecutor jsExecutor;
     private final ScrollPositionProvider scrollPosition;
     private final WebDriver.TargetLocator targetLocator;
+
+    private PositionMemento defaultContentPositionMemento;
 
     /**
      * Will be called before switching into a frame.
@@ -154,6 +157,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     public WebDriver framesDoScroll(FrameChain frameChain) {
         logger.verbose("EyesTargetLocator.framesDoScroll(frameChain)");
         driver.switchTo().defaultContent();
+        defaultContentPositionMemento = scrollPosition.getState();
         for (Frame frame : frameChain) {
             logger.verbose("Scrolling by parent scroll position...");
             Location frameLocation = frame.getLocation();
@@ -241,5 +245,12 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         Alert result = targetLocator.alert();
         logger.verbose("Done!");
         return result;
+    }
+
+    public void resetScroll() {
+        if (defaultContentPositionMemento != null)
+        {
+            scrollPosition.restoreState(defaultContentPositionMemento);
+        }
     }
 }

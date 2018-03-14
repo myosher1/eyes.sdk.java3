@@ -11,6 +11,7 @@ import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.positioning.NullRegionProvider;
+import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.positioning.RegionProvider;
 import com.applitools.eyes.scaling.FixedScaleProviderFactory;
@@ -42,6 +43,9 @@ import java.util.List;
  * The main API gateway for the SDK.
  */
 public class Eyes extends EyesBase {
+
+    private PositionMemento positionMemento;
+
     public interface WebDriverAction {
         void drive(WebDriver driver);
     }
@@ -619,6 +623,8 @@ public class Eyes extends EyesBase {
 
         int switchedToFrameCount = this.switchToFrame(seleniumCheckTarget);
 
+        tryHideScrollbars();
+
         this.regionToCheck = null;
 
         if (targetRegion != null) {
@@ -657,6 +663,15 @@ public class Eyes extends EyesBase {
             this.driver.switchTo().parentFrame();
             switchedToFrameCount--;
         }
+
+        if (this.positionMemento != null)
+        {
+            this.positionProvider.restoreState(this.positionMemento);
+            this.positionMemento = null;
+        }
+
+        EyesTargetLocator switchTo = (EyesTargetLocator)driver.switchTo();
+        switchTo.resetScroll();
 
         this.stitchContent = false;
 
@@ -770,6 +785,10 @@ public class Eyes extends EyesBase {
         while (fc.size() > 0) {
             driver.getRemoteWebDriver().switchTo().parentFrame();
             Frame frame = fc.pop();
+            if (fc.size() == 0)
+            {
+                positionMemento = positionProvider.getState();
+            }
             this.positionProvider.setPosition(frame.getLocation());
         }
         ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
@@ -1768,12 +1787,17 @@ public class Eyes extends EyesBase {
     }
 
     private void tryHideScrollbars() {
-        if (this.hideScrollbars) {
-            try {
-                this.originalOverflow = EyesSeleniumUtils.hideScrollbars(this.driver, 200);
-            } catch (EyesDriverOperationException e) {
-                logger.log("WARNING: Failed to hide scrollbars! Error: " + e.getMessage());
+        if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
+            FrameChain originalFC = driver.getFrameChain().clone();
+            FrameChain fc = driver.getFrameChain().clone();
+            EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+            while (fc.size() > 0)
+            {
+                driver.getRemoteWebDriver().switchTo().parentFrame();
+                Frame frame = fc.pop();
+                EyesSeleniumUtils.hideScrollbars(this.driver, 200);
             }
+            ((EyesTargetLocator)driver.switchTo()).frames(originalFC);
         }
     }
 

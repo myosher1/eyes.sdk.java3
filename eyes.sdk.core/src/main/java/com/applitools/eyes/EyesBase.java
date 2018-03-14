@@ -79,7 +79,7 @@ public abstract class EyesBase {
     private String branchName;
     private String parentBranchName;
     private String baselineBranchName;
-    private boolean saveDiffs;
+    private Boolean saveDiffs;
     private FailureReports failureReports;
     private final Queue<Trigger> userInputs;
     private final List<PropertyData> properties = new ArrayList<>();
@@ -130,6 +130,7 @@ public abstract class EyesBase {
         // New tests are automatically saved by default.
         saveNewTests = true;
         saveFailedTests = false;
+        saveDiffs = null;
         agentId = null;
         lastScreenshot = null;
         debugScreenshotsProvider = new NullDebugScreenshotProvider();
@@ -340,7 +341,7 @@ public abstract class EyesBase {
      * Automatically save differences as a baseline.
      * @param saveDiffs Sets whether to automatically save differences as baseline.
      */
-    public void setSaveDiffs(boolean saveDiffs) {
+    public void setSaveDiffs(Boolean saveDiffs) {
         this.saveDiffs = saveDiffs;
     }
 
@@ -348,7 +349,7 @@ public abstract class EyesBase {
      * Returns whether to automatically save differences as a baseline.
      * @return Whether to automatically save differences as baseline.
      */
-    public boolean getSaveDiffs() {
+    public Boolean getSaveDiffs() {
         return this.saveDiffs;
     }
 

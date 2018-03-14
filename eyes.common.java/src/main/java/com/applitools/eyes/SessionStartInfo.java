@@ -31,7 +31,7 @@ public class SessionStartInfo {
     private String branchName;
     private String parentBranchName;
     private String baselineBranchName;
-    private boolean saveDiffs;
+    private Boolean saveDiffs;
     private ImageMatchSettings defaultMatchSettings;
     private List<PropertyData> properties;
 
@@ -42,7 +42,7 @@ public class SessionStartInfo {
                             AppEnvironment environment,
                             ImageMatchSettings defaultMatchSettings,
                             String branchName, String parentBranchName, String baselineBranchName,
-                            boolean saveDiffs,
+                            Boolean saveDiffs,
                             List<PropertyData> properties) {
         ArgumentGuard.notNullOrEmpty(agentId, "agentId");
         ArgumentGuard.notNullOrEmpty(appIdOrName, "appIdOrName");
@@ -115,7 +115,7 @@ public class SessionStartInfo {
         return baselineBranchName;
     }
 
-    public boolean getSaveDiffs() {
+    public Boolean getSaveDiffs() {
         return saveDiffs;
     }
 

@@ -185,4 +185,8 @@ public class FrameChain implements Iterable<Frame>{
             }
         };
     }
+
+    public FrameChain clone(){
+        return new FrameChain(this.logger, this);
+    }
 }
