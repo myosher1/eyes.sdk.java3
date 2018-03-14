@@ -1,9 +1,6 @@
 package com.applitools.eyes.images;
 
-import com.applitools.eyes.BatchInfo;
-import com.applitools.eyes.LogHandler;
-import com.applitools.eyes.Region;
-import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.*;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -71,4 +68,9 @@ public class TestImagesApi {
                 .ignore(new Region(10,20,30,40)));
     }
 
+    @Test
+    public void TestCheckImage_Fluent_CutProvider() {
+        eyes.setImageCut(new UnscaledFixedCutProvider(200, 100, 100, 50));
+        eyes.check("TestCheckImage_Fluent", Target.image("resources/minions-800x500.jpg"));
+    }
 }
