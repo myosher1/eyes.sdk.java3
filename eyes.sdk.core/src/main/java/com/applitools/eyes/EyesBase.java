@@ -1482,7 +1482,7 @@ public abstract class EyesBase {
 
         control = lastScreenshot.getIntersectedRegion(control, CoordinatesType.SCREENSHOT_AS_IS);
 
-        if (control.isEmpty()) {
+        if (control.isSizeEmpty()) {
             logger.verbose(String.format("Ignoring '%s' (out of bounds)",
                     text));
             return;
@@ -1538,7 +1538,7 @@ public abstract class EyesBase {
 
         // If the region is NOT empty, we'll give the coordinates relative to
         // the control.
-        if (!controlScreenshotIntersect.isEmpty()) {
+        if (!controlScreenshotIntersect.isSizeEmpty()) {
             Location l = controlScreenshotIntersect.getLocation();
             cursorInScreenshot.offset(-l.getX(), -l.getY());
         }
@@ -1650,7 +1650,7 @@ public abstract class EyesBase {
         logger.verbose("Done getting screenshot!");
 
         // Cropping by region if necessary
-        if (!region.isEmpty()) {
+        if (!region.isSizeEmpty()) {
             screenshot = screenshot.getSubScreenshot(region, false);
             debugScreenshotsProvider.save(screenshot.getImage(),"SUB_SCREENSHOT");
         }

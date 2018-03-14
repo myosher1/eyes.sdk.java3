@@ -70,6 +70,14 @@ public class Region {
                 && this.getHeight() == EMPTY.getHeight();
     }
 
+    /**
+     *
+     * @return true if the region's size is 0, false otherwise.
+     */
+    public boolean isSizeEmpty() {
+        return this.getWidth() <= 0 || this.getHeight() <= 0;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {

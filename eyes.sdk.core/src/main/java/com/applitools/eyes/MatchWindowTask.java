@@ -179,7 +179,7 @@ public class MatchWindowTask {
     }
 
     private void updateBounds(Region region) {
-        if (region.isEmpty()) {
+        if (region.isSizeEmpty()) {
             if (lastScreenshot == null) {
                 // We set an "infinite" image size since we don't know what the screenshot size is...
                 lastScreenshotBounds = new Region(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
