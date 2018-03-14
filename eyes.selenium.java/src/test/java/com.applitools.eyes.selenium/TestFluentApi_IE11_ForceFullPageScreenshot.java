@@ -9,6 +9,7 @@ import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.model.Statement;
+import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 @RunWith(JUnit4.class)
@@ -29,7 +30,7 @@ public class TestFluentApi_IE11_ForceFullPageScreenshot extends TestFluentApi {
         @Override
         public Statement apply(Statement statement, Description description) {
             DesiredCapabilities ieCaps = DesiredCapabilities.internetExplorer();
-            ieCaps.setVersion("11");
+            ieCaps.setCapability(CapabilityType.BROWSER_VERSION, "11");
             caps = ieCaps;
             return statement;
         }
