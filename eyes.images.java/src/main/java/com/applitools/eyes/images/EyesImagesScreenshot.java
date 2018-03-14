@@ -54,7 +54,7 @@ public class EyesImagesScreenshot extends EyesScreenshot {
         // We want to get the sub-screenshot in as-is coordinates type.
         Region subScreenshotRegion = getIntersectedRegion(region, CoordinatesType.SCREENSHOT_AS_IS);
 
-        if (subScreenshotRegion.isEmpty() ||
+        if (subScreenshotRegion.isSizeEmpty() ||
                 (throwIfClipped &&
                         !subScreenshotRegion.getSize().equals(region.getSize()))) {
             throw new OutOfBoundsException(String.format( "Region [%s] is out of screenshot bounds [%s]", region, bounds));
@@ -160,7 +160,7 @@ public class EyesImagesScreenshot extends EyesScreenshot {
 
         ArgumentGuard.notNull(region, "region");
 
-        if (region.isEmpty()) {
+        if (region.isSizeEmpty()) {
             return new Region(region);
         }
 
@@ -171,7 +171,7 @@ public class EyesImagesScreenshot extends EyesScreenshot {
 
         // If the intersection is empty we don't want to convert the
         // coordinates.
-        if (region.isEmpty()) {
+        if (region.isSizeEmpty()) {
             return region;
         }
 

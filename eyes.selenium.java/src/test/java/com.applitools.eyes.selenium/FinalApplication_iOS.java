@@ -36,9 +36,9 @@ public class FinalApplication_iOS {
         System.out.println("caps finished");
         function();
     }
+
     public static void function() throws InterruptedException, AWTException {
         Eyes eyes = new Eyes();
-        eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
         eyes.setSaveNewTests(false);
         eyes.setForceFullPageScreenshot(true);
         eyes.setStitchMode(StitchMode.CSS);

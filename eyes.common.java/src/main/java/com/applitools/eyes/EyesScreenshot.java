@@ -82,7 +82,7 @@ public abstract class EyesScreenshot {
                                         CoordinatesType to) {
         ArgumentGuard.notNull(region, "region");
 
-        if (region.isEmpty()) {
+        if (region.isSizeEmpty()) {
             return new Region(region);
         }
 

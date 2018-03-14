@@ -30,6 +30,8 @@ public class SessionStartInfo {
     private AppEnvironment environment;
     private String branchName;
     private String parentBranchName;
+    private String baselineBranchName;
+    private Boolean saveDiffs;
     private ImageMatchSettings defaultMatchSettings;
     private List<PropertyData> properties;
 
@@ -39,7 +41,8 @@ public class SessionStartInfo {
                             String baselineEnvName, String environmentName,
                             AppEnvironment environment,
                             ImageMatchSettings defaultMatchSettings,
-                            String branchName, String parentBranchName,
+                            String branchName, String parentBranchName, String baselineBranchName,
+                            Boolean saveDiffs,
                             List<PropertyData> properties) {
         ArgumentGuard.notNullOrEmpty(agentId, "agentId");
         ArgumentGuard.notNullOrEmpty(appIdOrName, "appIdOrName");
@@ -59,6 +62,8 @@ public class SessionStartInfo {
         this.defaultMatchSettings = defaultMatchSettings;
         this.branchName = branchName;
         this.parentBranchName = parentBranchName;
+        this.baselineBranchName = baselineBranchName;
+        this.saveDiffs = saveDiffs;
         this.properties = properties;
     }
 
@@ -104,6 +109,14 @@ public class SessionStartInfo {
 
     public String getParentBranchName() {
         return parentBranchName;
+    }
+
+    public String getBaselineBranchName() {
+        return baselineBranchName;
+    }
+
+    public Boolean getSaveDiffs() {
+        return saveDiffs;
     }
 
     public ImageMatchSettings getDefaultMatchSettings() {

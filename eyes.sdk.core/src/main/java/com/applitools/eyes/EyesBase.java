@@ -78,6 +78,8 @@ public abstract class EyesBase {
     private String environmentName;
     private String branchName;
     private String parentBranchName;
+    private String baselineBranchName;
+    private Boolean saveDiffs;
     private FailureReports failureReports;
     private final Queue<Trigger> userInputs;
     private final List<PropertyData> properties = new ArrayList<>();
@@ -128,6 +130,7 @@ public abstract class EyesBase {
         // New tests are automatically saved by default.
         saveNewTests = true;
         saveFailedTests = false;
+        saveDiffs = null;
         agentId = null;
         lastScreenshot = null;
         debugScreenshotsProvider = new NullDebugScreenshotProvider();
@@ -315,6 +318,39 @@ public abstract class EyesBase {
      */
     public String getParentBranchName() {
         return parentBranchName;
+    }
+
+    /**
+     * Sets the branch under which new branches are created. (see {@link
+     * #setBranchName(String)}.
+     * @param branchName Branch name or {@code null} to specify the default branch.
+     */
+    public void setBaselineBranchName(String branchName) {
+        this.baselineBranchName = branchName;
+    }
+
+    /**
+     * @return The name of the current parent branch under which new branches
+     * will be created. (see {@link #setBaselineBranchName(String)}).
+     */
+    public String getBaselineBranchName() {
+        return baselineBranchName;
+    }
+
+    /**
+     * Automatically save differences as a baseline.
+     * @param saveDiffs Sets whether to automatically save differences as baseline.
+     */
+    public void setSaveDiffs(Boolean saveDiffs) {
+        this.saveDiffs = saveDiffs;
+    }
+
+    /**
+     * Returns whether to automatically save differences as a baseline.
+     * @return Whether to automatically save differences as baseline.
+     */
+    public Boolean getSaveDiffs() {
+        return this.saveDiffs;
     }
 
     /**
@@ -1446,7 +1482,7 @@ public abstract class EyesBase {
 
         control = lastScreenshot.getIntersectedRegion(control, CoordinatesType.SCREENSHOT_AS_IS);
 
-        if (control.isEmpty()) {
+        if (control.isSizeEmpty()) {
             logger.verbose(String.format("Ignoring '%s' (out of bounds)",
                     text));
             return;
@@ -1502,7 +1538,7 @@ public abstract class EyesBase {
 
         // If the region is NOT empty, we'll give the coordinates relative to
         // the control.
-        if (!controlScreenshotIntersect.isEmpty()) {
+        if (!controlScreenshotIntersect.isSizeEmpty()) {
             Location l = controlScreenshotIntersect.getLocation();
             cursorInScreenshot.offset(-l.getX(), -l.getY());
         }
@@ -1560,7 +1596,12 @@ public abstract class EyesBase {
 
         sessionStartInfo = new SessionStartInfo(getBaseAgentId(), sessionType,
                 getAppName(), null, testName, testBatch, baselineEnvName, environmentName, appEnv,
-                defaultMatchSettings, branchName, parentBranchName, properties);
+                defaultMatchSettings,
+                branchName != null ? branchName : System.getenv("APPLITOOLS_BRANCH"),
+                parentBranchName != null ? parentBranchName : System.getenv("APPLITOOLS_PARENT_BRANCH"),
+                baselineBranchName != null ? baselineBranchName : System.getenv("APPLITOOLS_BASELINE_BRANCH"),
+                saveDiffs,
+                properties);
 
         logger.verbose("Starting server session...");
         runningSession = serverConnector.startSession(sessionStartInfo);
@@ -1609,7 +1650,7 @@ public abstract class EyesBase {
         logger.verbose("Done getting screenshot!");
 
         // Cropping by region if necessary
-        if (!region.isEmpty()) {
+        if (!region.isSizeEmpty()) {
             screenshot = screenshot.getSubScreenshot(region, false);
             debugScreenshotsProvider.save(screenshot.getImage(),"SUB_SCREENSHOT");
         }

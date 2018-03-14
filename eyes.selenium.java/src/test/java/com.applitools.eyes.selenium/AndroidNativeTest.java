@@ -33,7 +33,6 @@ public class AndroidNativeTest {
 
         // Initialize the eyes SDK and set your private API key.
         Eyes eyes = new Eyes();
-        eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
 //        eyes.setScaleRatio(0.5);
         LogHandler logHandler = new StdoutLogHandler(true);
         eyes.setLogHandler(logHandler);

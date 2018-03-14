@@ -29,7 +29,7 @@ public class Jersey2xServerConnector extends RestClient
     private static final String DEFAULT_CHARSET_NAME = "UTF-8";
 
     protected String sdkName;
-    protected String apiKey;
+    private String apiKey = null;
 
     /***
      *
@@ -60,7 +60,7 @@ public class Jersey2xServerConnector extends RestClient
      * @return The currently set API key or {@code null} if no key is set.
      */
     public String getApiKey() {
-        return apiKey;
+        return this.apiKey != null ? this.apiKey : System.getenv("APPLITOOLS_API_KEY");
     }
 
     /**
@@ -143,7 +143,7 @@ public class Jersey2xServerConnector extends RestClient
         }
 
         try {
-            response = endPoint.queryParam("apiKey", apiKey).
+            response = endPoint.queryParam("apiKey", getApiKey()).
                     request(MediaType.APPLICATION_JSON).
                     post(Entity.json(postData));
         } catch (RuntimeException e) {
@@ -194,7 +194,7 @@ public class Jersey2xServerConnector extends RestClient
 
                 // Building the request
                 Invocation.Builder invocationBuilder = endPoint.path(sessionId)
-                        .queryParam("apiKey", apiKey)
+                        .queryParam("apiKey", getApiKey())
                         .queryParam("aborted", String.valueOf(isAborted))
                         .queryParam("updateBaseline", String.valueOf(save))
                         .request(MediaType.APPLICATION_JSON)
@@ -226,7 +226,7 @@ public class Jersey2xServerConnector extends RestClient
                 .path(testResults.getBatchId())
                 .path("/")
                 .path(testResults.getId())
-                .queryParam("apiKey", apiKey)
+                .queryParam("apiKey", getApiKey())
                 .queryParam("AccessToken", testResults.getSecretToken())
                 .request(MediaType.APPLICATION_JSON);
 
@@ -307,7 +307,7 @@ public class Jersey2xServerConnector extends RestClient
         }
 
         // Sending the request
-        response = runningSessionsEndpoint.queryParam("apiKey", apiKey).
+        response = runningSessionsEndpoint.queryParam("apiKey", getApiKey()).
                 request(MediaType.APPLICATION_JSON).
                 post(Entity.entity(requestData,
                         MediaType.APPLICATION_OCTET_STREAM));

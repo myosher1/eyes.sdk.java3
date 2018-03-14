@@ -31,7 +31,7 @@ public class Jersey1xServerConnector extends RestClient
     private static final String DEFAULT_CHARSET_NAME = "UTF-8";
 
     protected String sdkName;
-    protected String apiKey;
+    private String apiKey = null;
 
     /***
      * @param logger A logger instance.
@@ -61,7 +61,7 @@ public class Jersey1xServerConnector extends RestClient
      * @return The currently set API key or {@code null} if no key is set.
      */
     public String getApiKey() {
-        return apiKey;
+        return this.apiKey != null ? this.apiKey : System.getenv("APPLITOOLS_API_KEY");
     }
 
     /**
@@ -144,7 +144,7 @@ public class Jersey1xServerConnector extends RestClient
         }
 
         try {
-            response = endPoint.queryParam("apiKey", apiKey).
+            response = endPoint.queryParam("apiKey", getApiKey()).
                     accept(MediaType.APPLICATION_JSON).
                     entity(postData, MediaType.APPLICATION_JSON_TYPE).
                     post(ClientResponse.class);
@@ -196,7 +196,7 @@ public class Jersey1xServerConnector extends RestClient
 
                 // Building the request
                 WebResource.Builder builder = endPoint.path(sessionId)
-                        .queryParam("apiKey", apiKey)
+                        .queryParam("apiKey", getApiKey())
                         .queryParam("aborted", String.valueOf(isAborted))
                         .queryParam("updateBaseline", String.valueOf(save))
                         .accept(MediaType.APPLICATION_JSON)
@@ -293,7 +293,7 @@ public class Jersey1xServerConnector extends RestClient
         }
 
         // Sending the request
-        response = runningSessionsEndpoint.queryParam("apiKey", apiKey).
+        response = runningSessionsEndpoint.queryParam("apiKey", getApiKey()).
                 accept(MediaType.APPLICATION_JSON).
                 entity(requestData, MediaType.APPLICATION_OCTET_STREAM_TYPE).
                 post(ClientResponse.class);

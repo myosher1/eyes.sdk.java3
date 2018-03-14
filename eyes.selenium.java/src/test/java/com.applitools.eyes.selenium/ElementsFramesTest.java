@@ -28,7 +28,6 @@ public class ElementsFramesTest {
     @BeforeClass
     public static void setUp () throws URISyntaxException {
         eyes = new Eyes();
-        eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
         eyes.setLogHandler(new StdoutLogHandler(true));
         eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
         eyes.setStitchMode(StitchMode.CSS);

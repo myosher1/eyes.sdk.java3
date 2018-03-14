@@ -33,7 +33,6 @@ public final class WixExample {
         eyes.setForceFullPageScreenshot(false);
 
         // This is your api key, make sure you use it in all your tests.
-        eyes.setApiKey(System.getenv("APPLITOOLS_API_KEY"));
         try {
             WebDriver eyesDriver = eyes.open(driver, "Wix", "Wix Example");
 
