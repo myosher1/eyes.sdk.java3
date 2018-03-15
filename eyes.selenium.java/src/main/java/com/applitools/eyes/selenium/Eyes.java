@@ -664,13 +664,12 @@ public class Eyes extends EyesBase {
             switchedToFrameCount--;
         }
 
-        if (this.positionMemento != null)
-        {
+        if (this.positionMemento != null) {
             this.positionProvider.restoreState(this.positionMemento);
             this.positionMemento = null;
         }
 
-        EyesTargetLocator switchTo = (EyesTargetLocator)driver.switchTo();
+        EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
         switchTo.resetScroll();
 
         this.stitchContent = false;
@@ -753,7 +752,7 @@ public class Eyes extends EyesBase {
         checkFrameOrElement = false;
     }
 
-    private Region getFullFrameOrElementRegion(){
+    private Region getFullFrameOrElementRegion() {
         if (checkFrameOrElement) {
 
             FrameChain fc = ensureFrameVisible();
@@ -785,8 +784,7 @@ public class Eyes extends EyesBase {
         while (fc.size() > 0) {
             driver.getRemoteWebDriver().switchTo().parentFrame();
             Frame frame = fc.pop();
-            if (fc.size() == 0)
-            {
+            if (fc.size() == 0) {
                 positionMemento = positionProvider.getState();
             }
             this.positionProvider.setPosition(frame.getLocation());
@@ -1399,8 +1397,7 @@ public class Eyes extends EyesBase {
     public void checkFrame(String[] framePath, int matchTimeout, String tag) {
 
         SeleniumCheckSettings settings = Target.frame(framePath[0]);
-        for (int i = 1; i < framePath.length; i++)
-        {
+        for (int i = 1; i < framePath.length; i++) {
             settings.frame(framePath[i]);
         }
         check(tag, settings.timeout(matchTimeout).fully());
@@ -1439,8 +1436,7 @@ public class Eyes extends EyesBase {
                                    boolean stitchContent) {
 
         SeleniumCheckSettings settings = Target.frame(framePath[0]);
-        for (int i = 1; i < framePath.length; i++)
-        {
+        for (int i = 1; i < framePath.length; i++) {
             settings.frame(framePath[i]);
         }
         check(tag, settings.region(selector).timeout(matchTimeout).fully(stitchContent));
@@ -1513,11 +1509,14 @@ public class Eyes extends EyesBase {
             String displayStyle = eyesElement.getComputedStyle("display");
             if (!displayStyle.equals("inline")) {
                 elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
+            } else {
+                elementPositionProvider = null;
             }
 
-            // Set overflow to "hidden".
-            originalOverflow = eyesElement.getOverflow();
-            eyesElement.setOverflow("hidden");
+            if (hideScrollbars) {
+                originalOverflow = eyesElement.getOverflow();
+                eyesElement.setOverflow("hidden");
+            }
 
             int elementWidth = eyesElement.getClientWidth();
             int elementHeight = eyesElement.getClientHeight();
@@ -1791,13 +1790,12 @@ public class Eyes extends EyesBase {
             FrameChain originalFC = driver.getFrameChain().clone();
             FrameChain fc = driver.getFrameChain().clone();
             EyesSeleniumUtils.hideScrollbars(this.driver, 200);
-            while (fc.size() > 0)
-            {
+            while (fc.size() > 0) {
                 driver.getRemoteWebDriver().switchTo().parentFrame();
                 Frame frame = fc.pop();
                 EyesSeleniumUtils.hideScrollbars(this.driver, 200);
             }
-            ((EyesTargetLocator)driver.switchTo()).frames(originalFC);
+            ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
         }
     }
 
@@ -1805,97 +1803,78 @@ public class Eyes extends EyesBase {
     protected EyesScreenshot getScreenshot() {
 
         logger.verbose("getScreenshot()");
-        EyesWebDriverScreenshot result;
-
         ScaleProviderFactory scaleProviderFactory = updateScalingParams();
 
-        String originalOverflow = null;
-        if (hideScrollbars) {
-            try {
-                originalOverflow =
-                        EyesSeleniumUtils.hideScrollbars(driver, 200);
-            } catch (EyesDriverOperationException e) {
-                logger.log("WARNING: Failed to hide scrollbars! Error: " + e.getMessage());
+        EyesWebDriverScreenshot result;
+
+        FrameChain originalFrameChain = driver.getFrameChain().clone();
+        EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
+
+        EyesScreenshotFactory screenshotFactory = new EyesWebDriverScreenshotFactory(logger, driver);
+
+        if (checkFrameOrElement) {
+            logger.verbose("Check frame/element requested");
+
+            //switchTo.framesDoScroll(originalFrameChain);
+            switchTo.frames(originalFrameChain);
+
+            FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
+            BufferedImage entireFrameOrElement =
+                    algo.getStitchedRegion(imageProvider, regionToCheck,
+                            positionProvider, getElementPositionProvider(),
+                            scaleProviderFactory,
+                            cutProviderHandler.get(),
+                            getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
+                            getStitchOverlap(), regionPositionCompensation);
+
+            logger.verbose("Building screenshot object...");
+            result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
+                    new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
+        } else if (forceFullPageScreenshot || stitchContent) {
+            logger.verbose("Full page screenshot requested.");
+
+            // Save the current frame path.
+            Location originalFramePosition = originalFrameChain.size() > 0 ? originalFrameChain.getDefaultContentScrollPosition() : new Location(0, 0);
+
+            switchTo.defaultContent();
+
+            FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
+            BufferedImage fullPageImage =
+                    algo.getStitchedRegion(imageProvider, Region.EMPTY,
+                            new ScrollPositionProvider(logger, this.jsExecutor),
+                            positionProvider, scaleProviderFactory,
+                            cutProviderHandler.get(),
+                            getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
+                            getStitchOverlap(), regionPositionCompensation);
+
+            switchTo.frames(originalFrameChain);
+            result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);
+        } else {
+            ensureElementVisible(this.targetElement);
+
+            logger.verbose("Screenshot requested...");
+            BufferedImage screenshotImage = imageProvider.getImage();
+            debugScreenshotsProvider.save(screenshotImage, "original");
+
+            ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
+            if (scaleProvider.getScaleRatio() != 1.0) {
+                logger.verbose("scaling...");
+                screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
+                debugScreenshotsProvider.save(screenshotImage, "scaled");
             }
+
+            CutProvider cutProvider = cutProviderHandler.get();
+            if (!(cutProvider instanceof NullCutProvider)) {
+                logger.verbose("cutting...");
+                screenshotImage = cutProvider.cut(screenshotImage);
+                debugScreenshotsProvider.save(screenshotImage, "cut");
+            }
+
+            logger.verbose("Creating screenshot object...");
+            result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
         }
-        try {
-            EyesScreenshotFactory screenshotFactory = new EyesWebDriverScreenshotFactory(logger, driver);
-
-            FrameChain originalFrameChain = new FrameChain(logger, driver.getFrameChain());
-            EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
-
-            if (checkFrameOrElement) {
-                logger.verbose("Check frame/element requested");
-
-                switchTo.framesDoScroll(originalFrameChain);
-
-                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
-                BufferedImage entireFrameOrElement =
-                        algo.getStitchedRegion(imageProvider, regionToCheck,
-                                positionProvider, getElementPositionProvider(),
-                                scaleProviderFactory,
-                                cutProviderHandler.get(),
-                                getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
-                                getStitchOverlap(), regionPositionCompensation);
-
-                logger.verbose("Building screenshot object...");
-                result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
-                        new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
-            } else if (forceFullPageScreenshot || stitchContent) {
-                logger.verbose("Full page screenshot requested.");
-
-                // Save the current frame path.
-                Location originalFramePosition = originalFrameChain.size() > 0 ? originalFrameChain.getDefaultContentScrollPosition() : new Location(0, 0);
-
-                switchTo.defaultContent();
-
-                FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
-                BufferedImage fullPageImage =
-                        algo.getStitchedRegion(imageProvider, Region.EMPTY,
-                                new ScrollPositionProvider(logger, this.jsExecutor),
-                                positionProvider, scaleProviderFactory,
-                                cutProviderHandler.get(),
-                                getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
-                                getStitchOverlap(), regionPositionCompensation);
-
-                switchTo.frames(originalFrameChain);
-                result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);
-            } else {
-                ensureElementVisible(this.targetElement);
-
-                logger.verbose("Screenshot requested...");
-                BufferedImage screenshotImage = imageProvider.getImage();
-                debugScreenshotsProvider.save(screenshotImage, "original");
-
-                ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
-                if (scaleProvider.getScaleRatio()!=1.0) {
-                    logger.verbose("scaling...");
-                    screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
-                    debugScreenshotsProvider.save(screenshotImage, "scaled");
-                }
-
-                CutProvider cutProvider = cutProviderHandler.get();
-                if (!(cutProvider instanceof NullCutProvider)) {
-                    logger.verbose("cutting...");
-                    screenshotImage = cutProvider.cut(screenshotImage);
-                    debugScreenshotsProvider.save(screenshotImage, "cut");
-                }
-
-                logger.verbose("Creating screenshot object...");
-                result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
-            }
-            logger.verbose("Done!");
-            return result;
-        } finally {
-            if (hideScrollbars) {
-                try {
-                    EyesSeleniumUtils.setOverflow(driver, originalOverflow);
-                } catch (EyesDriverOperationException e) {
-                    // Bummer, but we'll continue with the screenshot anyway :)
-                    logger.log("WARNING: Failed to revert overflow! Error: " + e.getMessage());
-                }
-            }
-        }
+        logger.verbose("Done!");
+        return result;
     }
 
     @Override

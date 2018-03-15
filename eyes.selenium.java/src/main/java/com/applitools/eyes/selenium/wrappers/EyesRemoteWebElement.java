@@ -88,14 +88,16 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     }
 
     public Region getBounds() {
-        int left = webElement.getLocation().getX();
-        int top = webElement.getLocation().getY();
+        Point weLocation = webElement.getLocation();
+        int left = weLocation.getX();
+        int top = weLocation.getY();
         int width = 0;
         int height = 0;
 
         try {
-            width = webElement.getSize().getWidth();
-            height = webElement.getSize().getHeight();
+            Dimension weSize = webElement.getSize();
+            width = weSize.getWidth();
+            height = weSize.getHeight();
         } catch (Exception ex) {
             // Not supported on all platforms.
         }
