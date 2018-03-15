@@ -150,13 +150,24 @@ public abstract class EyesBase {
             return;
         }
 
-        scaleProviderHandler = new SimplePropertyHandler<>();
-        scaleProviderHandler.set(new NullScaleProvider());
-        cutProviderHandler = new SimplePropertyHandler<>();
-        cutProviderHandler.set(new NullCutProvider());
-        positionProvider = new InvalidPositionProvider();
-        viewportSizeHandler = new SimplePropertyHandler<>();
-        viewportSizeHandler.set(null);
+        if (scaleProviderHandler == null) {
+            scaleProviderHandler = new SimplePropertyHandler<>();
+            scaleProviderHandler.set(new NullScaleProvider());
+        }
+
+        if (cutProviderHandler == null) {
+            cutProviderHandler = new SimplePropertyHandler<>();
+            cutProviderHandler.set(new NullCutProvider());
+        }
+
+        if (positionProvider == null) {
+            positionProvider = new InvalidPositionProvider();
+        }
+
+        if (viewportSizeHandler == null) {
+            viewportSizeHandler = new SimplePropertyHandler<>();
+            viewportSizeHandler.set(null);
+        }
     }
 
     /**
@@ -528,7 +539,7 @@ public abstract class EyesBase {
     }
 
     public boolean getIsCutProviderExplicitlySet() {
-        return cutProviderHandler == null || cutProviderHandler.get() instanceof NullCutProvider;
+        return cutProviderHandler == null || !(cutProviderHandler.get() instanceof NullCutProvider);
     }
 
     /**

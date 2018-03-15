@@ -11,6 +11,7 @@ import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.positioning.NullRegionProvider;
+import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.positioning.RegionProvider;
 import com.applitools.eyes.scaling.FixedScaleProviderFactory;
@@ -1940,7 +1941,7 @@ public class Eyes extends EyesBase {
     private void tryHideScrollbars() {
         if (this.hideScrollbars) {
             try {
-                this.originalOverflow = EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+                EyesSeleniumUtils.hideScrollbars(this.driver, 200);
             } catch (EyesDriverOperationException e) {
                 logger.log("WARNING: Failed to hide scrollbars! Error: " + e.getMessage());
             }
