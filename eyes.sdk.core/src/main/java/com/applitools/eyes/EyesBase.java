@@ -124,7 +124,23 @@ public abstract class EyesBase {
         debugScreenshotsProvider = new NullDebugScreenshotProvider();
     }
 
-    private void initProviders() {
+    /**
+     *
+     * @param hardReset If false, init providers only if they're not initialized.
+     */
+    private void initProviders(boolean hardReset) {
+        if (hardReset) {
+            scaleProviderHandler = new SimplePropertyHandler<>();
+            scaleProviderHandler.set(new NullScaleProvider());
+            cutProviderHandler = new SimplePropertyHandler<>();
+            cutProviderHandler.set(new NullCutProvider());
+            positionProvider = new InvalidPositionProvider();
+            viewportSizeHandler = new SimplePropertyHandler<>();
+            viewportSizeHandler.set(null);
+
+            return;
+        }
+
         scaleProviderHandler = new SimplePropertyHandler<>();
         scaleProviderHandler.set(new NullScaleProvider());
         cutProviderHandler = new SimplePropertyHandler<>();
@@ -132,6 +148,13 @@ public abstract class EyesBase {
         positionProvider = new InvalidPositionProvider();
         viewportSizeHandler = new SimplePropertyHandler<>();
         viewportSizeHandler.set(null);
+    }
+
+    /**
+     * Same as {@link #initProviders(boolean)}, setting {@code hardReset} to {@code false}.
+     */
+    private void initProviders() {
+        initProviders(false);
     }
 
     /**
@@ -642,6 +665,8 @@ public abstract class EyesBase {
 
             lastScreenshot = null;
             clearUserInputs();
+
+            initProviders(true);
 
             if (runningSession == null) {
                 logger.verbose("Server session was not started");
