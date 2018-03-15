@@ -39,6 +39,10 @@ public class SafariScreenshotImageProvider implements ImageProvider {
 
         eyes.getDebugScreenshotsProvider().save(image, "SAFARI");
 
+        if (eyes.getIsCutProviderExplicitlySet()){
+            return image;
+        }
+
         double scaleRatio = eyes.getDevicePixelRatio();
         RectangleSize viewportSize = eyes.getViewportSize();
         viewportSize = viewportSize.scale(scaleRatio);
