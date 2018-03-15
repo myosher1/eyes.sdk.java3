@@ -1674,8 +1674,18 @@ public class Eyes extends EyesBase {
             int elementWidth = eyesElement.getClientWidth();
             int elementHeight = eyesElement.getClientHeight();
 
-            int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
-            int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
+            int borderLeftWidth = 0;
+            int borderTopWidth = 0;
+            try {
+                borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
+            } catch (Exception e) {
+                logger.log("WARNING: failed to get element border-left-width computed style! " + e.getMessage());
+            }
+            try {
+                borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
+            } catch (Exception e) {
+                logger.log("WARNING: failed to get element border-top-width computed style! " + e.getMessage());
+            }
 
             final Region elementRegion = new Region(
                     pl.getX() + borderLeftWidth, pl.getY() + borderTopWidth,
