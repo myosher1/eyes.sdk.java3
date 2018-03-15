@@ -253,7 +253,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         // We calculate intersection based on as-is coordinates.
         Region asIsSubScreenshotRegion = getIntersectedRegion(region, CoordinatesType.SCREENSHOT_AS_IS);
 
-        if (asIsSubScreenshotRegion.isEmpty() ||
+        if (asIsSubScreenshotRegion.isSizeEmpty() ||
                 (throwIfClipped &&
                         !asIsSubScreenshotRegion.getSize().equals(
                                 region.getSize()))) {
@@ -398,7 +398,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     public Region getIntersectedRegion(Region region,
                                        CoordinatesType resultCoordinatesType) {
 
-        if (region.isEmpty()) {
+        if (region.isSizeEmpty()) {
             return new Region(region);
         }
 
@@ -430,7 +430,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
         // If the intersection is empty we don't want to convert the
         // coordinates.
-        if (intersectedRegion.isEmpty()) {
+        if (intersectedRegion.isSizeEmpty()) {
             return intersectedRegion;
         }
 
@@ -460,7 +460,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         elementRegion = getIntersectedRegion(elementRegion,
                 CoordinatesType.CONTEXT_RELATIVE);
 
-        if (!elementRegion.isEmpty()) {
+        if (!elementRegion.isSizeEmpty()) {
             elementRegion = convertRegionLocation(elementRegion,
                     CoordinatesType.CONTEXT_RELATIVE,
                     CoordinatesType.SCREENSHOT_AS_IS);

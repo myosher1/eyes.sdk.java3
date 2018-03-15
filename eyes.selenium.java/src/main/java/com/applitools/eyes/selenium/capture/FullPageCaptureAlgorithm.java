@@ -113,7 +113,7 @@ public class FullPageCaptureAlgorithm {
             regionInScreenshot = getRegionInScreenshot(region, image, pixelRatio, screenshot, regionPositionCompensation);
         }
 
-        if (!regionInScreenshot.isEmpty()) {
+        if (!regionInScreenshot.isSizeEmpty()) {
             image = ImageUtils.getImagePart(image, regionInScreenshot);
             saveDebugScreenshotPart(debugScreenshotsProvider, image, region, "cropped");
         }
@@ -209,7 +209,7 @@ public class FullPageCaptureAlgorithm {
                         "original-scrolled-cut-" + positionProvider.getCurrentPosition().toStringForFilename());
             }
 
-            if (!regionInScreenshot.isEmpty()) {
+            if (!regionInScreenshot.isSizeEmpty()) {
                 logger.verbose("cropping...");
                 partImage = ImageUtils.getImagePart(partImage, regionInScreenshot);
                 saveDebugScreenshotPart(debugScreenshotsProvider, partImage, partRegion, "original-scrolled-"
