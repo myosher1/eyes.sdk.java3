@@ -366,7 +366,7 @@ public class Eyes extends EyesBase {
      * @param tag An optional tag to be associated with the snapshot.
      */
     public void checkWindow(String tag) {
-        checkWindow(USE_DEFAULT_MATCH_TIMEOUT, tag);
+        check(tag, Target.window());
     }
 
     /**
@@ -378,22 +378,7 @@ public class Eyes extends EyesBase {
      *                             immediate failure reports are enabled.
      */
     public void checkWindow(int matchTimeout, String tag) {
-
-        if (getIsDisabled()) {
-            logger.log(String.format("CheckWindow(%d, '%s'): Ignored", matchTimeout, tag));
-            return;
-        }
-
-        logger.log(String.format("CheckWindow(%d, '%s')", matchTimeout, tag));
-
-        this.regionToCheck = null;
-
-        super.checkWindowBase(
-                NullRegionProvider.INSTANCE,
-                tag,
-                false,
-                matchTimeout
-        );
+        check(tag, Target.window().timeout(matchTimeout));
     }
 
     /**
@@ -640,7 +625,7 @@ public class Eyes extends EyesBase {
             this.checkWindowBase(new RegionProvider() {
                 @Override
                 public Region getRegion() {
-                    return targetRegion;
+                    return new Region(targetRegion.getLocation(), targetRegion.getSize(), CoordinatesType.CONTEXT_RELATIVE);
                 }
             }, name, false, checkSettings);
         } else if (seleniumCheckTarget != null) {
@@ -719,16 +704,16 @@ public class Eyes extends EyesBase {
             return true;
         }
 
-        if (frameTarget.getFrameSelector() != null) {
-            WebElement frameElement = this.driver.findElement(frameTarget.getFrameSelector());
+        if (frameTarget.getFrameReference() != null) {
+            WebElement frameElement = frameTarget.getFrameReference();
             if (frameElement != null) {
                 switchTo.frame(frameElement);
                 return true;
             }
         }
 
-        if (frameTarget.getFrameReference() != null) {
-            WebElement frameElement = frameTarget.getFrameReference();
+        if (frameTarget.getFrameSelector() != null) {
+            WebElement frameElement = this.driver.findElement(frameTarget.getFrameSelector());
             if (frameElement != null) {
                 switchTo.frame(frameElement);
                 return true;
@@ -746,33 +731,37 @@ public class Eyes extends EyesBase {
         checkWindowBase(new RegionProvider() {
             @Override
             public Region getRegion() {
-                if (checkFrameOrElement) {
-
-                    FrameChain fc = ensureFrameVisible();
-
-                    // FIXME - Scaling should be handled in a single place instead
-                    ScaleProviderFactory scaleProviderFactory = updateScalingParams();
-
-                    BufferedImage screenshotImage = imageProvider.getImage();
-
-                    debugScreenshotsProvider.save(screenshotImage, "checkFullFrameOrElement");
-
-                    scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
-
-                    EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
-                    switchTo.frames(fc);
-
-                    final EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
-
-                    logger.verbose("replacing regionToCheck");
-                    setRegionToCheck(screenshot.getFrameWindow());
-                }
-
-                return Region.EMPTY;
+                return getFullFrameOrElementRegion();
             }
         }, name, false, checkSettings);
 
         checkFrameOrElement = false;
+    }
+
+    private Region getFullFrameOrElementRegion(){
+        if (checkFrameOrElement) {
+
+            FrameChain fc = ensureFrameVisible();
+
+            // FIXME - Scaling should be handled in a single place instead
+            ScaleProviderFactory scaleProviderFactory = updateScalingParams();
+
+            BufferedImage screenshotImage = imageProvider.getImage();
+
+            debugScreenshotsProvider.save(screenshotImage, "checkFullFrameOrElement");
+
+            scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
+
+            EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
+            switchTo.frames(fc);
+
+            final EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
+
+            logger.verbose("replacing regionToCheck");
+            setRegionToCheck(screenshot.getFrameWindow());
+        }
+
+        return Region.EMPTY;
     }
 
     private FrameChain ensureFrameVisible() {
@@ -845,13 +834,13 @@ public class Eyes extends EyesBase {
     }
 
     private void checkRegion(String name, ICheckSettings checkSettings) {
-        // If needed, scroll to the top/left of the element (additional help
-        // to make sure it's visible).
-        Point locationAsPoint = targetElement.getLocation();
-        RegionVisibilityStrategy regionVisibilityStrategy = regionVisibilityStrategyHandler.get();
-
-        regionVisibilityStrategy.moveToRegion(positionProvider,
-                new Location(locationAsPoint.getX(), locationAsPoint.getY()));
+//        // If needed, scroll to the top/left of the element (additional help
+//        // to make sure it's visible).
+//        Point locationAsPoint = targetElement.getLocation();
+//        RegionVisibilityStrategy regionVisibilityStrategy = regionVisibilityStrategyHandler.get();
+//
+//        regionVisibilityStrategy.moveToRegion(positionProvider,
+//                new Location(locationAsPoint.getX(), locationAsPoint.getY()));
 
         checkWindowBase(new RegionProvider() {
             @Override
@@ -863,7 +852,7 @@ public class Eyes extends EyesBase {
         }, name, false, checkSettings);
         logger.verbose("Done! trying to scroll back to original position.");
 
-        regionVisibilityStrategy.returnToOriginalPosition(positionProvider);
+        //regionVisibilityStrategy.returnToOriginalPosition(positionProvider);
     }
 
     /**
@@ -1295,7 +1284,7 @@ public class Eyes extends EyesBase {
      * Default match timeout is used.
      */
     public void checkFrame(String frameNameOrId, String tag) {
-        check(tag, Target.frame(frameNameOrId));
+        check(tag, Target.frame(frameNameOrId).fully());
     }
 
     /**
@@ -1308,19 +1297,7 @@ public class Eyes extends EyesBase {
      * @param tag           An optional tag to be associated with the match.
      */
     public void checkFrame(String frameNameOrId, int matchTimeout, String tag) {
-        if (getIsDisabled()) {
-            logger.log(String.format("CheckFrame(%s, %d, '%s'): Ignored",
-                    frameNameOrId, matchTimeout, tag));
-            return;
-        }
-
-        ArgumentGuard.notNull(frameNameOrId, "frameNameOrId");
-
-        logger.log(String.format("CheckFrame(%s, %d, '%s')", frameNameOrId, matchTimeout, tag));
-
         check(tag, Target.frame(frameNameOrId).timeout(matchTimeout).fully());
-
-        logger.verbose("Done!");
     }
 
     /**
