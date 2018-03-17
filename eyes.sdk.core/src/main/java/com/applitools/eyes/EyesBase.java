@@ -124,6 +124,7 @@ public abstract class EyesBase {
         matchTimeout = DEFAULT_MATCH_TIMEOUT;
         runningSession = null;
         defaultMatchSettings = new ImageMatchSettings();
+        defaultMatchSettings.setIgnoreCaret(true);
         failureReports = FailureReports.ON_CLOSE;
         userInputs = new ArrayDeque<>();
 
@@ -1135,22 +1136,23 @@ public abstract class EyesBase {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
+        // Update retry timeout if it wasn't specified.
         int retryTimeout = -1;
-        ImageMatchSettings defaultMatchSettings = self.getDefaultMatchSettings();
-        ImageMatchSettings imageMatchSettings = null;
         if (checkSettingsInternal != null) {
             retryTimeout = checkSettingsInternal.getTimeout();
+        }
 
-            MatchLevel matchLevel = checkSettingsInternal.getMatchLevel();
-            matchLevel = (matchLevel == null) ? defaultMatchSettings.getMatchLevel() : matchLevel;
+        ImageMatchSettings defaultMatchSettings = self.getDefaultMatchSettings();
 
-            imageMatchSettings = new ImageMatchSettings(matchLevel, null);
+        // Set defaults if necessary
+        if (checkSettingsInternal != null) {
+            if (checkSettingsInternal.getMatchLevel() == null) {
+                checkSettings.matchLevel(defaultMatchSettings.getMatchLevel());
+            }
 
-            collectIgnoreRegions(checkSettingsInternal, imageMatchSettings, self);
-            collectFloatingRegions(checkSettingsInternal, imageMatchSettings, self);
-
-            Boolean ignoreCaret = checkSettingsInternal.getIgnoreCaret();
-            imageMatchSettings.setIgnoreCaret((ignoreCaret == null) ? defaultMatchSettings.getIgnoreCaret() : ignoreCaret);
+            if (checkSettingsInternal.getIgnoreCaret() == null) {
+               checkSettings.ignoreCaret(defaultMatchSettings.getIgnoreCaret());
+            }
         }
 
         self.logger.verbose(String.format("CheckWindowBase(%s, '%s', %b, %d)",
@@ -1161,28 +1163,9 @@ public abstract class EyesBase {
         self.logger.verbose("Calling match window...");
 
         result = self.matchWindowTask.matchWindow(self.getUserInputs(), regionProvider.getRegion(), tag,
-                self.shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, imageMatchSettings, retryTimeout);
+                self.shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, checkSettingsInternal, retryTimeout, self);
 
         return result;
-    }
-
-    private static void collectIgnoreRegions(ICheckSettingsInternal checkSettingsInternal,
-                                      ImageMatchSettings imageMatchSettings, EyesBase self) {
-
-        List<Region> ignoreRegions = new ArrayList<>();
-        for (GetRegion ignoreRegionProvider : checkSettingsInternal.getIgnoreRegions()) {
-            ignoreRegions.add(ignoreRegionProvider.getRegion(self));
-        }
-        imageMatchSettings.setIgnoreRegions(ignoreRegions.toArray(new Region[0]));
-    }
-
-    private static void collectFloatingRegions(ICheckSettingsInternal checkSettingsInternal,
-                                               ImageMatchSettings imageMatchSettings, EyesBase self) {
-        List<FloatingMatchSettings> floatingRegions = new ArrayList<>();
-        for (GetFloatingRegion floatingRegionProvider : checkSettingsInternal.getFloatingRegions()) {
-            floatingRegions.add(floatingRegionProvider.getRegion(self));
-        }
-        imageMatchSettings.setFloatingRegions(floatingRegions.toArray(new FloatingMatchSettings[0]));
     }
 
     private void validateResult(String tag, MatchResult result) {
