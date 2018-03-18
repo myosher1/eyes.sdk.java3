@@ -1234,9 +1234,10 @@ public abstract class EyesBase {
         AppOutputProvider appOutputProvider = new AppOutputProvider() {
             public AppOutputWithScreenshot getAppOutput(
                     Region region,
-                    EyesScreenshot lastScreenshot_) {
+                    EyesScreenshot lastScreenshot,
+                    ICheckSettingsInternal checkSettingsInternal) {
                 // FIXME - If we use compression here it hurts us later (because of another screenshot order).
-                return getAppOutputWithScreenshot(region, null);
+                return getAppOutputWithScreenshot(region, null, null);
             }
         };
 
@@ -1351,8 +1352,9 @@ public abstract class EyesBase {
                 // A callback which will call getAppOutput
                 new AppOutputProvider() {
                     @Override
-                    public AppOutputWithScreenshot getAppOutput(Region region, EyesScreenshot lastScreenshot) {
-                        return getAppOutputWithScreenshot(region, lastScreenshot);
+                    public AppOutputWithScreenshot getAppOutput(Region region, EyesScreenshot lastScreenshot,
+                                                                ICheckSettingsInternal checkSettingsInternal) {
+                        return getAppOutputWithScreenshot(region, lastScreenshot, checkSettingsInternal);
                     }
                 }
         );
@@ -1629,13 +1631,17 @@ public abstract class EyesBase {
         }
     }
 
+    protected EyesScreenshot getSubScreenshot(EyesScreenshot screenshot, Region region, ICheckSettingsInternal checkSettingsInternal) {
+        return screenshot.getSubScreenshot(region, false);
+    }
+
     /**
      * @param region         The region of the screenshot which will be set in the application output.
      * @param lastScreenshot Previous application screenshot (used for compression) or {@code null} if not available.
      * @return The updated app output and screenshot.
      */
     private AppOutputWithScreenshot getAppOutputWithScreenshot(
-            Region region, EyesScreenshot lastScreenshot) {
+            Region region, EyesScreenshot lastScreenshot, ICheckSettingsInternal checkSettingsInternal) {
 
         logger.verbose("getting screenshot...");
         // Getting the screenshot (abstract function implemented by each SDK).
@@ -1644,7 +1650,7 @@ public abstract class EyesBase {
 
         // Cropping by region if necessary
         if (!region.isSizeEmpty()) {
-            screenshot = screenshot.getSubScreenshot(region, false);
+            screenshot = getSubScreenshot(screenshot, region, checkSettingsInternal);
             debugScreenshotsProvider.save(screenshot.getImage(),"SUB_SCREENSHOT");
         }
 

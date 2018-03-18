@@ -221,7 +221,7 @@ public class MatchWindowTask {
     private EyesScreenshot tryTakeScreenshot(Trigger[] userInputs, Region region, String tag,
                                              boolean ignoreMismatch, ICheckSettingsInternal checkSettingsInternal,
                                              EyesBase eyes) {
-        AppOutputWithScreenshot appOutput = appOutputProvider.getAppOutput(region, lastScreenshot);
+        AppOutputWithScreenshot appOutput = appOutputProvider.getAppOutput(region, lastScreenshot, checkSettingsInternal);
         EyesScreenshot screenshot = appOutput.getScreenshot();
         ImageMatchSettings matchSettings = createImageMatchSettings(checkSettingsInternal, eyes, screenshot);
         matchResult = performMatch(userInputs, appOutput, tag, ignoreMismatch, matchSettings);
