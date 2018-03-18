@@ -40,6 +40,9 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     // The part of the frame window which is visible in the screenshot
     private final Region frameWindow;
 
+    // FIXME: 18/03/2018 Workaround specifcally for regions
+    private final Region regionWindow;
+
     private static Location getDefaultContentScrollPosition(Logger logger, FrameChain currentFrames, EyesWebDriver driver) {
         IEyesJsExecutor jsExecutor = new SeleniumJavaScriptExecutor(driver);
         PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor);
@@ -125,6 +128,8 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             throw new EyesException("Got empty frame window for screenshot!");
         }
 
+        regionWindow = new Region(0,0,0,0); // FIXME: 18/03/2018 Region workaround
+
         logger.verbose("Done!");
     }
 
@@ -197,7 +202,34 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
      * @param image  The actual screenshot image.
      */
     public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver, BufferedImage image) {
-        this(logger, driver, image, null, null);
+        this(logger, driver, image, (ScreenshotType) null, null);
+    }
+
+    // FIXME: 18/03/2018 This is a workaround done for handling checkRegion.
+    /**
+     * Creates a frame-like window screenshot, to be used for checkRegion screenshots.
+     * @param logger          A Logger instance.
+     * @param driver          The web driver used to get the screenshot.
+     * @param image           The actual screenshot image.
+     * @param screenshotRegion    The region of the screenshot.
+     */
+    public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver,
+                                   BufferedImage image, Region screenshotRegion) {
+        super(image);
+        ArgumentGuard.notNull(driver, "logger");
+        ArgumentGuard.notNull(driver, "driver");
+        ArgumentGuard.notNull(screenshotRegion, "screenshotRegion");
+
+        this.logger = logger;
+        this.driver = driver;
+        frameChain = driver.getFrameChain();
+        // The frame comprises the entire screenshot.
+        screenshotType = ScreenshotType.ENTIRE_FRAME;
+
+        currentFrameScrollPosition = new Location(0, 0);
+        frameLocationInScreenshot = new Location(0, 0);
+        frameWindow = new Region(new Location(0, 0), screenshotRegion.getSize());
+        regionWindow = new Region(screenshotRegion);
     }
 
     // TODO replace "entireFrameSize" as frame window ctor identifier
@@ -225,6 +257,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         currentFrameScrollPosition = new Location(0, 0);
         frameLocationInScreenshot = new Location(0, 0);
         frameWindow = new Region(new Location(0, 0), entireFrameSize);
+        regionWindow = new Region(0,0,0,0); // FIXME: 18/03/2018 Region workaround
     }
 
     /**
@@ -272,6 +305,35 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         return result;
     }
 
+    public EyesWebDriverScreenshot getSubScreenshotForRegion(Region region, boolean throwIfClipped) {
+
+        logger.verbose(String.format("getSubScreenshot([%s], %b)", region, throwIfClipped));
+
+        ArgumentGuard.notNull(region, "region");
+
+        // We calculate intersection based on as-is coordinates.
+        Region asIsSubScreenshotRegion = getIntersectedRegion(region, CoordinatesType.SCREENSHOT_AS_IS);
+
+        if (asIsSubScreenshotRegion.isEmpty() ||
+                (throwIfClipped &&
+                        !asIsSubScreenshotRegion.getSize().equals(
+                                region.getSize()))) {
+            throw new OutOfBoundsException(String.format(
+                    "Region [%s] is out of screenshot bounds [%s]",
+                    region, frameWindow));
+        }
+
+        BufferedImage subScreenshotImage =
+                ImageUtils.getImagePart(image, asIsSubScreenshotRegion);
+
+        EyesWebDriverScreenshot result = new EyesWebDriverScreenshot(logger, driver, subScreenshotImage,
+                new Region(region.getLocation(),
+                        new RectangleSize(subScreenshotImage.getWidth(), subScreenshotImage.getHeight())));
+
+        logger.verbose("Done!");
+        return result;
+    }
+
     @Override
     public Location convertLocation(Location location,
                                     CoordinatesType from, CoordinatesType to) {
@@ -299,6 +361,10 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
                 // If this is not a sub-screenshot, this will have no effect.
                 result = result.offset(frameLocationInScreenshot.getX(),
                         frameLocationInScreenshot.getY());
+
+                // FIXME: 18/03/2018 Region workaround
+                // If this is not a region subscreenshot, this will have no effect.
+                result = result.offset(-regionWindow.getLeft(), -regionWindow.getTop());
 
             } else if (from == CoordinatesType.SCREENSHOT_AS_IS &&
                     (to == CoordinatesType.CONTEXT_RELATIVE
