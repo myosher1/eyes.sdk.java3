@@ -1799,6 +1799,7 @@ public class Eyes extends EyesBase {
     }
 
     private void tryHideScrollbars() {
+        if (EyesSeleniumUtils.isMobileDevice(driver)) { return; }
         if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
             FrameChain originalFC = driver.getFrameChain().clone();
             FrameChain fc = driver.getFrameChain().clone();
@@ -1814,6 +1815,7 @@ public class Eyes extends EyesBase {
     }
 
     private void tryRestoreScrollbars() {
+        if (EyesSeleniumUtils.isMobileDevice(driver)) { return; }
         if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
             FrameChain originalFC = this.originalFC.clone();
             FrameChain fc = this.originalFC.clone();
