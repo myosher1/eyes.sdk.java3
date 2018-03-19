@@ -69,8 +69,6 @@ public class Eyes extends EyesBase {
     private boolean forceFullPageScreenshot;
     private boolean checkFrameOrElement;
 
-    private String originalOverflow;
-
     public Region getRegionToCheck() {
         return regionToCheck;
     }
@@ -94,6 +92,7 @@ public class Eyes extends EyesBase {
     private ImageProvider imageProvider;
     private RegionPositionCompensation regionPositionCompensation;
     private WebElement targetElement = null;
+    private PositionMemento positionMemento;
 
     private boolean stitchContent = false;
 

@@ -568,6 +568,10 @@ public abstract class EyesBase {
         }
     }
 
+    public boolean getIsCutProviderExplicitlySet() {
+        return cutProviderHandler == null || cutProviderHandler.get() instanceof NullCutProvider;
+    }
+
     /**
      * Manually set the scale ratio for the images being validated.
      * @param scaleRatio The scale ratio to use, or {@code null} to reset
