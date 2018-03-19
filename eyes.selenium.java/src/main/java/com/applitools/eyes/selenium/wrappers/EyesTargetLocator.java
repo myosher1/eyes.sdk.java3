@@ -56,11 +56,14 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
 
         Location originalLocation = scrollPosition.getCurrentPosition();
 
+        String frameOverflow = eyesFrame.getOverflow();
+
         Frame frame = new Frame(logger, targetFrame,
                 contentLocation,
                 new RectangleSize(ds.getWidth(), ds.getHeight()),
                 new RectangleSize(clientWidth, clientHeight),
-                originalLocation);
+                originalLocation,
+                frameOverflow);
 
         driver.getFrameChain().push(frame);
     }

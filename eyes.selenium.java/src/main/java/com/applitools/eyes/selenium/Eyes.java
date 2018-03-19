@@ -44,6 +44,8 @@ import java.util.List;
  */
 public class Eyes extends EyesBase {
 
+    private FrameChain originalFC;
+
     public interface WebDriverAction {
         void drive(WebDriver driver);
     }
@@ -78,6 +80,8 @@ public class Eyes extends EyesBase {
     private Region regionToCheck = null;
 
     private boolean hideScrollbars;
+    private String originalOverflow;
+
     private ImageRotation rotation;
     private double devicePixelRatio;
     private StitchMode stitchMode;
@@ -672,6 +676,8 @@ public class Eyes extends EyesBase {
 
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
         switchTo.resetScroll();
+
+        tryRestoreScrollbars();
 
         this.stitchContent = false;
 
@@ -1792,20 +1798,30 @@ public class Eyes extends EyesBase {
         tryHideScrollbars();
     }
 
-    @Override
-    protected void beforeMatchWindow() {
-        tryHideScrollbars();
-    }
-
     private void tryHideScrollbars() {
         if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
             FrameChain originalFC = driver.getFrameChain().clone();
             FrameChain fc = driver.getFrameChain().clone();
-            EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+            this.originalOverflow = EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+            while (fc.size() > 0) {
+                driver.getRemoteWebDriver().switchTo().parentFrame();
+                fc.pop();
+                EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+            }
+            ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
+            this.originalFC = originalFC;
+        }
+    }
+
+    private void tryRestoreScrollbars() {
+        if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
+            FrameChain originalFC = this.originalFC.clone();
+            FrameChain fc = this.originalFC.clone();
+            String prevOverflow = EyesSeleniumUtils.setOverflow(this.driver, originalOverflow);
             while (fc.size() > 0) {
                 driver.getRemoteWebDriver().switchTo().parentFrame();
                 Frame frame = fc.pop();
-                EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+                EyesSeleniumUtils.setOverflow(this.driver, frame.getOriginalOverflow());
             }
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
         }

@@ -60,6 +60,15 @@ public abstract class TestFluentApi extends TestSetup {
                 .fully());
     }
 
+    @Test
+    public void TestScrollbarsHiddenAndReturned_Fluent(){
+        eyes.check("Fluent - Window (Before)", Target.window().fully());
+        eyes.check("Fluent - Inner frame div",
+                Target.frame("frame1")
+                      .region(By.id("inner-frame-div"))
+                      .fully());
+        eyes.check("Fluent - Window (After)", Target.window().fully());
+    }
     /*
     @Test
     public void TestCheckRegionInFrame2_Fluent() {
