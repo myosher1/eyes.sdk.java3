@@ -44,8 +44,6 @@ import java.util.List;
  */
 public class Eyes extends EyesBase {
 
-    private PositionMemento positionMemento;
-
     public interface WebDriverAction {
         void drive(WebDriver driver);
     }
@@ -93,6 +91,7 @@ public class Eyes extends EyesBase {
     private RegionPositionCompensation regionPositionCompensation;
     private WebElement targetElement = null;
     private PositionMemento positionMemento;
+    private Region effectiveViewport;
 
     private boolean stitchContent = false;
 
@@ -654,7 +653,10 @@ public class Eyes extends EyesBase {
                     this.checkFrameFluent(name, checkSettings);
                 }
             } else {
+                PositionMemento originalPosition = positionProvider.getState();
+                positionProvider.setPosition(Location.ZERO);
                 this.checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
+                positionProvider.restoreState(originalPosition);
             }
         }
 
@@ -787,6 +789,9 @@ public class Eyes extends EyesBase {
                 positionMemento = positionProvider.getState();
             }
             this.positionProvider.setPosition(frame.getLocation());
+
+            Region reg = new Region(Location.ZERO, frame.getInnerSize());
+            effectiveViewport.intersect(reg);
         }
         ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
         return originalFC;
@@ -1494,6 +1499,8 @@ public class Eyes extends EyesBase {
 
         this.regionToCheck = null;
 
+        ensureElementVisible(targetElement);
+
         PositionProvider originalPositionProvider = positionProvider;
         PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
         Location originalScrollPosition = scrollPositionProvider.getCurrentPosition();
@@ -1517,20 +1524,25 @@ public class Eyes extends EyesBase {
                 eyesElement.setOverflow("hidden");
             }
 
-            int elementWidth = eyesElement.getClientWidth();
-            int elementHeight = eyesElement.getClientHeight();
-
             int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
             int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
 
+            int elementWidth = eyesElement.getClientWidth();
+            int elementHeight = eyesElement.getClientHeight();
+
             final Region elementRegion = new Region(
                     pl.getX() + borderLeftWidth, pl.getY() + borderTopWidth,
-                    elementWidth, elementHeight, CoordinatesType.CONTEXT_RELATIVE);
+                    elementWidth, elementHeight, CoordinatesType.SCREENSHOT_AS_IS);
 
             logger.verbose("Element region: " + elementRegion);
 
             logger.verbose("replacing regionToCheck");
             regionToCheck = elementRegion;
+
+            if (!effectiveViewport.isSizeEmpty())
+            {
+                regionToCheck.intersect(effectiveViewport);
+            }
 
             checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
         } finally {
@@ -1752,6 +1764,7 @@ public class Eyes extends EyesBase {
 
         try {
             EyesSeleniumUtils.setViewportSize(logger, driver, size);
+            effectiveViewport = new Region(Location.ZERO, size);
         } catch (EyesException e) {
             // Just in case the user catches this error
             ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);

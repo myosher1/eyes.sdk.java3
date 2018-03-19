@@ -181,13 +181,6 @@ public abstract class EyesBase {
     }
 
     /**
-     * Same as {@link #initProviders(boolean)}, setting {@code hardReset} to {@code false}.
-     */
-    private void initProviders() {
-        initProviders(false);
-    }
-
-    /**
      * Sets the user given agent id of the SDK. {@code null} is referred to
      * as no id.
      *

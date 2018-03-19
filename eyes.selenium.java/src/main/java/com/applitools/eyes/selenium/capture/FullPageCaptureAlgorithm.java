@@ -70,21 +70,6 @@ public class FullPageCaptureAlgorithm {
         PositionMemento originalPosition = originProvider.getState();
         Location currentPosition;
 
-        int setPositionRetries = 3;
-        do {
-            originProvider.setPosition(new Location(0, 0));
-            // Give the scroll time to stabilize
-            GeneralUtils.sleep(waitBeforeScreenshots);
-            currentPosition = originProvider.getCurrentPosition();
-        } while (currentPosition.getX() != 0
-                && currentPosition.getY() != 0
-                && (--setPositionRetries > 0));
-
-        if (currentPosition.getX() != 0 || currentPosition.getY() != 0) {
-            originProvider.restoreState(originalPosition);
-            throw new EyesException("Couldn't set position to the top/left corner!");
-        }
-
         logger.verbose("Getting top/left image...");
         BufferedImage image = imageProvider.getImage();
         debugScreenshotsProvider.save(image, "original");
@@ -183,9 +168,9 @@ public class FullPageCaptureAlgorithm {
         BufferedImage partImage = null;
         for (Region partRegion : imageParts) {
             // Skipping screenshot for 0,0 (already taken)
-            if (partRegion.getLeft() == 0 && partRegion.getTop() == 0) {
-                continue;
-            }
+//            if (partRegion.getLeft() == 0 && partRegion.getTop() == 0) {
+//                continue;
+//            }
             logger.verbose(String.format("Taking screenshot for %s", partRegion));
             // Set the position to the part's top/left.
             positionProvider.setPosition(partRegion.getLocation());

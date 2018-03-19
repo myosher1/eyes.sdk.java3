@@ -15,6 +15,7 @@ public abstract class TestFluentApi extends TestSetup {
 
     @Test
     public void TestCheckWindowWithIgnoreRegion_Fluent() {
+        webDriver.findElement(By.tagName("input")).sendKeys("My Input");
         eyes.check("Fluent - Window with Ignore region", Target.window()
                 .fully()
                 .timeout(5000)
