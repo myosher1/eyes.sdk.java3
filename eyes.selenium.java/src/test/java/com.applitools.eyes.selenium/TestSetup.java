@@ -9,6 +9,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -163,4 +164,7 @@ public abstract class TestSetup {
             }
         }
     };
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 }

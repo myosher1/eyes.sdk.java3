@@ -374,7 +374,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         }
 
         EyesTargetLocator switchTo = (EyesTargetLocator)switchTo();
-        FrameChain currentFrames = new FrameChain(logger, getFrameChain());
+        FrameChain currentFrames = getFrameChain().clone();
 
         // Optimization
         if (currentFrames.size() > 0) {

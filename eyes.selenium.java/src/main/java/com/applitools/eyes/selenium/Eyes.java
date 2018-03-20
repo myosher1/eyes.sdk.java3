@@ -625,11 +625,12 @@ public class Eyes extends EyesBase {
 
         int switchedToFrameCount = this.switchToFrame(seleniumCheckTarget);
 
-        tryHideScrollbars();
-
         this.regionToCheck = null;
 
+        EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
+
         if (targetRegion != null) {
+            tryHideScrollbars();
             this.checkWindowBase(new RegionProvider() {
                 @Override
                 public Region getRegion() {
@@ -643,6 +644,7 @@ public class Eyes extends EyesBase {
                 targetElement = this.driver.findElement(targetSelector);
             }
             if (targetElement != null) {
+                tryHideScrollbars();
                 this.targetElement = targetElement;
                 if (this.stitchContent) {
                     this.checkElement(name, checkSettings);
@@ -651,14 +653,17 @@ public class Eyes extends EyesBase {
                 }
                 this.targetElement = null;
             } else if (seleniumCheckTarget.getFrameChain().size() > 0) {
+                tryHideScrollbars();
                 if (this.stitchContent) {
                     this.checkFullFrameOrElement(name, checkSettings);
                 } else {
                     this.checkFrameFluent(name, checkSettings);
                 }
             } else {
+                switchTo.defaultContent();
                 PositionMemento originalPosition = positionProvider.getState();
                 positionProvider.setPosition(Location.ZERO);
+                tryHideScrollbars();
                 this.checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
                 positionProvider.restoreState(originalPosition);
             }
@@ -674,7 +679,6 @@ public class Eyes extends EyesBase {
             this.positionMemento = null;
         }
 
-        EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
         switchTo.resetScroll();
 
         tryRestoreScrollbars();
@@ -685,7 +689,7 @@ public class Eyes extends EyesBase {
     }
 
     protected void checkFrameFluent(String name, ICheckSettings checkSettings) {
-        FrameChain frameChain = new FrameChain(logger, this.driver.getFrameChain());
+        FrameChain frameChain = driver.getFrameChain().clone();
         Frame targetFrame = frameChain.pop();
         this.targetElement = targetFrame.getReference();
 
@@ -786,8 +790,8 @@ public class Eyes extends EyesBase {
     }
 
     private FrameChain ensureFrameVisible() {
-        FrameChain originalFC = new FrameChain(logger, driver.getFrameChain());
-        FrameChain fc = new FrameChain(logger, driver.getFrameChain());
+        FrameChain originalFC = driver.getFrameChain().clone();
+        FrameChain fc = driver.getFrameChain().clone();
         while (fc.size() > 0) {
             driver.getRemoteWebDriver().switchTo().parentFrame();
             Frame frame = fc.pop();
@@ -814,7 +818,7 @@ public class Eyes extends EyesBase {
             return;
         }
 
-        FrameChain originalFC = new FrameChain(logger, driver.getFrameChain());
+        FrameChain originalFC = driver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
 
         EyesRemoteWebElement eyesRemoteWebElement = new EyesRemoteWebElement(logger, driver, element);
@@ -843,7 +847,7 @@ public class Eyes extends EyesBase {
         if (!getScrollToRegion()) {
             return Region.EMPTY;
         }
-        FrameChain originalFrameChain = new FrameChain(logger, driver.getFrameChain());
+        FrameChain originalFrameChain = driver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
         switchTo.defaultContent();
         ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor);
@@ -1803,12 +1807,12 @@ public class Eyes extends EyesBase {
         if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
             FrameChain originalFC = driver.getFrameChain().clone();
             FrameChain fc = driver.getFrameChain().clone();
-            this.originalOverflow = EyesSeleniumUtils.hideScrollbars(this.driver, 200);
             while (fc.size() > 0) {
+                EyesSeleniumUtils.hideScrollbars(this.driver, 200);
                 driver.getRemoteWebDriver().switchTo().parentFrame();
                 fc.pop();
-                EyesSeleniumUtils.hideScrollbars(this.driver, 200);
             }
+            this.originalOverflow = EyesSeleniumUtils.hideScrollbars(this.driver, 200);
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
             this.originalFC = originalFC;
         }
@@ -1817,16 +1821,18 @@ public class Eyes extends EyesBase {
     private void tryRestoreScrollbars() {
         if (EyesSeleniumUtils.isMobileDevice(driver)) { return; }
         if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
+            ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
             FrameChain originalFC = this.originalFC.clone();
             FrameChain fc = this.originalFC.clone();
-            String prevOverflow = EyesSeleniumUtils.setOverflow(this.driver, originalOverflow);
             while (fc.size() > 0) {
-                driver.getRemoteWebDriver().switchTo().parentFrame();
                 Frame frame = fc.pop();
                 EyesSeleniumUtils.setOverflow(this.driver, frame.getOriginalOverflow());
+                driver.getRemoteWebDriver().switchTo().parentFrame();
             }
+            String prevOverflow = EyesSeleniumUtils.setOverflow(this.driver, originalOverflow);
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
         }
+        driver.getFrameChain().clear();
     }
 
     @Override

@@ -1,9 +1,11 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.FloatingMatchSettings;
+import com.applitools.eyes.OutOfBoundsException;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.selenium.fluent.Target;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -143,6 +145,7 @@ public abstract class TestFluentApi extends TestSetup {
     @Test
     public void TestCheckElementWithIgnoreRegionByElement_Fluent()
     {
+        thrown.expect(OutOfBoundsException.class);
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         WebElement ignoreElement = webDriver.findElement(By.id("overflowing-div"));
         eyes.check("Fluent - Region by element - fully", Target.region(element).ignore(ignoreElement));

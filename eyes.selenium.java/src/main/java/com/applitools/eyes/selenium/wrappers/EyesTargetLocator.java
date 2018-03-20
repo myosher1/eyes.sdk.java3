@@ -224,9 +224,9 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
             logger.verbose("Making preparations...");
             driver.getFrameChain().clear();
             logger.verbose("Done! Switching to default content...");
-            targetLocator.defaultContent();
-            logger.verbose("Done!");
         }
+        targetLocator.defaultContent();
+        logger.verbose("Done!");
         return driver;
     }
 
