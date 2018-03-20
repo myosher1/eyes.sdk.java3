@@ -1808,7 +1808,9 @@ public class Eyes extends EyesBase {
             FrameChain originalFC = driver.getFrameChain().clone();
             FrameChain fc = driver.getFrameChain().clone();
             while (fc.size() > 0) {
-                EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+                if (stitchContent || fc.size() != originalFC.size()) {
+                    EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+                }
                 driver.getRemoteWebDriver().switchTo().parentFrame();
                 fc.pop();
             }
