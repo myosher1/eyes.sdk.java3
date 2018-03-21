@@ -1508,6 +1508,7 @@ public class Eyes extends EyesBase {
                 (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
 
         this.regionToCheck = null;
+        PositionMemento originalPositionMemento = positionProvider.getState();
 
         ensureElementVisible(targetElement);
 
@@ -1562,6 +1563,7 @@ public class Eyes extends EyesBase {
 
             checkFrameOrElement = false;
 
+            originalPositionProvider.restoreState(originalPositionMemento);
             scrollPositionProvider.setPosition(originalScrollPosition);
             positionProvider = originalPositionProvider;
             regionToCheck = null;

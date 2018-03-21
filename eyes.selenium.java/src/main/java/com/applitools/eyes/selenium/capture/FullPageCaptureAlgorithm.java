@@ -68,6 +68,8 @@ public class FullPageCaptureAlgorithm {
 
         // Saving the original position (in case we were already in the outermost frame).
         PositionMemento originalPosition = originProvider.getState();
+        PositionMemento originalStitchedState = positionProvider.getState();
+
         Location currentPosition;
 
         logger.verbose("Getting top/left image...");
@@ -160,8 +162,6 @@ public class FullPageCaptureAlgorithm {
 
         lastSuccessfulLocation = new Location(0, 0);
         lastSuccessfulPartSize = new RectangleSize(initialPart.getWidth(), initialPart.getHeight());
-
-        PositionMemento originalStitchedState = positionProvider.getState();
 
         // Take screenshot and stitch for each screenshot part.
         logger.verbose("Getting the rest of the image parts...");
