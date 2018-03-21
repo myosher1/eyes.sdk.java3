@@ -116,20 +116,25 @@ public class MatchWindowTask {
         return matchResult;
     }
 
-    private static void collectIgnoreRegions(ICheckSettingsInternal checkSettingsInternal,
-                                             ImageMatchSettings imageMatchSettings, EyesBase eyes,
-                                             EyesScreenshot screenshot) {
+    private void collectIgnoreRegions(ICheckSettingsInternal checkSettingsInternal,
+                                      ImageMatchSettings imageMatchSettings, EyesBase eyes,
+                                      EyesScreenshot screenshot) {
 
         List<Region> ignoreRegions = new ArrayList<>();
         for (GetRegion ignoreRegionProvider : checkSettingsInternal.getIgnoreRegions()) {
-            ignoreRegions.add(ignoreRegionProvider.getRegion(eyes, screenshot));
+            try {
+                ignoreRegions.add(ignoreRegionProvider.getRegion(eyes, screenshot));
+            }
+            catch (OutOfBoundsException ex){
+                logger.log("WARNING - ignore region was out of bounds.");
+            }
         }
         imageMatchSettings.setIgnoreRegions(ignoreRegions.toArray(new Region[0]));
     }
 
-    private static void collectFloatingRegions(ICheckSettingsInternal checkSettingsInternal,
-                                               ImageMatchSettings imageMatchSettings, EyesBase eyes,
-                                               EyesScreenshot screenshot) {
+    private void collectFloatingRegions(ICheckSettingsInternal checkSettingsInternal,
+                                        ImageMatchSettings imageMatchSettings, EyesBase eyes,
+                                        EyesScreenshot screenshot) {
         List<FloatingMatchSettings> floatingRegions = new ArrayList<>();
         for (GetFloatingRegion floatingRegionProvider : checkSettingsInternal.getFloatingRegions()) {
             floatingRegions.add(floatingRegionProvider.getRegion(eyes, screenshot));
@@ -144,7 +149,7 @@ public class MatchWindowTask {
      * @param screenshot
      * @return Merged match settings.
      */
-    private static ImageMatchSettings createImageMatchSettings(ICheckSettingsInternal checkSettingsInternal,
+    private ImageMatchSettings createImageMatchSettings(ICheckSettingsInternal checkSettingsInternal,
                                                                EyesBase eyes, EyesScreenshot screenshot) {
         ImageMatchSettings imageMatchSettings = null;
         if (checkSettingsInternal != null) {
