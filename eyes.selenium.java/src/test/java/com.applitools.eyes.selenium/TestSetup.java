@@ -56,7 +56,12 @@ public abstract class TestSetup {
 
     @Parameterized.Parameters(name="{0}")
     public static Collection<String> data() {
-        return Arrays.asList("Windows 10", "Linux", "macOS 10.13");
+        String testPlatforms = System.getenv("APPLITOOLS_TEST_PLATFORMS");
+        if (testPlatforms == null || testPlatforms.isEmpty()) {
+            testPlatforms = System.getProperty("os.name");
+        }
+        return Arrays.asList(testPlatforms.split(";"));
+        //"Windows 10"/*, "Linux", "macOS 10.13"*/);
     }
 
     @BeforeClass
