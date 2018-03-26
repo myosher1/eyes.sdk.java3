@@ -1692,4 +1692,8 @@ public abstract class EyesBase {
 
         return Base64.encodeBase64String(compressedScreenshot);
     }
+
+    public void log(String message) {
+        logger.log(message);
+    }
 }
