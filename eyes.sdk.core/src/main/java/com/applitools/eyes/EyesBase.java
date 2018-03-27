@@ -1147,12 +1147,14 @@ public abstract class EyesBase {
         // Set defaults if necessary
         if (checkSettingsInternal != null) {
             if (checkSettingsInternal.getMatchLevel() == null) {
-                checkSettings.matchLevel(defaultMatchSettings.getMatchLevel());
+                checkSettings = checkSettings.matchLevel(defaultMatchSettings.getMatchLevel());
             }
 
             if (checkSettingsInternal.getIgnoreCaret() == null) {
-               checkSettings.ignoreCaret(defaultMatchSettings.getIgnoreCaret());
+                checkSettings = checkSettings.ignoreCaret(defaultMatchSettings.getIgnoreCaret());
             }
+
+            checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         }
 
         self.logger.verbose(String.format("CheckWindowBase(%s, '%s', %b, %d)",

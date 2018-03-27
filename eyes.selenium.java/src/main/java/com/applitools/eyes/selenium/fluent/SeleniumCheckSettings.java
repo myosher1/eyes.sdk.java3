@@ -2,17 +2,13 @@ package com.applitools.eyes.selenium.fluent;
 
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.CheckSettings;
-import com.applitools.eyes.fluent.FloatingRegionByRectangle;
-import com.applitools.eyes.fluent.IgnoreRegionByRectangle;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SeleniumCheckSettings extends CheckSettings implements ISeleniumCheckTarget {
+public class SeleniumCheckSettings extends CheckSettings implements ISeleniumCheckTarget, Cloneable {
 
     private By targetSelector;
     private WebElement targetElement;
@@ -47,67 +43,88 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return this.frameChain;
     }
 
+    @Override
+    public SeleniumCheckSettings clone(){
+        SeleniumCheckSettings clone = new SeleniumCheckSettings();
+        super.populateClone(clone);
+        clone.targetElement = this.targetElement;
+        clone.targetSelector = this.targetSelector;
+        clone.frameChain.addAll(this.frameChain);
+        return clone;
+    }
+
     public SeleniumCheckSettings frame(By by) {
+        SeleniumCheckSettings clone = this.clone();
         FrameLocator fl = new FrameLocator();
         fl.setFrameSelector(by);
-        this.frameChain.add(fl);
-        return this;
+        clone.frameChain.add(fl);
+        return clone;
     }
 
     public SeleniumCheckSettings frame(String frameNameOrId) {
+        SeleniumCheckSettings clone = this.clone();
         FrameLocator fl = new FrameLocator();
         fl.setFrameNameOrId(frameNameOrId);
-        this.frameChain.add(fl);
-        return this;
+        clone.frameChain.add(fl);
+        return clone;
     }
 
     public SeleniumCheckSettings frame(int index) {
+        SeleniumCheckSettings clone = this.clone();
         FrameLocator fl = new FrameLocator();
         fl.setFrameIndex(index);
-        this.frameChain.add(fl);
-        return this;
+        clone.frameChain.add(fl);
+        return clone;
     }
 
     public SeleniumCheckSettings frame(WebElement frameReference) {
+        SeleniumCheckSettings clone = this.clone();
         FrameLocator fl = new FrameLocator();
         fl.setFrameReference(frameReference);
-        this.frameChain.add(fl);
-        return this;
+        clone.frameChain.add(fl);
+        return clone;
     }
+
     public SeleniumCheckSettings region(Region region) {
-        super.updateTargetRegion(region);
-        return this;
+        SeleniumCheckSettings clone = this.clone();
+        clone.updateTargetRegion(region);
+        return clone;
     }
 
     public SeleniumCheckSettings region(By by) {
-        this.targetSelector = by;
-        return this;
+        SeleniumCheckSettings clone = this.clone();
+        clone.targetSelector = by;
+        return clone;
     }
 
     public SeleniumCheckSettings ignore(By... regionSelectors) {
+        SeleniumCheckSettings clone = this.clone();
         for (By selector : regionSelectors) {
-            ignore(new IgnoreRegionBySelector(selector));
+            clone.ignore(new IgnoreRegionBySelector(selector));
         }
 
-        return this;
+        return clone;
     }
 
     public SeleniumCheckSettings ignore(WebElement... elements) {
+        SeleniumCheckSettings clone = this.clone();
         //TODO - FIXME - BUG - this is wrong in case of a cropped image!
         for (WebElement element : elements) {
-            ignore(new IgnoreRegionByElement(element));
+            clone.ignore(new IgnoreRegionByElement(element));
         }
 
-        return this;
+        return clone;
     }
 
     public SeleniumCheckSettings floating(By regionSelector, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
-        floating(new FloatingRegionBySelector(regionSelector, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
-        return this;
+        SeleniumCheckSettings clone = this.clone();
+        clone.floating(new FloatingRegionBySelector(regionSelector, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
+        return clone;
     }
 
     public SeleniumCheckSettings floating(WebElement element, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
-        floating(new FloatingRegionByElement(element, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
-        return this;
+        SeleniumCheckSettings clone = this.clone();
+        clone.floating(new FloatingRegionByElement(element, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
+        return clone;
     }
 }

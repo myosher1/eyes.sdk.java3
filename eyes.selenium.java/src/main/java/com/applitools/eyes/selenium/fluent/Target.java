@@ -1,7 +1,6 @@
 package com.applitools.eyes.selenium.fluent;
 
 import com.applitools.eyes.Region;
-import com.applitools.eyes.fluent.ICheckSettings;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -30,28 +29,28 @@ public class Target {
     public static SeleniumCheckSettings frame(By by)
     {
         SeleniumCheckSettings settings = new SeleniumCheckSettings();
-        settings.frame(by);
+        settings = settings.frame(by);
         return settings;
     }
 
     public static SeleniumCheckSettings frame(String frameNameOrId)
     {
         SeleniumCheckSettings settings = new SeleniumCheckSettings();
-        settings.frame(frameNameOrId);
+        settings = settings.frame(frameNameOrId);
         return settings;
     }
 
     public static SeleniumCheckSettings frame(int index)
     {
         SeleniumCheckSettings settings = new SeleniumCheckSettings();
-        settings.frame(index);
+        settings = settings.frame(index);
         return settings;
     }
 
     public static SeleniumCheckSettings frame(WebElement webElement)
     {
         SeleniumCheckSettings settings = new SeleniumCheckSettings();
-        settings.frame(webElement);
+        settings = settings.frame(webElement);
         return settings;
     }
 }

@@ -12,15 +12,14 @@ import java.util.List;
 public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
 
     private Region targetRegion;
-    private List<GetRegion> ignoreRegions = new ArrayList<>();
-    private MatchLevel matchLevel;
-    private Boolean ignoreCaret;
+    private MatchLevel matchLevel = null;
+    private Boolean ignoreCaret = null;
     private boolean stitchContent = false;
+    private List<GetRegion> ignoreRegions = new ArrayList<>();
     private List<GetFloatingRegion> floatingRegions = new ArrayList<>();
     private int timeout = -1;
 
-    protected CheckSettings() {
-    }
+    protected CheckSettings() { }
 
     protected CheckSettings(Region region) {
         this.targetRegion = region;
@@ -52,15 +51,23 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         this.floatingRegions.add(regionProvider);
     }
 
+    @Override
+    public CheckSettings clone(){
+        CheckSettings clone = new CheckSettings();
+        populateClone(clone);
+        return clone;
+    }
+
     /**
      * {@inheritDoc}
      */
     @Override
     public ICheckSettings ignore(Region... regions) {
+        CheckSettings clone = clone();
         for (Region r : regions) {
-            ignore(r);
+            clone.ignore(r);
         }
-        return this;
+        return clone;
     }
 
     /**
@@ -68,8 +75,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings fully() {
-        this.stitchContent = true;
-        return this;
+        CheckSettings clone = clone();
+        clone.stitchContent = true;
+        return clone;
     }
 
     /**
@@ -77,8 +85,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings fully(boolean fully) {
-        this.stitchContent = fully;
-        return this;
+        CheckSettings clone = clone();
+        clone.stitchContent = fully;
+        return clone;
     }
 
     /**
@@ -86,10 +95,11 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings floating(int maxOffset, Region... regions) {
+        CheckSettings clone = clone();
         for (Region r : regions) {
-            this.floating_(r, maxOffset, maxOffset, maxOffset, maxOffset);
+            clone.floating_(r, maxOffset, maxOffset, maxOffset, maxOffset);
         }
-        return this;
+        return clone;
     }
 
     /**
@@ -97,8 +107,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings floating(Region region, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
-        this.floating_(region, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset);
-        return this;
+        CheckSettings clone = clone();
+        clone.floating_(region, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset);
+        return clone;
     }
 
     /**
@@ -106,8 +117,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings timeout(int timeoutMilliseconds) {
-        this.timeout = timeoutMilliseconds;
-        return this;
+        CheckSettings clone = clone();
+        clone.timeout = timeoutMilliseconds;
+        return clone;
     }
 
     /**
@@ -115,8 +127,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings layout() {
-        this.matchLevel = MatchLevel.LAYOUT;
-        return this;
+        CheckSettings clone = clone();
+        clone.matchLevel = MatchLevel.LAYOUT;
+        return clone;
     }
 
     /**
@@ -124,8 +137,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings exact() {
-        this.matchLevel = MatchLevel.EXACT;
-        return this;
+        CheckSettings clone = clone();
+        clone.matchLevel = MatchLevel.EXACT;
+        return clone;
     }
 
     /**
@@ -133,8 +147,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings strict() {
-        this.matchLevel = MatchLevel.STRICT;
-        return this;
+        CheckSettings clone = clone();
+        clone.matchLevel = MatchLevel.STRICT;
+        return clone;
     }
 
     /**
@@ -142,8 +157,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings content() {
-        this.matchLevel = MatchLevel.CONTENT;
-        return this;
+        CheckSettings clone = clone();
+        clone.matchLevel = MatchLevel.CONTENT;
+        return clone;
     }
 
     /**
@@ -151,8 +167,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings matchLevel(MatchLevel matchLevel) {
-        this.matchLevel = matchLevel;
-        return this;
+        CheckSettings clone = clone();
+        clone.matchLevel = matchLevel;
+        return clone;
     }
 
     /**
@@ -160,8 +177,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings ignoreCaret(boolean ignoreCaret) {
-        this.ignoreCaret = ignoreCaret;
-        return this;
+        CheckSettings clone = clone();
+        clone.ignoreCaret = ignoreCaret;
+        return clone;
     }
 
     /**
@@ -169,8 +187,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      */
     @Override
     public ICheckSettings ignoreCaret() {
-        this.ignoreCaret = true;
-        return this;
+        CheckSettings clone = clone();
+        clone.ignoreCaret = true;
+        return clone;
     }
 
     @Override
@@ -210,5 +229,15 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
 
     protected void updateTargetRegion(Region region) {
         this.targetRegion = region;
+    }
+
+    protected void populateClone(CheckSettings clone) {
+        clone.targetRegion = this.targetRegion;
+        clone.matchLevel = this.matchLevel;
+        clone.stitchContent = this.stitchContent;
+        clone.timeout = this.timeout;
+
+        clone.ignoreRegions.addAll(this.ignoreRegions);
+        clone.floatingRegions.addAll(this.floatingRegions);
     }
 }
