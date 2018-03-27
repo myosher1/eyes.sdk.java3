@@ -1402,7 +1402,7 @@ public abstract class EyesBase {
      * @param explicitViewportSize The size of the viewport. {@code null} disables the explicit size.
      */
     public void setExplicitViewportSize(RectangleSize explicitViewportSize) {
-        if(explicitViewportSize == null) {
+        if (explicitViewportSize == null) {
             viewportSizeHandler = new SimplePropertyHandler<>();
             viewportSizeHandler.set(null);
             this.isViewportSizeSet = false;
@@ -1651,7 +1651,7 @@ public abstract class EyesBase {
         // Cropping by region if necessary
         if (!region.isSizeEmpty()) {
             screenshot = getSubScreenshot(screenshot, region, checkSettingsInternal);
-            debugScreenshotsProvider.save(screenshot.getImage(),"SUB_SCREENSHOT");
+            debugScreenshotsProvider.save(screenshot.getImage(), "SUB_SCREENSHOT");
         }
 
         logger.verbose("Compressing screenshot...");
