@@ -8,17 +8,17 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 
-public class FloatingRegionBySelector implements GetFloatingRegion{
+public class FloatingRegionByElement implements GetFloatingRegion{
 
-    private By selector;
+    private WebElement element;
     private int maxUpOffset;
     private int maxDownOffset;
     private int maxLeftOffset;
     private int maxRightOffset;
 
-    public FloatingRegionBySelector(By regionSelector, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
+    public FloatingRegionByElement(WebElement element, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
 
-        this.selector = regionSelector;
+        this.element = element;
         this.maxUpOffset = maxUpOffset;
         this.maxDownOffset = maxDownOffset;
         this.maxLeftOffset = maxLeftOffset;
@@ -27,8 +27,6 @@ public class FloatingRegionBySelector implements GetFloatingRegion{
 
     @Override
     public FloatingMatchSettings getRegion(EyesBase eyesBase, EyesScreenshot screenshot) {
-        WebElement element = ((Eyes)eyesBase).getDriver().findElement(this.selector);
-
         Point locationAsPoint = element.getLocation();
         Dimension size = element.getSize();
 

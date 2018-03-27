@@ -124,6 +124,7 @@ public abstract class EyesBase {
         matchTimeout = DEFAULT_MATCH_TIMEOUT;
         runningSession = null;
         defaultMatchSettings = new ImageMatchSettings();
+        defaultMatchSettings.setIgnoreCaret(true);
         failureReports = FailureReports.ON_CLOSE;
         userInputs = new ArrayDeque<>();
 
@@ -154,16 +155,22 @@ public abstract class EyesBase {
         }
 
         if (scaleProviderHandler == null) {
-            setScaleRatio(null);
+            scaleProviderHandler = new SimplePropertyHandler<>();
+            scaleProviderHandler.set(new NullScaleProvider());
         }
+
         if (cutProviderHandler == null) {
-            setImageCut(null);
+            cutProviderHandler = new SimplePropertyHandler<>();
+            cutProviderHandler.set(new NullCutProvider());
         }
+
         if (positionProvider == null) {
-            setPositionProvider(new InvalidPositionProvider());
+            positionProvider = new InvalidPositionProvider();
         }
+
         if (viewportSizeHandler == null) {
-            setExplicitViewportSize(null);
+            viewportSizeHandler = new SimplePropertyHandler<>();
+            viewportSizeHandler.set(null);
         }
     }
 
@@ -566,6 +573,10 @@ public abstract class EyesBase {
             cutProviderHandler = new SimplePropertyHandler<>();
             cutProviderHandler.set(new NullCutProvider());
         }
+    }
+
+    public boolean getIsCutProviderExplicitlySet() {
+        return cutProviderHandler != null && !(cutProviderHandler.get() instanceof NullCutProvider);
     }
 
     /**
@@ -1125,22 +1136,23 @@ public abstract class EyesBase {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
+        // Update retry timeout if it wasn't specified.
         int retryTimeout = -1;
-        ImageMatchSettings defaultMatchSettings = self.getDefaultMatchSettings();
-        ImageMatchSettings imageMatchSettings = null;
         if (checkSettingsInternal != null) {
             retryTimeout = checkSettingsInternal.getTimeout();
+        }
 
-            MatchLevel matchLevel = checkSettingsInternal.getMatchLevel();
-            matchLevel = (matchLevel == null) ? defaultMatchSettings.getMatchLevel() : matchLevel;
+        ImageMatchSettings defaultMatchSettings = self.getDefaultMatchSettings();
 
-            imageMatchSettings = new ImageMatchSettings(matchLevel, null);
+        // Set defaults if necessary
+        if (checkSettingsInternal != null) {
+            if (checkSettingsInternal.getMatchLevel() == null) {
+                checkSettings.matchLevel(defaultMatchSettings.getMatchLevel());
+            }
 
-            collectIgnoreRegions(checkSettingsInternal, imageMatchSettings, self);
-            collectFloatingRegions(checkSettingsInternal, imageMatchSettings, self);
-
-            Boolean ignoreCaret = checkSettingsInternal.getIgnoreCaret();
-            imageMatchSettings.setIgnoreCaret((ignoreCaret == null) ? defaultMatchSettings.getIgnoreCaret() : ignoreCaret);
+            if (checkSettingsInternal.getIgnoreCaret() == null) {
+               checkSettings.ignoreCaret(defaultMatchSettings.getIgnoreCaret());
+            }
         }
 
         self.logger.verbose(String.format("CheckWindowBase(%s, '%s', %b, %d)",
@@ -1151,28 +1163,9 @@ public abstract class EyesBase {
         self.logger.verbose("Calling match window...");
 
         result = self.matchWindowTask.matchWindow(self.getUserInputs(), regionProvider.getRegion(), tag,
-                self.shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, imageMatchSettings, retryTimeout);
+                self.shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, checkSettingsInternal, retryTimeout, self);
 
         return result;
-    }
-
-    private static void collectIgnoreRegions(ICheckSettingsInternal checkSettingsInternal,
-                                      ImageMatchSettings imageMatchSettings, EyesBase self) {
-
-        List<Region> ignoreRegions = new ArrayList<>();
-        for (GetRegion ignoreRegionProvider : checkSettingsInternal.getIgnoreRegions()) {
-            ignoreRegions.add(ignoreRegionProvider.getRegion(self));
-        }
-        imageMatchSettings.setIgnoreRegions(ignoreRegions.toArray(new Region[0]));
-    }
-
-    private static void collectFloatingRegions(ICheckSettingsInternal checkSettingsInternal,
-                                               ImageMatchSettings imageMatchSettings, EyesBase self) {
-        List<FloatingMatchSettings> floatingRegions = new ArrayList<>();
-        for (GetFloatingRegion floatingRegionProvider : checkSettingsInternal.getFloatingRegions()) {
-            floatingRegions.add(floatingRegionProvider.getRegion(self));
-        }
-        imageMatchSettings.setFloatingRegions(floatingRegions.toArray(new FloatingMatchSettings[0]));
     }
 
     private void validateResult(String tag, MatchResult result) {
@@ -1241,9 +1234,10 @@ public abstract class EyesBase {
         AppOutputProvider appOutputProvider = new AppOutputProvider() {
             public AppOutputWithScreenshot getAppOutput(
                     Region region,
-                    EyesScreenshot lastScreenshot_) {
+                    EyesScreenshot lastScreenshot,
+                    ICheckSettingsInternal checkSettingsInternal) {
                 // FIXME - If we use compression here it hurts us later (because of another screenshot order).
-                return getAppOutputWithScreenshot(region, null);
+                return getAppOutputWithScreenshot(region, null, null);
             }
         };
 
@@ -1358,8 +1352,9 @@ public abstract class EyesBase {
                 // A callback which will call getAppOutput
                 new AppOutputProvider() {
                     @Override
-                    public AppOutputWithScreenshot getAppOutput(Region region, EyesScreenshot lastScreenshot) {
-                        return getAppOutputWithScreenshot(region, lastScreenshot);
+                    public AppOutputWithScreenshot getAppOutput(Region region, EyesScreenshot lastScreenshot,
+                                                                ICheckSettingsInternal checkSettingsInternal) {
+                        return getAppOutputWithScreenshot(region, lastScreenshot, checkSettingsInternal);
                     }
                 }
         );
@@ -1636,13 +1631,17 @@ public abstract class EyesBase {
         }
     }
 
+    protected EyesScreenshot getSubScreenshot(EyesScreenshot screenshot, Region region, ICheckSettingsInternal checkSettingsInternal) {
+        return screenshot.getSubScreenshot(region, false);
+    }
+
     /**
      * @param region         The region of the screenshot which will be set in the application output.
      * @param lastScreenshot Previous application screenshot (used for compression) or {@code null} if not available.
      * @return The updated app output and screenshot.
      */
     private AppOutputWithScreenshot getAppOutputWithScreenshot(
-            Region region, EyesScreenshot lastScreenshot) {
+            Region region, EyesScreenshot lastScreenshot, ICheckSettingsInternal checkSettingsInternal) {
 
         logger.verbose("getting screenshot...");
         // Getting the screenshot (abstract function implemented by each SDK).
@@ -1651,7 +1650,7 @@ public abstract class EyesBase {
 
         // Cropping by region if necessary
         if (!region.isSizeEmpty()) {
-            screenshot = screenshot.getSubScreenshot(region, false);
+            screenshot = getSubScreenshot(screenshot, region, checkSettingsInternal);
             debugScreenshotsProvider.save(screenshot.getImage(),"SUB_SCREENSHOT");
         }
 
@@ -1692,5 +1691,9 @@ public abstract class EyesBase {
         }
 
         return Base64.encodeBase64String(compressedScreenshot);
+    }
+
+    public void log(String message) {
+        logger.log(message);
     }
 }

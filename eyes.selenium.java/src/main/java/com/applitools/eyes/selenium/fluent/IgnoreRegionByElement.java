@@ -8,16 +8,15 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 
-public class IgnoreRegionBySelector implements GetRegion {
-    private By selector;
+public class IgnoreRegionByElement implements GetRegion {
+    private WebElement element;
 
-    public IgnoreRegionBySelector(By selector) {
-        this.selector = selector;
+    public IgnoreRegionByElement(WebElement element) {
+        this.element = element;
     }
 
     @Override
     public Region getRegion(EyesBase eyesBase, EyesScreenshot screenshot) {
-        WebElement element = ((Eyes)eyesBase).getDriver().findElement(this.selector);
         Point locationAsPoint = element.getLocation();
         Dimension size = element.getSize();
 

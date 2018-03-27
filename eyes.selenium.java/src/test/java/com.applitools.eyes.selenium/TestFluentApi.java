@@ -1,9 +1,11 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.FloatingMatchSettings;
+import com.applitools.eyes.OutOfBoundsException;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.selenium.fluent.Target;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -15,6 +17,7 @@ public abstract class TestFluentApi extends TestSetup {
 
     @Test
     public void TestCheckWindowWithIgnoreRegion_Fluent() {
+        webDriver.findElement(By.tagName("input")).sendKeys("My Input");
         eyes.check("Fluent - Window with Ignore region", Target.window()
                 .fully()
                 .timeout(5000)
@@ -59,6 +62,15 @@ public abstract class TestFluentApi extends TestSetup {
                 .fully());
     }
 
+    @Test
+    public void TestScrollbarsHiddenAndReturned_Fluent(){
+        eyes.check("Fluent - Window (Before)", Target.window().fully());
+        eyes.check("Fluent - Inner frame div",
+                Target.frame("frame1")
+                      .region(By.id("inner-frame-div"))
+                      .fully());
+        eyes.check("Fluent - Window (After)", Target.window().fully());
+    }
     /*
     @Test
     public void TestCheckRegionInFrame2_Fluent() {
@@ -92,7 +104,7 @@ public abstract class TestFluentApi extends TestSetup {
 
     @Test
     public void TestCheckFrameInFrame_Fully_Fluent2() {
-        eyes.check("Fluent - Window with Ignore region 2", Target.window()
+        eyes.check("Fluent - Window", Target.window()
                 .fully()
         );
 
@@ -131,7 +143,7 @@ public abstract class TestFluentApi extends TestSetup {
     }
 
     @Test
-    public void TestCheckElementWithIgnoreRegionByElement_Fluent()
+    public void TestCheckElementWithIgnoreRegionByElementOutsideTheViewport_Fluent()
     {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         WebElement ignoreElement = webDriver.findElement(By.id("overflowing-div"));
@@ -139,9 +151,10 @@ public abstract class TestFluentApi extends TestSetup {
     }
 
     @Test
-    public void TestCheckElement_Fluent()
+    public void TestCheckElementWithIgnoreRegionBySameElement_Fluent()
     {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
-        eyes.check("Fluent - Region by element", Target.region(element));
+        eyes.check("Fluent - Region by element", Target.region(element).ignore(element));
+        setExpectedIgnoreRegions(new Region(0,0,304,184));
     }
 }

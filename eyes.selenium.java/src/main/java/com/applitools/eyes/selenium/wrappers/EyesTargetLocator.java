@@ -56,11 +56,14 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
 
         Location originalLocation = scrollPosition.getCurrentPosition();
 
+        String frameOverflow = eyesFrame.getOverflow();
+
         Frame frame = new Frame(logger, targetFrame,
                 contentLocation,
                 new RectangleSize(ds.getWidth(), ds.getHeight()),
                 new RectangleSize(clientWidth, clientHeight),
-                originalLocation);
+                originalLocation,
+                frameOverflow);
 
         driver.getFrameChain().push(frame);
     }
@@ -221,9 +224,9 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
             logger.verbose("Making preparations...");
             driver.getFrameChain().clear();
             logger.verbose("Done! Switching to default content...");
-            targetLocator.defaultContent();
-            logger.verbose("Done!");
         }
+        targetLocator.defaultContent();
+        logger.verbose("Done!");
         return driver;
     }
 

@@ -14,15 +14,16 @@ import org.openqa.selenium.WebElement;
  * and it's actual type is determined by the reference used by the user in
  * order to switch into the frame.
  */
-public class Frame {
+public final class Frame {
     // A user can switch into a frame by either its name,
     // index or by passing the relevant web element.
-    protected final Logger logger;
-    protected final WebElement reference;
-    protected final Location location;
-    protected final RectangleSize size;
-    protected final RectangleSize innerSize;
-    protected final Location originalLocation;
+    private final Logger logger;
+    private final WebElement reference;
+    private final Location location;
+    private final RectangleSize size;
+    private final RectangleSize innerSize;
+    private final Location originalLocation;
+    private final String originalOverflow;
 
     /**
      * @param logger               A Logger instance.
@@ -34,13 +35,14 @@ public class Frame {
      */
     public Frame(Logger logger, WebElement reference,
                  Location location, RectangleSize size, RectangleSize innerSize,
-                 Location originalLocation) {
+                 Location originalLocation, String originalOverflow) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(reference, "reference");
         ArgumentGuard.notNull(location, "location");
         ArgumentGuard.notNull(size, "size");
         ArgumentGuard.notNull(innerSize, "innerSize");
         ArgumentGuard.notNull(originalLocation, "originalLocation");
+        ArgumentGuard.notNull(originalOverflow, "originalOverflow");
 
         logger.verbose(String.format(
                 "Frame(logger, reference, %s, %s, %s, %s)",
@@ -52,6 +54,7 @@ public class Frame {
         this.size = size;
         this.innerSize = innerSize;
         this.originalLocation = originalLocation;
+        this.originalOverflow = originalOverflow;
     }
 
     public WebElement getReference() {
@@ -72,6 +75,10 @@ public class Frame {
 
     public Location getOriginalLocation() {
         return originalLocation;
+    }
+
+    public String getOriginalOverflow() {
+        return originalOverflow;
     }
 
 }

@@ -1,6 +1,7 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.*;
+import com.applitools.eyes.metadata.ImageMatchSettings;
 import com.applitools.eyes.metadata.ActualAppOutput;
 import com.applitools.eyes.metadata.SessionResults;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -9,11 +10,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
+import org.junit.rules.ExpectedException;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.runners.Parameterized;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebDriver;
@@ -44,6 +45,7 @@ public abstract class TestSetup {
     protected static String testSuitName;
 
     protected static String testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
+    protected static RectangleSize testedPageSize = new RectangleSize(800,600);
 
     protected static boolean forceFullPageScreenshot = false;
     protected static boolean hideScrollbars = true;
@@ -51,11 +53,17 @@ public abstract class TestSetup {
     protected static DesiredCapabilities desiredCaps = new DesiredCapabilities();
     protected static BatchInfo batchInfo = new BatchInfo("Java3 Tests");
 
-    private HashSet<FloatingMatchSettings> expectedFloatingsSet = new HashSet<>();
+    private HashSet<FloatingMatchSettings> expectedFloatingRegions = new HashSet<>();
+    private HashSet<Region> expectedIgnoreRegions = new HashSet<>();
 
     @Parameterized.Parameters(name="{0}")
     public static Collection<String> data() {
-        return Arrays.asList("Windows 10", "Linux", "macOS 10.13");
+        String testPlatforms = System.getenv("APPLITOOLS_TEST_PLATFORMS");
+        if (testPlatforms == null || testPlatforms.isEmpty()) {
+            testPlatforms = System.getProperty("os.name");
+        }
+        return Arrays.asList(testPlatforms.split(";"));
+        //"Windows 10"/*, "Linux", "macOS 10.13"*/);
     }
 
     @BeforeClass
@@ -87,8 +95,12 @@ public abstract class TestSetup {
         eyes.setBatch(batchInfo);
     }
 
-    protected void setExpectedFloatingsRegions(FloatingMatchSettings... floatingMatchSettings) {
-        this.expectedFloatingsSet = new HashSet<>(Arrays.asList(floatingMatchSettings));
+    protected void setExpectedIgnoreRegions(Region... expectedIgnoreRegions) {
+        this.expectedIgnoreRegions = new HashSet<>(Arrays.asList(expectedIgnoreRegions));
+    }
+
+    protected void setExpectedFloatingsRegions(FloatingMatchSettings... expectedFloatingsRegions) {
+        this.expectedFloatingRegions = new HashSet<>(Arrays.asList(expectedFloatingsRegions));
     }
 
     @Parameterized.Parameter
@@ -120,7 +132,7 @@ public abstract class TestSetup {
             driver = eyes.open(webDriver,
                     testSuitName,
                     testName,
-                    new RectangleSize(800, 600)
+                    testedPageSize
             );
 
             driver.get(testedPageUrl);
@@ -149,10 +161,19 @@ public abstract class TestSetup {
                 SessionResults resultObject = jsonMapper.readValue(srStr, SessionResults.class);
 
                 ActualAppOutput[] actualAppOutput = resultObject.getActualAppOutput();
-                FloatingMatchSettings[] floating = actualAppOutput[0].getImageMatchSettings().getFloating();
-                if (expectedFloatingsSet.size() > 0) {
-                    HashSet<FloatingMatchSettings> floatingsSet = new HashSet<>(Arrays.asList(floating));
-                    Assert.assertTrue("Floating regions lists differ", CollectionUtils.isEqualCollection(expectedFloatingsSet, floatingsSet));
+
+                ImageMatchSettings imageMatchSettings = actualAppOutput[0].getImageMatchSettings();
+                FloatingMatchSettings[] floating = imageMatchSettings.getFloating();
+                Region[] ignoreRegions = imageMatchSettings.getIgnore();
+
+                if (expectedFloatingRegions.size() > 0) {
+                    HashSet<FloatingMatchSettings> floatingRegionsSet = new HashSet<>(Arrays.asList(floating));
+                    Assert.assertTrue("Floating regions lists differ", CollectionUtils.isEqualCollection(expectedFloatingRegions, floatingRegionsSet));
+                }
+
+                if (expectedIgnoreRegions.size() > 0) {
+                    HashSet<Region> ignoreRegionsSet = new HashSet<>(Arrays.asList(ignoreRegions));
+                    Assert.assertTrue("Ignore regions lists differ", CollectionUtils.isEqualCollection(expectedIgnoreRegions, ignoreRegionsSet));
                 }
 
             } catch (IOException e) {
@@ -163,4 +184,7 @@ public abstract class TestSetup {
             }
         }
     };
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 }

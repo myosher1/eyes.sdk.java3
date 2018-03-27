@@ -380,8 +380,7 @@ public class Region {
     }
 
     /**
-     * Replaces this region with the intersection of itself and
-     * {@code other}
+     * Replaces this region with the intersection of itself and {@code other}
      * @param other The region with which to intersect.
      */
     public void intersect(Region other) {

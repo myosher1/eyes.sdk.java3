@@ -68,22 +68,9 @@ public class FullPageCaptureAlgorithm {
 
         // Saving the original position (in case we were already in the outermost frame).
         PositionMemento originalPosition = originProvider.getState();
+        PositionMemento originalStitchedState = positionProvider.getState();
+
         Location currentPosition;
-
-        int setPositionRetries = 3;
-        do {
-            originProvider.setPosition(new Location(0, 0));
-            // Give the scroll time to stabilize
-            GeneralUtils.sleep(waitBeforeScreenshots);
-            currentPosition = originProvider.getCurrentPosition();
-        } while (currentPosition.getX() != 0
-                && currentPosition.getY() != 0
-                && (--setPositionRetries > 0));
-
-        if (currentPosition.getX() != 0 || currentPosition.getY() != 0) {
-            originProvider.restoreState(originalPosition);
-            throw new EyesException("Couldn't set position to the top/left corner!");
-        }
 
         logger.verbose("Getting top/left image...");
         BufferedImage image = imageProvider.getImage();
@@ -113,7 +100,7 @@ public class FullPageCaptureAlgorithm {
             regionInScreenshot = getRegionInScreenshot(region, image, pixelRatio, screenshot, regionPositionCompensation);
         }
 
-        if (!regionInScreenshot.isEmpty()) {
+        if (!regionInScreenshot.isSizeEmpty()) {
             image = ImageUtils.getImagePart(image, regionInScreenshot);
             saveDebugScreenshotPart(debugScreenshotsProvider, image, region, "cropped");
         }
@@ -176,16 +163,14 @@ public class FullPageCaptureAlgorithm {
         lastSuccessfulLocation = new Location(0, 0);
         lastSuccessfulPartSize = new RectangleSize(initialPart.getWidth(), initialPart.getHeight());
 
-        PositionMemento originalStitchedState = positionProvider.getState();
-
         // Take screenshot and stitch for each screenshot part.
         logger.verbose("Getting the rest of the image parts...");
         BufferedImage partImage = null;
         for (Region partRegion : imageParts) {
             // Skipping screenshot for 0,0 (already taken)
-            if (partRegion.getLeft() == 0 && partRegion.getTop() == 0) {
-                continue;
-            }
+//            if (partRegion.getLeft() == 0 && partRegion.getTop() == 0) {
+//                continue;
+//            }
             logger.verbose(String.format("Taking screenshot for %s", partRegion));
             // Set the position to the part's top/left.
             positionProvider.setPosition(partRegion.getLocation());
@@ -209,7 +194,7 @@ public class FullPageCaptureAlgorithm {
                         "original-scrolled-cut-" + positionProvider.getCurrentPosition().toStringForFilename());
             }
 
-            if (!regionInScreenshot.isEmpty()) {
+            if (!regionInScreenshot.isSizeEmpty()) {
                 logger.verbose("cropping...");
                 partImage = ImageUtils.getImagePart(partImage, regionInScreenshot);
                 saveDebugScreenshotPart(debugScreenshotsProvider, partImage, partRegion, "original-scrolled-"
