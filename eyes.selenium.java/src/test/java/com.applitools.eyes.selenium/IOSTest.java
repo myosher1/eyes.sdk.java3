@@ -43,8 +43,10 @@ public class IOSTest {
                 {"iPhone 7 Simulator", "portrait", "10.0"},
                 {"iPhone 7 Simulator", "landscape", "11.0"},
                 {"iPhone 7 Simulator", "landscape", "10.0"},
-                {"iPhone 6 Simulator", "portrait", "11.0"},
-                {"iPhone 6 Simulator", "portrait", "10.0"}
+                {"iPhone 6 Plus Simulator", "portrait", "11.0"},
+                {"iPhone 6 Plus Simulator", "portrait", "10.0"},
+                {"iPhone 6 Plus Simulator", "landscape", "11.0"},
+                {"iPhone 6 Plus Simulator", "landscape", "10.0"}
         });
     }
 
@@ -102,8 +104,6 @@ public class IOSTest {
 
             // End visual testing. Validate visual correctness.
             eyes.close();
-        } catch (Exception ex) {
-            eyes.log(ex.toString());
         } finally {
             eyes.abortIfNotClosed();
             driver.quit();
