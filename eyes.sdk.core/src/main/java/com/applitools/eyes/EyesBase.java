@@ -1147,12 +1147,14 @@ public abstract class EyesBase {
         // Set defaults if necessary
         if (checkSettingsInternal != null) {
             if (checkSettingsInternal.getMatchLevel() == null) {
-                checkSettings.matchLevel(defaultMatchSettings.getMatchLevel());
+                checkSettings = checkSettings.matchLevel(defaultMatchSettings.getMatchLevel());
             }
 
             if (checkSettingsInternal.getIgnoreCaret() == null) {
-               checkSettings.ignoreCaret(defaultMatchSettings.getIgnoreCaret());
+                checkSettings = checkSettings.ignoreCaret(defaultMatchSettings.getIgnoreCaret());
             }
+
+            checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         }
 
         self.logger.verbose(String.format("CheckWindowBase(%s, '%s', %b, %d)",
@@ -1402,7 +1404,7 @@ public abstract class EyesBase {
      * @param explicitViewportSize The size of the viewport. {@code null} disables the explicit size.
      */
     public void setExplicitViewportSize(RectangleSize explicitViewportSize) {
-        if(explicitViewportSize == null) {
+        if (explicitViewportSize == null) {
             viewportSizeHandler = new SimplePropertyHandler<>();
             viewportSizeHandler.set(null);
             this.isViewportSizeSet = false;
@@ -1651,7 +1653,7 @@ public abstract class EyesBase {
         // Cropping by region if necessary
         if (!region.isSizeEmpty()) {
             screenshot = getSubScreenshot(screenshot, region, checkSettingsInternal);
-            debugScreenshotsProvider.save(screenshot.getImage(),"SUB_SCREENSHOT");
+            debugScreenshotsProvider.save(screenshot.getImage(), "SUB_SCREENSHOT");
         }
 
         logger.verbose("Compressing screenshot...");

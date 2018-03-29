@@ -95,7 +95,7 @@ public class Eyes extends EyesBase {
     private RegionPositionCompensation regionPositionCompensation;
     private WebElement targetElement = null;
     private PositionMemento positionMemento;
-    private Region effectiveViewport;
+    private Region effectiveViewport = Region.EMPTY;
 
     private boolean stitchContent = false;
 

@@ -71,9 +71,9 @@ public class EyesSeleniumUtils {
                     "var scrollHeight = document.documentElement.scrollHeight; " +
                     "var bodyScrollHeight = document.body.scrollHeight; " +
                     "var maxDocElementHeight = Math.max(clientHeight, scrollHeight); " +
-                    "var maxBodyHeight = Math.max(bodyClientHeight, bodyScrollHeight); "
-                    + "var totalHeight = Math.max(maxDocElementHeight, maxBodyHeight); "
-                    + "return [totalWidth, totalHeight];";
+                    "var maxBodyHeight = Math.max(bodyClientHeight, bodyScrollHeight); " +
+                    "var totalHeight = Math.max(maxDocElementHeight, maxBodyHeight); " +
+                    "return [totalWidth, totalHeight];";
 
     private static final String[] JS_TRANSFORM_KEYS = { "transform",
             "-webkit-transform"

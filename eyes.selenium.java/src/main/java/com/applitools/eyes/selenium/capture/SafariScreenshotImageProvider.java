@@ -39,27 +39,78 @@ public class SafariScreenshotImageProvider implements ImageProvider {
 
         eyes.getDebugScreenshotsProvider().save(image, "SAFARI");
 
-        if (eyes.getIsCutProviderExplicitlySet()){
+        if (eyes.getIsCutProviderExplicitlySet()) {
             return image;
         }
 
         double scaleRatio = eyes.getDevicePixelRatio();
-        RectangleSize viewportSize = eyes.getViewportSize();
-        viewportSize = viewportSize.scale(scaleRatio);
+        RectangleSize originalViewportSize = eyes.getViewportSize();
+        RectangleSize viewportSize = originalViewportSize.scale(scaleRatio);
+
+        logger.verbose("logical viewport size: " + originalViewportSize);
 
         if (userAgent.getOS().equals(OSNames.IOS)) {
+            int topBarHeight = 20;
+            int leftBarWidth = 0;
+            int bottomBarHeight = 44;
+            int rightBarWidth = 0;
+            int urlBarHeight = 44;
+
+            int imageWidth = image.getWidth();
+            int imageHeight = image.getHeight();
+            int displayLogicalWidth = (int) Math.ceil(imageWidth / scaleRatio);
+            int displayLogicalHeight = (int) Math.ceil(imageHeight / scaleRatio);
+
+            logger.verbose("physical device pixel size: " + imageWidth + " x " + imageHeight);
+            logger.verbose("physical device logical size: " + displayLogicalWidth + " x " + displayLogicalHeight);
+
+            if (displayLogicalHeight == 736 && displayLogicalWidth == 414) { // iPhone 5.5 inch
+                logger.verbose("iPhone 5.5 inch detected");
+                topBarHeight = 18;
+            } else if (displayLogicalHeight == 812 && displayLogicalWidth == 375) { // iPhone 5.8 inch p
+                logger.verbose("iPhone 5.8 inch portrait detected");
+                topBarHeight = 44;
+                bottomBarHeight = 83;
+            } else if (displayLogicalWidth == 812 && displayLogicalHeight == 375) { // iPhone 5.8 inch l
+                logger.verbose("iPhone 5.8 inch landscape detected");
+                leftBarWidth = 44;
+                rightBarWidth = 44;
+            }
+
+            if (displayLogicalHeight < displayLogicalWidth) {
+                logger.verbose("landscape mode detected");
+                topBarHeight = 0;
+                if (displayLogicalWidth == 812 && displayLogicalHeight == 375) { // on iPhone X crop the home indicator.
+                    bottomBarHeight = 15;
+                } else {
+                    bottomBarHeight = 0;
+                }
+            }
+
+            if (Integer.parseInt(userAgent.getBrowserMajorVersion()) >= 11) { // Safari >= 11
+                logger.verbose("safari version 11 or higher detected");
+                urlBarHeight = 50;
+            }
+
+            viewportSize = new RectangleSize(
+                    (int) Math.ceil(imageWidth - (leftBarWidth + rightBarWidth) * scaleRatio),
+                    (int) Math.ceil(imageHeight - (topBarHeight + urlBarHeight + bottomBarHeight) * scaleRatio));
+
+            logger.verbose("computed physical viewport size: " + viewportSize);
+
+            logger.verbose("cropping IOS browser image");
+
             image = ImageUtils.cropImage(
                     image,
                     new Region(
-                            0,
-                            (int) Math.ceil(64 * scaleRatio),
+                            (int) Math.ceil(leftBarWidth * scaleRatio),
+                            (int) Math.ceil((topBarHeight + urlBarHeight) * scaleRatio),
                             viewportSize.getWidth(),
                             viewportSize.getHeight()
                     )
             );
-        }
 
-        if (!eyes.getForceFullPageScreenshot()) {
+        } else if (!eyes.getForceFullPageScreenshot()) {
 
             Location loc;
             FrameChain currentFrameChain = ((EyesWebDriver) eyes.getDriver()).getFrameChain();
