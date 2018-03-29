@@ -1,9 +1,11 @@
 package com.applitools.eyes.selenium;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TestUtils {
+
     public static Object[][] generatePermutations(List<List<Object>> lists) {
 
         List<Object[]> result = new ArrayList<>();
@@ -11,6 +13,10 @@ public class TestUtils {
         generatePermutations(lists, result, 0, null);
 
         return result.toArray(new Object[0][0]);
+    }
+
+    public static Object[][] generatePermutations(List<Object>... lists) {
+        return generatePermutations(Arrays.asList(lists));
     }
 
     private static void generatePermutations(List<List<Object>> lists, List<Object[]> result, int depth, List<Object> permutation) {

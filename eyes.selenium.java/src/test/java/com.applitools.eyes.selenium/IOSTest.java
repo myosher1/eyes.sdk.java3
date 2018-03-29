@@ -14,11 +14,14 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.testng.TestNGUtils;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @RunWith(Parameterized.class)
@@ -41,6 +44,13 @@ public class IOSTest {
 
     @Parameterized.Parameters(name = "{0} {1} {2} fully: {3}")
     public static Collection<Object[]> data() {
+        return Arrays.asList(TestUtils.generatePermutations(
+                Arrays.asList(new Object[]{"iPhone X Simulator", "iPhone 7 Simulator", "iPhone 6 Plus Simulator"}),
+                Arrays.asList(new Object[]{"portrait", "landscape"}),
+                Arrays.asList(new Object[]{"10.0", "11.0"}),
+                Arrays.asList(new Object[]{false, true})
+        ));
+/*
         return Arrays.asList(new Object[][]{
                 {"iPhone X Simulator", "portrait", "11.0", false},
                 {"iPhone X Simulator", "landscape", "11.0", false},
@@ -63,6 +73,7 @@ public class IOSTest {
                 {"iPhone 6 Plus Simulator", "landscape", "11.0", true},
                 {"iPhone 6 Plus Simulator", "landscape", "10.0", true}
         });
+*/
     }
 
     @Test
