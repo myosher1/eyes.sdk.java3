@@ -82,8 +82,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
                 topBarHeight = 0;
                 if (displayLogicalWidth == 812 && displayLogicalHeight == 375) { // on iPhone X crop the home indicator.
                     bottomBarHeight = 15;
-                }
-                else {
+                } else {
                     bottomBarHeight = 0;
                 }
             }
@@ -111,10 +110,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
                     )
             );
 
-            eyes.getDebugScreenshotsProvider().save(image, "SAFARI_CROPPED");
-        }
-
-        if (!eyes.getForceFullPageScreenshot()) {
+        } else if (!eyes.getForceFullPageScreenshot()) {
 
             Location loc;
             FrameChain currentFrameChain = ((EyesWebDriver) eyes.getDriver()).getFrameChain();

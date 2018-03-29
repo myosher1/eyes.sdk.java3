@@ -4,11 +4,13 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.FixedCutProvider;
 import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.selenium.fluent.Target;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -34,19 +36,32 @@ public class IOSTest {
     @Parameterized.Parameter(2)
     public String platformVersion;
 
-    @Parameterized.Parameters(name = "{0} {1} {2}")
-    public static Collection<String[]> data() {
-        return Arrays.asList(new String[][]{
-                {"iPhone X Simulator", "portrait", "11.0"},
-                {"iPhone X Simulator", "landscape", "11.0"},
-                {"iPhone 7 Simulator", "portrait", "11.0"},
-                {"iPhone 7 Simulator", "portrait", "10.0"},
-                {"iPhone 7 Simulator", "landscape", "11.0"},
-                {"iPhone 7 Simulator", "landscape", "10.0"},
-                {"iPhone 6 Plus Simulator", "portrait", "11.0"},
-                {"iPhone 6 Plus Simulator", "portrait", "10.0"},
-                {"iPhone 6 Plus Simulator", "landscape", "11.0"},
-                {"iPhone 6 Plus Simulator", "landscape", "10.0"}
+    @Parameterized.Parameter(3)
+    public boolean fully;
+
+    @Parameterized.Parameters(name = "{0} {1} {2} fully: {3}")
+    public static Collection<Object[]> data() {
+        return Arrays.asList(new Object[][]{
+                {"iPhone X Simulator", "portrait", "11.0", false},
+                {"iPhone X Simulator", "landscape", "11.0", false},
+                {"iPhone 7 Simulator", "portrait", "11.0", false},
+                {"iPhone 7 Simulator", "portrait", "10.0", false},
+                {"iPhone 7 Simulator", "landscape", "11.0", false},
+                {"iPhone 7 Simulator", "landscape", "10.0", false},
+                {"iPhone 6 Plus Simulator", "portrait", "11.0", false},
+                {"iPhone 6 Plus Simulator", "portrait", "10.0", false},
+                {"iPhone 6 Plus Simulator", "landscape", "11.0", false},
+                {"iPhone 6 Plus Simulator", "landscape", "10.0", false},
+                {"iPhone X Simulator", "portrait", "11.0", true},
+                {"iPhone X Simulator", "landscape", "11.0", true},
+                {"iPhone 7 Simulator", "portrait", "11.0", true},
+                {"iPhone 7 Simulator", "portrait", "10.0", true},
+                {"iPhone 7 Simulator", "landscape", "11.0", true},
+                {"iPhone 7 Simulator", "landscape", "10.0", true},
+                {"iPhone 6 Plus Simulator", "portrait", "11.0", true},
+                {"iPhone 6 Plus Simulator", "portrait", "10.0", true},
+                {"iPhone 6 Plus Simulator", "landscape", "11.0", true},
+                {"iPhone 6 Plus Simulator", "landscape", "10.0", true}
         });
     }
 
@@ -84,6 +99,9 @@ public class IOSTest {
         //eyes.setLogHandler(new StdoutLogHandler(true));
 
         String testName = String.format("%s %s %s", deviceName, platformVersion, deviceOrientation);
+        if (fully) {
+            testName += " fully";
+        }
         String logFilename = String.format("c:\\temp\\logs\\iostest_%s.log", testName);
 
         eyes.setLogHandler(new FileLogger(logFilename, false, true));
@@ -93,14 +111,18 @@ public class IOSTest {
         eyes.setDebugScreenshotsPath("C:\\temp\\logs");
         eyes.setDebugScreenshotsPrefix("iostest_" + testName);
 
+        eyes.setStitchMode(StitchMode.SCROLL);
+
         try {
-            driver.get("https://www.applitools.com");
+            driver.get("https://www.applitools.com/customers");
             //driver.get("https://www.radiologysolutions.bayer.com/aboutus/congresses/");
 
             // Start visual testing
             eyes.open(driver, "Eyes Selenium SDK - iOS Safari Cropping", testName);
 
-            eyes.checkWindow("Initial view");
+            //eyes.check("Initial view", Target.window().fully(fully));
+            //eyes.check("Initial view", Target.region(By.cssSelector(".page.unpadded")).fully(fully));
+            eyes.check("Initial view", Target.region(By.cssSelector(".horizontal-page")).fully(fully));
 
             // End visual testing. Validate visual correctness.
             eyes.close();
