@@ -1,22 +1,28 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.FloatingMatchSettings;
-import com.applitools.eyes.OutOfBoundsException;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.selenium.fluent.Target;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 
-@RunWith(Parameterized.class)
 public abstract class TestFluentApi extends TestSetup {
 
-    @Test
-    public void TestCheckWindowWithIgnoreRegion_Fluent() {
+    @BeforeClass(alwaysRun = true)
+    public void beforeTest(){
+        testSuitName = "Eyes Selenium SDK - Fluent API";
+        testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
+    }
+
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckWindowWithIgnoreRegion_Fluent(String platform, boolean forceFPS) {
         webDriver.findElement(By.tagName("input")).sendKeys("My Input");
         eyes.check("Fluent - Window with Ignore region", Target.window()
                 .fully()
@@ -24,46 +30,46 @@ public abstract class TestFluentApi extends TestSetup {
                 .ignore(new Region(50, 50, 100, 100)));
     }
 
-    @Test
-    public void TestCheckRegionWithIgnoreRegion_Fluent() {
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckRegionWithIgnoreRegion_Fluent(String platform, boolean forceFPS) {
         eyes.check("Fluent - Region with Ignore region", Target.region(By.id("overflowing-div"))
                 .ignore(new Region(50, 50, 100, 100)));
     }
 
-    @Test
-    public void TestCheckFrame_Fully_Fluent() {
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckFrame_Fully_Fluent(String platform, boolean forceFPS) {
         eyes.check("Fluent - Full Frame", Target.frame("frame1").fully());
     }
 
-    @Test
-    public void TestCheckFrame_Fluent() {
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckFrame_Fluent(String platform, boolean forceFPS) {
         eyes.check("Fluent - Frame", Target.frame("frame1"));
     }
 
-    @Test
-    public void TestCheckFrameInFrame_Fully_Fluent() {
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckFrameInFrame_Fully_Fluent(String platform, boolean forceFPS) {
         eyes.check("Fluent - Full Frame in Frame", Target.frame("frame1")
                 .frame("frame1-1")
                 .fully());
     }
 
-    @Test
-    public void TestCheckRegionInFrame_Fluent() {
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckRegionInFrame_Fluent(String platform, boolean forceFPS) {
         eyes.check("Fluent - Region in Frame", Target.frame("frame1")
                 .region(By.id("inner-frame-div"))
                 .fully());
     }
 
-    @Test
-    public void TestCheckRegionInFrameInFrame_Fluent() {
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckRegionInFrameInFrame_Fluent(String platform, boolean forceFPS) {
         eyes.check("Fluent - Region in Frame in Frame", Target.frame("frame1")
                 .frame("frame1-1")
                 .region(By.tagName("img"))
                 .fully());
     }
 
-    @Test
-    public void TestScrollbarsHiddenAndReturned_Fluent(){
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestScrollbarsHiddenAndReturned_Fluent(String platform, boolean forceFPS){
         eyes.check("Fluent - Window (Before)", Target.window().fully());
         eyes.check("Fluent - Inner frame div",
                 Target.frame("frame1")
@@ -102,8 +108,8 @@ public abstract class TestFluentApi extends TestSetup {
     }
     */
 
-    @Test
-    public void TestCheckFrameInFrame_Fully_Fluent2() {
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckFrameInFrame_Fully_Fluent2(String platform, boolean forceFPS) {
         eyes.check("Fluent - Window", Target.window()
                 .fully()
         );
@@ -113,21 +119,21 @@ public abstract class TestFluentApi extends TestSetup {
                 .fully());
     }
 
-    @Test
-    public void TestCheckWindowWithIgnoreBySelector_Fluent() {
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckWindowWithIgnoreBySelector_Fluent(String platform, boolean forceFPS) {
         eyes.check("Fluent - Window with ignore region by selector", Target.window()
                 .ignore(By.id("overflowing-div")));
     }
 
-    @Test
-    public void TestCheckWindowWithFloatingBySelector_Fluent()
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckWindowWithFloatingBySelector_Fluent(String platform, boolean forceFPS)
     {
         eyes.check("Fluent - Window with floating region by selector", Target.window()
                 .floating(By.id("overflowing-div"), 3, 3, 20, 30));
     }
 
-    @Test
-    public void TestCheckWindowWithFloatingByRegion_Fluent() {
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckWindowWithFloatingByRegion_Fluent(String platform, boolean forceFPS) {
         ICheckSettings settings = Target.window()
                 .floating(new Region(10, 10, 20, 20), 3, 3, 20, 30);
         eyes.check("Fluent - Window with floating region by region", settings);
@@ -135,23 +141,24 @@ public abstract class TestFluentApi extends TestSetup {
         setExpectedFloatingsRegions(new FloatingMatchSettings(10, 10, 20, 20, 3, 3, 20, 30));
     }
 
-    @Test
-    public void TestCheckElementFully_Fluent()
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckElementFully_Fluent(String platform, boolean forceFPS)
     {
+        //Assert.fail("failing test");
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         eyes.check("Fluent - Region by element - fully", Target.region(element).fully());
     }
 
-    @Test
-    public void TestCheckElementWithIgnoreRegionByElementOutsideTheViewport_Fluent()
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckElementWithIgnoreRegionByElementOutsideTheViewport_Fluent(String platform, boolean forceFPS)
     {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         WebElement ignoreElement = webDriver.findElement(By.id("overflowing-div"));
         eyes.check("Fluent - Region by element", Target.region(element).ignore(ignoreElement));
     }
 
-    @Test
-    public void TestCheckElementWithIgnoreRegionBySameElement_Fluent()
+    @Test(dataProvider = "data", alwaysRun = true)
+    public void TestCheckElementWithIgnoreRegionBySameElement_Fluent(String platform, boolean forceFPS)
     {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         eyes.check("Fluent - Region by element", Target.region(element).ignore(element));

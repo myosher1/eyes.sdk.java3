@@ -2,82 +2,36 @@ package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.FileLogger;
-import com.applitools.eyes.FixedCutProvider;
-import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.selenium.fluent.Target;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.testng.TestNGUtils;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Parameters;
+import org.testng.annotations.Test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@RunWith(Parameterized.class)
-@Category(CI.class)
 public class IOSTest {
 
     protected static BatchInfo batchInfo = new BatchInfo("Java3 Tests");
 
-    @Parameterized.Parameter(0)
-    public String deviceName;
-
-    @Parameterized.Parameter(1)
-    public String deviceOrientation;
-
-    @Parameterized.Parameter(2)
-    public String platformVersion;
-
-    @Parameterized.Parameter(3)
-    public boolean fully;
-
-    @Parameterized.Parameters(name = "{0} {1} {2} fully: {3}")
-    public static Collection<Object[]> data() {
-        return Arrays.asList(TestUtils.generatePermutations(
-                Arrays.asList(new Object[]{"iPhone X Simulator", "iPhone 7 Simulator", "iPhone 6 Plus Simulator"}),
-                Arrays.asList(new Object[]{"portrait", "landscape"}),
-                Arrays.asList(new Object[]{"10.0", "11.0"}),
-                Arrays.asList(new Object[]{false, true})
-        ));
-/*
-        return Arrays.asList(new Object[][]{
-                {"iPhone X Simulator", "portrait", "11.0", false},
-                {"iPhone X Simulator", "landscape", "11.0", false},
-                {"iPhone 7 Simulator", "portrait", "11.0", false},
-                {"iPhone 7 Simulator", "portrait", "10.0", false},
-                {"iPhone 7 Simulator", "landscape", "11.0", false},
-                {"iPhone 7 Simulator", "landscape", "10.0", false},
-                {"iPhone 6 Plus Simulator", "portrait", "11.0", false},
-                {"iPhone 6 Plus Simulator", "portrait", "10.0", false},
-                {"iPhone 6 Plus Simulator", "landscape", "11.0", false},
-                {"iPhone 6 Plus Simulator", "landscape", "10.0", false},
-                {"iPhone X Simulator", "portrait", "11.0", true},
-                {"iPhone X Simulator", "landscape", "11.0", true},
-                {"iPhone 7 Simulator", "portrait", "11.0", true},
-                {"iPhone 7 Simulator", "portrait", "10.0", true},
-                {"iPhone 7 Simulator", "landscape", "11.0", true},
-                {"iPhone 7 Simulator", "landscape", "10.0", true},
-                {"iPhone 6 Plus Simulator", "portrait", "11.0", true},
-                {"iPhone 6 Plus Simulator", "portrait", "10.0", true},
-                {"iPhone 6 Plus Simulator", "landscape", "11.0", true},
-                {"iPhone 6 Plus Simulator", "landscape", "10.0", true}
-        });
-*/
+    @DataProvider(parallel = true)
+    public static Object[][] data() {
+        return TestUtils.generatePermutations(
+                Arrays.asList(new Object[]{"iPhone X Simulator", "iPhone 7 Simulator", "iPhone 6 Plus Simulator"}), // device
+                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
+                Arrays.asList(new Object[]{"10.0", "11.0"}), // OS Version
+                Arrays.asList(new Object[]{false, true}) // fully
+        );
     }
 
-    @Test
-    public void TestIOSSafariCrop() throws MalformedURLException {
+    @Test(dataProvider = "data")
+    public void TestIOSSafariCrop(String deviceName, String deviceOrientation, String platformVersion, boolean fully) throws MalformedURLException {
         Eyes eyes = new Eyes();
 
         String batchId = System.getenv("APPLITOOLS_BATCH_ID");
