@@ -17,6 +17,7 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -27,7 +28,8 @@ public class TestListener implements ITestListener {
     public void onTestStart(ITestResult result) {
         System.out.println("onTestStart");
         TestSetup testSetup = ((TestSetup) result.getInstance());
-        testSetup.beforeMethod(result.getMethod().getConstructorOrMethod().getMethod(), result.getParameters());
+        Method method = result.getMethod().getConstructorOrMethod().getMethod();
+        testSetup.beforeMethod(method.getName());
     }
 
     @Override
@@ -45,7 +47,6 @@ public class TestListener implements ITestListener {
     @Override
     public void onTestSkipped(ITestResult result) {
         System.out.println("onTestSkipped");
-        afterMethod((TestSetup) result.getInstance());
     }
 
     @Override

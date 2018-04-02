@@ -8,54 +8,23 @@ import com.applitools.eyes.selenium.fluent.Target;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.remote.CapabilityType;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.safari.SafariOptions;
 import org.testng.annotations.*;
 
 @Listeners(TestListener.class)
 public class TestFluentApi extends TestSetup {
 
-    @BeforeClass(alwaysRun = true)
-    public void beforeTest() {
+    @Factory(dataProvider = "dp", dataProviderClass = TestsDataProvider.class)
+    public TestFluentApi(Capabilities caps, String platform, boolean forceFPS) {
+        super.caps = caps;
+        super.platform = platform;
+        super.forceFPS = forceFPS;
+
         testSuitName = "Eyes Selenium SDK - Fluent API";
         testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
     }
 
-    @Factory(dataProvider = "dp")
-    public TestFluentApi(Capabilities caps) {
-        super.caps = caps;
-    }
-
-    @DataProvider
-    static public Object[][] dp() {
-        ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("disable-infobars");
-
-        FirefoxOptions firefoxOptions = new FirefoxOptions();
-
-        DesiredCapabilities ie11Options = DesiredCapabilities.internetExplorer();
-        ie11Options.setCapability(CapabilityType.BROWSER_VERSION, "11");
-
-        SafariOptions safariOptions = new SafariOptions();
-
-        if (!System.getenv("SELENIUM_SERVER_URL").contains("ondemand.saucelabs.com")) {
-            chromeOptions.setHeadless(true);
-            firefoxOptions.setHeadless(true);
-        }
-
-        return new Object[][] {
-                new Object[] { chromeOptions },
-                new Object[] { firefoxOptions },
-                new Object[] { ie11Options },
-                //new Object[] { safariOptions },
-        };
-    }
-
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckWindowWithIgnoreRegion_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckWindowWithIgnoreRegion_Fluent() {
         webDriver.findElement(By.tagName("input")).sendKeys("My Input");
         eyes.check("Fluent - Window with Ignore region", Target.window()
                 .fully()
@@ -63,46 +32,46 @@ public class TestFluentApi extends TestSetup {
                 .ignore(new Region(50, 50, 100, 100)));
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckRegionWithIgnoreRegion_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckRegionWithIgnoreRegion_Fluent() {
         eyes.check("Fluent - Region with Ignore region", Target.region(By.id("overflowing-div"))
                 .ignore(new Region(50, 50, 100, 100)));
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckFrame_Fully_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckFrame_Fully_Fluent() {
         eyes.check("Fluent - Full Frame", Target.frame("frame1").fully());
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckFrame_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckFrame_Fluent() {
         eyes.check("Fluent - Frame", Target.frame("frame1"));
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckFrameInFrame_Fully_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckFrameInFrame_Fully_Fluent() {
         eyes.check("Fluent - Full Frame in Frame", Target.frame("frame1")
                 .frame("frame1-1")
                 .fully());
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckRegionInFrame_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckRegionInFrame_Fluent() {
         eyes.check("Fluent - Region in Frame", Target.frame("frame1")
                 .region(By.id("inner-frame-div"))
                 .fully());
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckRegionInFrameInFrame_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckRegionInFrameInFrame_Fluent() {
         eyes.check("Fluent - Region in Frame in Frame", Target.frame("frame1")
                 .frame("frame1-1")
                 .region(By.tagName("img"))
                 .fully());
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestScrollbarsHiddenAndReturned_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestScrollbarsHiddenAndReturned_Fluent() {
         eyes.check("Fluent - Window (Before)", Target.window().fully());
         eyes.check("Fluent - Inner frame div",
                 Target.frame("frame1")
@@ -141,8 +110,8 @@ public class TestFluentApi extends TestSetup {
     }
     */
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckFrameInFrame_Fully_Fluent2(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckFrameInFrame_Fully_Fluent2() {
         eyes.check("Fluent - Window", Target.window()
                 .fully()
         );
@@ -152,20 +121,20 @@ public class TestFluentApi extends TestSetup {
                 .fully());
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckWindowWithIgnoreBySelector_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckWindowWithIgnoreBySelector_Fluent() {
         eyes.check("Fluent - Window with ignore region by selector", Target.window()
                 .ignore(By.id("overflowing-div")));
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckWindowWithFloatingBySelector_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckWindowWithFloatingBySelector_Fluent() {
         eyes.check("Fluent - Window with floating region by selector", Target.window()
                 .floating(By.id("overflowing-div"), 3, 3, 20, 30));
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckWindowWithFloatingByRegion_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckWindowWithFloatingByRegion_Fluent() {
         ICheckSettings settings = Target.window()
                 .floating(new Region(10, 10, 20, 20), 3, 3, 20, 30);
         eyes.check("Fluent - Window with floating region by region", settings);
@@ -173,21 +142,21 @@ public class TestFluentApi extends TestSetup {
         setExpectedFloatingsRegions(new FloatingMatchSettings(10, 10, 20, 20, 3, 3, 20, 30));
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckElementFully_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckElementFully_Fluent() {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         eyes.check("Fluent - Region by element - fully", Target.region(element).fully());
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckElementWithIgnoreRegionByElementOutsideTheViewport_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckElementWithIgnoreRegionByElementOutsideTheViewport_Fluent() {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         WebElement ignoreElement = webDriver.findElement(By.id("overflowing-div"));
         eyes.check("Fluent - Region by element", Target.region(element).ignore(ignoreElement));
     }
 
-    @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckElementWithIgnoreRegionBySameElement_Fluent(String platform, boolean forceFPS) {
+    @Test
+    public void TestCheckElementWithIgnoreRegionBySameElement_Fluent() {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         eyes.check("Fluent - Region by element", Target.region(element).ignore(element));
         setExpectedIgnoreRegions(new Region(0, 0, 304, 184));
