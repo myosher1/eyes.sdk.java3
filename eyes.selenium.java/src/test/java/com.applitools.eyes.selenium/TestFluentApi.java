@@ -6,19 +6,52 @@ import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.selenium.fluent.Target;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.WebElement;
-import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
+import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.safari.SafariOptions;
+import org.testng.annotations.*;
 
-public abstract class TestFluentApi extends TestSetup {
+@Listeners(TestListener.class)
+public class TestFluentApi extends TestSetup {
 
     @BeforeClass(alwaysRun = true)
-    public void beforeTest(){
+    public void beforeTest() {
         testSuitName = "Eyes Selenium SDK - Fluent API";
         testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
+    }
+
+    @Factory(dataProvider = "dp")
+    public TestFluentApi(Capabilities caps) {
+        super.caps = caps;
+    }
+
+    @DataProvider
+    static public Object[][] dp() {
+        ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("disable-infobars");
+
+        FirefoxOptions firefoxOptions = new FirefoxOptions();
+
+        DesiredCapabilities ie11Options = DesiredCapabilities.internetExplorer();
+        ie11Options.setCapability(CapabilityType.BROWSER_VERSION, "11");
+
+        SafariOptions safariOptions = new SafariOptions();
+
+        if (!System.getenv("SELENIUM_SERVER_URL").contains("ondemand.saucelabs.com")) {
+            chromeOptions.setHeadless(true);
+            firefoxOptions.setHeadless(true);
+        }
+
+        return new Object[][] {
+                new Object[] { chromeOptions },
+                new Object[] { firefoxOptions },
+                new Object[] { ie11Options },
+                //new Object[] { safariOptions },
+        };
     }
 
     @Test(dataProvider = "data", alwaysRun = true)
@@ -69,7 +102,7 @@ public abstract class TestFluentApi extends TestSetup {
     }
 
     @Test(dataProvider = "data", alwaysRun = true)
-    public void TestScrollbarsHiddenAndReturned_Fluent(String platform, boolean forceFPS){
+    public void TestScrollbarsHiddenAndReturned_Fluent(String platform, boolean forceFPS) {
         eyes.check("Fluent - Window (Before)", Target.window().fully());
         eyes.check("Fluent - Inner frame div",
                 Target.frame("frame1")
@@ -126,8 +159,7 @@ public abstract class TestFluentApi extends TestSetup {
     }
 
     @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckWindowWithFloatingBySelector_Fluent(String platform, boolean forceFPS)
-    {
+    public void TestCheckWindowWithFloatingBySelector_Fluent(String platform, boolean forceFPS) {
         eyes.check("Fluent - Window with floating region by selector", Target.window()
                 .floating(By.id("overflowing-div"), 3, 3, 20, 30));
     }
@@ -142,26 +174,22 @@ public abstract class TestFluentApi extends TestSetup {
     }
 
     @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckElementFully_Fluent(String platform, boolean forceFPS)
-    {
-        //Assert.fail("failing test");
+    public void TestCheckElementFully_Fluent(String platform, boolean forceFPS) {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         eyes.check("Fluent - Region by element - fully", Target.region(element).fully());
     }
 
     @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckElementWithIgnoreRegionByElementOutsideTheViewport_Fluent(String platform, boolean forceFPS)
-    {
+    public void TestCheckElementWithIgnoreRegionByElementOutsideTheViewport_Fluent(String platform, boolean forceFPS) {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         WebElement ignoreElement = webDriver.findElement(By.id("overflowing-div"));
         eyes.check("Fluent - Region by element", Target.region(element).ignore(ignoreElement));
     }
 
     @Test(dataProvider = "data", alwaysRun = true)
-    public void TestCheckElementWithIgnoreRegionBySameElement_Fluent(String platform, boolean forceFPS)
-    {
+    public void TestCheckElementWithIgnoreRegionBySameElement_Fluent(String platform, boolean forceFPS) {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         eyes.check("Fluent - Region by element", Target.region(element).ignore(element));
-        setExpectedIgnoreRegions(new Region(0,0,304,184));
+        setExpectedIgnoreRegions(new Region(0, 0, 304, 184));
     }
 }

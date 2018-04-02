@@ -1,7 +1,12 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
-<suite name="Suite1" verbose="1"  parallel="tests">
-    <test name="Test_Fluent_API_Chrome">
+<suite name="Suite1" verbose="1"  parallel="instances">
+    <test name="Test_Fluent_API">
+        <classes>
+            <class name="com.applitools.eyes.selenium.TestFluentApi" />
+        </classes>
+    </test>
+<!--    <test name="Test_Fluent_API_Chrome">
         <classes>
             <class name="com.applitools.eyes.selenium.TestFluentApi_Chrome" />
         </classes>
@@ -15,5 +20,5 @@
         <classes>
             <class name="com.applitools.eyes.selenium.TestFluentApi_IE11" />
         </classes>
-    </test>
+    </test> -->
 </suite>

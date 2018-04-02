@@ -17,46 +17,44 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 
 public class TestListener implements ITestListener {
 
-    private TestSetup testSetup;
-
     @Override
     public void onTestStart(ITestResult result) {
         System.out.println("onTestStart");
-        this.testSetup = ((TestSetup) result.getInstance());
+        TestSetup testSetup = ((TestSetup) result.getInstance());
+        testSetup.beforeMethod(result.getMethod().getConstructorOrMethod().getMethod(), result.getParameters());
     }
 
     @Override
     public void onTestSuccess(ITestResult result) {
         System.out.println("onTestSuccess");
-        afterMethod();
+        afterMethod((TestSetup) result.getInstance());
     }
 
     @Override
-    public void onTestFailure(ITestResult testResult) {
+    public void onTestFailure(ITestResult result) {
         System.out.println("onTestFailure");
-        afterMethod();
+        afterMethod((TestSetup) result.getInstance());
     }
 
     @Override
     public void onTestSkipped(ITestResult result) {
         System.out.println("onTestSkipped");
-        afterMethod();
+        afterMethod((TestSetup) result.getInstance());
     }
 
     @Override
     public void onTestFailedButWithinSuccessPercentage(ITestResult result) {
         System.out.println("onTestFailedButWithinSuccessPercentage");
-        afterMethod();
+        afterMethod((TestSetup) result.getInstance());
     }
 
-    private void afterMethod() {
+    private void afterMethod(TestSetup testSetup) {
         Eyes eyes = testSetup.eyes;
         try {
             TestResults results = eyes.close();

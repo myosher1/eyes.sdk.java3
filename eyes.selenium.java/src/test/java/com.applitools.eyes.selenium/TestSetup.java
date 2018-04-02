@@ -33,7 +33,8 @@ public abstract class TestSetup {
 
     protected Capabilities caps;
     private DesiredCapabilities desiredCaps = new DesiredCapabilities();
-    private BatchInfo batchInfo = new BatchInfo("Java3 Tests");
+
+    private static BatchInfo batchInfo = new BatchInfo("Java3 Tests");
 
     protected HashSet<FloatingMatchSettings> expectedFloatingRegions = new HashSet<>();
     protected HashSet<Region> expectedIgnoreRegions = new HashSet<>();
@@ -88,8 +89,8 @@ public abstract class TestSetup {
         this.expectedFloatingRegions = new HashSet<>(Arrays.asList(expectedFloatingsRegions));
     }
 
-    @BeforeMethod(alwaysRun = true)
-    public void beforeTest(Method method, Object[] parameters) {
+    //@BeforeMethod(alwaysRun = true)
+    public void beforeMethod(Method method, Object[] parameters) {
         assert parameters != null;
         String platform = (String) parameters[0];
 
