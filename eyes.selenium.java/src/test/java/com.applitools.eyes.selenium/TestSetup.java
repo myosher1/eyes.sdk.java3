@@ -45,7 +45,7 @@ public abstract class TestSetup {
     protected static String testSuitName;
 
     protected static String testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
-    protected static RectangleSize testedPageSize = new RectangleSize(800,600);
+    protected static RectangleSize testedPageSize = new RectangleSize(800, 600);
 
     protected static boolean forceFullPageScreenshot = false;
     protected static boolean hideScrollbars = true;
@@ -138,6 +138,9 @@ public abstract class TestSetup {
             driver.get(testedPageUrl);
 
             eyes.setDebugScreenshotsPrefix("Java_" + testName + "_");
+
+            expectedIgnoreRegions.clear();
+            expectedFloatingRegions.clear();
         }
 
         protected void finished(Description description) {
