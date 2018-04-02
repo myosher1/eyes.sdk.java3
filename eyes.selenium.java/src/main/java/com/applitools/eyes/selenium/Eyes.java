@@ -1879,7 +1879,8 @@ public class Eyes extends EyesBase {
             FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
             BufferedImage entireFrameOrElement =
                     algo.getStitchedRegion(imageProvider, regionToCheck,
-                            positionProvider, getElementPositionProvider(),
+                            new ScrollPositionProvider(logger, this.jsExecutor),
+                            getElementPositionProvider(),
                             scaleProviderFactory,
                             cutProviderHandler.get(),
                             getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,

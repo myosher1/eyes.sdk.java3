@@ -70,6 +70,8 @@ public class FullPageCaptureAlgorithm {
         PositionMemento originalPosition = originProvider.getState();
         PositionMemento originalStitchedState = positionProvider.getState();
 
+        originProvider.setPosition(Location.ZERO);
+
         Location currentPosition;
 
         logger.verbose("Getting top/left image...");
