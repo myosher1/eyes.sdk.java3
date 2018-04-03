@@ -4,10 +4,8 @@ import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.exceptions.DiffsFoundException;
 import com.applitools.eyes.exceptions.NewTestException;
 import com.applitools.eyes.selenium.fluent.Target;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -19,13 +17,12 @@ import java.net.URL;
 import java.util.UUID;
 
 
-@RunWith(JUnit4.class)
 public class TestServerStatus {
 
     private Eyes eyes;
     private WebDriver webDriver;
 
-    @Before
+    @BeforeClass
     public void setup() throws MalformedURLException {
         eyes = new Eyes();
         eyes.setSaveNewTests(false);
@@ -50,7 +47,7 @@ public class TestServerStatus {
         }
     }
 
-    @Test(expected = DiffsFoundException.class)
+    @Test(expectedExceptions = DiffsFoundException.class)
     public void TestSessionSummary_Status_Failed() throws MalformedURLException {
         WebDriver driver = eyes.open(webDriver,
                 TestServerStatus.class.getSimpleName(),
@@ -61,7 +58,7 @@ public class TestServerStatus {
         teardown();
     }
 
-    @Test(expected = NewTestException.class)
+    @Test(expectedExceptions = NewTestException.class)
     public void TestSessionSummary_Status_New() throws MalformedURLException {
         String uuid = "_" + UUID.randomUUID().toString();
 

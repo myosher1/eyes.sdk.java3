@@ -5,6 +5,7 @@
         <classes>
             <class name="com.applitools.eyes.selenium.TestClassicApi" />
             <class name="com.applitools.eyes.selenium.TestFluentApi" />
+            <class name="com.applitools.eyes.selenium.TestSpecialCases" />
         </classes>
     </test>
 </suite>

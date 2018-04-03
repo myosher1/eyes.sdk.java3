@@ -16,8 +16,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
  * @author mohamedabdulkadar.m
  */
 public class FinalApplication_iOS {
-    public static final String USERNAME = "matan";
-    public static final String ACCESS_KEY = "ec79e940-078b-41d4-91a6-d7d6008cf1ea";
+    public static final String USERNAME = System.getenv("SAUCE_USERNAME");
+    public static final String ACCESS_KEY = System.getenv("SAUCE_ACCESS_KEY");
     static WebDriver driver;
     public static final String URL = "http://" + USERNAME + ":" + ACCESS_KEY + "@ondemand.saucelabs.com:80/wd/hub";
     static WebElement wb;

@@ -17,8 +17,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
  * @author mohamedabdulkadar.m
  */
 public class FinalApplication_Android {
-    public static final String USERNAME = "matan";
-    public static final String ACCESS_KEY = "ec79e940-078b-41d4-91a6-d7d6008cf1ea";
+    public static final String USERNAME =  System.getenv("SAUCE_USERNAME");
+    public static final String ACCESS_KEY = System.getenv("SAUCE_ACCESS_KEY");
     static WebDriver driver;
     public static final String URL = "http://" + USERNAME + ":" + ACCESS_KEY + "@ondemand.saucelabs.com:80/wd/hub";
     static WebElement wb;
@@ -26,7 +26,6 @@ public class FinalApplication_Android {
     static long stop;
     final static int URL_BAR_SIZE = 77;
     final static int NAVIGATION_BAR_SIZE = 48;
-    public static final String ApplitoolsApiKey="YOUR APPLITOOLS APIKEY";
 
     static public void main(String[] args) throws MalformedURLException, InterruptedException, AWTException {
 
@@ -53,7 +52,6 @@ public class FinalApplication_Android {
     }
     public static void function() throws InterruptedException, AWTException {
         Eyes eyes = new Eyes();
-        eyes.setApiKey(ApplitoolsApiKey);
         eyes.setSaveNewTests(false);
         eyes.setForceFullPageScreenshot(true);
         eyes.setImageCut(new FixedCutProvider(URL_BAR_SIZE, NAVIGATION_BAR_SIZE, 0, 0));

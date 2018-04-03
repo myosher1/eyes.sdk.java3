@@ -3,16 +3,13 @@ package com.applitools.eyes.selenium;
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.selenium.fluent.Target;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.testng.annotations.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 
-@RunWith(JUnit4.class)
 public class TestServerConnector {
 
     @Test
