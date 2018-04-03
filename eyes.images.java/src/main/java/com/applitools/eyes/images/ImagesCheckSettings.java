@@ -16,4 +16,11 @@ public class ImagesCheckSettings extends CheckSettings implements IImagesCheckTa
     public BufferedImage getImage() {
         return image;
     }
+
+    @Override
+    public ImagesCheckSettings clone(){
+        ImagesCheckSettings clone = new ImagesCheckSettings(this.image);
+        super.populateClone(clone);
+        return clone;
+    }
 }
