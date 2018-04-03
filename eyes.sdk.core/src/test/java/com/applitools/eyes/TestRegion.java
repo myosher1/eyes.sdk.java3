@@ -1,20 +1,16 @@
 package com.applitools.eyes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.Test;
-import org.junit.Assert;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+import org.testng.Assert;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.TimeZone;
 
-@RunWith(JUnit4.class)
 public class TestRegion {
 
     /**
@@ -35,16 +31,16 @@ public class TestRegion {
         int width = 3;
         int height = 4;
         Region region = new Region(left, top, width, height);
-        Assert.assertEquals("left", region.getLeft(), left);
-        Assert.assertEquals("top", region.getTop(), top);
-        Assert.assertEquals("width", region.getWidth(), width);
-        Assert.assertEquals("height", region.getHeight(), height);
+        Assert.assertEquals(left, region.getLeft(), "left");
+        Assert.assertEquals(top, region.getTop(), "top");
+        Assert.assertEquals(width, region.getWidth(), "width");
+        Assert.assertEquals(height, region.getHeight(), "height");
 
         region = new Region(new Location(left, top), new RectangleSize(width, height));
-        Assert.assertEquals("left", region.getLeft(), left);
-        Assert.assertEquals("top", region.getTop(), top);
-        Assert.assertEquals("width", region.getWidth(), width);
-        Assert.assertEquals("height", region.getHeight(), height);
+        Assert.assertEquals(left, region.getLeft(), "left");
+        Assert.assertEquals(top, region.getTop(), "top");
+        Assert.assertEquals(width, region.getWidth(), "width");
+        Assert.assertEquals(height, region.getHeight(), "height");
 
         // This should still be ok (another way to say "empty region")
         new Region(1, 2, 0, 0);
@@ -104,23 +100,23 @@ public class TestRegion {
         original = new Region(left, top, width, height);
         other = new Region(original);
 
-        Assert.assertEquals("left", original.getLeft(), other.getLeft());
-        Assert.assertEquals("top", original.getTop(), other.getTop());
-        Assert.assertEquals("width", original.getWidth(), other.getWidth());
-        Assert.assertEquals("height", original.getHeight(), other.getHeight());
+        Assert.assertEquals(other.getLeft(), original.getLeft(), "left");
+        Assert.assertEquals(other.getTop(), original.getTop(), "top");
+        Assert.assertEquals(other.getWidth(), original.getWidth(), "width");
+        Assert.assertEquals(other.getHeight(), original.getHeight(), "height");
 
-        Assert.assertEquals("Region objects should be equal!", original, other);
-        Assert.assertFalse("original and other should not be the same object", original == other);
+        Assert.assertEquals(other, original, "Region objects should be equal!");
+        Assert.assertNotSame(original, other, "original and other should not be the same object");
     }
 
     @Test
     public void testLocation() {
         Region r = new Region(1, 2, 3, 4);
 
-        Assert.assertEquals("invalid location", r.getLocation(), new Location(1, 2));
+        Assert.assertEquals(r.getLocation(), new Location(1, 2), "invalid location");
 
         r.setLocation(new Location(5, 6));
-        Assert.assertEquals("invalid location", r.getLocation(), new Location(5, 6));
+        Assert.assertEquals(r.getLocation(), new Location(5, 6), "invalid location");
     }
 
     @Test
@@ -129,9 +125,8 @@ public class TestRegion {
         Location containedLocation = new Location(2, 5);
         Location outsideLocation = new Location(20, 5);
 
-        Assert.assertTrue("region contains containedLocation", region.contains(containedLocation));
-        Assert.assertFalse("region doesn't contain location",
-                region.contains(outsideLocation));
+        Assert.assertTrue(region.contains(containedLocation), "region contains containedLocation");
+        Assert.assertFalse(region.contains(outsideLocation), "region doesn't contain location");
     }
 
     @Test
@@ -147,14 +142,14 @@ public class TestRegion {
         r2 = new Region(l2, s2);
 
         r1.intersect(r2);
-        Assert.assertEquals("intersected x", 20, r1.getLeft());
-        Assert.assertEquals("intersected y", 30, r1.getTop());
-        Assert.assertEquals("intersected width", 40, r1.getWidth());
-        Assert.assertEquals("intersected height", 50, r1.getHeight());
+        Assert.assertEquals(r1.getLeft(), 20, "intersected x");
+        Assert.assertEquals(r1.getTop(), 30, "intersected y");
+        Assert.assertEquals(r1.getWidth(), 40, "intersected width");
+        Assert.assertEquals(r1.getHeight(), 50, "intersected height");
 
         // Regions which don't intersect should return an empty region.
         r2.intersect(new Region(5, 5, 10, 10));
-        Assert.assertEquals("no overlap", r2, Region.EMPTY);
+        Assert.assertEquals(r2, Region.EMPTY, "no overlap");
     }
 
     @Test
@@ -162,12 +157,12 @@ public class TestRegion {
         Region r1, r2;
         r1 = new Region(1, 2, 3, 4);
         r2 = new Region(r1);
-        Assert.assertEquals("Regions should be equal!", r1, r2);
-        Assert.assertEquals("Hashes should be equal!", r1.hashCode(), r2.hashCode());
+        Assert.assertEquals(r1, r2, "Regions should be equal!");
+        Assert.assertEquals(r1.hashCode(), r2.hashCode(), "Hashes should be equal!");
 
         r2.makeEmpty();
-        Assert.assertNotEquals("Regions should differ!", r1, r2);
-        Assert.assertNotEquals("Hashes should differ!", r1.hashCode(), r2.hashCode());
+        Assert.assertNotEquals(r1, r2, "Regions should differ!");
+        Assert.assertNotEquals(r1.hashCode(), r2.hashCode(), "Hashes should differ!");
     }
 
 
@@ -189,8 +184,7 @@ public class TestRegion {
 
             Region actualDeserialization = jsonMapper.readValue(jsonData, Region.class);
             Region expectedDeserialization = new Region(left, top, width, height);
-            Assert.assertEquals("Region deserialization does not match!",
-                    expectedDeserialization, actualDeserialization);
+            Assert.assertEquals(actualDeserialization, expectedDeserialization, "Region deserialization does not match!");
         } catch (IOException e) {
             Assert.fail(e.getMessage());
         }
@@ -282,9 +276,7 @@ public class TestRegion {
         Region r = new Region(1, 1, 10, 20);
 
         Location middleOffset = r.getMiddleOffset();
-        Assert.assertEquals("X middle is not correct!", 5,
-                middleOffset.getX());
-        Assert.assertEquals("Y middle is not correct!", 10,
-                middleOffset.getY());
+        Assert.assertEquals(middleOffset.getX(), 5, "X middle is not correct!");
+        Assert.assertEquals(middleOffset.getY(), 10, "Y middle is not correct!");
     }
 }
