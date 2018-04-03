@@ -85,6 +85,12 @@ public class SafariScreenshotImageProvider implements ImageProvider {
                 } else {
                     bottomBarHeight = 0;
                 }
+
+                // on iPhone 5.5 inch with Safari 10 in landscape mode crop the tabs bar.
+                if (displayLogicalWidth == 736 && displayLogicalHeight == 414 &&
+                        Integer.parseInt(userAgent.getBrowserMajorVersion()) < 11) {
+                    topBarHeight = 33;
+                }
             }
 
             if (Integer.parseInt(userAgent.getBrowserMajorVersion()) >= 11) { // Safari >= 11
