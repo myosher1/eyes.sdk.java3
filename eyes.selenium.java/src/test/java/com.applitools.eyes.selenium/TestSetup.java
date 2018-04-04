@@ -47,10 +47,10 @@ public abstract class TestSetup {
 
         eyes.setHideScrollbars(true);
 
-        if (System.getenv("CI") == null) {
-            eyes.setDebugScreenshotsPath("c:\\temp\\logs");
-            //eyes.setSaveDebugScreenshots(true);
-        }
+//        if (System.getenv("CI") == null) {
+//            eyes.setDebugScreenshotsPath("c:\\temp\\logs");
+//            eyes.setSaveDebugScreenshots(true);
+//        }
 
         String batchId = System.getenv("APPLITOOLS_BATCH_ID");
         if (batchId != null) {
