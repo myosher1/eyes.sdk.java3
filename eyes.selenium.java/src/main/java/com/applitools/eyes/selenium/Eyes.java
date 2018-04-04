@@ -615,6 +615,7 @@ public class Eyes extends EyesBase {
         ArgumentGuard.notNull(checkSettings, "checkSettings");
 
         logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
+        logger.verbose("URL: " + driver.getCurrentUrl());
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
