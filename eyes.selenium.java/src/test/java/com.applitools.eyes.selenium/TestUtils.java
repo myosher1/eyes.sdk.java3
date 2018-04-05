@@ -15,6 +15,7 @@ public class TestUtils {
         return result.toArray(new Object[0][0]);
     }
 
+    @SafeVarargs
     public static Object[][] generatePermutations(List<Object>... lists) {
         return generatePermutations(Arrays.asList(lists));
     }

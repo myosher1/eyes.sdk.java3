@@ -1,13 +1,11 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import io.appium.java_client.MobileBy;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.AndroidElement;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.net.MalformedURLException;

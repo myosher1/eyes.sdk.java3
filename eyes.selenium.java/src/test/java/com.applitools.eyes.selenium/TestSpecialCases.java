@@ -1,15 +1,24 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.selenium.fluent.Target;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Capabilities;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
+import org.testng.annotations.*;
 
-@RunWith(Parameterized.class)
-public abstract class TestSpecialCases extends TestSetup {
+@Listeners(TestListener.class)
+public class TestSpecialCases extends TestSetup {
+
+    @Factory(dataProvider = "dp", dataProviderClass = TestsDataProvider.class)
+    public TestSpecialCases(Capabilities caps, String platform, boolean forceFPS) {
+        super.caps = caps;
+        super.platform = platform;
+        super.forceFPS = forceFPS;
+
+        testSuitName = "Eyes Selenium SDK - Special Cases";
+        testedPageUrl = "http://applitools.github.io/demo/TestPages/WixLikeTestPage/index.html";
+    }
 
     @Test
     public void TestCheckRegionInAVeryBigFrame() {

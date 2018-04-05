@@ -40,9 +40,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.9.8</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -158,14 +158,6 @@
                             <serverId>ossrh</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <version>2.20.1</version>
-                        <configuration>
-                            <groups>com.applitools.eyes.selenium.CI</groups>
                         </configuration>
                     </plugin>
                 </plugins>
