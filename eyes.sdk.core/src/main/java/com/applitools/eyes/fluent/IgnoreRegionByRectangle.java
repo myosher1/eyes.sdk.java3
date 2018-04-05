@@ -4,6 +4,9 @@ import com.applitools.eyes.EyesBase;
 import com.applitools.eyes.EyesScreenshot;
 import com.applitools.eyes.Region;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class IgnoreRegionByRectangle implements GetRegion {
     private Region region;
 
@@ -12,7 +15,10 @@ public class IgnoreRegionByRectangle implements GetRegion {
     }
 
     @Override
-    public Region getRegion(EyesBase eyesBase, EyesScreenshot screenshot) {
-        return this.region;
+    public List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot)
+    {
+        List<Region> value = new ArrayList<>();
+        value.add(this.region);
+        return value;
     }
 }

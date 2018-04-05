@@ -4,6 +4,8 @@ import com.applitools.eyes.EyesBase;
 import com.applitools.eyes.EyesScreenshot;
 import com.applitools.eyes.FloatingMatchSettings;
 
+import java.util.List;
+
 public interface GetFloatingRegion {
-    FloatingMatchSettings getRegion(EyesBase eyesBase, EyesScreenshot screenshot);
+    List<FloatingMatchSettings> getRegions(EyesBase eyesBase, EyesScreenshot screenshot);
 }

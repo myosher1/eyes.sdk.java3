@@ -8,6 +8,9 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class IgnoreRegionBySelector implements GetRegion {
     private By selector;
 
@@ -16,16 +19,21 @@ public class IgnoreRegionBySelector implements GetRegion {
     }
 
     @Override
-    public Region getRegion(EyesBase eyesBase, EyesScreenshot screenshot) {
-        WebElement element = ((Eyes)eyesBase).getDriver().findElement(this.selector);
-        Point locationAsPoint = element.getLocation();
-        Dimension size = element.getSize();
+    public List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot) {
+        List<WebElement> elements = ((Eyes)eyesBase).getDriver().findElements(this.selector);
+        List<Region> values = new ArrayList<>(elements.size());
+        for (WebElement element : elements) {
 
-        // Element's coordinates are context relative, so we need to convert them first.
-        Location adjustedLocation = screenshot.getLocationInScreenshot(new Location(locationAsPoint.getX(), locationAsPoint.getY()),
-                CoordinatesType.CONTEXT_RELATIVE);
+            Point locationAsPoint = element.getLocation();
+            Dimension size = element.getSize();
 
-        return new Region(adjustedLocation, new RectangleSize(size.getWidth(), size.getHeight()),
-                CoordinatesType.SCREENSHOT_AS_IS);
+            // Element's coordinates are context relative, so we need to convert them first.
+            Location adjustedLocation = screenshot.getLocationInScreenshot(new Location(locationAsPoint.getX(), locationAsPoint.getY()),
+                    CoordinatesType.CONTEXT_RELATIVE);
+
+            values.add(new Region(adjustedLocation, new RectangleSize(size.getWidth(), size.getHeight()),
+                    CoordinatesType.SCREENSHOT_AS_IS));
+        }
+        return values;
     }
 }

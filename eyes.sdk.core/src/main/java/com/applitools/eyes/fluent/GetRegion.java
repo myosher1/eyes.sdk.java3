@@ -4,6 +4,8 @@ import com.applitools.eyes.EyesBase;
 import com.applitools.eyes.EyesScreenshot;
 import com.applitools.eyes.Region;
 
+import java.util.List;
+
 public interface GetRegion {
-    Region getRegion(EyesBase eyesBase, EyesScreenshot screenshot);
+    List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot);
 }

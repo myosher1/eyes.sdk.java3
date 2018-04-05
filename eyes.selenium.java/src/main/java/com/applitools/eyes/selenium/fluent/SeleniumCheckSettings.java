@@ -127,4 +127,14 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         clone.floating(new FloatingRegionByElement(element, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
         return clone;
     }
+
+    @Override
+    public SeleniumCheckSettings fully(){
+        return (SeleniumCheckSettings)super.fully();
+    }
+
+    @Override
+    public SeleniumCheckSettings fully(boolean fully){
+        return (SeleniumCheckSettings)super.fully(fully);
+    }
 }

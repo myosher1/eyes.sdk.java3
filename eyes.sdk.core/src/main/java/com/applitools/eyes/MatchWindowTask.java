@@ -60,10 +60,10 @@ public class MatchWindowTask {
      * @param imageMatchSettings The settings to use.
      * @return The match result.
      */
-    protected MatchResult performMatch(Trigger[] userInputs,
-                                       AppOutputWithScreenshot appOutput,
-                                       String tag, boolean ignoreMismatch,
-                                       ImageMatchSettings imageMatchSettings) {
+    private MatchResult performMatch(Trigger[] userInputs,
+                                     AppOutputWithScreenshot appOutput,
+                                     String tag, boolean ignoreMismatch,
+                                     ImageMatchSettings imageMatchSettings) {
 
         // Prepare match data.
         MatchWindowData data = new MatchWindowData(userInputs, appOutput
@@ -123,7 +123,7 @@ public class MatchWindowTask {
         List<Region> ignoreRegions = new ArrayList<>();
         for (GetRegion ignoreRegionProvider : checkSettingsInternal.getIgnoreRegions()) {
             try {
-                ignoreRegions.add(ignoreRegionProvider.getRegion(eyes, screenshot));
+                ignoreRegions.addAll(ignoreRegionProvider.getRegions(eyes, screenshot));
             }
             catch (OutOfBoundsException ex){
                 logger.log("WARNING - ignore region was out of bounds.");
@@ -137,16 +137,16 @@ public class MatchWindowTask {
                                         EyesScreenshot screenshot) {
         List<FloatingMatchSettings> floatingRegions = new ArrayList<>();
         for (GetFloatingRegion floatingRegionProvider : checkSettingsInternal.getFloatingRegions()) {
-            floatingRegions.add(floatingRegionProvider.getRegion(eyes, screenshot));
+            floatingRegions.addAll(floatingRegionProvider.getRegions(eyes, screenshot));
         }
         imageMatchSettings.setFloatingRegions(floatingRegions.toArray(new FloatingMatchSettings[0]));
     }
 
     /**
      * Build match settings by merging the check settings and the default match settings.
-     * @param checkSettingsInternal
-     * @param eyes
-     * @param screenshot
+     * @param checkSettingsInternal the settings to match the image by.
+     * @param eyes the Eyes object to use.
+     * @param screenshot the Screenshot wrapper object.
      * @return Merged match settings.
      */
     private ImageMatchSettings createImageMatchSettings(ICheckSettingsInternal checkSettingsInternal,

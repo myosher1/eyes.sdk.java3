@@ -22,12 +22,16 @@ public abstract class TestFluentApi extends TestSetup {
                 .fully()
                 .timeout(5000)
                 .ignore(new Region(50, 50, 100, 100)));
+
+        setExpectedIgnoreRegions(new Region(50, 50, 100, 100));
     }
 
     @Test
     public void TestCheckRegionWithIgnoreRegion_Fluent() {
         eyes.check("Fluent - Region with Ignore region", Target.region(By.id("overflowing-div"))
                 .ignore(new Region(50, 50, 100, 100)));
+
+        setExpectedIgnoreRegions(new Region(50, 50, 100, 100));
     }
 
     @Test
@@ -147,6 +151,7 @@ public abstract class TestFluentApi extends TestSetup {
     {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         WebElement ignoreElement = webDriver.findElement(By.id("overflowing-div"));
+        setExpectedIgnoreRegions();
         eyes.check("Fluent - Region by element", Target.region(element).ignore(ignoreElement));
     }
 
@@ -156,5 +161,16 @@ public abstract class TestFluentApi extends TestSetup {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         eyes.check("Fluent - Region by element", Target.region(element).ignore(element));
         setExpectedIgnoreRegions(new Region(0,0,304,184));
+    }
+
+    @Test
+    public void TestCheckFullWindowWithMultipleIgnoreRegionsBySelector_Fluent() {
+        WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
+        eyes.check("Fluent - Region by element", Target.window().fully().ignore(By.cssSelector(".ignore")));
+        setExpectedIgnoreRegions(
+                new Region(172, 928, 456, 306),
+                new Region(8, 1270, 790, 206),
+                new Region(10,284, 300, 180)
+        );
     }
 }
