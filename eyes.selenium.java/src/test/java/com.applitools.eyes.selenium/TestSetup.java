@@ -31,6 +31,8 @@ public abstract class TestSetup {
     protected HashSet<FloatingMatchSettings> expectedFloatingRegions = new HashSet<>();
     protected HashSet<Region> expectedIgnoreRegions = new HashSet<>();
 
+    protected boolean compareExpectedRegions = false;
+
     protected String platform;
     protected boolean forceFPS;
 

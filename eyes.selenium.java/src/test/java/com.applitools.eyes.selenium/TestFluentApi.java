@@ -19,6 +19,7 @@ public class TestFluentApi extends TestSetup {
         super.platform = platform;
         super.forceFPS = forceFPS;
 
+        super.compareExpectedRegions = caps.getBrowserName().equalsIgnoreCase("chrome");
         testSuitName = "Eyes Selenium SDK - Fluent API";
         testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
     }
@@ -79,8 +80,8 @@ public class TestFluentApi extends TestSetup {
         eyes.check("Fluent - Window (Before)", Target.window().fully());
         eyes.check("Fluent - Inner frame div",
                 Target.frame("frame1")
-                      .region(By.id("inner-frame-div"))
-                      .fully());
+                        .region(By.id("inner-frame-div"))
+                        .fully());
         eyes.check("Fluent - Window (After)", Target.window().fully());
     }
     /*
@@ -169,12 +170,11 @@ public class TestFluentApi extends TestSetup {
 
     @Test
     public void TestCheckFullWindowWithMultipleIgnoreRegionsBySelector_Fluent() {
-        WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         eyes.check("Fluent - Region by element", Target.window().fully().ignore(By.cssSelector(".ignore")));
         setExpectedIgnoreRegions(
                 new Region(172, 928, 456, 306),
-                new Region(8, 1270, 790, 206),
-                new Region(10,284, 300, 180)
+                new Region(8, 1270, 784, 206),
+                new Region(10, 284, 302, 182)
         );
     }
 }

@@ -82,14 +82,16 @@ public class TestListener implements ITestListener {
             FloatingMatchSettings[] floating = imageMatchSettings.getFloating();
             Region[] ignoreRegions = imageMatchSettings.getIgnore();
 
-            if (testSetup.expectedFloatingRegions.size() > 0) {
-                HashSet<FloatingMatchSettings> floatingRegionsSet = new HashSet<>(Arrays.asList(floating));
-                Assert.assertEquals(floatingRegionsSet, testSetup.expectedFloatingRegions, "Floating regions lists differ");
-            }
+            if (testSetup.compareExpectedRegions) {
+                if (testSetup.expectedFloatingRegions.size() > 0) {
+                    HashSet<FloatingMatchSettings> floatingRegionsSet = new HashSet<>(Arrays.asList(floating));
+                    Assert.assertEquals(floatingRegionsSet, testSetup.expectedFloatingRegions, "Floating regions lists differ");
+                }
 
-            if (testSetup.expectedIgnoreRegions.size() > 0) {
-                HashSet<Region> ignoreRegionsSet = new HashSet<>(Arrays.asList(ignoreRegions));
-                Assert.assertEquals(ignoreRegionsSet, testSetup.expectedIgnoreRegions, "Ignore regions lists differ");
+                if (testSetup.expectedIgnoreRegions.size() > 0) {
+                    HashSet<Region> ignoreRegionsSet = new HashSet<>(Arrays.asList(ignoreRegions));
+                    Assert.assertEquals(ignoreRegionsSet, testSetup.expectedIgnoreRegions, "Ignore regions lists differ");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
