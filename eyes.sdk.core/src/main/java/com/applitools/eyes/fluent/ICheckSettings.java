@@ -121,4 +121,11 @@ public interface ICheckSettings {
      * @return This instance of the settings object.
      */
     ICheckSettings ignoreCaret();
+
+    /**
+     * A setter for the checkpoint name.
+     * @param name A name by which to identify the checkpoint.
+     * @return This instance of the settings object.
+     */
+    ICheckSettings withName(String name);
 }

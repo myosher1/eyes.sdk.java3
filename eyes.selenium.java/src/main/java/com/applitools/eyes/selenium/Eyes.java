@@ -611,14 +611,30 @@ public class Eyes extends EyesBase {
                 viewportSize);
     }
 
+    public void check(ICheckSettings... checkSettings) {
+        //TODO - 1. find common ancestor.
+        //TODO - 2. take all required screenshots for all the various ICheckSettings objects before moving on.
+        //TODO - 3. collect all the screenshots and send them to the server with their names.
+
+        //TODO - replace this implementation according to the description above.
+        for (ICheckSettings settings : checkSettings){
+            check(settings);
+        }
+    }
+
     public void check(String name, ICheckSettings checkSettings) {
         ArgumentGuard.notNull(checkSettings, "checkSettings");
+        checkSettings = checkSettings.withName(name);
+        this.check(checkSettings);
+    }
 
-        logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
+    public void check(ICheckSettings checkSettings) {
+        ArgumentGuard.notNull(checkSettings, "checkSettings");
         logger.verbose("URL: " + driver.getCurrentUrl());
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
+        String name = checkSettingsInternal.getName();
 
         this.stitchContent = checkSettingsInternal.getStitchContent();
 
@@ -1551,8 +1567,7 @@ public class Eyes extends EyesBase {
             logger.verbose("replacing regionToCheck");
             regionToCheck = elementRegion;
 
-            if (!effectiveViewport.isSizeEmpty())
-            {
+            if (!effectiveViewport.isSizeEmpty()) {
                 regionToCheck.intersect(effectiveViewport);
             }
 
@@ -1806,7 +1821,9 @@ public class Eyes extends EyesBase {
     }
 
     private void tryHideScrollbars() {
-        if (EyesSeleniumUtils.isMobileDevice(driver)) { return; }
+        if (EyesSeleniumUtils.isMobileDevice(driver)) {
+            return;
+        }
         if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
             FrameChain originalFC = driver.getFrameChain().clone();
             FrameChain fc = driver.getFrameChain().clone();
@@ -1824,7 +1841,9 @@ public class Eyes extends EyesBase {
     }
 
     private void tryRestoreScrollbars() {
-        if (EyesSeleniumUtils.isMobileDevice(driver)) { return; }
+        if (EyesSeleniumUtils.isMobileDevice(driver)) {
+            return;
+        }
         if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
             FrameChain originalFC = this.originalFC.clone();
@@ -1844,7 +1863,7 @@ public class Eyes extends EyesBase {
     protected EyesScreenshot getSubScreenshot(EyesScreenshot screenshot, Region region, ICheckSettingsInternal checkSettingsInternal) {
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettingsInternal instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettingsInternal : null;
 
-        if(seleniumCheckTarget == null) {
+        if (seleniumCheckTarget == null) {
             // we should't get here, but just in case
             return screenshot.getSubScreenshot(region, false);
         }
@@ -1855,7 +1874,7 @@ public class Eyes extends EyesBase {
         }
 
         // For check region, we want the screenshot window to know it's a region.
-        return ((EyesWebDriverScreenshot)screenshot).getSubScreenshotForRegion(region, false);
+        return ((EyesWebDriverScreenshot) screenshot).getSubScreenshotForRegion(region, false);
     }
 
     @Override
