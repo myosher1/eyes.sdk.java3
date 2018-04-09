@@ -120,16 +120,24 @@ public class MatchWindowTask {
                                       ImageMatchSettings imageMatchSettings, EyesBase eyes,
                                       EyesScreenshot screenshot) {
 
-        List<Region> ignoreRegions = new ArrayList<>();
-        for (GetRegion ignoreRegionProvider : checkSettingsInternal.getIgnoreRegions()) {
+        imageMatchSettings.setIgnoreRegions(collectRegions(checkSettingsInternal.getIgnoreRegions(), eyes, screenshot));
+        imageMatchSettings.setLayoutRegions(collectRegions(checkSettingsInternal.getLayoutRegions(), eyes, screenshot));
+        imageMatchSettings.setStrictRegions(collectRegions(checkSettingsInternal.getStrictRegions(), eyes, screenshot));
+        imageMatchSettings.setContentRegions(collectRegions(checkSettingsInternal.getContentRegions(), eyes, screenshot));
+    }
+
+    private Region[] collectRegions(GetRegion[] regionProviders, EyesBase eyes, EyesScreenshot screenshot) {
+
+        List<Region> regions = new ArrayList<>();
+        for (GetRegion regionProvider : regionProviders) {
             try {
-                ignoreRegions.addAll(ignoreRegionProvider.getRegions(eyes, screenshot));
+                regions.addAll(regionProvider.getRegions(eyes, screenshot));
             }
             catch (OutOfBoundsException ex){
                 logger.log("WARNING - ignore region was out of bounds.");
             }
         }
-        imageMatchSettings.setIgnoreRegions(ignoreRegions.toArray(new Region[0]));
+        return regions.toArray(new Region[0]);
     }
 
     private void collectFloatingRegions(ICheckSettingsInternal checkSettingsInternal,

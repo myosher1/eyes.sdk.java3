@@ -11,6 +11,9 @@ public class ImageMatchSettings {
     private ExactMatchSettings exact;
     private Boolean ignoreCaret;
     private Region ignoreRegions[];
+    private Region layoutRegions[];
+    private Region strictRegions[];
+    private Region contentRegions[];
     private FloatingMatchSettings floatingMatchSettings[];
 
     public ImageMatchSettings(MatchLevel matchLevel, ExactMatchSettings exact) {
@@ -78,12 +81,69 @@ public class ImageMatchSettings {
     }
 
     /**
+     * Sets an array of regions to check using the Layout method.
+     * @param layoutRegions The array of regions to ignore.
+     */
+    @JsonSetter("Layout")
+    public void setLayoutRegions(Region[] layoutRegions) {
+        this.layoutRegions = layoutRegions;
+    }
+
+    /**
+     * Sets an array of regions to check using the Strict method.
+     * @param strictRegions The array of regions to ignore.
+     */
+    @JsonSetter("Strict")
+    public void setStrictRegions(Region[] strictRegions) {
+        this.strictRegions = strictRegions;
+    }
+
+    /**
+     * Sets an array of regions to check using the Content method.
+     * @param contentRegions The array of regions to ignore.
+     */
+
+    @JsonSetter("Content")
+    public void setContentRegions(Region[] contentRegions) {
+        this.contentRegions = contentRegions;
+    }
+
+    /**
      * Returns the array of regions to ignore.
      * @return the array of regions to ignore.
      */
     @JsonGetter("Ignore")
     public Region[] getIgnoreRegions() {
         return this.ignoreRegions;
+    }
+
+    /**
+     * Returns the array of regions to check using the Strict method.
+     * @return the array of regions to check using the Strict method.
+     */
+    @JsonGetter("Strict")
+    public Region[] getStrictRegions() {
+        return this.strictRegions;
+    }
+
+
+    /**
+     * Returns the array of regions to check using the Layout method.
+     * @return the array of regions to check using the Layout method.
+     */
+    @JsonGetter("Layout")
+    public Region[] getLayoutRegions() {
+        return this.layoutRegions;
+    }
+
+
+    /**
+     * Returns the array of regions to check using the Content method.
+     * @return the array of regions to check using the Content method.
+     */
+    @JsonGetter("Content")
+    public Region[] getContentRegions() {
+        return this.contentRegions;
     }
 
     /**

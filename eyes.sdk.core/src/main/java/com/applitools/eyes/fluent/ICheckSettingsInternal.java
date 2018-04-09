@@ -9,6 +9,9 @@ public interface ICheckSettingsInternal {
     boolean getStitchContent();
     MatchLevel getMatchLevel();
     GetRegion[] getIgnoreRegions();
+    GetRegion[] getStrictRegions();
+    GetRegion[] getLayoutRegions();
+    GetRegion[] getContentRegions();
     GetFloatingRegion[] getFloatingRegions();
     Boolean getIgnoreCaret();
 }

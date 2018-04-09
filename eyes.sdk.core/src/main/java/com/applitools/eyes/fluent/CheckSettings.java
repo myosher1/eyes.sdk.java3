@@ -16,6 +16,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     private Boolean ignoreCaret = null;
     private boolean stitchContent = false;
     private List<GetRegion> ignoreRegions = new ArrayList<>();
+    private List<GetRegion> layoutRegions = new ArrayList<>();
+    private List<GetRegion> strictRegions = new ArrayList<>();
+    private List<GetRegion> contentRegions = new ArrayList<>();
     private List<GetFloatingRegion> floatingRegions = new ArrayList<>();
     private int timeout = -1;
 
@@ -33,12 +36,36 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         this.timeout = timeout;
     }
 
-    protected void ignore(Region region) {
-        this.ignore(new IgnoreRegionByRectangle(region));
+    protected void ignore_(Region region) {
+        this.ignore_(new IgnoreRegionByRectangle(region));
     }
 
-    protected void ignore(GetRegion regionProvider) {
+    protected void ignore_(GetRegion regionProvider) {
         ignoreRegions.add(regionProvider);
+    }
+
+    protected void layout_(Region region) {
+        this.layout_(new IgnoreRegionByRectangle(region));
+    }
+
+    protected void layout_(GetRegion regionProvider) {
+        layoutRegions.add(regionProvider);
+    }
+
+    protected void content_(Region region) {
+        this.content_(new IgnoreRegionByRectangle(region));
+    }
+
+    protected void content_(GetRegion regionProvider) {
+        contentRegions.add(regionProvider);
+    }
+
+    protected void strict_(Region region) {
+        this.strict_(new IgnoreRegionByRectangle(region));
+    }
+
+    protected void strict_(GetRegion regionProvider) {
+        strictRegions.add(regionProvider);
     }
 
     protected void floating_(Region region, int maxUpOffset, int maxDownOffset, int maxLeftOffset, int maxRightOffset) {
@@ -62,10 +89,50 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      * {@inheritDoc}
      */
     @Override
-    public ICheckSettings ignore(Region... regions) {
+    public ICheckSettings ignore(Region region, Region... regions) {
         CheckSettings clone = clone();
+        clone.ignore_(region);
         for (Region r : regions) {
-            clone.ignore(r);
+            clone.ignore_(r);
+        }
+        return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ICheckSettings layout(Region region, Region... regions) {
+        CheckSettings clone = clone();
+        clone.layout_(region);
+        for (Region r : regions) {
+            clone.layout_(r);
+        }
+        return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ICheckSettings strict(Region region, Region... regions) {
+        CheckSettings clone = clone();
+        clone.strict_(region);
+        for (Region r : regions) {
+            clone.strict_(r);
+        }
+        return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ICheckSettings content(Region region, Region... regions) {
+        CheckSettings clone = clone();
+        clone.content_(region);
+        for (Region r : regions) {
+            clone.content_(r);
         }
         return clone;
     }
@@ -216,6 +283,24 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     public GetRegion[] getIgnoreRegions() {
         return this.ignoreRegions.toArray(new GetRegion[0]);
     }
+
+    @Override
+    public GetRegion[] getStrictRegions() {
+        return this.strictRegions.toArray(new GetRegion[0]);
+    }
+
+
+    @Override
+    public GetRegion[] getLayoutRegions() {
+        return this.layoutRegions.toArray(new GetRegion[0]);
+    }
+
+
+    @Override
+    public GetRegion[] getContentRegions() {
+        return this.contentRegions.toArray(new GetRegion[0]);
+    }
+
 
     @Override
     public GetFloatingRegion[] getFloatingRegions() {
