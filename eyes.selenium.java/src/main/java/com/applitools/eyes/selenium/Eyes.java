@@ -4,12 +4,15 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.*;
+import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.capture.EyesScreenshotFactory;
 import com.applitools.eyes.capture.ImageProvider;
 import com.applitools.eyes.diagnostics.TimedAppOutput;
 import com.applitools.eyes.exceptions.TestFailedException;
+import com.applitools.eyes.fluent.GetRegion;
 import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
+import com.applitools.eyes.fluent.IgnoreRegionByRectangle;
 import com.applitools.eyes.positioning.NullRegionProvider;
 import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.positioning.PositionProvider;
@@ -37,6 +40,9 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.awt.image.BufferedImage;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.List;
 
 /**
@@ -617,9 +623,116 @@ public class Eyes extends EyesBase {
         //TODO - 3. collect all the screenshots and send them to the server with their names.
 
         //TODO - replace this implementation according to the description above.
-        for (ICheckSettings settings : checkSettings){
-            check(settings);
+        boolean originalForceFPS = forceFullPageScreenshot;
+
+        if (checkSettings.length > 1) {
+            forceFullPageScreenshot = true;
         }
+
+
+        Dictionary<Integer, GetRegion> getRegions = new Hashtable<>();
+        Dictionary<Integer, ICheckSettingsInternal> checkSettingsInternalDictionary = new Hashtable<>();
+        Dictionary<Integer, String> regionNames = new Hashtable<>();
+
+        for (int i = 0; i < checkSettings.length; ++i) {
+            ICheckSettings settings = checkSettings[i];
+            ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) settings;
+            String name = checkSettingsInternal.getName();
+
+            regionNames.put(i, name);
+            checkSettingsInternalDictionary.put(i, checkSettingsInternal);
+
+            Region targetRegion = checkSettingsInternal.getTargetRegion();
+
+            if (targetRegion != null) {
+                getRegions.put(i, new IgnoreRegionByRectangle(targetRegion));
+            } else {
+                ISeleniumCheckTarget seleniumCheckTarget =
+                        (settings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) settings : null;
+
+                if (seleniumCheckTarget != null) {
+                    WebElement targetElement = getTargetElement(seleniumCheckTarget);
+                    if (targetElement == null && seleniumCheckTarget.getFrameChain().size() == 1) {
+                        targetElement = getFrameElement(seleniumCheckTarget.getFrameChain().get(0));
+                    }
+
+                    if (targetElement != null) {
+                        getRegions.put(i, new IgnoreRegionByElement(targetElement));
+                    }
+                }
+            }
+            //check(settings);
+        }
+        if (regionNames.size() > 0) {
+            tryHideScrollbars();
+
+            EyesScreenshot screenshot = getScreenshot();
+            for (int i = 0; i < checkSettings.length; ++i) {
+                String name = regionNames.get(i);
+                if (!((Hashtable<Integer, GetRegion>) getRegions).containsKey(i)){
+                    continue;
+                }
+
+                GetRegion getRegion = getRegions.get(i);
+
+                Region r = getRegion.getRegions(this, screenshot).get(0);
+                EyesScreenshot subScreenshot = screenshot.getSubScreenshot(r, false);
+
+                debugScreenshotsProvider.save(subScreenshot.getImage(), String.format("subscreenshot_%s_%d",name, i));
+
+                /*MatchWindowTask mwt = new MatchWindowTask(
+                        logger, serverConnector,
+                        runningSession, getMatchTimeout());
+
+                ICheckSettingsInternal checkSettingsInternal = checkSettingsInternalDictionary.get(i);
+                ImageMatchSettings ims = mwt.createImageMatchSettings(checkSettingsInternal, this, subScreenshot);
+                AppOutputWithScreenshot appOutput = new AppOutputWithScreenshot(new AppOutput(name, null), subScreenshot);
+                MatchResult matchResult = mwt.performMatch(null, appOutput, name, true, ims);*/
+            }
+
+            tryRestoreScrollbars();
+        }
+        forceFullPageScreenshot = originalForceFPS;
+    }
+
+    private WebElement getFrameElement(FrameLocator frameLocator){
+        WebElement frameReference = frameLocator.getFrameReference();
+
+        if (frameReference == null) {
+            By selector = frameLocator.getFrameSelector();
+            List<WebElement> possibleFrames = null;
+            if (selector != null) {
+                possibleFrames = driver.findElements(selector);
+            } else {
+                String nameOrId = frameLocator.getFrameNameOrId();
+                if (nameOrId != null) {
+                    possibleFrames = driver.findElementsById(nameOrId);
+                    if (possibleFrames.size() == 0) {
+                        possibleFrames = driver.findElementsByName(nameOrId);
+                        if (possibleFrames.size() == 0) {
+                            Integer frameIndex = frameLocator.getFrameIndex();
+                            if (frameIndex != null) {
+                                possibleFrames = driver.findElements(By.cssSelector(String.format("iframe:nth-of-type(%d)", frameIndex)));
+                            }
+                        }
+                    }
+                }
+            }
+            if (possibleFrames != null && possibleFrames.size() > 0){
+                frameReference = possibleFrames.get(0);
+            }
+        }
+        return frameReference;
+    }
+
+    private WebElement getTargetElement(ISeleniumCheckTarget seleniumCheckTarget) {
+        assert seleniumCheckTarget != null;
+        By targetSelector = seleniumCheckTarget.getTargetSelector();
+        WebElement targetElement = seleniumCheckTarget.getTargetElement();
+        if (targetElement == null && targetSelector != null) {
+            targetElement = this.driver.findElement(targetSelector);
+        }
+        return targetElement;
     }
 
     public void check(String name, ICheckSettings checkSettings) {
@@ -655,11 +768,7 @@ public class Eyes extends EyesBase {
                 }
             }, name, false, checkSettings);
         } else if (seleniumCheckTarget != null) {
-            By targetSelector = seleniumCheckTarget.getTargetSelector();
-            WebElement targetElement = seleniumCheckTarget.getTargetElement();
-            if (targetElement == null && targetSelector != null) {
-                targetElement = this.driver.findElement(targetSelector);
-            }
+            WebElement targetElement = getTargetElement(seleniumCheckTarget);
             if (targetElement != null) {
                 tryHideScrollbars();
                 this.targetElement = targetElement;
