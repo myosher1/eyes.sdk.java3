@@ -82,7 +82,7 @@ public class Region {
         }
 
         if (!(obj instanceof Region)) {
-            return  false;
+            return false;
         }
         Region other = (Region) obj;
 
@@ -186,9 +186,8 @@ public class Region {
     }
 
     /**
-     *
      * @param containerRegion The region to divide into sub-regions.
-     * @param subRegionSize The maximum size of each sub-region.
+     * @param subRegionSize   The maximum size of each sub-region.
      * @return The sub-regions composing the current region. If subRegionSize
      * is equal or greater than the current region,  only a single region is
      * returned.
@@ -249,7 +248,7 @@ public class Region {
     }
 
     /**
-     * @param containerRegion The region to divide into sub-regions.
+     * @param containerRegion  The region to divide into sub-regions.
      * @param maxSubRegionSize The maximum size of each sub-region (some
      *                         regions might be smaller).
      * @return The sub-regions composing the current region. If
@@ -301,7 +300,7 @@ public class Region {
     /**
      * Returns a list of sub-regions which compose the current region.
      * @param subRegionSize The default sub-region size to use.
-     * @param isFixedSize If {@code false}, then sub-regions might have a
+     * @param isFixedSize   If {@code false}, then sub-regions might have a
      *                      size which is smaller then {@code subRegionSize}
      *                      (thus there will be no overlap of regions).
      *                      Otherwise, all sub-regions will have the same
@@ -332,7 +331,7 @@ public class Region {
      * @param other The region to check if it is contained within the current
      *              region.
      * @return True if {@code other} is contained within the current region,
-     *          false otherwise.
+     * false otherwise.
      */
     @SuppressWarnings("UnusedDeclaration")
     public boolean contains(Region other) {
@@ -351,7 +350,7 @@ public class Region {
      * <p>
      * @param location The location to test.
      * @return True if the location is contained within this region,
-     *          false otherwise.
+     * false otherwise.
      */
     public boolean contains(Location location) {
         return location.getX() >= left
@@ -375,9 +374,9 @@ public class Region {
         int otherBottom = otherTop + other.getHeight();
 
         return (((left <= otherLeft && otherLeft <= right)
-                    ||  (otherLeft <= left && left <= otherRight))
+                || (otherLeft <= left && left <= otherRight))
                 && ((top <= otherTop && otherTop <= bottom)
-                    ||  (otherTop <= top && top <= otherBottom)));
+                || (otherTop <= top && top <= otherBottom)));
     }
 
     /**
@@ -458,6 +457,21 @@ public class Region {
         int middleY = height / 2;
 
         return new Location(middleX, middleY);
+    }
+
+    public void expandToContain(Region region) {
+        this.left = Math.min(this.left, region.left);
+        this.top = Math.min(this.top, region.top);
+
+        int thisRight = this.left + this.width;
+        int otherRight = region.left + region.width;
+        int maxRight = Math.max(thisRight, otherRight);
+        this.width = maxRight - this.left;
+
+        int thisBottom = this.top + this.height;
+        int otherBottom = region.top + region.height;
+        int maxBottom = Math.max(thisBottom, otherBottom);
+        this.height = maxBottom - this.top;
     }
 
     @Override
