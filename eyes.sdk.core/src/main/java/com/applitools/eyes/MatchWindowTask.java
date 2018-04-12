@@ -84,8 +84,11 @@ public class MatchWindowTask {
                                      ImageMatchSettings imageMatchSettings) {
 
         // Prepare match data.
-        MatchWindowData data = new MatchWindowData(userInputs, appOutput
-                .getAppOutput(), tag, ignoreMismatch,
+        MatchWindowData data = new MatchWindowData(
+                userInputs,
+                appOutput.getAppOutput(),
+                tag,
+                ignoreMismatch,
                 new MatchWindowData.Options(tag, userInputs, ignoreMismatch,
                         false, false, false,
                         imageMatchSettings));
