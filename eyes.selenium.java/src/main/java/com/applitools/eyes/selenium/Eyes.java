@@ -40,7 +40,6 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.awt.image.BufferedImage;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -102,6 +101,8 @@ public class Eyes extends EyesBase {
     private WebElement targetElement = null;
     private PositionMemento positionMemento;
     private Region effectiveViewport = Region.EMPTY;
+
+    private EyesScreenshotFactory screenshotFactory;
 
     private boolean stitchContent = false;
 
@@ -306,6 +307,8 @@ public class Eyes extends EyesBase {
         }
 
         initDriver(driver);
+
+        screenshotFactory = new EyesWebDriverScreenshotFactory(logger, this.driver);
 
         String uaString = this.driver.getUserAgent();
         if (uaString != null) {
@@ -629,17 +632,14 @@ public class Eyes extends EyesBase {
             forceFullPageScreenshot = true;
         }
 
-
         Dictionary<Integer, GetRegion> getRegions = new Hashtable<>();
         Dictionary<Integer, ICheckSettingsInternal> checkSettingsInternalDictionary = new Hashtable<>();
-        Dictionary<Integer, String> regionNames = new Hashtable<>();
 
         for (int i = 0; i < checkSettings.length; ++i) {
             ICheckSettings settings = checkSettings[i];
             ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) settings;
             String name = checkSettingsInternal.getName();
 
-            regionNames.put(i, name);
             checkSettingsInternalDictionary.put(i, checkSettingsInternal);
 
             Region targetRegion = checkSettingsInternal.getTargetRegion();
@@ -663,31 +663,57 @@ public class Eyes extends EyesBase {
             }
             //check(settings);
         }
-        if (regionNames.size() > 0) {
+        if (getRegions.size() > 0) {
             tryHideScrollbars();
 
-            EyesScreenshot screenshot = getScreenshot();
+            RectangleSize rectSize = getViewportSize();
+            EyesScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver,
+                    new BufferedImage(rectSize.getWidth(), rectSize.getHeight(), BufferedImage.TYPE_INT_RGB));
+
+            Region bbox = getRegions.get(0).getRegions(this, screenshot).get(0);
+            for (int i = 1; i < checkSettings.length; ++i) {
+                GetRegion getRegion = getRegions.get(i);
+                if (getRegion != null) {
+                    Region region = getRegion.getRegions(this, screenshot).get(0);
+                    bbox.expandToContain(region);
+                }
+            }
+
+            MatchWindowTask mwt = new MatchWindowTask(logger, serverConnector, runningSession, getMatchTimeout());
+
+            ScaleProviderFactory scaleProviderFactory = updateScalingParams();
+            FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
+
+            BufferedImage screenshotImage = algo.getStitchedRegion(
+                    Region.EMPTY,
+                    bbox, positionProvider);
+
+            debugScreenshotsProvider.save(screenshotImage, "original");
+            screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
+
             for (int i = 0; i < checkSettings.length; ++i) {
-                String name = regionNames.get(i);
-                if (!((Hashtable<Integer, GetRegion>) getRegions).containsKey(i)){
+                if (!((Hashtable<Integer, GetRegion>) getRegions).containsKey(i)) {
                     continue;
                 }
 
                 GetRegion getRegion = getRegions.get(i);
 
                 Region r = getRegion.getRegions(this, screenshot).get(0);
+                r = r.offset(-bbox.getLeft(), -bbox.getTop());
                 EyesScreenshot subScreenshot = screenshot.getSubScreenshot(r, false);
 
-                debugScreenshotsProvider.save(subScreenshot.getImage(), String.format("subscreenshot_%s_%d",name, i));
-
-                /*MatchWindowTask mwt = new MatchWindowTask(
-                        logger, serverConnector,
-                        runningSession, getMatchTimeout());
-
                 ICheckSettingsInternal checkSettingsInternal = checkSettingsInternalDictionary.get(i);
+                String name = checkSettingsInternal.getName();
+
+                debugScreenshotsProvider.save(subScreenshot.getImage(), String.format("subscreenshot_%s_%d", name, i));
+
                 ImageMatchSettings ims = mwt.createImageMatchSettings(checkSettingsInternal, this, subScreenshot);
-                AppOutputWithScreenshot appOutput = new AppOutputWithScreenshot(new AppOutput(name, null), subScreenshot);
-                MatchResult matchResult = mwt.performMatch(null, appOutput, name, true, ims);*/
+                AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()));
+                AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, subScreenshot);
+                MatchResult matchResult = mwt.performMatch(
+                        new Trigger[0], appOutputWithScreenshot, name, false, ims);
+
+                logger.verbose("matchResult.asExcepted: " + matchResult.getAsExpected());
             }
 
             tryRestoreScrollbars();
@@ -695,7 +721,7 @@ public class Eyes extends EyesBase {
         forceFullPageScreenshot = originalForceFPS;
     }
 
-    private WebElement getFrameElement(FrameLocator frameLocator){
+    private WebElement getFrameElement(FrameLocator frameLocator) {
         WebElement frameReference = frameLocator.getFrameReference();
 
         if (frameReference == null) {
@@ -718,7 +744,7 @@ public class Eyes extends EyesBase {
                     }
                 }
             }
-            if (possibleFrames != null && possibleFrames.size() > 0){
+            if (possibleFrames != null && possibleFrames.size() > 0) {
                 frameReference = possibleFrames.get(0);
             }
         }
@@ -1990,30 +2016,21 @@ public class Eyes extends EyesBase {
     protected EyesScreenshot getScreenshot() {
 
         logger.verbose("getScreenshot()");
-        ScaleProviderFactory scaleProviderFactory = updateScalingParams();
-
-        EyesWebDriverScreenshot result;
 
         FrameChain originalFrameChain = driver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
 
-        EyesScreenshotFactory screenshotFactory = new EyesWebDriverScreenshotFactory(logger, driver);
+        ScaleProviderFactory scaleProviderFactory = updateScalingParams();
+        FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
+
+        EyesWebDriverScreenshot result;
 
         if (checkFrameOrElement) {
             logger.verbose("Check frame/element requested");
 
-            //switchTo.framesDoScroll(originalFrameChain);
             switchTo.frames(originalFrameChain);
 
-            FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
-            BufferedImage entireFrameOrElement =
-                    algo.getStitchedRegion(imageProvider, regionToCheck,
-                            new ScrollPositionProvider(logger, this.jsExecutor),
-                            getElementPositionProvider(),
-                            scaleProviderFactory,
-                            cutProviderHandler.get(),
-                            getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
-                            getStitchOverlap(), regionPositionCompensation);
+            BufferedImage entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, getElementPositionProvider());
 
             logger.verbose("Building screenshot object...");
             result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
@@ -2022,18 +2039,14 @@ public class Eyes extends EyesBase {
             logger.verbose("Full page screenshot requested.");
 
             // Save the current frame path.
-            Location originalFramePosition = originalFrameChain.size() > 0 ? originalFrameChain.getDefaultContentScrollPosition() : new Location(0, 0);
+            Location originalFramePosition =
+                    originalFrameChain.size() > 0
+                            ? originalFrameChain.getDefaultContentScrollPosition()
+                            : Location.ZERO;
 
             switchTo.defaultContent();
 
-            FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
-            BufferedImage fullPageImage =
-                    algo.getStitchedRegion(imageProvider, Region.EMPTY,
-                            new ScrollPositionProvider(logger, this.jsExecutor),
-                            positionProvider, scaleProviderFactory,
-                            cutProviderHandler.get(),
-                            getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
-                            getStitchOverlap(), regionPositionCompensation);
+            BufferedImage fullPageImage = algo.getStitchedRegion(Region.EMPTY, null, positionProvider);
 
             switchTo.frames(originalFrameChain);
             result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);
@@ -2063,6 +2076,16 @@ public class Eyes extends EyesBase {
         }
         logger.verbose("Done!");
         return result;
+    }
+
+    private FullPageCaptureAlgorithm createFullPageCaptureAlgorithm(ScaleProviderFactory scaleProviderFactory) {
+        return new FullPageCaptureAlgorithm(logger, regionPositionCompensation,
+                getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
+                new ScrollPositionProvider(logger, this.jsExecutor),
+                scaleProviderFactory,
+                cutProviderHandler.get(),
+                getStitchOverlap(),
+                imageProvider);
     }
 
     @Override
