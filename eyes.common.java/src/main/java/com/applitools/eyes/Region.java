@@ -459,19 +459,21 @@ public class Region {
         return new Location(middleX, middleY);
     }
 
-    public void expandToContain(Region region) {
-        this.left = Math.min(this.left, region.left);
-        this.top = Math.min(this.top, region.top);
+    public Region expandToContain(Region region) {
+        int left = Math.min(this.left, region.left);
+        int top = Math.min(this.top, region.top);
 
         int thisRight = this.left + this.width;
         int otherRight = region.left + region.width;
         int maxRight = Math.max(thisRight, otherRight);
-        this.width = maxRight - this.left;
+        int width = maxRight - left;
 
         int thisBottom = this.top + this.height;
         int otherBottom = region.top + region.height;
         int maxBottom = Math.max(thisBottom, otherBottom);
-        this.height = maxBottom - this.top;
+        int height = maxBottom - top;
+
+        return new Region(left, top, width, height);
     }
 
     @Override

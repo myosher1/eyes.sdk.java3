@@ -675,7 +675,7 @@ public class Eyes extends EyesBase {
                 GetRegion getRegion = getRegions.get(i);
                 if (getRegion != null) {
                     Region region = getRegion.getRegions(this, screenshot).get(0);
-                    bbox.expandToContain(region);
+                    bbox = bbox.expandToContain(region);
                 }
             }
 
