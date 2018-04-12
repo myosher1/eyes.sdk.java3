@@ -11,8 +11,7 @@ import java.util.List;
 /**
  * Represents a region.
  */
-@JsonIgnoreProperties({"location" , "empty", "middleOffset", "size",
-        "subRegions"})
+@JsonIgnoreProperties({"location", "empty", "middleOffset", "size", "subRegions"})
 public class Region {
     private static Logger logger;
     @JsonProperty("left")
@@ -28,7 +27,7 @@ public class Region {
 
     public static final Region EMPTY = new Region(0, 0, 0, 0, CoordinatesType.SCREENSHOT_AS_IS);
 
-    public static void initLogger(Logger logger){
+    public static void initLogger(Logger logger) {
         Region.logger = logger;
     }
 
@@ -60,18 +59,16 @@ public class Region {
     }
 
     /**
-     *
      * @return true if the region is empty, false otherwise.
      */
     public boolean isEmpty() {
         return this.getLeft() == EMPTY.getLeft()
-                && this.getTop() == EMPTY .getTop()
+                && this.getTop() == EMPTY.getTop()
                 && this.getWidth() == EMPTY.getWidth()
                 && this.getHeight() == EMPTY.getHeight();
     }
 
     /**
-     *
      * @return true if the region's size is 0, false otherwise.
      */
     public boolean isSizeEmpty() {
@@ -126,7 +123,6 @@ public class Region {
     }
 
     /**
-     *
      * @return The (top,left) position of the current region.
      */
     public Location getLocation() {
@@ -135,7 +131,6 @@ public class Region {
 
     /**
      * Get an offset region.
-     *
      * @param dx The X axis offset.
      * @param dy The Y axis offset.
      * @return A region with an offset location.
@@ -147,7 +142,6 @@ public class Region {
     /**
      * Get a region which is a scaled version of the current region.
      * IMPORTANT: This also scales the LOCATION(!!) of the region (not just its size).
-     *
      * @param scaleRatio The ratio by which to scale the region.
      * @return A new region which is a scaled version of the current region.
      */
@@ -165,9 +159,13 @@ public class Region {
     /**
      * @return The region's coordinate type.
      */
-    public CoordinatesType getCoordinatesType() { return this.coordinatesType; }
+    public CoordinatesType getCoordinatesType() {
+        return this.coordinatesType;
+    }
 
-    public void setCoordinatesType(CoordinatesType value) { this.coordinatesType = value; }
+    public void setCoordinatesType(CoordinatesType value) {
+        this.coordinatesType = value;
+    }
 
     /**
      * @param size The updated size of the region.
@@ -179,7 +177,6 @@ public class Region {
 
     /**
      * Set the (top,left) position of the current region
-     *
      * @param location The (top,left) position to set.
      */
     public void setLocation(Location location) {
@@ -201,7 +198,7 @@ public class Region {
         ArgumentGuard.notNull(containerRegion, "containerRegion");
         ArgumentGuard.notNull(subRegionSize, "subRegionSize");
 
-        List<Region> subRegions = new LinkedList<Region>();
+        List<Region> subRegions = new LinkedList<>();
 
         int subRegionWidth = subRegionSize.getWidth();
         int subRegionHeight = subRegionSize.getHeight();
@@ -268,7 +265,7 @@ public class Region {
         ArgumentGuard.greaterThanZero(maxSubRegionSize.getHeight(),
                 "maxSubRegionSize.getHeight()");
 
-        List<Region> subRegions = new LinkedList<Region>();
+        List<Region> subRegions = new LinkedList<>();
 
         int currentTop = containerRegion.top;
         int bottom = containerRegion.top + containerRegion.height;
@@ -277,12 +274,16 @@ public class Region {
         while (currentTop < bottom) {
 
             int currentBottom = currentTop + maxSubRegionSize.getHeight();
-            if (currentBottom > bottom) { currentBottom = bottom; }
+            if (currentBottom > bottom) {
+                currentBottom = bottom;
+            }
 
             int currentLeft = containerRegion.left;
             while (currentLeft < right) {
                 int currentRight = currentLeft + maxSubRegionSize.getWidth();
-                if (currentRight > right) { currentRight = right; }
+                if (currentRight > right) {
+                    currentRight = right;
+                }
 
                 int currentHeight = currentBottom - currentTop;
                 int currentWidth = currentRight - currentLeft;
