@@ -58,46 +58,50 @@ public class TestListener implements ITestListener {
     private void afterMethod(TestSetup testSetup) {
         Eyes eyes = testSetup.eyes;
         try {
-            TestResults results = eyes.close();
-            String apiSessionUrl = results.getApiUrls().getSession();
-            URI apiSessionUri = UriBuilder.fromUri(apiSessionUrl)
-                    .queryParam("format", "json")
-                    .queryParam("AccessToken", results.getSecretToken())
-                    .queryParam("apiKey", eyes.getApiKey())
-                    .build();
+            if (eyes.getIsOpen()) {
+                TestResults results = eyes.close();
+                String apiSessionUrl = results.getApiUrls().getSession();
+                URI apiSessionUri = UriBuilder.fromUri(apiSessionUrl)
+                        .queryParam("format", "json")
+                        .queryParam("AccessToken", results.getSecretToken())
+                        .queryParam("apiKey", eyes.getApiKey())
+                        .build();
 
-            Client client = ClientBuilder.newClient();
-            String srStr = client.target(apiSessionUri)
-                    .request(MediaType.APPLICATION_JSON)
-                    .get(String.class);
+                Client client = ClientBuilder.newClient();
+                String srStr = client.target(apiSessionUri)
+                        .request(MediaType.APPLICATION_JSON)
+                        .get(String.class);
 
-            ObjectMapper jsonMapper = new ObjectMapper();
-            jsonMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                ObjectMapper jsonMapper = new ObjectMapper();
+                jsonMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-            SessionResults resultObject = jsonMapper.readValue(srStr, SessionResults.class);
+                SessionResults resultObject = jsonMapper.readValue(srStr, SessionResults.class);
 
-            ActualAppOutput[] actualAppOutput = resultObject.getActualAppOutput();
+                ActualAppOutput[] actualAppOutput = resultObject.getActualAppOutput();
 
-            ImageMatchSettings imageMatchSettings = actualAppOutput[0].getImageMatchSettings();
-            FloatingMatchSettings[] floating = imageMatchSettings.getFloating();
-            Region[] ignoreRegions = imageMatchSettings.getIgnore();
+                ImageMatchSettings imageMatchSettings = actualAppOutput[0].getImageMatchSettings();
+                FloatingMatchSettings[] floating = imageMatchSettings.getFloating();
+                Region[] ignoreRegions = imageMatchSettings.getIgnore();
 
-            if (testSetup.compareExpectedRegions) {
-                if (testSetup.expectedFloatingRegions.size() > 0) {
-                    HashSet<FloatingMatchSettings> floatingRegionsSet = new HashSet<>(Arrays.asList(floating));
-                    Assert.assertEquals(floatingRegionsSet, testSetup.expectedFloatingRegions, "Floating regions lists differ");
-                }
+                if (testSetup.compareExpectedRegions) {
+                    if (testSetup.expectedFloatingRegions.size() > 0) {
+                        HashSet<FloatingMatchSettings> floatingRegionsSet = new HashSet<>(Arrays.asList(floating));
+                        Assert.assertEquals(floatingRegionsSet, testSetup.expectedFloatingRegions, "Floating regions lists differ");
+                    }
 
-                if (testSetup.expectedIgnoreRegions.size() > 0) {
-                    HashSet<Region> ignoreRegionsSet = new HashSet<>(Arrays.asList(ignoreRegions));
-                    Assert.assertEquals(ignoreRegionsSet, testSetup.expectedIgnoreRegions, "Ignore regions lists differ");
+                    if (testSetup.expectedIgnoreRegions.size() > 0) {
+                        HashSet<Region> ignoreRegionsSet = new HashSet<>(Arrays.asList(ignoreRegions));
+                        Assert.assertEquals(ignoreRegionsSet, testSetup.expectedIgnoreRegions, "Ignore regions lists differ");
+                    }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
             eyes.abortIfNotClosed();
-            testSetup.driver.quit();
+            if (testSetup.driver != null) {
+                testSetup.driver.quit();
+            }
         }
     }
 
