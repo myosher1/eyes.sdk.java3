@@ -91,7 +91,9 @@ public abstract class TestSetup {
                 .replace(' ', '_')
                 .replace("]", "");
 
-        LogHandler logHandler = new FileLogger("c:\\temp\\logs\\java_" + testName + "_" + platform + ".log", true, true);
+        String logFilePath = "c:\\temp\\logs\\java_" + testName + "_" + platform + ".log";
+        LogHandler logHandler = new FileLogger(logFilePath, false, true);
+
         eyes.setLogHandler(logHandler);
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
 
@@ -111,7 +113,7 @@ public abstract class TestSetup {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return String.format("%s (%s, %s, force FPS: %s)",
                 this.getClass().getSimpleName(),
                 this.caps.getBrowserName(),
