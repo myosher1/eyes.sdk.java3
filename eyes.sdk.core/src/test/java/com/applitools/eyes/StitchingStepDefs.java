@@ -4,7 +4,7 @@ import cucumber.api.DataTable;
 import cucumber.api.java.en.Given;
 import cucumber.api.java.en.Then;
 import cucumber.api.java.en.When;
-import org.junit.Assert;
+import org.testng.Assert;
 
 import java.util.List;
 
@@ -55,13 +55,11 @@ public class StitchingStepDefs {
 
         int subRegionsSize = 0;
         for (Region currentSubRegion : subRegions) {
-            Assert.assertTrue("Invalid Sub region: " + currentSubRegion,
-                    validSubRegions.contains(currentSubRegion));
+            Assert.assertTrue(validSubRegions.contains(currentSubRegion),"Invalid Sub region: " + currentSubRegion);
             ++subRegionsSize;
         }
 
-        Assert.assertEquals("Number of sub-regions",
-                subRegionsSize, validSubRegions.size());
+        Assert.assertEquals(subRegionsSize, validSubRegions.size(),"Number of sub-regions");
     }
 
     @Then("^An exception should be thrown.$")

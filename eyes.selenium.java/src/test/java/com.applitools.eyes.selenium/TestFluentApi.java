@@ -1,19 +1,27 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.FloatingMatchSettings;
-import com.applitools.eyes.OutOfBoundsException;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.selenium.fluent.Target;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
-@RunWith(Parameterized.class)
-public abstract class TestFluentApi extends TestSetup {
+import org.openqa.selenium.By;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.WebElement;
+import org.testng.annotations.*;
+
+@Listeners(TestListener.class)
+public class TestFluentApi extends TestSetup {
+
+    @Factory(dataProvider = "dp", dataProviderClass = TestsDataProvider.class)
+    public TestFluentApi(Capabilities caps, String platform, boolean forceFPS) {
+        super.caps = caps;
+        super.platform = platform;
+        super.forceFPS = forceFPS;
+
+        testSuitName = "Eyes Selenium SDK - Fluent API";
+        testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
+    }
 
     @Test
     public void TestCheckWindowWithIgnoreRegion_Fluent() {
@@ -63,7 +71,7 @@ public abstract class TestFluentApi extends TestSetup {
     }
 
     @Test
-    public void TestScrollbarsHiddenAndReturned_Fluent(){
+    public void TestScrollbarsHiddenAndReturned_Fluent() {
         eyes.check("Fluent - Window (Before)", Target.window().fully());
         eyes.check("Fluent - Inner frame div",
                 Target.frame("frame1")
@@ -120,8 +128,7 @@ public abstract class TestFluentApi extends TestSetup {
     }
 
     @Test
-    public void TestCheckWindowWithFloatingBySelector_Fluent()
-    {
+    public void TestCheckWindowWithFloatingBySelector_Fluent() {
         eyes.check("Fluent - Window with floating region by selector", Target.window()
                 .floating(By.id("overflowing-div"), 3, 3, 20, 30));
     }
@@ -136,25 +143,22 @@ public abstract class TestFluentApi extends TestSetup {
     }
 
     @Test
-    public void TestCheckElementFully_Fluent()
-    {
+    public void TestCheckElementFully_Fluent() {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         eyes.check("Fluent - Region by element - fully", Target.region(element).fully());
     }
 
     @Test
-    public void TestCheckElementWithIgnoreRegionByElementOutsideTheViewport_Fluent()
-    {
+    public void TestCheckElementWithIgnoreRegionByElementOutsideTheViewport_Fluent() {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         WebElement ignoreElement = webDriver.findElement(By.id("overflowing-div"));
-        eyes.check("Fluent - Region by element - fully", Target.region(element).ignore(ignoreElement));
+        eyes.check("Fluent - Region by element", Target.region(element).ignore(ignoreElement));
     }
 
     @Test
-    public void TestCheckElementWithIgnoreRegionBySameElement_Fluent()
-    {
+    public void TestCheckElementWithIgnoreRegionBySameElement_Fluent() {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         eyes.check("Fluent - Region by element", Target.region(element).ignore(element));
-        setExpectedIgnoreRegions(new Region(0,0,304,184));
+        setExpectedIgnoreRegions(new Region(0, 0, 304, 184));
     }
 }

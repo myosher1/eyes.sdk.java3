@@ -1,14 +1,23 @@
 package com.applitools.eyes.selenium;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Capabilities;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Listeners;
+import org.testng.annotations.Test;
 
-@RunWith(Parameterized.class)
-@Category(CI.class)
-public abstract class TestClassicApi extends TestSetup {
+@Listeners(TestListener.class)
+public class TestClassicApi extends TestSetup {
+
+    @Factory(dataProvider = "dp", dataProviderClass = TestsDataProvider.class)
+    public TestClassicApi(Capabilities caps, String platform, boolean forceFPS) {
+        super.caps = caps;
+        super.platform = platform;
+        super.forceFPS = forceFPS;
+
+        testSuitName = "Eyes Selenium SDK - Classic API";
+        testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
+    }
 
     @Test
     public void TestCheckWindow() {

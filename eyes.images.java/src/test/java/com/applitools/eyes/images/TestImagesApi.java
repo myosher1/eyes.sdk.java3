@@ -1,16 +1,13 @@
 package com.applitools.eyes.images;
 
 import com.applitools.eyes.*;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
-@RunWith(JUnit4.class)
+import java.lang.reflect.Method;
+
 public class TestImagesApi {
     private Eyes eyes;
     private static final String TEST_SUITE_NAME = "Eyes Image SDK";
@@ -21,35 +18,26 @@ public class TestImagesApi {
         batchInfo = new BatchInfo(TEST_SUITE_NAME);
     }
 
-    @Rule
-    public TestRule watcher = new TestWatcher() {
-        protected void starting(Description description) {
+    @BeforeMethod
+    public void setup(Method method) {
+        eyes = new Eyes();
 
-            // Initialize the eyes SDK and set your private API key.
-            eyes = new Eyes();
+        LogHandler logHandler = new StdoutLogHandler(true);
+        eyes.setLogHandler(logHandler);
 
-//            eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
+        eyes.setBatch(batchInfo);
 
-//            logHandler = new FileLogger("c:\\temp\\logs\\TestElement.log", true, true);
-            LogHandler logHandler = new StdoutLogHandler(true);
-            eyes.setLogHandler(logHandler);
+        String testName = method.getName();
+        eyes.open(TEST_SUITE_NAME, testName);
 
-            eyes.setBatch(batchInfo);
+        eyes.setDebugScreenshotsPrefix("Java_Images_SDK_" + testName + "_");
+    }
 
-            String testName = description.getMethodName();
-            eyes.open(TEST_SUITE_NAME, testName);
-
-            eyes.setDebugScreenshotsPrefix("Java_Images_SDK_" + testName + "_" );
-        }
-
-        protected void finished(Description description) {
-             eyes.close();
-        }
-
-        protected void failed(Throwable e, Description description) {
-            eyes.abortIfNotClosed();
-        }
-    };
+    @AfterMethod
+    public void tearDown() {
+        eyes.close();
+        eyes.abortIfNotClosed();
+    }
 
     @Test
     public void TestCheckImage() {
@@ -64,7 +52,7 @@ public class TestImagesApi {
     @Test
     public void TestCheckImage_WithIgnoreRegion_Fluent() {
         eyes.check("TestCheckImage_WithIgnoreRegion_Fluent", Target.image("resources/minions-800x500.jpg")
-                .ignore(new Region(10,20,30,40)));
+                .ignore(new Region(10, 20, 30, 40)));
     }
 
     @Test
