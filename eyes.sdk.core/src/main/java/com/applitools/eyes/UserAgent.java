@@ -133,7 +133,7 @@ public class UserAgent {
             result.OS = OSNames.Windows;
             result.OSMajorVersion = "4";
             result.OSMinorVersion = "0";
-        } else if (result.OS.equals("Mac_PowerPC")) {
+        } else if (result.OS.equals("Mac_PowerPC") || result.OS.equals("Mac OS X")) {
             result.OS = OSNames.Macintosh;
         } else if (result.OS.equals("CrOS")) {
             result.OS = OSNames.ChromeOS;
