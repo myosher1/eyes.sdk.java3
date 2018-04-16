@@ -42,7 +42,7 @@ public abstract class TestSetup {
         // Initialize the eyes SDK and set your private API key.
         eyes = new Eyes();
 
-        LogHandler logHandler = new StdoutLogHandler(true);
+        LogHandler logHandler = new StdoutLogHandler(false);
 
         eyes.setLogHandler(logHandler);
         eyes.setStitchMode(StitchMode.CSS);
@@ -71,6 +71,11 @@ public abstract class TestSetup {
     }
 
     public void beforeMethod(String methodName) {
+        System.out.println();
+        System.out.println("==== Starting Test ====");
+        System.out.println(this);
+        System.out.println();
+
         String seleniumServerUrl = System.getenv("SELENIUM_SERVER_URL");
         if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
             desiredCaps.setCapability("username", System.getenv("SAUCE_USERNAME"));
@@ -95,7 +100,7 @@ public abstract class TestSetup {
             String logFilePath = "c:\\temp\\logs\\java_" + testName + "_" + platform + ".log";
             eyes.setLogHandler(new FileLogger(logFilePath, false, true));
         } else {
-            eyes.setLogHandler(new StdoutLogHandler(true));
+            eyes.setLogHandler(new StdoutLogHandler(false));
         }
 
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
