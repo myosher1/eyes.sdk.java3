@@ -102,14 +102,18 @@ public class IOSTest {
         if (fully) {
             testName += " fully";
         }
-        String logFilename = String.format("c:\\temp\\logs\\iostest_%s.log", testName);
 
-        eyes.setLogHandler(new FileLogger(logFilename, false, true));
-        //eyes.setImageCut(new FixedCutProvider(30, 12, 8, 5));
-        //eyes.setForceFullPageScreenshot(true);
-        eyes.setSaveDebugScreenshots(true);
-        eyes.setDebugScreenshotsPath("C:\\temp\\logs");
-        eyes.setDebugScreenshotsPrefix("iostest_" + testName);
+        if (System.getenv("CI") == null) {
+            //String logFilename = String.format("c:\\temp\\logs\\iostest_%s.log", testName);
+            //eyes.setLogHandler(new FileLogger(logFilename, false, true));
+            //eyes.setImageCut(new FixedCutProvider(30, 12, 8, 5));
+            //eyes.setForceFullPageScreenshot(true);
+            //eyes.setSaveDebugScreenshots(true);
+            //eyes.setDebugScreenshotsPath("C:\\temp\\logs");
+            //eyes.setDebugScreenshotsPrefix("iostest_" + testName);
+        } else {
+            eyes.setLogHandler(new StdoutLogHandler(true));
+        }
 
         eyes.setStitchMode(StitchMode.SCROLL);
 
