@@ -177,4 +177,16 @@ public class TestFluentApi extends TestSetup {
                 new Region(10, 284, 302, 182)
         );
     }
+
+    @Test
+    public void TestCheckMany() {
+        eyes.check(
+                Target.region(By.id("overflowing-div-image")).withName("overflowing div image"),
+                Target.region(By.id("overflowing-div")).withName("overflowing div"),
+                Target.region(By.id("overflowing-div-image")).fully().withName("overflowing div image (fully)"),
+                Target.frame("frame1").frame("frame1-1").fully().withName("Full Frame in Frame"),
+                Target.frame("frame1").withName("frame1"),
+                Target.region(new Region(30, 50, 300, 620)).withName("rectangle")
+        );
+    }
 }

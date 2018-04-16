@@ -91,8 +91,13 @@ public abstract class TestSetup {
                 .replace(' ', '_')
                 .replace("]", "");
 
-        LogHandler logHandler = new FileLogger("c:\\temp\\logs\\java_" + testName + "_" + platform + ".log", true, true);
-        eyes.setLogHandler(logHandler);
+        if (System.getenv("CI") == null) {
+            String logFilePath = "c:\\temp\\logs\\java_" + testName + "_" + platform + ".log";
+            eyes.setLogHandler(new FileLogger(logFilePath, false, true));
+        } else {
+            eyes.setLogHandler(new StdoutLogHandler(true));
+        }
+
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
 
         driver = eyes.open(webDriver,
@@ -111,7 +116,7 @@ public abstract class TestSetup {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return String.format("%s (%s, %s, force FPS: %s)",
                 this.getClass().getSimpleName(),
                 this.caps.getBrowserName(),

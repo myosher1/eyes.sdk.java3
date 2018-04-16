@@ -52,6 +52,24 @@ public class MatchWindowTask {
     }
 
     /**
+     * @param logger            A logger instance.
+     * @param serverConnector   Our gateway to the agent
+     * @param runningSession    The running session in which we should match the window
+     * @param retryTimeout      The default total time to retry matching (ms).
+     */
+    public MatchWindowTask(Logger logger, ServerConnector serverConnector,
+                           RunningSession runningSession, int retryTimeout) {
+        ArgumentGuard.notNull(serverConnector, "serverConnector");
+        ArgumentGuard.notNull(runningSession, "runningSession");
+        ArgumentGuard.greaterThanOrEqualToZero(retryTimeout, "retryTimeout");
+
+        this.logger = logger;
+        this.serverConnector = serverConnector;
+        this.runningSession = runningSession;
+        this.defaultRetryTimeout = retryTimeout;
+        this.appOutputProvider = null;
+    }
+    /**
      * Creates the match data and calls the server connector matchWindow method.
      * @param userInputs         The user inputs related to the current appOutput.
      * @param appOutput          The application output to be matched.
@@ -60,14 +78,17 @@ public class MatchWindowTask {
      * @param imageMatchSettings The settings to use.
      * @return The match result.
      */
-    private MatchResult performMatch(Trigger[] userInputs,
+    public MatchResult performMatch(Trigger[] userInputs,
                                      AppOutputWithScreenshot appOutput,
                                      String tag, boolean ignoreMismatch,
                                      ImageMatchSettings imageMatchSettings) {
 
         // Prepare match data.
-        MatchWindowData data = new MatchWindowData(userInputs, appOutput
-                .getAppOutput(), tag, ignoreMismatch,
+        MatchWindowData data = new MatchWindowData(
+                userInputs,
+                appOutput.getAppOutput(),
+                tag,
+                ignoreMismatch,
                 new MatchWindowData.Options(tag, userInputs, ignoreMismatch,
                         false, false, false,
                         imageMatchSettings));
@@ -157,7 +178,7 @@ public class MatchWindowTask {
      * @param screenshot the Screenshot wrapper object.
      * @return Merged match settings.
      */
-    private ImageMatchSettings createImageMatchSettings(ICheckSettingsInternal checkSettingsInternal,
+    public ImageMatchSettings createImageMatchSettings(ICheckSettingsInternal checkSettingsInternal,
                                                                EyesBase eyes, EyesScreenshot screenshot) {
         ImageMatchSettings imageMatchSettings = null;
         if (checkSettingsInternal != null) {

@@ -85,7 +85,7 @@ public class ContextBasedScaleProvider implements ScaleProvider {
             logger.verbose("Calculating the scale ratio..");
             scaleRatio = 1 / devicePixelRatio;
             if (isMobileDevice) {
-                logger.verbose("Mobile device, so using 2 step calculation for scale ration...");
+                logger.verbose("Mobile device, so using 2 step calculation for scale ratio...");
                 logger.verbose("Scale ratio based on DRP: " + scaleRatio);
                 scaleRatio = getScaleRatioToViewport(viewportWidth, imageToScaleWidth, scaleRatio);
             }

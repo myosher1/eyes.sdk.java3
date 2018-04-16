@@ -21,6 +21,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     private List<GetRegion> contentRegions = new ArrayList<>();
     private List<GetFloatingRegion> floatingRegions = new ArrayList<>();
     private int timeout = -1;
+    private String name;
 
     protected CheckSettings() { }
 
@@ -259,6 +260,15 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         return clone;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public ICheckSettings withName(String name) {
+        CheckSettings clone = clone();
+        clone.name = name;
+        return clone;
+    }
+
     @Override
     public Region getTargetRegion() {
         return this.targetRegion;
@@ -310,6 +320,11 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     @Override
     public Boolean getIgnoreCaret() {
         return this.ignoreCaret;
+    }
+
+    @Override
+    public String getName(){
+        return this.name;
     }
 
     protected void updateTargetRegion(Region region) {

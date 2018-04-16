@@ -21,58 +21,68 @@ public class FullPageCaptureAlgorithm {
     private static final int MIN_SCREENSHOT_PART_HEIGHT = 10;
 
     private final Logger logger;
-    private final UserAgent userAgent;
+    private final RegionPositionCompensation regionPositionCompensation;
+    private final int waitBeforeScreenshots;
+    private final DebugScreenshotsProvider debugScreenshotsProvider;
+    private final EyesScreenshotFactory screenshotFactory;
+    private final PositionProvider originProvider;
+    private final ScaleProviderFactory scaleProviderFactory;
+    private final CutProvider cutProvider;
+    private final int stitchingOverlap;
+    private final ImageProvider imageProvider;
 
-    public FullPageCaptureAlgorithm(Logger logger, UserAgent userAgent) {
+    public FullPageCaptureAlgorithm(Logger logger, RegionPositionCompensation regionPositionCompensation,
+                                    int waitBeforeScreenshots, DebugScreenshotsProvider debugScreenshotsProvider,
+                                    EyesScreenshotFactory screenshotFactory, PositionProvider originProvider,
+                                    ScaleProviderFactory scaleProviderFactory, CutProvider cutProvider,
+                                    int stitchingOverlap, ImageProvider imageProvider) {
+
         ArgumentGuard.notNull(logger, "logger");
-        ArgumentGuard.notNull(userAgent, "userAgent");
+
         this.logger = logger;
-        this.userAgent = userAgent;
+        this.waitBeforeScreenshots = waitBeforeScreenshots;
+        this.debugScreenshotsProvider = debugScreenshotsProvider;
+        this.screenshotFactory = screenshotFactory;
+        this.originProvider = originProvider;
+        this.scaleProviderFactory = scaleProviderFactory;
+        this.cutProvider = cutProvider;
+        this.stitchingOverlap = stitchingOverlap;
+        this.imageProvider = imageProvider;
+
+        this.regionPositionCompensation =
+                regionPositionCompensation != null
+                        ? regionPositionCompensation
+                        : new NullRegionPositionCompensation();
     }
 
-    private static void saveDebugScreenshotPart(DebugScreenshotsProvider debugScreenshotsProvider, BufferedImage image,
-                                                Region region, String name) {
-        String suffix = "part-" + name + "-" + region.getLeft() + "_" + region.getTop() + "_" + region.getWidth() + "x"
-                + region.getHeight();
+    private void saveDebugScreenshotPart(BufferedImage image, Region region, String name) {
+
+        String suffix = String.format("part-%s-%d_%d_%dx%d",
+                name, region.getLeft(), region.getTop(), region.getWidth(), region.getHeight());
+
         debugScreenshotsProvider.save(image, suffix);
     }
 
     /**
      * Returns a stitching of a region.
-     * @param imageProvider         The provider for the screenshot.
-     * @param region                The region to stitch. If {@code Region.EMPTY}, the entire image will be stitched.
-     * @param originProvider        A provider for scrolling to initial position before starting the actual stitching.
-     * @param positionProvider      A provider of the scrolling implementation.
-     * @param scaleProviderFactory  A factory for getting the scale provider.
-     * @param waitBeforeScreenshots Time to wait before each screenshot (milliseconds).
-     * @param screenshotFactory     The factory to use for creating screenshots from the images.
-     * @param stitchingOverlap      The width of the overlapping parts when stitching an image.
-     * @param regionPositionCompensation A strategy for compensating region positions for some browsers.
+     * @param region           The region to stitch. If {@code Region.EMPTY}, the entire image will be stitched.
+     * @param fullarea         The wanted area of the resulting image. If unknown, pass in {@code null} or {@code RectangleSize.EMPTY}.
+     * @param positionProvider A provider of the scrolling implementation.
      * @return An image which represents the stitched region.
      */
-    public BufferedImage getStitchedRegion(ImageProvider imageProvider,
-                                           Region region, PositionProvider originProvider,
-                                           PositionProvider positionProvider, ScaleProviderFactory scaleProviderFactory,
-                                           CutProvider cutProvider, int waitBeforeScreenshots, DebugScreenshotsProvider debugScreenshotsProvider,
-                                           EyesScreenshotFactory screenshotFactory, int stitchingOverlap,
-                                           RegionPositionCompensation regionPositionCompensation) {
+    public BufferedImage getStitchedRegion(Region region, Region fullarea, PositionProvider positionProvider) {
         logger.verbose("getStitchedRegion()");
 
         ArgumentGuard.notNull(region, "region");
         ArgumentGuard.notNull(positionProvider, "positionProvider");
 
-        logger.verbose(String.format("getStitchedRegion: originProvider: %s ; positionProvider: %s ; cutProvider: %s",
-                originProvider.getClass(), positionProvider.getClass(), cutProvider.getClass()));
-
-        logger.verbose(String.format("Region to check: %s", region));
+        logger.verbose(String.format("positionProvider: %s ; Region: %s", positionProvider.getClass(), region));
 
         // Saving the original position (in case we were already in the outermost frame).
-        PositionMemento originalPosition = originProvider.getState();
         PositionMemento originalStitchedState = positionProvider.getState();
 
-        originProvider.setPosition(Location.ZERO);
-
-        Location currentPosition;
+        PositionMemento originalPosition = originProvider.getState();
+        originProvider.setPosition(Location.ZERO); // first scroll to 0,0 so CSS stitching works.
 
         logger.verbose("Getting top/left image...");
         BufferedImage image = imageProvider.getImage();
@@ -84,50 +94,44 @@ public class FullPageCaptureAlgorithm {
         double pixelRatio = 1 / scaleProvider.getScaleRatio();
 
         // FIXME - cropping should be overlaid, so a single cut provider will only handle a single part of the image.
-        cutProvider = cutProvider.scale(pixelRatio);
-        if (!(cutProvider instanceof NullCutProvider)) {
-            image = cutProvider.cut(image);
+        CutProvider scaledCutProvider = cutProvider.scale(pixelRatio);
+        if (!(scaledCutProvider instanceof NullCutProvider)) {
+            image = scaledCutProvider.cut(image);
             debugScreenshotsProvider.save(image, "original-cut");
         }
 
-        logger.verbose("Done! Creating screenshot object...");
-        // We need the screenshot to be able to convert the region to screenshot coordinates.
-        EyesScreenshot screenshot = screenshotFactory.makeScreenshot(image);
-        logger.verbose("Done! Getting region in screenshot...");
-
-        Region regionInScreenshot = getRegionInScreenshot(region, image, pixelRatio, screenshot, regionPositionCompensation);
-
-        if (!regionInScreenshot.getSize().equals(region.getSize())) {
-            // TODO - ITAI
-            regionInScreenshot = getRegionInScreenshot(region, image, pixelRatio, screenshot, regionPositionCompensation);
-        }
+        Region regionInScreenshot = getRegionInScreenshot(region, image, pixelRatio);
 
         if (!regionInScreenshot.isSizeEmpty()) {
             image = ImageUtils.getImagePart(image, regionInScreenshot);
-            saveDebugScreenshotPart(debugScreenshotsProvider, image, region, "cropped");
+            saveDebugScreenshotPart(image, region, "cropped");
         }
 
         if (pixelRatio != 1.0) {
-            image = ImageUtils.scaleImage(image, scaleProvider);
+            image = ImageUtils.scaleImage(image, 1.0 / pixelRatio);
             debugScreenshotsProvider.save(image, "scaled");
         }
 
-        RectangleSize entireSize;
-        try {
-            entireSize = positionProvider.getEntireSize();
-            logger.verbose("Entire size of region context: " + entireSize);
-        } catch (EyesDriverOperationException e) {
-            logger.log("WARNING: Failed to extract entire size of region context" + e.getMessage());
-            logger.log("Using image size instead: " + image.getWidth() + "x" + image.getHeight());
-            entireSize = new RectangleSize(image.getWidth(), image.getHeight());
-        }
+        if (fullarea == null || fullarea.isEmpty()) {
+            RectangleSize entireSize;
+            try {
+                entireSize = positionProvider.getEntireSize();
+                logger.verbose("Entire size of region context: " + entireSize);
+            } catch (EyesDriverOperationException e) {
+                logger.log("WARNING: Failed to extract entire size of region context" + e.getMessage());
+                logger.log("Using image size instead: " + image.getWidth() + "x" + image.getHeight());
+                entireSize = new RectangleSize(image.getWidth(), image.getHeight());
+            }
 
-        // Notice that this might still happen even if we used
-        // "getImagePart", since "entirePageSize" might be that of a frame.
-        if (image.getWidth() >= entireSize.getWidth() && image.getHeight() >= entireSize.getHeight()) {
-            originProvider.restoreState(originalPosition);
+            // Notice that this might still happen even if we used
+            // "getImagePart", since "entirePageSize" might be that of a frame.
+            if (image.getWidth() >= entireSize.getWidth() && image.getHeight() >= entireSize.getHeight()) {
+                originProvider.restoreState(originalPosition);
 
-            return image;
+                return image;
+            }
+
+            fullarea = new Region(Location.ZERO, entireSize);
         }
 
         // These will be used for storing the actual stitched size (it is
@@ -142,17 +146,16 @@ public class FullPageCaptureAlgorithm {
                 new RectangleSize(image.getWidth(),
                         Math.max(image.getHeight() - stitchingOverlap, MIN_SCREENSHOT_PART_HEIGHT));
 
-        logger.verbose(String.format("Total size: %s, image part size: %s", entireSize, partImageSize));
+        logger.verbose(String.format("entire page region: %s, image part size: %s", fullarea, partImageSize));
 
         // Getting the list of sub-regions composing the whole region (we'll
         // take screenshot for each one).
-        Region entirePage = new Region(Location.ZERO, entireSize);
-        Iterable<Region> imageParts = entirePage.getSubRegions(partImageSize);
+        Iterable<Region> imageParts = fullarea.getSubRegions(partImageSize);
 
-        logger.verbose("Creating stitchedImage container. Size: " + entireSize);
+        logger.verbose("Creating stitchedImage container.");
         //Notice stitchedImage uses the same type of image as the screenshots.
         BufferedImage stitchedImage = new BufferedImage(
-                entireSize.getWidth(), entireSize.getHeight(), image.getType());
+                fullarea.getWidth(), fullarea.getHeight(), image.getType());
 
         logger.verbose("Done! Adding initial screenshot..");
         // Starting with the screenshot we already captured at (0,0).
@@ -179,8 +182,9 @@ public class FullPageCaptureAlgorithm {
             // Giving it time to stabilize.
             GeneralUtils.sleep(waitBeforeScreenshots);
             // Screen size may cause the scroll to only reach part of the way.
-            currentPosition = positionProvider.getCurrentPosition();
-            logger.verbose(String.format("Set position to %s", currentPosition));
+            Location originPosition = positionProvider.getCurrentPosition();
+            Location targetPosition = originPosition.offset(-fullarea.getLeft(), -fullarea.getTop());
+            logger.verbose(String.format("Origin Position is set to %s", originPosition));
 
             // Actually taking the screenshot.
             logger.verbose("Getting image...");
@@ -189,9 +193,9 @@ public class FullPageCaptureAlgorithm {
                     "original-scrolled-" + positionProvider.getCurrentPosition().toStringForFilename());
 
             // FIXME - cropping should be overlaid (see previous comment re cropping)
-            if (!(cutProvider instanceof NullCutProvider)) {
+            if (!(scaledCutProvider instanceof NullCutProvider)) {
                 logger.verbose("cutting...");
-                partImage = cutProvider.cut(partImage);
+                partImage = scaledCutProvider.cut(partImage);
                 debugScreenshotsProvider.save(partImage,
                         "original-scrolled-cut-" + positionProvider.getCurrentPosition().toStringForFilename());
             }
@@ -199,24 +203,24 @@ public class FullPageCaptureAlgorithm {
             if (!regionInScreenshot.isSizeEmpty()) {
                 logger.verbose("cropping...");
                 partImage = ImageUtils.getImagePart(partImage, regionInScreenshot);
-                saveDebugScreenshotPart(debugScreenshotsProvider, partImage, partRegion, "original-scrolled-"
+                saveDebugScreenshotPart(partImage, partRegion, "original-scrolled-"
                         + positionProvider.getCurrentPosition().toStringForFilename());
             }
 
             if (pixelRatio != 1.0) {
                 logger.verbose("scaling...");
                 // FIXME - scaling should be refactored
-                partImage = ImageUtils.scaleImage(partImage, scaleProvider);
-                saveDebugScreenshotPart(debugScreenshotsProvider, partImage, partRegion,
+                partImage = ImageUtils.scaleImage(partImage, 1.0 / pixelRatio);
+                saveDebugScreenshotPart(partImage, partRegion,
                         "original-scrolled-" + positionProvider.getCurrentPosition().toStringForFilename() + "-scaled-");
             }
 
             // Stitching the current part.
             logger.verbose("Stitching part into the image container...");
-            stitchedImage.getRaster().setRect(currentPosition.getX(), currentPosition.getY(), partImage.getData());
+            stitchedImage.getRaster().setRect(targetPosition.getX(), targetPosition.getY(), partImage.getData());
             logger.verbose("Done!");
 
-            lastSuccessfulLocation = currentPosition;
+            lastSuccessfulLocation = originPosition;
         }
 
         if (partImage != null) {
@@ -230,7 +234,7 @@ public class FullPageCaptureAlgorithm {
         // If the actual image size is smaller than the extracted size, we crop the image.
         int actualImageWidth = lastSuccessfulLocation.getX() + lastSuccessfulPartSize.getWidth();
         int actualImageHeight = lastSuccessfulLocation.getY() + lastSuccessfulPartSize.getHeight();
-        logger.verbose("Extracted entire size: " + entireSize);
+        logger.verbose("Extracted entire size: " + fullarea.getSize());
         logger.verbose("Actual stitched size: " + actualImageWidth + "x" + actualImageHeight);
 
         if (actualImageWidth < stitchedImage.getWidth() || actualImageHeight < stitchedImage.getHeight()) {
@@ -246,18 +250,18 @@ public class FullPageCaptureAlgorithm {
         return stitchedImage;
     }
 
-    private Region getRegionInScreenshot(Region region, BufferedImage image, double pixelRatio,
-                                         EyesScreenshot screenshot, RegionPositionCompensation regionPositionCompensation) {
+    private Region getRegionInScreenshot(Region region, BufferedImage image, double pixelRatio) {
+        logger.verbose("Creating screenshot object...");
+        // We need the screenshot to be able to convert the region to screenshot coordinates.
+        EyesScreenshot screenshot = screenshotFactory.makeScreenshot(image);
+        logger.verbose("Getting region in screenshot...");
+
         // Region regionInScreenshot = screenshot.convertRegionLocation(regionProvider.getRegion(), regionProvider.getCoordinatesType(), CoordinatesType.SCREENSHOT_AS_IS);
         Region regionInScreenshot = screenshot.getIntersectedRegion(region, CoordinatesType.SCREENSHOT_AS_IS);
 
-        logger.verbose("Done! Region in screenshot: " + regionInScreenshot);
+        logger.verbose("Region in screenshot: " + regionInScreenshot);
         regionInScreenshot = regionInScreenshot.scale(pixelRatio);
         logger.verbose("Scaled region: " + regionInScreenshot);
-
-        if (regionPositionCompensation == null) {
-            regionPositionCompensation = new NullRegionPositionCompensation();
-        }
 
         regionInScreenshot = regionPositionCompensation.compensateRegionPosition(regionInScreenshot, pixelRatio);
 

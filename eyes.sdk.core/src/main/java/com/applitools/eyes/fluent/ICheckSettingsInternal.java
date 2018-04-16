@@ -14,4 +14,5 @@ public interface ICheckSettingsInternal {
     GetRegion[] getContentRegions();
     GetFloatingRegion[] getFloatingRegions();
     Boolean getIgnoreCaret();
+    String getName();
 }

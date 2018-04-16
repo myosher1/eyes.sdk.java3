@@ -11,8 +11,7 @@ import java.util.List;
 /**
  * Represents a region.
  */
-@JsonIgnoreProperties({"location" , "empty", "middleOffset", "size",
-        "subRegions"})
+@JsonIgnoreProperties({"location", "empty", "middleOffset", "size", "subRegions"})
 public class Region {
     private static Logger logger;
     @JsonProperty("left")
@@ -28,7 +27,7 @@ public class Region {
 
     public static final Region EMPTY = new Region(0, 0, 0, 0, CoordinatesType.SCREENSHOT_AS_IS);
 
-    public static void initLogger(Logger logger){
+    public static void initLogger(Logger logger) {
         Region.logger = logger;
     }
 
@@ -60,18 +59,16 @@ public class Region {
     }
 
     /**
-     *
      * @return true if the region is empty, false otherwise.
      */
     public boolean isEmpty() {
         return this.getLeft() == EMPTY.getLeft()
-                && this.getTop() == EMPTY .getTop()
+                && this.getTop() == EMPTY.getTop()
                 && this.getWidth() == EMPTY.getWidth()
                 && this.getHeight() == EMPTY.getHeight();
     }
 
     /**
-     *
      * @return true if the region's size is 0, false otherwise.
      */
     public boolean isSizeEmpty() {
@@ -85,7 +82,7 @@ public class Region {
         }
 
         if (!(obj instanceof Region)) {
-            return  false;
+            return false;
         }
         Region other = (Region) obj;
 
@@ -126,7 +123,6 @@ public class Region {
     }
 
     /**
-     *
      * @return The (top,left) position of the current region.
      */
     public Location getLocation() {
@@ -135,7 +131,6 @@ public class Region {
 
     /**
      * Get an offset region.
-     *
      * @param dx The X axis offset.
      * @param dy The Y axis offset.
      * @return A region with an offset location.
@@ -147,7 +142,6 @@ public class Region {
     /**
      * Get a region which is a scaled version of the current region.
      * IMPORTANT: This also scales the LOCATION(!!) of the region (not just its size).
-     *
      * @param scaleRatio The ratio by which to scale the region.
      * @return A new region which is a scaled version of the current region.
      */
@@ -165,9 +159,13 @@ public class Region {
     /**
      * @return The region's coordinate type.
      */
-    public CoordinatesType getCoordinatesType() { return this.coordinatesType; }
+    public CoordinatesType getCoordinatesType() {
+        return this.coordinatesType;
+    }
 
-    public void setCoordinatesType(CoordinatesType value) { this.coordinatesType = value; }
+    public void setCoordinatesType(CoordinatesType value) {
+        this.coordinatesType = value;
+    }
 
     /**
      * @param size The updated size of the region.
@@ -179,7 +177,6 @@ public class Region {
 
     /**
      * Set the (top,left) position of the current region
-     *
      * @param location The (top,left) position to set.
      */
     public void setLocation(Location location) {
@@ -189,9 +186,8 @@ public class Region {
     }
 
     /**
-     *
      * @param containerRegion The region to divide into sub-regions.
-     * @param subRegionSize The maximum size of each sub-region.
+     * @param subRegionSize   The maximum size of each sub-region.
      * @return The sub-regions composing the current region. If subRegionSize
      * is equal or greater than the current region,  only a single region is
      * returned.
@@ -201,7 +197,7 @@ public class Region {
         ArgumentGuard.notNull(containerRegion, "containerRegion");
         ArgumentGuard.notNull(subRegionSize, "subRegionSize");
 
-        List<Region> subRegions = new LinkedList<Region>();
+        List<Region> subRegions = new LinkedList<>();
 
         int subRegionWidth = subRegionSize.getWidth();
         int subRegionHeight = subRegionSize.getHeight();
@@ -252,7 +248,7 @@ public class Region {
     }
 
     /**
-     * @param containerRegion The region to divide into sub-regions.
+     * @param containerRegion  The region to divide into sub-regions.
      * @param maxSubRegionSize The maximum size of each sub-region (some
      *                         regions might be smaller).
      * @return The sub-regions composing the current region. If
@@ -268,7 +264,7 @@ public class Region {
         ArgumentGuard.greaterThanZero(maxSubRegionSize.getHeight(),
                 "maxSubRegionSize.getHeight()");
 
-        List<Region> subRegions = new LinkedList<Region>();
+        List<Region> subRegions = new LinkedList<>();
 
         int currentTop = containerRegion.top;
         int bottom = containerRegion.top + containerRegion.height;
@@ -277,12 +273,16 @@ public class Region {
         while (currentTop < bottom) {
 
             int currentBottom = currentTop + maxSubRegionSize.getHeight();
-            if (currentBottom > bottom) { currentBottom = bottom; }
+            if (currentBottom > bottom) {
+                currentBottom = bottom;
+            }
 
             int currentLeft = containerRegion.left;
             while (currentLeft < right) {
                 int currentRight = currentLeft + maxSubRegionSize.getWidth();
-                if (currentRight > right) { currentRight = right; }
+                if (currentRight > right) {
+                    currentRight = right;
+                }
 
                 int currentHeight = currentBottom - currentTop;
                 int currentWidth = currentRight - currentLeft;
@@ -300,7 +300,7 @@ public class Region {
     /**
      * Returns a list of sub-regions which compose the current region.
      * @param subRegionSize The default sub-region size to use.
-     * @param isFixedSize If {@code false}, then sub-regions might have a
+     * @param isFixedSize   If {@code false}, then sub-regions might have a
      *                      size which is smaller then {@code subRegionSize}
      *                      (thus there will be no overlap of regions).
      *                      Otherwise, all sub-regions will have the same
@@ -331,7 +331,7 @@ public class Region {
      * @param other The region to check if it is contained within the current
      *              region.
      * @return True if {@code other} is contained within the current region,
-     *          false otherwise.
+     * false otherwise.
      */
     @SuppressWarnings("UnusedDeclaration")
     public boolean contains(Region other) {
@@ -350,7 +350,7 @@ public class Region {
      * <p>
      * @param location The location to test.
      * @return True if the location is contained within this region,
-     *          false otherwise.
+     * false otherwise.
      */
     public boolean contains(Location location) {
         return location.getX() >= left
@@ -374,9 +374,9 @@ public class Region {
         int otherBottom = otherTop + other.getHeight();
 
         return (((left <= otherLeft && otherLeft <= right)
-                    ||  (otherLeft <= left && left <= otherRight))
+                || (otherLeft <= left && left <= otherRight))
                 && ((top <= otherTop && otherTop <= bottom)
-                    ||  (otherTop <= top && top <= otherBottom)));
+                || (otherTop <= top && top <= otherBottom)));
     }
 
     /**
@@ -457,6 +457,23 @@ public class Region {
         int middleY = height / 2;
 
         return new Location(middleX, middleY);
+    }
+
+    public Region expandToContain(Region region) {
+        int left = Math.min(this.left, region.left);
+        int top = Math.min(this.top, region.top);
+
+        int thisRight = this.left + this.width;
+        int otherRight = region.left + region.width;
+        int maxRight = Math.max(thisRight, otherRight);
+        int width = maxRight - left;
+
+        int thisBottom = this.top + this.height;
+        int otherBottom = region.top + region.height;
+        int maxBottom = Math.max(thisBottom, otherBottom);
+        int height = maxBottom - top;
+
+        return new Region(left, top, width, height);
     }
 
     @Override
