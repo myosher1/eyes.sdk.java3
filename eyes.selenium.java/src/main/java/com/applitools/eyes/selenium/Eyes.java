@@ -615,6 +615,7 @@ public class Eyes extends EyesBase {
         ArgumentGuard.notNull(checkSettings, "checkSettings");
 
         logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
+        logger.verbose("URL: " + driver.getCurrentUrl());
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
@@ -1879,7 +1880,8 @@ public class Eyes extends EyesBase {
             FullPageCaptureAlgorithm algo = new FullPageCaptureAlgorithm(logger, userAgent);
             BufferedImage entireFrameOrElement =
                     algo.getStitchedRegion(imageProvider, regionToCheck,
-                            positionProvider, getElementPositionProvider(),
+                            new ScrollPositionProvider(logger, this.jsExecutor),
+                            getElementPositionProvider(),
                             scaleProviderFactory,
                             cutProviderHandler.get(),
                             getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
