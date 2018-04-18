@@ -3,9 +3,7 @@
  */
 package com.applitools.utils;
 
-import com.applitools.eyes.EyesException;
-import com.applitools.eyes.Region;
-import com.applitools.eyes.ScaleProvider;
+import com.applitools.eyes.*;
 import org.apache.commons.codec.binary.Base64;
 import org.imgscalr.Scalr;
 
@@ -25,6 +23,16 @@ public class ImageUtils {
 
     @SuppressWarnings("WeakerAccess")
     public static final int REQUIRED_IMAGE_TYPE = BufferedImage.TYPE_4BYTE_ABGR;
+    private static Logger logger = new Logger();
+
+    public static void setLogHandler(LogHandler logHandler){
+        ArgumentGuard.notNull(logHandler, "logHandler");
+        logger.setLogHandler(logHandler);
+    }
+
+    public static void initLogger(Logger logger) {
+        ImageUtils.logger = logger;
+    }
 
     public static BufferedImage normalizeImageType(BufferedImage image) {
         if (image.getType() == REQUIRED_IMAGE_TYPE) {
@@ -504,9 +512,20 @@ public class ImageUtils {
      */
     public static BufferedImage cropImage(BufferedImage image,
                                           Region regionToCrop) {
-        BufferedImage croppedImage = Scalr.crop(image, regionToCrop.getLeft(),
-                regionToCrop.getTop(), regionToCrop.getWidth(),
-                regionToCrop.getHeight());
+        Region imageRegion = new Region(0,0, image.getWidth(), image.getHeight());
+        imageRegion.intersect(regionToCrop);
+        if (imageRegion.isSizeEmpty()){
+            logger.log("WARNING - requested cropped area results in zero-size image! Cropped not performed. Returning original image.");
+            return image;
+        }
+
+        if (!imageRegion.equals(regionToCrop)){
+            logger.log("WARNING - requested cropped area overflows image boundaries.");
+        }
+
+        BufferedImage croppedImage = Scalr.crop(image, imageRegion.getLeft(),
+                imageRegion.getTop(), imageRegion.getWidth(),
+                imageRegion.getHeight());
 
         return normalizeImageType(croppedImage);
     }
@@ -524,4 +543,5 @@ public class ImageUtils {
             throw new EyesException("Failed to save image", e);
         }
     }
+
 }
