@@ -117,6 +117,7 @@ public abstract class EyesBase {
         logger = new Logger();
 
         Region.initLogger(logger);
+        ImageUtils.initLogger(logger);
 
         initProviders();
 
