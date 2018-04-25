@@ -40,6 +40,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.awt.image.BufferedImage;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -663,62 +664,96 @@ public class Eyes extends EyesBase {
             }
             //check(settings);
         }
-        if (getRegions.size() > 0) {
-            tryHideScrollbars();
-
-            RectangleSize rectSize = getViewportSize();
-            EyesScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver,
-                    new BufferedImage(rectSize.getWidth(), rectSize.getHeight(), BufferedImage.TYPE_INT_RGB));
-
-            Region bbox = getRegions.get(0).getRegions(this, screenshot).get(0);
-            for (int i = 1; i < checkSettings.length; ++i) {
-                GetRegion getRegion = getRegions.get(i);
-                if (getRegion != null) {
-                    Region region = getRegion.getRegions(this, screenshot).get(0);
-                    bbox = bbox.expandToContain(region);
-                }
-            }
-
-            MatchWindowTask mwt = new MatchWindowTask(logger, serverConnector, runningSession, getMatchTimeout());
-
-            ScaleProviderFactory scaleProviderFactory = updateScalingParams();
-            FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
-
-            BufferedImage screenshotImage = algo.getStitchedRegion(
-                    Region.EMPTY,
-                    bbox, positionProvider);
-
-            debugScreenshotsProvider.save(screenshotImage, "original");
-            screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
-
-            for (int i = 0; i < checkSettings.length; ++i) {
-                if (!((Hashtable<Integer, GetRegion>) getRegions).containsKey(i)) {
-                    continue;
-                }
-
-                GetRegion getRegion = getRegions.get(i);
-
-                Region r = getRegion.getRegions(this, screenshot).get(0);
-                r = r.offset(-bbox.getLeft(), -bbox.getTop());
-                EyesScreenshot subScreenshot = screenshot.getSubScreenshot(r, false);
-
-                ICheckSettingsInternal checkSettingsInternal = checkSettingsInternalDictionary.get(i);
-                String name = checkSettingsInternal.getName();
-
-                debugScreenshotsProvider.save(subScreenshot.getImage(), String.format("subscreenshot_%s_%d", name, i));
-
-                ImageMatchSettings ims = mwt.createImageMatchSettings(checkSettingsInternal, this, subScreenshot);
-                AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()));
-                AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, subScreenshot);
-                MatchResult matchResult = mwt.performMatch(
-                        new Trigger[0], appOutputWithScreenshot, name, false, ims);
-
-                logger.verbose("matchResult.asExcepted: " + matchResult.getAsExpected());
-            }
-
-            tryRestoreScrollbars();
-        }
+        matchRegions(getRegions, checkSettingsInternalDictionary, checkSettings);
         forceFullPageScreenshot = originalForceFPS;
+    }
+
+    private void matchRegions(Dictionary<Integer, GetRegion> getRegions,
+                              Dictionary<Integer, ICheckSettingsInternal> checkSettingsInternalDictionary,
+                              ICheckSettings[] checkSettings) {
+
+        if (getRegions.size() == 0) return;
+
+        tryHideScrollbars();
+
+        Region bbox = findBoundingBox(getRegions, checkSettings);
+
+        MatchWindowTask mwt = new MatchWindowTask(logger, serverConnector, runningSession, getMatchTimeout());
+
+        ScaleProviderFactory scaleProviderFactory = updateScalingParams();
+        FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
+
+        BufferedImage screenshotImage = algo.getStitchedRegion(
+                Region.EMPTY,
+                bbox, positionProvider);
+
+        debugScreenshotsProvider.save(screenshotImage, "original");
+        EyesScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
+
+        for (int i = 0; i < checkSettings.length; ++i) {
+            if (((Hashtable<Integer, GetRegion>) getRegions).containsKey(i)) {
+                GetRegion getRegion = getRegions.get(i);
+                ICheckSettingsInternal checkSettingsInternal = checkSettingsInternalDictionary.get(i);
+                List<EyesScreenshot> subScreenshots = getSubScreenshots(bbox, screenshot, getRegion);
+                matchRegion(checkSettingsInternal, mwt, subScreenshots);
+            }
+        }
+
+        tryRestoreScrollbars();
+    }
+
+    private List<EyesScreenshot> getSubScreenshots(Region bbox, EyesScreenshot screenshot, GetRegion getRegion) {
+        List<EyesScreenshot> subScreenshots = new ArrayList<>();
+        for (Region r : getRegion.getRegions(this, screenshot)) {
+            r = r.offset(-bbox.getLeft(), -bbox.getTop());
+            EyesScreenshot subScreenshot = screenshot.getSubScreenshot(r, false);
+            subScreenshots.add(subScreenshot);
+        }
+        return subScreenshots;
+    }
+
+    private void matchRegion(ICheckSettingsInternal checkSettingsInternal, MatchWindowTask mwt, List<EyesScreenshot> subScreenshots) {
+
+        String name = checkSettingsInternal.getName();
+        for (EyesScreenshot subScreenshot : subScreenshots) {
+
+            debugScreenshotsProvider.save(subScreenshot.getImage(), String.format("subscreenshot_%s", name));
+
+            ImageMatchSettings ims = mwt.createImageMatchSettings(checkSettingsInternal, this, subScreenshot);
+            AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()));
+            AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, subScreenshot);
+            MatchResult matchResult = mwt.performMatch(
+                    new Trigger[0], appOutputWithScreenshot, name, false, ims);
+
+            logger.verbose("matchResult.asExcepted: " + matchResult.getAsExpected());
+        }
+    }
+
+    private Region findBoundingBox(Dictionary<Integer, GetRegion> getRegions, ICheckSettings[] checkSettings) {
+        RectangleSize rectSize = getViewportSize();
+
+        EyesScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver,
+                new BufferedImage(rectSize.getWidth(), rectSize.getHeight(), BufferedImage.TYPE_INT_RGB));
+
+        return findBoundingBox(getRegions, checkSettings, screenshot);
+    }
+
+    private Region findBoundingBox(Dictionary<Integer, GetRegion> getRegions, ICheckSettings[] checkSettings, EyesScreenshot screenshot) {
+        Region bbox = null;
+        for (int i = 0; i < checkSettings.length; ++i) {
+            GetRegion getRegion = getRegions.get(i);
+            if (getRegion != null) {
+                List<Region> regions = getRegion.getRegions(this, screenshot);
+                for (Region region : regions) {
+                    if (bbox == null) {
+                        bbox = new Region(region);
+                    } else {
+                        bbox = bbox.expandToContain(region);
+                    }
+                }
+            }
+        }
+        return bbox;
     }
 
     private WebElement getFrameElement(FrameLocator frameLocator) {
