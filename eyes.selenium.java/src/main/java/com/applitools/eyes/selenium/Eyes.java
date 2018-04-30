@@ -804,7 +804,10 @@ public class Eyes extends EyesBase {
 
     public void check(ICheckSettings checkSettings) {
         ArgumentGuard.notNull(checkSettings, "checkSettings");
-        logger.verbose("URL: " + driver.getCurrentUrl());
+
+        if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+            logger.verbose("URL: " + driver.getCurrentUrl());
+        }
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
@@ -847,12 +850,12 @@ public class Eyes extends EyesBase {
                     this.checkFrameFluent(name, checkSettings);
                 }
             } else {
-                switchTo.defaultContent();
-                PositionMemento originalPosition = positionProvider.getState();
-                positionProvider.setPosition(Location.ZERO);
-                tryHideScrollbars();
+                if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+                    // required to prevent cut line on the last stitched part of the page on some browsers (like firefox).
+                    switchTo.defaultContent();
+                    tryHideScrollbars();
+                }
                 this.checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
-                positionProvider.restoreState(originalPosition);
             }
         }
 
