@@ -252,8 +252,8 @@ public class EyesSeleniumUtils {
         RectangleSize result;
         try {
             //noinspection unchecked
-            List<Long> esAsList =
-                (List<Long>) executor.executeScript(JS_GET_CONTENT_ENTIRE_SIZE);
+            Object retVal = executor.executeScript(JS_GET_CONTENT_ENTIRE_SIZE);
+            List<Long> esAsList = (List<Long>)retVal;
             result = new RectangleSize(esAsList.get(0).intValue(),
                     esAsList.get(1).intValue());
         } catch (WebDriverException e) {
