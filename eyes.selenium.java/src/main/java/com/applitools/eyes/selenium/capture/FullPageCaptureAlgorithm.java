@@ -66,11 +66,11 @@ public class FullPageCaptureAlgorithm {
     /**
      * Returns a stitching of a region.
      * @param region           The region to stitch. If {@code Region.EMPTY}, the entire image will be stitched.
-     * @param fullarea         The wanted area of the resulting image. If unknown, pass in {@code null} or {@code RectangleSize.EMPTY}.
+     * @param fullArea         The wanted area of the resulting image. If unknown, pass in {@code null} or {@code RectangleSize.EMPTY}.
      * @param positionProvider A provider of the scrolling implementation.
      * @return An image which represents the stitched region.
      */
-    public BufferedImage getStitchedRegion(Region region, Region fullarea, PositionProvider positionProvider) {
+    public BufferedImage getStitchedRegion(Region region, Region fullArea, PositionProvider positionProvider) {
         logger.verbose("getStitchedRegion()");
 
         ArgumentGuard.notNull(region, "region");
@@ -112,7 +112,7 @@ public class FullPageCaptureAlgorithm {
             debugScreenshotsProvider.save(image, "scaled");
         }
 
-        if (fullarea == null || fullarea.isEmpty()) {
+        if (fullArea == null || fullArea.isEmpty()) {
             RectangleSize entireSize;
             try {
                 entireSize = positionProvider.getEntireSize();
@@ -131,7 +131,7 @@ public class FullPageCaptureAlgorithm {
                 return image;
             }
 
-            fullarea = new Region(Location.ZERO, entireSize);
+            fullArea = new Region(Location.ZERO, entireSize);
         }
 
         // These will be used for storing the actual stitched size (it is
@@ -146,16 +146,16 @@ public class FullPageCaptureAlgorithm {
                 new RectangleSize(image.getWidth(),
                         Math.max(image.getHeight() - stitchingOverlap, MIN_SCREENSHOT_PART_HEIGHT));
 
-        logger.verbose(String.format("entire page region: %s, image part size: %s", fullarea, partImageSize));
+        logger.verbose(String.format("entire page region: %s, image part size: %s", fullArea, partImageSize));
 
         // Getting the list of sub-regions composing the whole region (we'll
         // take screenshot for each one).
-        Iterable<Region> imageParts = fullarea.getSubRegions(partImageSize);
+        Iterable<Region> imageParts = fullArea.getSubRegions(partImageSize);
 
         logger.verbose("Creating stitchedImage container.");
         //Notice stitchedImage uses the same type of image as the screenshots.
         BufferedImage stitchedImage = new BufferedImage(
-                fullarea.getWidth(), fullarea.getHeight(), image.getType());
+                fullArea.getWidth(), fullArea.getHeight(), image.getType());
 
         logger.verbose("Done! Adding initial screenshot..");
         // Starting with the screenshot we already captured at (0,0).
@@ -183,7 +183,7 @@ public class FullPageCaptureAlgorithm {
             GeneralUtils.sleep(waitBeforeScreenshots);
             // Screen size may cause the scroll to only reach part of the way.
             Location originPosition = positionProvider.getCurrentPosition();
-            Location targetPosition = originPosition.offset(-fullarea.getLeft(), -fullarea.getTop());
+            Location targetPosition = originPosition.offset(-fullArea.getLeft(), -fullArea.getTop());
             logger.verbose(String.format("Origin Position is set to %s", originPosition));
 
             // Actually taking the screenshot.
@@ -234,7 +234,7 @@ public class FullPageCaptureAlgorithm {
         // If the actual image size is smaller than the extracted size, we crop the image.
         int actualImageWidth = lastSuccessfulLocation.getX() + lastSuccessfulPartSize.getWidth();
         int actualImageHeight = lastSuccessfulLocation.getY() + lastSuccessfulPartSize.getHeight();
-        logger.verbose("Extracted entire size: " + fullarea.getSize());
+        logger.verbose("Extracted entire size: " + fullArea.getSize());
         logger.verbose("Actual stitched size: " + actualImageWidth + "x" + actualImageHeight);
 
         if (actualImageWidth < stitchedImage.getWidth() || actualImageHeight < stitchedImage.getHeight()) {
