@@ -89,7 +89,8 @@ public abstract class TestSetup {
                 .replace(' ', '_')
                 .replace("]", "");
 
-        LogHandler logHandler = new FileLogger("c:\\temp\\logs\\java_" + testName + "_" + platform + ".log", true, true);
+//        LogHandler logHandler = new FileLogger("c:\\temp\\logs\\java_" + testName + "_" + platform + ".log", true, true);
+        LogHandler logHandler = new StdoutLogHandler(true);
         eyes.setLogHandler(logHandler);
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
 
