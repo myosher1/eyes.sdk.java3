@@ -2,11 +2,12 @@ package com.applitools.eyes.selenium.fluent;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.fluent.GetRegion;
-import com.applitools.eyes.selenium.Eyes;
-import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class IgnoreRegionByElement implements GetRegion {
     private WebElement element;
@@ -16,7 +17,7 @@ public class IgnoreRegionByElement implements GetRegion {
     }
 
     @Override
-    public Region getRegion(EyesBase eyesBase, EyesScreenshot screenshot) {
+    public List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot) {
         Point locationAsPoint = element.getLocation();
         Dimension size = element.getSize();
 
@@ -24,7 +25,10 @@ public class IgnoreRegionByElement implements GetRegion {
         Location adjustedLocation = screenshot.getLocationInScreenshot(new Location(locationAsPoint.getX(), locationAsPoint.getY()),
                 CoordinatesType.CONTEXT_RELATIVE);
 
-        return new Region(adjustedLocation, new RectangleSize(size.getWidth(), size.getHeight()),
-                CoordinatesType.SCREENSHOT_AS_IS);
+        List<Region> value = new ArrayList<>();
+        value.add(new Region(adjustedLocation, new RectangleSize(size.getWidth(), size.getHeight()),
+                CoordinatesType.SCREENSHOT_AS_IS));
+
+        return value;
     }
 }

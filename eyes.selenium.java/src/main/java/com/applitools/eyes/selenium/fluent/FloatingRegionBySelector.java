@@ -3,12 +3,15 @@ package com.applitools.eyes.selenium.fluent;
 import com.applitools.eyes.*;
 import com.applitools.eyes.fluent.GetFloatingRegion;
 import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 
-public class FloatingRegionBySelector implements GetFloatingRegion{
+import java.util.ArrayList;
+import java.util.List;
+
+public class FloatingRegionBySelector implements GetFloatingRegion {
 
     private By selector;
     private int maxUpOffset;
@@ -26,17 +29,22 @@ public class FloatingRegionBySelector implements GetFloatingRegion{
     }
 
     @Override
-    public FloatingMatchSettings getRegion(EyesBase eyesBase, EyesScreenshot screenshot) {
-        WebElement element = ((Eyes)eyesBase).getDriver().findElement(this.selector);
+    public List<FloatingMatchSettings> getRegions(EyesBase eyesBase, EyesScreenshot screenshot) {
+        List<WebElement> elements = ((Eyes) eyesBase).getDriver().findElements(this.selector);
+        List<FloatingMatchSettings> values = new ArrayList<>();
 
-        Point locationAsPoint = element.getLocation();
-        Dimension size = element.getSize();
+        for (WebElement element : elements) {
+            Point locationAsPoint = element.getLocation();
+            RectangleSize size = EyesSeleniumUtils.getElementVisibleSize(element);
 
-        // Element's coordinates are context relative, so we need to convert them first.
-        Location adjustedLocation = screenshot.getLocationInScreenshot(new Location(locationAsPoint.getX(), locationAsPoint.getY()),
-                CoordinatesType.CONTEXT_RELATIVE);
+            // Element's coordinates are context relative, so we need to convert them first.
+            Location adjustedLocation = screenshot.getLocationInScreenshot(new Location(locationAsPoint.getX(), locationAsPoint.getY()),
+                    CoordinatesType.CONTEXT_RELATIVE);
 
-        return new FloatingMatchSettings(adjustedLocation.getX(), adjustedLocation.getY(),size.getWidth(),
-                size.getHeight(), maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset);
+            values.add(new FloatingMatchSettings(adjustedLocation.getX(), adjustedLocation.getY(), size.getWidth(),
+                    size.getHeight(), maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
+        }
+
+        return values;
     }
 }

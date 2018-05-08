@@ -8,7 +8,10 @@ import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 
-public class FloatingRegionByElement implements GetFloatingRegion{
+import java.util.ArrayList;
+import java.util.List;
+
+public class FloatingRegionByElement implements GetFloatingRegion {
 
     private WebElement element;
     private int maxUpOffset;
@@ -26,7 +29,7 @@ public class FloatingRegionByElement implements GetFloatingRegion{
     }
 
     @Override
-    public FloatingMatchSettings getRegion(EyesBase eyesBase, EyesScreenshot screenshot) {
+    public List<FloatingMatchSettings> getRegions(EyesBase eyesBase, EyesScreenshot screenshot) {
         Point locationAsPoint = element.getLocation();
         Dimension size = element.getSize();
 
@@ -34,7 +37,11 @@ public class FloatingRegionByElement implements GetFloatingRegion{
         Location adjustedLocation = screenshot.getLocationInScreenshot(new Location(locationAsPoint.getX(), locationAsPoint.getY()),
                 CoordinatesType.CONTEXT_RELATIVE);
 
-        return new FloatingMatchSettings(adjustedLocation.getX(), adjustedLocation.getY(),size.getWidth(),
-                size.getHeight(), maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset);
+        List<FloatingMatchSettings> value = new ArrayList<>();
+
+        value.add(new FloatingMatchSettings(adjustedLocation.getX(), adjustedLocation.getY(), size.getWidth(),
+                size.getHeight(), maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
+
+        return value;
     }
 }

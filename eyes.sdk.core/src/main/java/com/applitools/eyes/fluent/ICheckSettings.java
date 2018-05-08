@@ -9,10 +9,35 @@ import com.applitools.eyes.Region;
 public interface ICheckSettings {
     /**
      * Adds one or more ignore regions.
-     * @param regions One or more regions to ignore when validating the screenshot.
+     * @param region A region to ignore when validating the screenshot.
+     * @param regions Optional extra regions to ignore when validating the screenshot.
      * @return This instance of the settings object.
      */
-    ICheckSettings ignore(Region... regions);
+    ICheckSettings ignore(Region region, Region... regions);
+
+    /**
+     * Adds one or more layout regions.
+     * @param region A region to match using the Layout method.
+     * @param regions Optional extra regions to match using the Layout method.
+     * @return This instance of the settings object.
+     */
+    ICheckSettings layout(Region region, Region... regions);
+
+    /**
+     * Adds one or more strict regions.
+     * @param region A region to match using the Strict method.
+     * @param regions Optional extra regions to match using the Strict method.
+     * @return This instance of the settings object.
+     */
+    ICheckSettings strict(Region region, Region... regions);
+
+    /**
+     * Adds one or more content regions.
+     * @param region A region to match using the Content method.
+     * @param regions Optional extra regions to match using the Content method.
+     * @return This instance of the settings object.
+     */
+    ICheckSettings content(Region region, Region... regions);
 
     /**
      * Defines that the screenshot will contain the entire element or region, even if it's outside the view.
@@ -96,4 +121,11 @@ public interface ICheckSettings {
      * @return This instance of the settings object.
      */
     ICheckSettings ignoreCaret();
+
+    /**
+     * A setter for the checkpoint name.
+     * @param name A name by which to identify the checkpoint.
+     * @return This instance of the settings object.
+     */
+    ICheckSettings withName(String name);
 }

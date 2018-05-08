@@ -52,6 +52,24 @@ public class MatchWindowTask {
     }
 
     /**
+     * @param logger            A logger instance.
+     * @param serverConnector   Our gateway to the agent
+     * @param runningSession    The running session in which we should match the window
+     * @param retryTimeout      The default total time to retry matching (ms).
+     */
+    public MatchWindowTask(Logger logger, ServerConnector serverConnector,
+                           RunningSession runningSession, int retryTimeout) {
+        ArgumentGuard.notNull(serverConnector, "serverConnector");
+        ArgumentGuard.notNull(runningSession, "runningSession");
+        ArgumentGuard.greaterThanOrEqualToZero(retryTimeout, "retryTimeout");
+
+        this.logger = logger;
+        this.serverConnector = serverConnector;
+        this.runningSession = runningSession;
+        this.defaultRetryTimeout = retryTimeout;
+        this.appOutputProvider = null;
+    }
+    /**
      * Creates the match data and calls the server connector matchWindow method.
      * @param userInputs         The user inputs related to the current appOutput.
      * @param appOutput          The application output to be matched.
@@ -60,14 +78,17 @@ public class MatchWindowTask {
      * @param imageMatchSettings The settings to use.
      * @return The match result.
      */
-    protected MatchResult performMatch(Trigger[] userInputs,
-                                       AppOutputWithScreenshot appOutput,
-                                       String tag, boolean ignoreMismatch,
-                                       ImageMatchSettings imageMatchSettings) {
+    public MatchResult performMatch(Trigger[] userInputs,
+                                     AppOutputWithScreenshot appOutput,
+                                     String tag, boolean ignoreMismatch,
+                                     ImageMatchSettings imageMatchSettings) {
 
         // Prepare match data.
-        MatchWindowData data = new MatchWindowData(userInputs, appOutput
-                .getAppOutput(), tag, ignoreMismatch,
+        MatchWindowData data = new MatchWindowData(
+                userInputs,
+                appOutput.getAppOutput(),
+                tag,
+                ignoreMismatch,
                 new MatchWindowData.Options(tag, userInputs, ignoreMismatch,
                         false, false, false,
                         imageMatchSettings));
@@ -120,16 +141,24 @@ public class MatchWindowTask {
                                       ImageMatchSettings imageMatchSettings, EyesBase eyes,
                                       EyesScreenshot screenshot) {
 
-        List<Region> ignoreRegions = new ArrayList<>();
-        for (GetRegion ignoreRegionProvider : checkSettingsInternal.getIgnoreRegions()) {
+        imageMatchSettings.setIgnoreRegions(collectRegions(checkSettingsInternal.getIgnoreRegions(), eyes, screenshot));
+        imageMatchSettings.setLayoutRegions(collectRegions(checkSettingsInternal.getLayoutRegions(), eyes, screenshot));
+        imageMatchSettings.setStrictRegions(collectRegions(checkSettingsInternal.getStrictRegions(), eyes, screenshot));
+        imageMatchSettings.setContentRegions(collectRegions(checkSettingsInternal.getContentRegions(), eyes, screenshot));
+    }
+
+    private Region[] collectRegions(GetRegion[] regionProviders, EyesBase eyes, EyesScreenshot screenshot) {
+
+        List<Region> regions = new ArrayList<>();
+        for (GetRegion regionProvider : regionProviders) {
             try {
-                ignoreRegions.add(ignoreRegionProvider.getRegion(eyes, screenshot));
+                regions.addAll(regionProvider.getRegions(eyes, screenshot));
             }
             catch (OutOfBoundsException ex){
                 logger.log("WARNING - ignore region was out of bounds.");
             }
         }
-        imageMatchSettings.setIgnoreRegions(ignoreRegions.toArray(new Region[0]));
+        return regions.toArray(new Region[0]);
     }
 
     private void collectFloatingRegions(ICheckSettingsInternal checkSettingsInternal,
@@ -137,19 +166,19 @@ public class MatchWindowTask {
                                         EyesScreenshot screenshot) {
         List<FloatingMatchSettings> floatingRegions = new ArrayList<>();
         for (GetFloatingRegion floatingRegionProvider : checkSettingsInternal.getFloatingRegions()) {
-            floatingRegions.add(floatingRegionProvider.getRegion(eyes, screenshot));
+            floatingRegions.addAll(floatingRegionProvider.getRegions(eyes, screenshot));
         }
         imageMatchSettings.setFloatingRegions(floatingRegions.toArray(new FloatingMatchSettings[0]));
     }
 
     /**
      * Build match settings by merging the check settings and the default match settings.
-     * @param checkSettingsInternal
-     * @param eyes
-     * @param screenshot
+     * @param checkSettingsInternal the settings to match the image by.
+     * @param eyes the Eyes object to use.
+     * @param screenshot the Screenshot wrapper object.
      * @return Merged match settings.
      */
-    private ImageMatchSettings createImageMatchSettings(ICheckSettingsInternal checkSettingsInternal,
+    public ImageMatchSettings createImageMatchSettings(ICheckSettingsInternal checkSettingsInternal,
                                                                EyesBase eyes, EyesScreenshot screenshot) {
         ImageMatchSettings imageMatchSettings = null;
         if (checkSettingsInternal != null) {

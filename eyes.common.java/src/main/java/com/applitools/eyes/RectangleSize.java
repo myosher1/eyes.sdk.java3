@@ -11,6 +11,8 @@ public class RectangleSize {
     private int width;
     private int height;
 
+    public static RectangleSize EMPTY = new RectangleSize(0,0);
+
     /**
      * Creates a new RectangleSize instance.
      * @param width The width of the rectangle.
@@ -23,6 +25,10 @@ public class RectangleSize {
 
         this.width = width;
         this.height = height;
+    }
+
+    public boolean isEmpty() {
+        return this.width == 0 && this.height == 0;
     }
 
     /**

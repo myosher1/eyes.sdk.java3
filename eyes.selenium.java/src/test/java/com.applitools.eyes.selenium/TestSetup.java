@@ -31,6 +31,8 @@ public abstract class TestSetup {
     protected HashSet<FloatingMatchSettings> expectedFloatingRegions = new HashSet<>();
     protected HashSet<Region> expectedIgnoreRegions = new HashSet<>();
 
+    protected boolean compareExpectedRegions = false;
+
     protected String platform;
     protected boolean forceFPS;
 
@@ -40,7 +42,7 @@ public abstract class TestSetup {
         // Initialize the eyes SDK and set your private API key.
         eyes = new Eyes();
 
-        LogHandler logHandler = new StdoutLogHandler(true);
+        LogHandler logHandler = new StdoutLogHandler(false);
 
         eyes.setLogHandler(logHandler);
         eyes.setStitchMode(StitchMode.CSS);
@@ -69,6 +71,11 @@ public abstract class TestSetup {
     }
 
     public void beforeMethod(String methodName) {
+        System.out.println();
+        System.out.println("==== Starting Test ====");
+        System.out.println(this);
+        System.out.println();
+
         String seleniumServerUrl = System.getenv("SELENIUM_SERVER_URL");
         if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
             desiredCaps.setCapability("username", System.getenv("SAUCE_USERNAME"));
@@ -110,7 +117,7 @@ public abstract class TestSetup {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return String.format("%s (%s, %s, force FPS: %s)",
                 this.getClass().getSimpleName(),
                 this.caps.getBrowserName(),

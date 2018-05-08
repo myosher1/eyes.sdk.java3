@@ -252,8 +252,8 @@ public class EyesSeleniumUtils {
         RectangleSize result;
         try {
             //noinspection unchecked
-            List<Long> esAsList =
-                (List<Long>) executor.executeScript(JS_GET_CONTENT_ENTIRE_SIZE);
+            Object retVal = executor.executeScript(JS_GET_CONTENT_ENTIRE_SIZE);
+            List<Long> esAsList = (List<Long>)retVal;
             result = new RectangleSize(esAsList.get(0).intValue(),
                     esAsList.get(1).intValue());
         } catch (WebDriverException e) {
@@ -581,5 +581,33 @@ public class EyesSeleniumUtils {
                                      Location position) {
         setTransform(executor, String.format("translate(-%spx, -%spx)",
                 position.getX(), position.getY()));
+    }
+
+    /**
+     * Returns given element visible portion size.
+     * @param element The element for which to return the size.
+     * @return The given element's visible portion size.
+     */
+    public static RectangleSize getElementVisibleSize(WebElement element) {
+        Point location = element.getLocation();
+        Dimension size = element.getSize();
+        Region region = new Region(location.getX(), location.getY(), size.getWidth(), size.getHeight());
+        WebElement parent;
+
+        try { parent = element.findElement(By.xpath("..")); }
+        catch (Exception e) { parent = null; }
+
+        while (parent != null && !region.isSizeEmpty()){
+            Point parentLocation = parent.getLocation();
+            Dimension parentSize = parent.getSize();
+            Region parentRegion = new Region(parentLocation.getX(), parentLocation.getY(),
+                    parentSize.getWidth(), parentSize.getHeight());
+
+            region.intersect(parentRegion);
+            try { parent = parent.findElement(By.xpath("..")); }
+            catch (Exception e) { parent = null; }
+        }
+
+        return region.getSize();
     }
 }

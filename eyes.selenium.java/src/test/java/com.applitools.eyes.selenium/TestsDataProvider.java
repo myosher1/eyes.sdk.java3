@@ -12,7 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TestsDataProvider {
-    @DataProvider
+    @DataProvider(parallel = true)
     public static Object[][] dp() {
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("disable-infobars");
@@ -37,10 +37,44 @@ public class TestsDataProvider {
         Object[] platforms = testPlatforms.split(";");
 
         List<List<Object>> lists = new ArrayList<>();
-        lists.add(Arrays.asList(new Object[]{chromeOptions, firefoxOptions, ie11Options, /*safariOptions*/}));
+        lists.add(Arrays.asList(new Object[]{chromeOptions, firefoxOptions/*, ie11Options, safariOptions*/}));
         lists.add(Arrays.asList(platforms));
         lists.add(Arrays.asList(new Object[]{false, true})); // force fps
 
-        return TestUtils.generatePermutations(lists);
+        Object[][] basicPermutations = TestUtils.generatePermutations(lists);
+
+        List<Object[]> extraPermutations = new ArrayList<>();
+
+        System.out.println();
+        System.out.println("Tests will run on the following platforms:");
+        for (Object platform : platforms) {
+            System.out.println(platform);
+            if (((String) platform).startsWith("Windows")) {
+                extraPermutations.add(new Object[]{ie11Options, platform, false});
+                extraPermutations.add(new Object[]{ie11Options, platform, true});
+            } else if (((String) platform).startsWith("Mac")) {
+                extraPermutations.add(new Object[]{safariOptions, platform, false});
+                extraPermutations.add(new Object[]{safariOptions, platform, true});
+            }
+        }
+        System.out.println();
+
+        ArrayList<Object[]> permutations = new ArrayList<>();
+        permutations.addAll(Arrays.asList(basicPermutations));
+        permutations.addAll(extraPermutations);
+
+        return permutations.toArray(new Object[0][]);
     }
+
+//    public static void main(String[] args) {
+//        Object[][] dpRes = dp();
+//        for (Object[] pers:dpRes) {
+//            for (Object p:pers) {
+//                System.out.print(p);
+//                System.out.print(",");
+//            }
+//            System.out.println();
+//        }
+//        System.out.println();
+//    }
 }

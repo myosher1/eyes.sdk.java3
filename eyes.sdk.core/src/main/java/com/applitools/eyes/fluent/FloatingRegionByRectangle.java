@@ -2,6 +2,9 @@ package com.applitools.eyes.fluent;
 
 import com.applitools.eyes.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class FloatingRegionByRectangle implements GetFloatingRegion {
     private Region rect;
     private int maxUpOffset;
@@ -18,9 +21,11 @@ public class FloatingRegionByRectangle implements GetFloatingRegion {
     }
 
     @Override
-    public FloatingMatchSettings getRegion(EyesBase eyesBase, EyesScreenshot screenshot) {
-        return new FloatingMatchSettings(
+    public List<FloatingMatchSettings> getRegions(EyesBase eyesBase, EyesScreenshot screenshot) {
+        List<FloatingMatchSettings> value = new ArrayList<>();
+        value.add(new FloatingMatchSettings(
                 rect.getLeft(), rect.getTop(), rect.getWidth(), rect.getHeight(),
-                maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset);
+                maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
+        return value;
     }
 }

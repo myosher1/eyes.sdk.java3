@@ -19,6 +19,7 @@ public class TestFluentApi extends TestSetup {
         super.platform = platform;
         super.forceFPS = forceFPS;
 
+        super.compareExpectedRegions = caps.getBrowserName().equalsIgnoreCase("chrome");
         testSuitName = "Eyes Selenium SDK - Fluent API";
         testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
     }
@@ -30,12 +31,16 @@ public class TestFluentApi extends TestSetup {
                 .fully()
                 .timeout(5000)
                 .ignore(new Region(50, 50, 100, 100)));
+
+        setExpectedIgnoreRegions(new Region(50, 50, 100, 100));
     }
 
     @Test
     public void TestCheckRegionWithIgnoreRegion_Fluent() {
         eyes.check("Fluent - Region with Ignore region", Target.region(By.id("overflowing-div"))
                 .ignore(new Region(50, 50, 100, 100)));
+
+        setExpectedIgnoreRegions(new Region(50, 50, 100, 100));
     }
 
     @Test
@@ -75,11 +80,11 @@ public class TestFluentApi extends TestSetup {
         eyes.check("Fluent - Window (Before)", Target.window().fully());
         eyes.check("Fluent - Inner frame div",
                 Target.frame("frame1")
-                      .region(By.id("inner-frame-div"))
-                      .fully());
+                        .region(By.id("inner-frame-div"))
+                        .fully());
         eyes.check("Fluent - Window (After)", Target.window().fully());
     }
-    /*
+
     @Test
     public void TestCheckRegionInFrame2_Fluent() {
         eyes.check("Fluent - Inner frame div 1", Target.frame("frame1")
@@ -108,7 +113,6 @@ public class TestFluentApi extends TestSetup {
                 .layout()
                 .floating(25, new Region(200, 200, 150, 150)));
     }
-    */
 
     @Test
     public void TestCheckFrameInFrame_Fully_Fluent2() {
@@ -152,6 +156,7 @@ public class TestFluentApi extends TestSetup {
     public void TestCheckElementWithIgnoreRegionByElementOutsideTheViewport_Fluent() {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         WebElement ignoreElement = webDriver.findElement(By.id("overflowing-div"));
+        setExpectedIgnoreRegions();
         eyes.check("Fluent - Region by element", Target.region(element).ignore(ignoreElement));
     }
 
@@ -160,5 +165,27 @@ public class TestFluentApi extends TestSetup {
         WebElement element = webDriver.findElement(By.id("overflowing-div-image"));
         eyes.check("Fluent - Region by element", Target.region(element).ignore(element));
         setExpectedIgnoreRegions(new Region(0, 0, 304, 184));
+    }
+
+    @Test
+    public void TestCheckFullWindowWithMultipleIgnoreRegionsBySelector_Fluent() {
+        eyes.check("Fluent - Region by element", Target.window().fully().ignore(By.cssSelector(".ignore")));
+        setExpectedIgnoreRegions(
+                new Region(172, 928, 456, 306),
+                new Region(8, 1270, 784, 206),
+                new Region(10, 284, 302, 182)
+        );
+    }
+
+    @Test
+    public void TestCheckMany() {
+        eyes.check(
+                Target.region(By.id("overflowing-div-image")).withName("overflowing div image"),
+                Target.region(By.id("overflowing-div")).withName("overflowing div"),
+                Target.region(By.id("overflowing-div-image")).fully().withName("overflowing div image (fully)"),
+                Target.frame("frame1").frame("frame1-1").fully().withName("Full Frame in Frame"),
+                Target.frame("frame1").withName("frame1"),
+                Target.region(new Region(30, 50, 300, 620)).withName("rectangle")
+        );
     }
 }

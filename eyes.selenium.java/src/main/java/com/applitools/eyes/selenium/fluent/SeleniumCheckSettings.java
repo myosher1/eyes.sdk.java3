@@ -97,20 +97,85 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return clone;
     }
 
-    public SeleniumCheckSettings ignore(By... regionSelectors) {
+    public SeleniumCheckSettings ignore(By regionSelector, By... regionSelectors) {
         SeleniumCheckSettings clone = this.clone();
+        clone.ignore_(new IgnoreRegionBySelector(regionSelector));
         for (By selector : regionSelectors) {
-            clone.ignore(new IgnoreRegionBySelector(selector));
+            clone.ignore_(new IgnoreRegionBySelector(selector));
         }
 
         return clone;
     }
 
-    public SeleniumCheckSettings ignore(WebElement... elements) {
+    public SeleniumCheckSettings ignore(WebElement element, WebElement... elements) {
         SeleniumCheckSettings clone = this.clone();
+        clone.ignore_(new IgnoreRegionByElement(element));
         //TODO - FIXME - BUG - this is wrong in case of a cropped image!
-        for (WebElement element : elements) {
-            clone.ignore(new IgnoreRegionByElement(element));
+        for (WebElement e : elements) {
+            clone.ignore_(new IgnoreRegionByElement(e));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings layout(By regionSelector, By... regionSelectors) {
+        SeleniumCheckSettings clone = this.clone();
+        clone.layout_(new IgnoreRegionBySelector(regionSelector));
+        for (By selector : regionSelectors) {
+            clone.layout_(new IgnoreRegionBySelector(selector));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings layout(WebElement element, WebElement... elements) {
+        SeleniumCheckSettings clone = this.clone();
+        clone.layout_(new IgnoreRegionByElement(element));
+        //TODO - FIXME - BUG - this is wrong in case of a cropped image!
+        for (WebElement e : elements) {
+            clone.layout_(new IgnoreRegionByElement(e));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings strict(By regionSelector, By... regionSelectors) {
+        SeleniumCheckSettings clone = this.clone();
+        clone.strict_(new IgnoreRegionBySelector(regionSelector));
+        for (By selector : regionSelectors) {
+            clone.strict_(new IgnoreRegionBySelector(selector));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings strict(WebElement element, WebElement... elements) {
+        SeleniumCheckSettings clone = this.clone();
+        clone.strict_(new IgnoreRegionByElement(element));
+        //TODO - FIXME - BUG - this is wrong in case of a cropped image!
+        for (WebElement e : elements) {
+            clone.strict_(new IgnoreRegionByElement(e));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings content(By regionSelector, By... regionSelectors) {
+        SeleniumCheckSettings clone = this.clone();
+        clone.content_(new IgnoreRegionBySelector(regionSelector));
+        for (By selector : regionSelectors) {
+            clone.content_(new IgnoreRegionBySelector(selector));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings content(WebElement element, WebElement... elements) {
+        SeleniumCheckSettings clone = this.clone();
+        clone.content_(new IgnoreRegionByElement(element));
+        //TODO - FIXME - BUG - this is wrong in case of a cropped image!
+        for (WebElement e : elements) {
+            clone.content_(new IgnoreRegionByElement(e));
         }
 
         return clone;
@@ -126,5 +191,15 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         SeleniumCheckSettings clone = this.clone();
         clone.floating(new FloatingRegionByElement(element, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
         return clone;
+    }
+
+    @Override
+    public SeleniumCheckSettings fully(){
+        return (SeleniumCheckSettings)super.fully();
+    }
+
+    @Override
+    public SeleniumCheckSettings fully(boolean fully){
+        return (SeleniumCheckSettings)super.fully(fully);
     }
 }

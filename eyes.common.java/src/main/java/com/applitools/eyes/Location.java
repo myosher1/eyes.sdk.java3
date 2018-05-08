@@ -5,9 +5,9 @@ import com.applitools.utils.ArgumentGuard;
 /**
  * A location in a two-dimensional plane.
  */
-public class Location implements Cloneable {
-    private int x;
-    private int y;
+public final class Location implements Cloneable {
+    private final int x;
+    private final int y;
 
     public static final Location ZERO = new Location(0,0);
 
