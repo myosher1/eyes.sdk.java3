@@ -808,6 +808,8 @@ public class Eyes extends EyesBase {
     public void check(ICheckSettings checkSettings) {
         ArgumentGuard.notNull(checkSettings, "checkSettings");
 
+        logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
+
         if (!EyesSeleniumUtils.isMobileDevice(driver)) {
             logger.verbose("URL: " + driver.getCurrentUrl());
         }

@@ -96,13 +96,9 @@ public abstract class TestSetup {
                 .replace(' ', '_')
                 .replace("]", "");
 
-        if (System.getenv("CI") == null) {
-            String logFilePath = "c:\\temp\\logs\\java_" + testName + "_" + platform + ".log";
-            eyes.setLogHandler(new FileLogger(logFilePath, false, true));
-        } else {
-            eyes.setLogHandler(new StdoutLogHandler(false));
-        }
-
+//        LogHandler logHandler = new FileLogger("c:\\temp\\logs\\java_" + testName + "_" + platform + ".log", true, true);
+        LogHandler logHandler = new StdoutLogHandler(true);
+        eyes.setLogHandler(logHandler);
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
 
         driver = eyes.open(webDriver,
