@@ -336,8 +336,13 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         clone.matchLevel = this.matchLevel;
         clone.stitchContent = this.stitchContent;
         clone.timeout = this.timeout;
+        clone.ignoreCaret = this.ignoreCaret;
+        clone.name = this.name;
 
         clone.ignoreRegions.addAll(this.ignoreRegions);
+        clone.contentRegions.addAll(this.contentRegions);
+        clone.layoutRegions.addAll(this.layoutRegions);
+        clone.strictRegions.addAll(this.strictRegions);
         clone.floatingRegions.addAll(this.floatingRegions);
     }
 }
