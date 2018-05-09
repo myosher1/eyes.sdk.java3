@@ -1,7 +1,5 @@
 package com.applitools.eyes;
 
-import com.applitools.utils.ArgumentGuard;
-
 /**
  * Logs trace messages.
  */
@@ -26,9 +24,7 @@ public class Logger {
      *                com.applitools.eyes.NullLogHandler}.
      */
     public void setLogHandler(LogHandler handler) {
-        ArgumentGuard.notNull(handler, "handler");
-
-        logHandler = handler;
+        logHandler = handler == null ? NullLogHandler.instance : handler;
     }
 
     /**
@@ -42,7 +38,7 @@ public class Logger {
 
         String prefix = "";
         // getStackTrace()<-getPrefix()<-log()/verbose()<-"actual caller"
-        if (stackTraceElements != null && stackTraceElements.length >= 4) {
+        if (stackTraceElements.length >= 4) {
             prefix = stackTraceElements[3].getMethodName() + "(): ";
         }
 
