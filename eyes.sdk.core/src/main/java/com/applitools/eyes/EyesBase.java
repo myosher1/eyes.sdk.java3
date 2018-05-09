@@ -524,7 +524,7 @@ public abstract class EyesBase {
      * @return The full agent id composed of both the base agent id and the
      * user given agent id.
      */
-    protected String getFullAgentId() {
+    public String getFullAgentId() {
         String agentId = getAgentId();
         if (agentId == null) {
             return getBaseAgentId();

@@ -9,19 +9,23 @@ import org.testng.annotations.BeforeClass;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashSet;
 
 public abstract class TestSetup {
 
     protected Eyes eyes;
     protected WebDriver driver;
-    protected WebDriver webDriver;
+    protected RemoteWebDriver webDriver;
 
     protected String testSuitName;
 
     protected String testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
     protected RectangleSize testedPageSize = new RectangleSize(800, 600);
+
+    protected String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
 
     protected Capabilities caps;
     private DesiredCapabilities desiredCaps = new DesiredCapabilities();
@@ -50,7 +54,7 @@ public abstract class TestSetup {
         eyes.setHideScrollbars(true);
 
 //        if (System.getenv("CI") == null) {
-//            eyes.setDebugScreenshotsPath("c:\\temp\\logs");
+//            eyes.setDebugScreenshotsPath(logsPath);
 //            eyes.setSaveDebugScreenshots(true);
 //        }
 
@@ -76,29 +80,41 @@ public abstract class TestSetup {
         System.out.println(this);
         System.out.println();
 
-        String seleniumServerUrl = System.getenv("SELENIUM_SERVER_URL");
-        if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
-            desiredCaps.setCapability("username", System.getenv("SAUCE_USERNAME"));
-            desiredCaps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
-            desiredCaps.setCapability("platform", platform);
-
-            caps.merge(desiredCaps);
-        }
-
-        try {
-            webDriver = new RemoteWebDriver(new URL(seleniumServerUrl), caps);
-        } catch (MalformedURLException ignored) {
-        }
-
         String fps = forceFPS ? "_FPS" : "";
         String testName = methodName + fps;
         testName = testName.replace('[', '_')
                 .replace(' ', '_')
                 .replace("]", "");
 
-//        LogHandler logHandler = new FileLogger("c:\\temp\\logs\\java_" + testName + "_" + platform + ".log", true, true);
+        String seleniumServerUrl = System.getenv("SELENIUM_SERVER_URL");
+        if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
+            desiredCaps.setCapability("username", System.getenv("SAUCE_USERNAME"));
+            desiredCaps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
+            desiredCaps.setCapability("seleniumVersion", "3.11.0");
+
+            if (caps.getBrowserName().equals("chrome")) {
+                desiredCaps.setCapability("chromedriverVersion", "2.37");
+            }
+
+            desiredCaps.setCapability("platform", platform);
+            desiredCaps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
+
+            caps.merge(desiredCaps);
+        }
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
+
+        testName = "java_" + testName + "_" + dateFormat.format(Calendar.getInstance().getTime());
+
+        try {
+            webDriver = new RemoteWebDriver(new URL(seleniumServerUrl), caps);
+        } catch (MalformedURLException ignored) {
+        }
+
+//        LogHandler logHandler = new FileLogger(logsPath + "\\" + testName + "\\" + testName + "_" + platform + ".log", true, true);
         LogHandler logHandler = new StdoutLogHandler(true);
         eyes.setLogHandler(logHandler);
+        eyes.addProperty("Selenium Session ID", webDriver.getSessionId().toString());
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
 
         driver = eyes.open(webDriver,
