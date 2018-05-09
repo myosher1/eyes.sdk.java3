@@ -808,8 +808,6 @@ public class Eyes extends EyesBase {
     public void check(ICheckSettings checkSettings) {
         ArgumentGuard.notNull(checkSettings, "checkSettings");
 
-        logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
-
         if (!EyesSeleniumUtils.isMobileDevice(driver)) {
             logger.verbose("URL: " + driver.getCurrentUrl());
         }
@@ -817,6 +815,8 @@ public class Eyes extends EyesBase {
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
         String name = checkSettingsInternal.getName();
+
+        logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
 
         this.stitchContent = checkSettingsInternal.getStitchContent();
 
