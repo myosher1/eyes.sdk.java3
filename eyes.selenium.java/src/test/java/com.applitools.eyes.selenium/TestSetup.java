@@ -116,6 +116,7 @@ public abstract class TestSetup {
         eyes.setLogHandler(logHandler);
         eyes.addProperty("Selenium Session ID", webDriver.getSessionId().toString());
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
+        eyes.addProperty("ScaleRatio", "" + eyes.getScaleRatio());
 
         driver = eyes.open(webDriver,
                 testSuitName,
