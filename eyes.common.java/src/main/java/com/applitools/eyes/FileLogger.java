@@ -11,7 +11,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 /**
- * Writes log messages to a file.
+ * Writes log messages to a fileWriter.
  */
 @SuppressWarnings("UnusedDeclaration")
 public class FileLogger implements LogHandler {
@@ -19,7 +19,7 @@ public class FileLogger implements LogHandler {
     private final boolean isVerbose;
     private final String filename;
     private final boolean append;
-    private BufferedWriter file;
+    private BufferedWriter fileWriter;
 
     /**
      * Creates a new FileHandler instance.
@@ -33,7 +33,7 @@ public class FileLogger implements LogHandler {
         this.filename = filename;
         this.append = append;
         this.isVerbose = isVerbose;
-        file = null;
+        fileWriter = null;
     }
 
     /**
@@ -53,15 +53,23 @@ public class FileLogger implements LogHandler {
      */
     public void open() {
         try {
-            if (file != null) {
+            if (fileWriter != null) {
                 //noinspection EmptyCatchBlock
                 try {
-                    file.close();
+                    fileWriter.close();
                 } catch (Exception e) {}
             }
-            file = new BufferedWriter(new FileWriter(new File(filename), append));
+            File file = new File(filename);
+            File path = file.getParentFile();
+            if (!path.exists()) {
+                System.out.print("No Folder");
+                boolean success = path.mkdir();
+                System.out.print("Folder created");
+            }
+
+            fileWriter = new BufferedWriter(new FileWriter(file, append));
         } catch (IOException e) {
-            throw new EyesException("Failed to create log file!", e);
+            throw new EyesException("Failed to create log fileWriter!", e);
         }
     }
 
@@ -71,31 +79,31 @@ public class FileLogger implements LogHandler {
      * @param logString The string to log.
      */
     public void onMessage(boolean verbose, String logString) {
-        if (file != null && (!verbose || this.isVerbose)) {
+        if (fileWriter != null && (!verbose || this.isVerbose)) {
 
             String currentTime = GeneralUtils.toISO8601DateTime(
                     Calendar.getInstance(TimeZone.getTimeZone("UTC")));
 
             try {
-                file.write(currentTime + " Eyes: " + logString);
-                file.newLine();
-                file.flush();
+                fileWriter.write(currentTime + " Eyes: " + logString);
+                fileWriter.newLine();
+                fileWriter.flush();
             } catch (IOException e) {
-                throw new EyesException("Failed to write log to file!", e);
+                throw new EyesException("Failed to write log to fileWriter!", e);
             }
         }
     }
 
     /**
-     * Close the log file for writing.
+     * Close the log fileWriter for writing.
      */
     public void close() {
         //noinspection EmptyCatchBlock
         try {
-            if (file !=null) {
-                file.close();
+            if (fileWriter !=null) {
+                fileWriter.close();
             }
         } catch (IOException e) {}
-        file = null;
+        fileWriter = null;
     }
 }
