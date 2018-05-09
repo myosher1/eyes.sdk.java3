@@ -7,6 +7,7 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testng.annotations.BeforeClass;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -25,7 +26,7 @@ public abstract class TestSetup {
     protected String testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
     protected RectangleSize testedPageSize = new RectangleSize(800, 600);
 
-    protected String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
+    private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
 
     protected Capabilities caps;
     private DesiredCapabilities desiredCaps = new DesiredCapabilities();
@@ -53,10 +54,9 @@ public abstract class TestSetup {
 
         eyes.setHideScrollbars(true);
 
-//        if (System.getenv("CI") == null) {
-//            eyes.setDebugScreenshotsPath(logsPath);
-//            eyes.setSaveDebugScreenshots(true);
-//        }
+        if (System.getenv("CI") == null) {
+            eyes.setSaveDebugScreenshots(true);
+        }
 
         String batchId = System.getenv("APPLITOOLS_BATCH_ID");
         if (batchId != null) {
@@ -104,15 +104,19 @@ public abstract class TestSetup {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
 
-        testName = "java_" + testName + "_" + dateFormat.format(Calendar.getInstance().getTime());
+        String extendedTestName = "java_" + testName + "_" + dateFormat.format(Calendar.getInstance().getTime());
 
         try {
             webDriver = new RemoteWebDriver(new URL(seleniumServerUrl), caps);
         } catch (MalformedURLException ignored) {
         }
 
-//        LogHandler logHandler = new FileLogger(logsPath + "\\" + testName + "\\" + testName + "_" + platform + ".log", true, true);
-        LogHandler logHandler = new StdoutLogHandler(true);
+        LogHandler logHandler;
+        if (System.getenv("CI") == null) {
+            logHandler = new FileLogger(logsPath + File.separator + extendedTestName + File.separator + extendedTestName + "_" + platform + ".log", true, true);
+        } else {
+            logHandler = new StdoutLogHandler(true);
+        }
         eyes.setLogHandler(logHandler);
         eyes.addProperty("Selenium Session ID", webDriver.getSessionId().toString());
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
@@ -127,6 +131,7 @@ public abstract class TestSetup {
         driver.get(testedPageUrl);
 
         eyes.setForceFullPageScreenshot(forceFPS);
+        eyes.setDebugScreenshotsPath(logsPath + File.separator + extendedTestName );
         eyes.setDebugScreenshotsPrefix("java_" + testName + "_");
 
         this.expectedIgnoreRegions.clear();
