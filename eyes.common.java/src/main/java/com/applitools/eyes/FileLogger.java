@@ -11,7 +11,7 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 /**
- * Writes log messages to a fileWriter.
+ * Writes log messages to a file.
  */
 @SuppressWarnings("UnusedDeclaration")
 public class FileLogger implements LogHandler {
@@ -69,7 +69,7 @@ public class FileLogger implements LogHandler {
 
             fileWriter = new BufferedWriter(new FileWriter(file, append));
         } catch (IOException e) {
-            throw new EyesException("Failed to create log fileWriter!", e);
+            throw new EyesException("Failed to create log file!", e);
         }
     }
 
@@ -89,13 +89,13 @@ public class FileLogger implements LogHandler {
                 fileWriter.newLine();
                 fileWriter.flush();
             } catch (IOException e) {
-                throw new EyesException("Failed to write log to fileWriter!", e);
+                throw new EyesException("Failed to write log to file!", e);
             }
         }
     }
 
     /**
-     * Close the log fileWriter for writing.
+     * Close the log file for writing.
      */
     public void close() {
         //noinspection EmptyCatchBlock
