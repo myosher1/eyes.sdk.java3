@@ -1139,7 +1139,7 @@ public class Eyes extends EyesBase {
 
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
-     * {@link #checkRegion(org.openqa.selenium.WebElement)}, otherwise
+     * {@link #checkRegion(WebElement)}, otherwise
      * behaves the same as {@link #checkElement(WebElement)}.
      */
     public void checkRegion(WebElement element, boolean stitchContent) {
@@ -1156,7 +1156,7 @@ public class Eyes extends EyesBase {
 
     /**
      * if {@code stitchContent} is {@code false} then behaves the same {@link
-     * #checkRegion(org.openqa.selenium.WebElement, String)}. Otherwise
+     * #checkRegion(WebElement, String)}. Otherwise
      * behaves the same as {@link #checkElement(WebElement, String)}.
      */
     public void checkRegion(WebElement element, String tag, boolean stitchContent) {
@@ -1179,7 +1179,7 @@ public class Eyes extends EyesBase {
 
     /**
      * if {@code stitchContent} is {@code false} then behaves the same {@link
-     * #checkRegion(org.openqa.selenium.WebElement, int, String)}. Otherwise
+     * #checkRegion(WebElement, int, String)}. Otherwise
      * behaves the same as {@link #checkElement(WebElement, String)}.
      */
     public void checkRegion(WebElement element, int matchTimeout, String tag, boolean stitchContent) {
@@ -1196,7 +1196,7 @@ public class Eyes extends EyesBase {
 
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
-     * {@link #checkRegion(org.openqa.selenium.By)}. Otherwise, behaves the
+     * {@link #checkRegion(By)}. Otherwise, behaves the
      * same as {@code #checkElement(org.openqa.selenium.By)}
      */
     public void checkRegion(By selector, boolean stitchContent) {
@@ -1213,7 +1213,7 @@ public class Eyes extends EyesBase {
 
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
-     * {@link #checkRegion(org.openqa.selenium.By, String)}. Otherwise,
+     * {@link #checkRegion(By, String)}. Otherwise,
      * behaves the same as {@link #checkElement(By, String)}.
      */
     public void checkRegion(By selector, String tag, boolean stitchContent) {
@@ -1235,7 +1235,7 @@ public class Eyes extends EyesBase {
 
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
-     * {@link #checkRegion(org.openqa.selenium.By, int, String)}. Otherwise,
+     * {@link #checkRegion(By, int, String)}. Otherwise,
      * behaves the same as {@link #checkElement(By, int, String)}.
      */
     public void checkRegion(By selector, int matchTimeout, String tag, boolean stitchContent) {
