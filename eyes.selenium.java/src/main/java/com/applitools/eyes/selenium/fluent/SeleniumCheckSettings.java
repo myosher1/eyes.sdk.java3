@@ -118,6 +118,25 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return clone;
     }
 
+    public SeleniumCheckSettings ignore(By[] regionSelectors) {
+        SeleniumCheckSettings clone = this.clone();
+        for (By selector : regionSelectors) {
+            clone.ignore_(new IgnoreRegionBySelector(selector));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings ignore(WebElement[] elements) {
+        SeleniumCheckSettings clone = this.clone();
+        //TODO - FIXME - BUG - this is wrong in case of a cropped image!
+        for (WebElement e : elements) {
+            clone.ignore_(new IgnoreRegionByElement(e));
+        }
+
+        return clone;
+    }
+
     public SeleniumCheckSettings layout(By regionSelector, By... regionSelectors) {
         SeleniumCheckSettings clone = this.clone();
         clone.layout_(new IgnoreRegionBySelector(regionSelector));
@@ -131,6 +150,25 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     public SeleniumCheckSettings layout(WebElement element, WebElement... elements) {
         SeleniumCheckSettings clone = this.clone();
         clone.layout_(new IgnoreRegionByElement(element));
+        //TODO - FIXME - BUG - this is wrong in case of a cropped image!
+        for (WebElement e : elements) {
+            clone.layout_(new IgnoreRegionByElement(e));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings layout(By[] regionSelectors) {
+        SeleniumCheckSettings clone = this.clone();
+        for (By selector : regionSelectors) {
+            clone.layout_(new IgnoreRegionBySelector(selector));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings layout(WebElement[] elements) {
+        SeleniumCheckSettings clone = this.clone();
         //TODO - FIXME - BUG - this is wrong in case of a cropped image!
         for (WebElement e : elements) {
             clone.layout_(new IgnoreRegionByElement(e));
@@ -160,6 +198,25 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return clone;
     }
 
+    public SeleniumCheckSettings strict(By[] regionSelectors) {
+        SeleniumCheckSettings clone = this.clone();
+        for (By selector : regionSelectors) {
+            clone.strict_(new IgnoreRegionBySelector(selector));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings strict(WebElement[] elements) {
+        SeleniumCheckSettings clone = this.clone();
+        //TODO - FIXME - BUG - this is wrong in case of a cropped image!
+        for (WebElement e : elements) {
+            clone.strict_(new IgnoreRegionByElement(e));
+        }
+
+        return clone;
+    }
+
     public SeleniumCheckSettings content(By regionSelector, By... regionSelectors) {
         SeleniumCheckSettings clone = this.clone();
         clone.content_(new IgnoreRegionBySelector(regionSelector));
@@ -173,6 +230,25 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     public SeleniumCheckSettings content(WebElement element, WebElement... elements) {
         SeleniumCheckSettings clone = this.clone();
         clone.content_(new IgnoreRegionByElement(element));
+        //TODO - FIXME - BUG - this is wrong in case of a cropped image!
+        for (WebElement e : elements) {
+            clone.content_(new IgnoreRegionByElement(e));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings content(By[] regionSelectors) {
+        SeleniumCheckSettings clone = this.clone();
+        for (By selector : regionSelectors) {
+            clone.content_(new IgnoreRegionBySelector(selector));
+        }
+
+        return clone;
+    }
+
+    public SeleniumCheckSettings content(WebElement[] elements) {
+        SeleniumCheckSettings clone = this.clone();
         //TODO - FIXME - BUG - this is wrong in case of a cropped image!
         for (WebElement e : elements) {
             clone.content_(new IgnoreRegionByElement(e));
