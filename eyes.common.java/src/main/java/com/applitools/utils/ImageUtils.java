@@ -537,6 +537,7 @@ public class ImageUtils {
      */
     public static void saveImage(BufferedImage image, String filename) {
         try {
+            logger.verbose("Saving file: " + filename);
             File file = new File(filename);
             ImageIO.write(image, "png", file);
         } catch (IOException e) {
