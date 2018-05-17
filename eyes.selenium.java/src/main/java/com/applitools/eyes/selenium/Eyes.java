@@ -106,6 +106,15 @@ public class Eyes extends EyesBase {
     private EyesScreenshotFactory screenshotFactory;
 
     private boolean stitchContent = false;
+    private boolean hideCaret = true;
+
+    public boolean getHideCaret() {
+        return hideCaret;
+    }
+
+    public void setHideCaret(boolean hideCaret) {
+        this.hideCaret = hideCaret;
+    }
 
     public boolean shouldStitchContent() {
         return stitchContent;
@@ -2092,6 +2101,12 @@ public class Eyes extends EyesBase {
 
         EyesWebDriverScreenshot result;
 
+        Object activeElement = null;
+        if (getHideCaret())
+        {
+            activeElement = driver.executeScript("var activeElement = document.activeElement; activeElement && activeElement.blur(); return activeElement;");
+        }
+
         if (checkFrameOrElement) {
             logger.verbose("Check frame/element requested");
 
@@ -2141,6 +2156,12 @@ public class Eyes extends EyesBase {
             logger.verbose("Creating screenshot object...");
             result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
         }
+
+        if (getHideCaret() && activeElement != null)
+        {
+            driver.executeScript("arguments[0].focus();", activeElement);
+        }
+
         logger.verbose("Done!");
         return result;
     }
