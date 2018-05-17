@@ -10,6 +10,7 @@ import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.selenium.exceptions.NoFramesException;
 import com.applitools.utils.ArgumentGuard;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,14 +70,7 @@ public class FrameChain implements Iterable<Frame>{
         ArgumentGuard.notNull(other, "other");
         this.logger = logger;
         logger.verbose(String.format("Frame chain copy constructor (size %d)", other.size()));
-        frames = new LinkedList<>();
-        for (Frame otherFrame: other.frames) {
-            frames.add(new Frame(logger, otherFrame.getReference(),
-                    otherFrame.getLocation(),
-                    otherFrame.getSize(), otherFrame.getInnerSize(),
-                    otherFrame.getOriginalLocation(),
-                    otherFrame.getOriginalOverflow()));
-        }
+        frames = new ArrayList<>(other.frames);
         logger.verbose("Done!");
     }
 
@@ -107,6 +101,7 @@ public class FrameChain implements Iterable<Frame>{
      * @return Returns the top frame in the chain.
      */
     public Frame peek() {
+        if (frames.size() == 0) return null;
         return frames.get(frames.size() - 1);
     }
 

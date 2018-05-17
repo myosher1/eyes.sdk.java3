@@ -63,7 +63,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
                 new RectangleSize(ds.getWidth(), ds.getHeight()),
                 new RectangleSize(clientWidth, clientHeight),
                 originalLocation,
-                frameOverflow);
+                frameOverflow, this.driver);
 
         driver.getFrameChain().push(frame);
     }

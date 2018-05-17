@@ -676,6 +676,8 @@ public class Eyes extends EyesBase {
 
         this.originalFC = driver.getFrameChain().clone();
 
+        rootElementForHidingScrollbars = null;
+
         FrameChain originalFC = tryHideScrollbars();
 
         Region bbox = findBoundingBox(getRegions, checkSettings);
@@ -702,7 +704,7 @@ public class Eyes extends EyesBase {
         }
 
         tryRestoreScrollbars(originalFC);
-        ((EyesTargetLocator)driver.switchTo()).frames(this.originalFC);
+        ((EyesTargetLocator) driver.switchTo()).frames(this.originalFC);
     }
 
     private List<EyesScreenshot> getSubScreenshots(Region bbox, EyesScreenshot screenshot, GetRegion getRegion) {
@@ -826,6 +828,7 @@ public class Eyes extends EyesBase {
 
         int switchedToFrameCount = this.switchToFrame(seleniumCheckTarget);
 
+        this.rootElementForHidingScrollbars = null;
         this.regionToCheck = null;
 
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
@@ -2001,24 +2004,35 @@ public class Eyes extends EyesBase {
 
     @Override
     protected void beforeOpen() {
+        rootElementForHidingScrollbars = null;
         tryHideScrollbars();
     }
+
+    private String rootElementForHidingScrollbars = null;
 
     private FrameChain tryHideScrollbars() {
         if (EyesSeleniumUtils.isMobileDevice(driver)) {
             return new FrameChain(logger);
         }
         if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
+            if (rootElementForHidingScrollbars == null) {
+                rootElementForHidingScrollbars = EyesSeleniumUtils.selectRootElement(this.driver);
+            }
             FrameChain originalFC = driver.getFrameChain().clone();
             FrameChain fc = driver.getFrameChain().clone();
+            Frame frame = fc.peek();
             while (fc.size() > 0) {
                 if (stitchContent || fc.size() != originalFC.size()) {
-                    EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+                    if (frame != null) {
+                        frame.hideScrollbars();
+                    } else {
+                        EyesSeleniumUtils.hideScrollbars(this.driver, 200, rootElementForHidingScrollbars);
+                    }
                 }
                 driver.getRemoteWebDriver().switchTo().parentFrame();
                 fc.pop();
             }
-            this.originalOverflow = EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+            this.originalOverflow = EyesSeleniumUtils.hideScrollbars(this.driver, 200, rootElementForHidingScrollbars);
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
             return originalFC;
         }
@@ -2029,16 +2043,19 @@ public class Eyes extends EyesBase {
         if (EyesSeleniumUtils.isMobileDevice(driver)) {
             return;
         }
+        if (rootElementForHidingScrollbars == null) {
+            rootElementForHidingScrollbars = EyesSeleniumUtils.selectRootElement(this.driver);
+        }
         if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
             ((EyesTargetLocator) driver.switchTo()).frames(frameChain);
             FrameChain originalFC = this.originalFC.clone();
             FrameChain fc = this.originalFC.clone();
             while (fc.size() > 0) {
                 Frame frame = fc.pop();
-                EyesSeleniumUtils.setOverflow(this.driver, frame.getOriginalOverflow());
+                frame.returnToOriginalOverflow();
                 driver.getRemoteWebDriver().switchTo().parentFrame();
             }
-            EyesSeleniumUtils.setOverflow(this.driver, originalOverflow);
+            EyesSeleniumUtils.setOverflow(this.driver, originalOverflow, rootElementForHidingScrollbars);
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
         }
         driver.getFrameChain().clear();
