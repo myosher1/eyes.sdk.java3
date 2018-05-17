@@ -2,10 +2,7 @@ package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.selenium.fluent.Target;
-import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebElement;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
