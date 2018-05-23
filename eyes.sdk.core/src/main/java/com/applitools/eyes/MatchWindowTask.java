@@ -137,7 +137,7 @@ public class MatchWindowTask {
         return matchResult;
     }
 
-    private void collectIgnoreRegions(ICheckSettingsInternal checkSettingsInternal,
+    private void collectSimpleRegions(ICheckSettingsInternal checkSettingsInternal,
                                       ImageMatchSettings imageMatchSettings, EyesBase eyes,
                                       EyesScreenshot screenshot) {
 
@@ -183,13 +183,22 @@ public class MatchWindowTask {
         ImageMatchSettings imageMatchSettings = null;
         if (checkSettingsInternal != null) {
 
+            MatchLevel matchLevel = checkSettingsInternal.getMatchLevel();
+            if (matchLevel == null) {
+                matchLevel = eyes.getDefaultMatchSettings().getMatchLevel();
+            }
 
-            imageMatchSettings = new ImageMatchSettings(checkSettingsInternal.getMatchLevel(), null);
+            imageMatchSettings = new ImageMatchSettings(matchLevel, null);
 
-            collectIgnoreRegions(checkSettingsInternal, imageMatchSettings, eyes, screenshot);
+            Boolean ignoreCaret = checkSettingsInternal.getIgnoreCaret();
+            if (ignoreCaret == null) {
+                ignoreCaret = eyes.getDefaultMatchSettings().getIgnoreCaret();
+            }
+
+            imageMatchSettings.setIgnoreCaret(ignoreCaret);
+
+            collectSimpleRegions(checkSettingsInternal, imageMatchSettings, eyes, screenshot);
             collectFloatingRegions(checkSettingsInternal, imageMatchSettings, eyes, screenshot);
-
-            imageMatchSettings.setIgnoreCaret(checkSettingsInternal.getIgnoreCaret());
         }
         return imageMatchSettings;
     }
