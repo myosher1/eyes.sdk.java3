@@ -173,6 +173,22 @@ public class EyesSeleniumUtils {
         return false;
     }
 
+    public static String selectRootElement(JavascriptExecutor executor){
+        String script =
+                "var docElemScrollHeightBefore = document.documentElement.scrollHeight; " +
+                "var originalBodyOverflow = document.body.style.overflow; " +
+                "document.body.style.overflow = 'hidden'; " +
+                "var docElemScrollHeightAfter = document.documentElement.scrollHeight; " +
+                "if (docElemScrollHeightBefore != docElemScrollHeightAfter) " +
+                "var retval = 'documentElement'; " +
+                "else " +
+                "var retval = 'body'; " +
+                "document.body.style.overflow = originalBodyOverflow; " +
+                "return retval;";
+
+        return (String)executor.executeScript(script);
+    }
+
     /**
      * Sets the overflow of the current context's body.
      * @param executor The executor to use for setting the overflow.
@@ -180,12 +196,16 @@ public class EyesSeleniumUtils {
      * @return The previous overflow value (could be {@code null} if undefined).
      */
     public static String setOverflow(JavascriptExecutor executor,
-                                     String value) {
+                                     String value,
+                                     String rootElement) {
+        if (rootElement == null) {
+            rootElement = "body";
+        }
         String script = String.format(
-                "var origOverflow = document.body.style.overflow; " +
-                        "document.body.style.overflow = '%s'; " +
+                "var origOverflow = document.%s.style.overflow; " +
+                        "document.%s.style.overflow = '%s'; " +
                         "return origOverflow;",
-                value == null ? "" : value);
+                rootElement, rootElement, value == null ? "" : value);
 
         try {
             return (String) executor.executeScript(script);
@@ -200,14 +220,15 @@ public class EyesSeleniumUtils {
      * @param executor The executor to use for hiding the scrollbars.
      * @param stabilizationTimeout The amount of time to wait for the "hide
      *                             scrollbars" action to take effect
-     *                             (Milliseconds). Zero/negative values are
-     *                             ignored.
+     *                             (Milliseconds). Zero/negative values are ignored.
+     * @param rootElement The root element to change ('documentElement' or 'body').
      * @return The previous value of the overflow property (could be
      *          {@code null}).
      */
-    public static String hideScrollbars(JavascriptExecutor executor, int
-            stabilizationTimeout) {
-        String originalOverflow = setOverflow(executor, "hidden");
+    public static String hideScrollbars(JavascriptExecutor executor,
+                                        int stabilizationTimeout,
+                                        String rootElement) {
+        String originalOverflow = setOverflow(executor, "hidden", rootElement);
         if (stabilizationTimeout > 0) {
             try {
                 Thread.sleep(stabilizationTimeout);

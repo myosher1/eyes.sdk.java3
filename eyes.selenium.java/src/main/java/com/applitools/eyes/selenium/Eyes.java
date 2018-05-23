@@ -106,6 +106,15 @@ public class Eyes extends EyesBase {
     private EyesScreenshotFactory screenshotFactory;
 
     private boolean stitchContent = false;
+    private boolean hideCaret = true;
+
+    public boolean getHideCaret() {
+        return hideCaret;
+    }
+
+    public void setHideCaret(boolean hideCaret) {
+        this.hideCaret = hideCaret;
+    }
 
     public boolean shouldStitchContent() {
         return stitchContent;
@@ -622,11 +631,6 @@ public class Eyes extends EyesBase {
     }
 
     public void check(ICheckSettings... checkSettings) {
-        //TODO - 1. find common ancestor.
-        //TODO - 2. take all required screenshots for all the various ICheckSettings objects before moving on.
-        //TODO - 3. collect all the screenshots and send them to the server with their names.
-
-        //TODO - replace this implementation according to the description above.
         boolean originalForceFPS = forceFullPageScreenshot;
 
         if (checkSettings.length > 1) {
@@ -639,7 +643,6 @@ public class Eyes extends EyesBase {
         for (int i = 0; i < checkSettings.length; ++i) {
             ICheckSettings settings = checkSettings[i];
             ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) settings;
-            String name = checkSettingsInternal.getName();
 
             checkSettingsInternalDictionary.put(i, checkSettingsInternal);
 
@@ -676,6 +679,8 @@ public class Eyes extends EyesBase {
 
         this.originalFC = driver.getFrameChain().clone();
 
+        rootElementForHidingScrollbars = null;
+
         FrameChain originalFC = tryHideScrollbars();
 
         Region bbox = findBoundingBox(getRegions, checkSettings);
@@ -702,7 +707,7 @@ public class Eyes extends EyesBase {
         }
 
         tryRestoreScrollbars(originalFC);
-        ((EyesTargetLocator)driver.switchTo()).frames(this.originalFC);
+        ((EyesTargetLocator) driver.switchTo()).frames(this.originalFC);
     }
 
     private List<EyesScreenshot> getSubScreenshots(Region bbox, EyesScreenshot screenshot, GetRegion getRegion) {
@@ -826,6 +831,7 @@ public class Eyes extends EyesBase {
 
         int switchedToFrameCount = this.switchToFrame(seleniumCheckTarget);
 
+        this.rootElementForHidingScrollbars = null;
         this.regionToCheck = null;
 
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
@@ -1136,7 +1142,7 @@ public class Eyes extends EyesBase {
 
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
-     * {@link #checkRegion(org.openqa.selenium.WebElement)}, otherwise
+     * {@link #checkRegion(WebElement)}, otherwise
      * behaves the same as {@link #checkElement(WebElement)}.
      */
     public void checkRegion(WebElement element, boolean stitchContent) {
@@ -1153,7 +1159,7 @@ public class Eyes extends EyesBase {
 
     /**
      * if {@code stitchContent} is {@code false} then behaves the same {@link
-     * #checkRegion(org.openqa.selenium.WebElement, String)}. Otherwise
+     * #checkRegion(WebElement, String)}. Otherwise
      * behaves the same as {@link #checkElement(WebElement, String)}.
      */
     public void checkRegion(WebElement element, String tag, boolean stitchContent) {
@@ -1176,7 +1182,7 @@ public class Eyes extends EyesBase {
 
     /**
      * if {@code stitchContent} is {@code false} then behaves the same {@link
-     * #checkRegion(org.openqa.selenium.WebElement, int, String)}. Otherwise
+     * #checkRegion(WebElement, int, String)}. Otherwise
      * behaves the same as {@link #checkElement(WebElement, String)}.
      */
     public void checkRegion(WebElement element, int matchTimeout, String tag, boolean stitchContent) {
@@ -1193,7 +1199,7 @@ public class Eyes extends EyesBase {
 
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
-     * {@link #checkRegion(org.openqa.selenium.By)}. Otherwise, behaves the
+     * {@link #checkRegion(By)}. Otherwise, behaves the
      * same as {@code #checkElement(org.openqa.selenium.By)}
      */
     public void checkRegion(By selector, boolean stitchContent) {
@@ -1210,7 +1216,7 @@ public class Eyes extends EyesBase {
 
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
-     * {@link #checkRegion(org.openqa.selenium.By, String)}. Otherwise,
+     * {@link #checkRegion(By, String)}. Otherwise,
      * behaves the same as {@link #checkElement(By, String)}.
      */
     public void checkRegion(By selector, String tag, boolean stitchContent) {
@@ -1232,7 +1238,7 @@ public class Eyes extends EyesBase {
 
     /**
      * If {@code stitchContent} is {@code false} then behaves the same as
-     * {@link #checkRegion(org.openqa.selenium.By, int, String)}. Otherwise,
+     * {@link #checkRegion(By, int, String)}. Otherwise,
      * behaves the same as {@link #checkElement(By, int, String)}.
      */
     public void checkRegion(By selector, int matchTimeout, String tag, boolean stitchContent) {
@@ -2001,24 +2007,35 @@ public class Eyes extends EyesBase {
 
     @Override
     protected void beforeOpen() {
+        rootElementForHidingScrollbars = null;
         tryHideScrollbars();
     }
+
+    private String rootElementForHidingScrollbars = null;
 
     private FrameChain tryHideScrollbars() {
         if (EyesSeleniumUtils.isMobileDevice(driver)) {
             return new FrameChain(logger);
         }
         if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
+            if (rootElementForHidingScrollbars == null) {
+                rootElementForHidingScrollbars = EyesSeleniumUtils.selectRootElement(this.driver);
+            }
             FrameChain originalFC = driver.getFrameChain().clone();
             FrameChain fc = driver.getFrameChain().clone();
+            Frame frame = fc.peek();
             while (fc.size() > 0) {
                 if (stitchContent || fc.size() != originalFC.size()) {
-                    EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+                    if (frame != null) {
+                        frame.hideScrollbars();
+                    } else {
+                        EyesSeleniumUtils.hideScrollbars(this.driver, 200, rootElementForHidingScrollbars);
+                    }
                 }
                 driver.getRemoteWebDriver().switchTo().parentFrame();
                 fc.pop();
             }
-            this.originalOverflow = EyesSeleniumUtils.hideScrollbars(this.driver, 200);
+            this.originalOverflow = EyesSeleniumUtils.hideScrollbars(this.driver, 200, rootElementForHidingScrollbars);
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
             return originalFC;
         }
@@ -2029,16 +2046,19 @@ public class Eyes extends EyesBase {
         if (EyesSeleniumUtils.isMobileDevice(driver)) {
             return;
         }
+        if (rootElementForHidingScrollbars == null) {
+            rootElementForHidingScrollbars = EyesSeleniumUtils.selectRootElement(this.driver);
+        }
         if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
             ((EyesTargetLocator) driver.switchTo()).frames(frameChain);
             FrameChain originalFC = this.originalFC.clone();
             FrameChain fc = this.originalFC.clone();
             while (fc.size() > 0) {
                 Frame frame = fc.pop();
-                EyesSeleniumUtils.setOverflow(this.driver, frame.getOriginalOverflow());
+                frame.returnToOriginalOverflow();
                 driver.getRemoteWebDriver().switchTo().parentFrame();
             }
-            EyesSeleniumUtils.setOverflow(this.driver, originalOverflow);
+            EyesSeleniumUtils.setOverflow(this.driver, originalOverflow, rootElementForHidingScrollbars);
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
         }
         driver.getFrameChain().clear();
@@ -2074,6 +2094,12 @@ public class Eyes extends EyesBase {
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
 
         EyesWebDriverScreenshot result;
+
+        Object activeElement = null;
+        if (getHideCaret())
+        {
+            activeElement = driver.executeScript("var activeElement = document.activeElement; activeElement && activeElement.blur(); return activeElement;");
+        }
 
         if (checkFrameOrElement) {
             logger.verbose("Check frame/element requested");
@@ -2124,6 +2150,12 @@ public class Eyes extends EyesBase {
             logger.verbose("Creating screenshot object...");
             result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
         }
+
+        if (getHideCaret() && activeElement != null)
+        {
+            driver.executeScript("arguments[0].focus();", activeElement);
+        }
+
         logger.verbose("Done!");
         return result;
     }
