@@ -631,11 +631,6 @@ public class Eyes extends EyesBase {
     }
 
     public void check(ICheckSettings... checkSettings) {
-        //TODO - 1. find common ancestor.
-        //TODO - 2. take all required screenshots for all the various ICheckSettings objects before moving on.
-        //TODO - 3. collect all the screenshots and send them to the server with their names.
-
-        //TODO - replace this implementation according to the description above.
         boolean originalForceFPS = forceFullPageScreenshot;
 
         if (checkSettings.length > 1) {
@@ -648,7 +643,6 @@ public class Eyes extends EyesBase {
         for (int i = 0; i < checkSettings.length; ++i) {
             ICheckSettings settings = checkSettings[i];
             ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) settings;
-            String name = checkSettingsInternal.getName();
 
             checkSettingsInternalDictionary.put(i, checkSettingsInternal);
 
