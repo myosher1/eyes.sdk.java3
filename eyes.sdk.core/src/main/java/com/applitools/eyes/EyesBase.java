@@ -6,6 +6,7 @@ import com.applitools.eyes.debug.DebugScreenshotsProvider;
 import com.applitools.eyes.debug.FileDebugScreenshotsProvider;
 import com.applitools.eyes.debug.NullDebugScreenshotProvider;
 import com.applitools.eyes.diagnostics.ResponseTimeAlgorithm;
+import com.applitools.eyes.events.ISessionEventHandler;
 import com.applitools.eyes.exceptions.DiffsFoundException;
 import com.applitools.eyes.exceptions.NewTestException;
 import com.applitools.eyes.exceptions.TestFailedException;
@@ -90,6 +91,8 @@ public abstract class EyesBase {
     protected DebugScreenshotsProvider debugScreenshotsProvider;
     private boolean isViewportSizeSet;
     protected int stitchingOverlap = 50;
+
+    private List<ISessionEventHandler> sessionEventHandlers = new ArrayList<>();
 
     /**
      * Creates a new {@code EyesBase}instance that interacts with the Eyes
@@ -1698,5 +1701,13 @@ public abstract class EyesBase {
 
     public void log(String message) {
         logger.log(message);
+    }
+
+    protected Iterable<ISessionEventHandler> getSessionEventHandlers(){
+        return this.sessionEventHandlers;
+    }
+
+    public void addSessionEventHandler(ISessionEventHandler eventHandler){
+        this.sessionEventHandlers.add(eventHandler);
     }
 }
