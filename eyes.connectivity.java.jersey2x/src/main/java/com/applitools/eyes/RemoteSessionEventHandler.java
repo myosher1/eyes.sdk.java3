@@ -1,6 +1,7 @@
 package com.applitools.eyes;
 
 import com.applitools.eyes.events.*;
+
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
@@ -14,6 +15,7 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
 
     private static final String SERVER_SUFFIX = "/applitools/sessions";
     private final WebTarget defaultEndPoint;
+    private boolean throwExceptions = true;
 
     public RemoteSessionEventHandler(Logger logger, URI serverUrl, String accessKey, int timeout) {
         super(logger, serverUrl, timeout);
@@ -25,15 +27,26 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
     }
 
     private void sendMessage(HttpMethodCall method) {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        String methodName = "";
+        // getStackTrace()<-sendMessage()<-"actual caller"
+        if (stackTraceElements.length >= 3) {
+            methodName = stackTraceElements[2].getMethodName();
+        }
+
         Response response = null;
         try {
             response = method.call();
             if (response.getStatus() != 200) {
-                logger.verbose("'initStarted' notification handler returned an error: " + response.getStatusInfo());
+                logger.verbose("'" + methodName + "' notification handler returned an error: " + response.getStatusInfo());
+            } else {
+                logger.verbose("'" + methodName + "' succeeded: " + response);
             }
         } catch (RuntimeException e) {
-            logger.log("Server request failed: " + e.getMessage());
-            throw e;
+            logger.log("'" + methodName + "' Server request failed: " + e.getMessage());
+            if (this.throwExceptions) {
+                throw e;
+            }
         } finally {
             if (response != null) {
                 response.close();
@@ -142,5 +155,13 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
                 return invocationBuilder.put(Entity.json("{\"action\":\"validationEnd\", \"asExpected\":" + validationResult.isAsExpected() + "}"));
             }
         });
+    }
+
+    public boolean getThrowExceptions() {
+        return throwExceptions;
+    }
+
+    public void setThrowExceptions(boolean throwExceptions) {
+        this.throwExceptions = throwExceptions;
     }
 }
