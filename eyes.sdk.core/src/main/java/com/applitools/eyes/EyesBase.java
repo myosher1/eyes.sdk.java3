@@ -567,6 +567,10 @@ public abstract class EyesBase {
         return logger.getLogHandler();
     }
 
+    public Logger getLogger() {
+        return logger;
+    }
+
     /**
      * Manually set the the sizes to cut from an image before it's validated.
      * @param cutProvider the provider doing the cut.
