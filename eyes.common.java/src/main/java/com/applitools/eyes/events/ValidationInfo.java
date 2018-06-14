@@ -20,4 +20,8 @@ public class ValidationInfo {
     public void setTag(String tag) {
         this.tag = tag;
     }
+
+    public String toJsonString() {
+        return "{\"tag\":\"" + tag + "\", \"validationId\":\"" + validationId + "\"}";
+    }
 }

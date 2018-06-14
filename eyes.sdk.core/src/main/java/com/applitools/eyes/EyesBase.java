@@ -7,6 +7,9 @@ import com.applitools.eyes.debug.FileDebugScreenshotsProvider;
 import com.applitools.eyes.debug.NullDebugScreenshotProvider;
 import com.applitools.eyes.diagnostics.ResponseTimeAlgorithm;
 import com.applitools.eyes.events.ISessionEventHandler;
+import com.applitools.eyes.events.SessionEventHandlers;
+import com.applitools.eyes.events.ValidationInfo;
+import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.DiffsFoundException;
 import com.applitools.eyes.exceptions.NewTestException;
 import com.applitools.eyes.exceptions.TestFailedException;
@@ -43,7 +46,7 @@ public abstract class EyesBase {
 
     protected ServerConnector serverConnector;
     protected RunningSession runningSession;
-    protected SessionStartInfo sessionStartInfo;
+    private SessionStartInfo sessionStartInfo;
     protected PropertyHandler<RectangleSize> viewportSizeHandler;
     protected EyesScreenshot lastScreenshot;
     protected PropertyHandler<ScaleProvider> scaleProviderHandler;
@@ -90,9 +93,10 @@ public abstract class EyesBase {
 
     protected DebugScreenshotsProvider debugScreenshotsProvider;
     private boolean isViewportSizeSet;
-    protected int stitchingOverlap = 50;
+    private int stitchingOverlap = 50;
 
-    private List<ISessionEventHandler> sessionEventHandlers = new ArrayList<>();
+    private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
+    private int validationId;
 
     /**
      * Creates a new {@code EyesBase}instance that interacts with the Eyes
@@ -142,7 +146,6 @@ public abstract class EyesBase {
     }
 
     /**
-     *
      * @param hardReset If false, init providers only if they're not initialized.
      */
     private void initProviders(boolean hardReset) {
@@ -188,7 +191,6 @@ public abstract class EyesBase {
     /**
      * Sets the user given agent id of the SDK. {@code null} is referred to
      * as no id.
-     *
      * @param agentId The agent ID to set.
      */
     public void setAgentId(String agentId) {
@@ -607,7 +609,6 @@ public abstract class EyesBase {
 
     /**
      * Adds a property to be sent to the server.
-     *
      * @param name  The property name.
      * @param value The property value.
      */
@@ -672,7 +673,9 @@ public abstract class EyesBase {
         return debugScreenshotsProvider.getPrefix();
     }
 
-    public DebugScreenshotsProvider getDebugScreenshotsProvider() { return debugScreenshotsProvider; }
+    public DebugScreenshotsProvider getDebugScreenshotsProvider() {
+        return debugScreenshotsProvider;
+    }
 
     /**
      * @return Whether to ignore or the blinking caret or not when comparing images.
@@ -758,6 +761,9 @@ public abstract class EyesBase {
             logger.verbose(results.toString());
 
             TestResultsStatus status = results.getStatus();
+
+            sessionEventHandlers.testEnded(getAUTSessionId(), results);
+
             if (status == TestResultsStatus.Unresolved) {
                 if (results.isNew()) {
                     logger.log("--- New test ended. Please approve the new baseline at " + sessionResultsUrl);
@@ -1085,8 +1091,11 @@ public abstract class EyesBase {
         return this.checkWindowBase(regionProvider, tag, ignoreMismatch, new CheckSettings(retryTimeout));
     }
 
-    protected void beforeMatchWindow() { }
-    protected void afterMatchWindow() { }
+    protected void beforeMatchWindow() {
+    }
+
+    protected void afterMatchWindow() {
+    }
 
     /**
      * Takes a snapshot of the application under test and matches it with the
@@ -1140,6 +1149,14 @@ public abstract class EyesBase {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
+        String autSessionId = self.getAUTSessionId();
+
+        ValidationInfo validationInfo = new ValidationInfo();
+        validationInfo.setValidationId("" + (++self.validationId));
+        validationInfo.setTag(tag);
+
+        self.getSessionEventHandlers().validationWillStart(autSessionId, validationInfo);
+
         // Update retry timeout if it wasn't specified.
         int retryTimeout = -1;
         if (checkSettingsInternal != null) {
@@ -1170,6 +1187,9 @@ public abstract class EyesBase {
 
         result = self.matchWindowTask.matchWindow(self.getUserInputs(), regionProvider.getRegion(), tag,
                 self.shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, checkSettingsInternal, retryTimeout, self);
+
+        ValidationResult validationResult = new ValidationResult();
+        self.getSessionEventHandlers().validationEnded(autSessionId, validationInfo.getValidationId(), validationResult);
 
         return result;
     }
@@ -1275,8 +1295,11 @@ public abstract class EyesBase {
         return result;
     }
 
-    protected void beforeOpen() { }
-    protected void afterOpen() { }
+    protected void beforeOpen() {
+    }
+
+    protected void afterOpen() {
+    }
 
     /**
      * Starts a test.
@@ -1330,8 +1353,9 @@ public abstract class EyesBase {
                 ensureRunningSession();
             }
 
-            isOpen = true;
+            this.validationId = -1;
 
+            isOpen = true;
             afterOpen();
 
         } catch (EyesException e) {
@@ -1404,7 +1428,6 @@ public abstract class EyesBase {
 
     /**
      * Define the viewport size as {@code size} without doing any actual action on the
-     *
      * @param explicitViewportSize The size of the viewport. {@code null} disables the explicit size.
      */
     public void setExplicitViewportSize(RectangleSize explicitViewportSize) {
@@ -1581,6 +1604,8 @@ public abstract class EyesBase {
     protected void startSession() {
         logger.verbose("startSession()");
 
+        sessionEventHandlers.testStarted(getAUTSessionId());
+
         ensureViewportSize();
 
         BatchInfo testBatch;
@@ -1592,7 +1617,12 @@ public abstract class EyesBase {
             testBatch = batch;
         }
 
+        sessionEventHandlers.initStarted();
+
         AppEnvironment appEnv = getAppEnvironment();
+
+        sessionEventHandlers.initEnded();
+
         logger.verbose("Application environment is " + appEnv);
 
         sessionStartInfo = new SessionStartInfo(getBaseAgentId(), sessionType,
@@ -1621,16 +1651,22 @@ public abstract class EyesBase {
 
     private void ensureViewportSize() {
         if (!isViewportSizeSet) {
+
             try {
                 if (viewportSizeHandler.get() == null) {
-                    // If it's read-only, no point in making the getViewportSize() call..
+                    // If it's read-only, no point in making the getViewportSize() call.
                     if (!(viewportSizeHandler instanceof ReadOnlyPropertyHandler)) {
-                        viewportSizeHandler.set(getViewportSize());
+                        RectangleSize targetSize = getViewportSize();
+                        sessionEventHandlers.setSizeWillStart(targetSize);
+                        viewportSizeHandler.set(targetSize);
                     }
                 } else {
-                    setViewportSize(viewportSizeHandler.get());
+                    RectangleSize targetSize = viewportSizeHandler.get();
+                    sessionEventHandlers.setSizeWillStart(targetSize);
+                    setViewportSize(targetSize);
                 }
                 isViewportSizeSet = true;
+                sessionEventHandlers.setSizeEnded();
             } catch (NullPointerException e) {
                 isViewportSizeSet = false;
             }
@@ -1703,11 +1739,13 @@ public abstract class EyesBase {
         logger.log(message);
     }
 
-    protected Iterable<ISessionEventHandler> getSessionEventHandlers(){
-        return this.sessionEventHandlers;
+    protected SessionEventHandlers getSessionEventHandlers() {
+        return sessionEventHandlers;
     }
 
-    public void addSessionEventHandler(ISessionEventHandler eventHandler){
-        this.sessionEventHandlers.add(eventHandler);
+    public void addSessionEventHandler(ISessionEventHandler eventHandler) {
+        this.sessionEventHandlers.addEventHandler(eventHandler);
     }
+
+    protected abstract String getAUTSessionId();
 }
