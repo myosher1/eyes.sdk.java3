@@ -5,9 +5,15 @@ package com.applitools.eyes;
  */
 public class Logger {
     private LogHandler logHandler;
+    private String sessionId;
 
     public Logger() {
-        logHandler = new NullLogHandler(); // Default.
+        logHandler = new NullLogHandler();
+        sessionId = "";
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
     }
 
     /**
@@ -36,7 +42,7 @@ public class Logger {
         StackTraceElement[] stackTraceElements =
                 Thread.currentThread().getStackTrace();
 
-        String prefix = "";
+        String prefix = "{" + sessionId + "} ";
         // getStackTrace()<-getPrefix()<-log()/verbose()<-"actual caller"
         if (stackTraceElements.length >= 4) {
             prefix = stackTraceElements[3].getMethodName() + "(): ";

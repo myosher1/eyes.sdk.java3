@@ -1329,6 +1329,8 @@ public abstract class EyesBase {
 
             isOpen = true;
 
+            logger.setSessionId(runningSession.getSessionId());
+
             afterOpen();
 
         } catch (EyesException e) {
