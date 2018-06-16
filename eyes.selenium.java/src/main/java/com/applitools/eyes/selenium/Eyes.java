@@ -107,6 +107,8 @@ public class Eyes extends EyesBase {
 
     private boolean stitchContent = false;
     private boolean hideCaret = true;
+    private String rootElementForHidingScrollbars = null;
+
 
     public boolean getHideCaret() {
         return hideCaret;
@@ -888,7 +890,7 @@ public class Eyes extends EyesBase {
             tryRestoreScrollbars(originalFC);
         }
 
-        switchTo.frames(this.originalFC);
+        trySwitchToFrames(driver, switchTo, this.originalFC);
 
         this.stitchContent = false;
 
@@ -2011,7 +2013,18 @@ public class Eyes extends EyesBase {
         tryHideScrollbars();
     }
 
-    private String rootElementForHidingScrollbars = null;
+
+    private WebDriver trySwitchToFrames(WebDriver driver, EyesTargetLocator switchTo, FrameChain frames) {
+        if (EyesSeleniumUtils.isMobileDevice(driver)) {
+            return driver;
+        }
+        try {
+            return switchTo.frames(frames);
+        } catch (WebDriverException e) {
+            logger.log("WARNING: Failed to swtich to original frame chain! " + e.getMessage());
+            return driver;
+        }
+    }
 
     private FrameChain tryHideScrollbars() {
         if (EyesSeleniumUtils.isMobileDevice(driver)) {
@@ -2098,7 +2111,11 @@ public class Eyes extends EyesBase {
         Object activeElement = null;
         if (getHideCaret())
         {
-            activeElement = driver.executeScript("var activeElement = document.activeElement; activeElement && activeElement.blur(); return activeElement;");
+            try {
+                activeElement = driver.executeScript("var activeElement = document.activeElement; activeElement && activeElement.blur(); return activeElement;");
+            } catch (WebDriverException e) {
+                logger.verbose("WARNING: Cannot hide caret! " + e.getMessage());
+            }
         }
 
         if (checkFrameOrElement) {
@@ -2153,7 +2170,11 @@ public class Eyes extends EyesBase {
 
         if (getHideCaret() && activeElement != null)
         {
-            driver.executeScript("arguments[0].focus();", activeElement);
+            try {
+                driver.executeScript("arguments[0].focus();", activeElement);
+            } catch (WebDriverException e) {
+                logger.verbose("WARNING: Could not return focus to active element! " + e.getMessage());
+            }
         }
 
         logger.verbose("Done!");
