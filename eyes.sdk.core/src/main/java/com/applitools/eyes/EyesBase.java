@@ -1376,6 +1376,7 @@ public abstract class EyesBase {
 
         logger.log("No running session, calling start session...");
         startSession();
+        logger.setSessionId(runningSession.getSessionId());
         logger.log("Done!");
 
         matchWindowTask = new MatchWindowTask(
