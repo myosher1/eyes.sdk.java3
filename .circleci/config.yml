@@ -49,11 +49,10 @@ jobs:
             export APPLITOOLS_BATCH_ID=`uuidgen -t`
             echo $APPLITOOLS_BATCH_ID
             mvn test
-            cd eyes.selenium.java
 
       - store_artifacts:
-          path: target/surefire-reports
+          path: eyes.selenium.java/target/surefire-reports
           destination: tr1
       - store_test_results:
-          path: target/surefire-reports
+          path: eyes.selenium.java/target/surefire-reports
 
