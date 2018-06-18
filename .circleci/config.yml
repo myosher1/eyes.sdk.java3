@@ -43,11 +43,11 @@ jobs:
 
       # run tests!
       - run:
-        command: |
-          cd eyes.selenium.java
-          export APPLITOOLS_BATCH_ID=`uuidgen -t`
-          echo $APPLITOOLS_BATCH_ID
-          mvn test
+          command: |
+            cd eyes.selenium.java
+            export APPLITOOLS_BATCH_ID=`uuidgen -t`
+            echo $APPLITOOLS_BATCH_ID
+            mvn test
 
       - store_artifacts:
           path: target/surefire-reports
