@@ -44,6 +44,7 @@ jobs:
       # run tests!
       - run:
           command: |
+            sudo apt-get install uuid-runtime
             cd eyes.selenium.java
             export APPLITOOLS_BATCH_ID=`uuidgen -t`
             echo $APPLITOOLS_BATCH_ID
