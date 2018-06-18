@@ -25,7 +25,8 @@ public class TestsDataProvider {
 
         SafariOptions safariOptions = new SafariOptions();
 
-        if (System.getenv("APPLITOOLS_RUN_HEADLESS").equalsIgnoreCase("true")) {
+        String runHeadless = System.getenv("APPLITOOLS_RUN_HEADLESS");
+        if (runHeadless != null && runHeadless.equalsIgnoreCase("true")) {
             chromeOptions.setHeadless(true);
             firefoxOptions.setHeadless(true);
         }
