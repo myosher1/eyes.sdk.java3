@@ -46,10 +46,10 @@ jobs:
           command: |
             sudo apt-get install uuid-runtime
             mvn compile
-            cd eyes.selenium.java
             export APPLITOOLS_BATCH_ID=`uuidgen -t`
             echo $APPLITOOLS_BATCH_ID
             mvn test
+            cd eyes.selenium.java
 
       - store_artifacts:
           path: target/surefire-reports
