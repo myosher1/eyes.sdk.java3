@@ -63,7 +63,7 @@ public class GeneralUtils {
         ArgumentGuard.notNull(calendar, "calendar");
 
         SimpleDateFormat formatter =
-                new SimpleDateFormat(DATE_FORMAT_ISO8601_FOR_OUTPUT, Locale.ENGLISH);
+                new SimpleDateFormat(DATE_FORMAT_ISO8601_FOR_INPUT, Locale.ENGLISH);
 
         // For the string to be formatted correctly you MUST also set
         // the time zone in the formatter! See:
@@ -114,7 +114,7 @@ public class GeneralUtils {
                 dateTime = dateTime.replaceAll("\\.(\\d+)Z", "Z");
             } else if (dateTime.contains("+")) {
                 dateTime = dateTime.replaceAll("\\.(\\d+)\\+", "+");
-                timezoneId += "+" + dateTime.split("+")[1];
+                timezoneId += "+" + dateTime.split("\\+")[1];
             } else if (dateTime.contains("-")) {
                 dateTime = dateTime.replaceAll("\\.(\\d+)\\+", "+");
                 timezoneId += "-" + dateTime.split("-")[1];
