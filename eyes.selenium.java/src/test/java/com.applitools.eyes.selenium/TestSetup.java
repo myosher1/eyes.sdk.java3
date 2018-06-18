@@ -126,7 +126,7 @@ public abstract class TestSetup implements ITest {
             eyes.setDebugScreenshotsPrefix(testName + "_");
             eyes.setSaveDebugScreenshots(true);
         } else {
-            logHandler = new StdoutLogHandler(true);
+            logHandler = new StdoutLogHandler(false);
         }
 
         eyes.setLogHandler(logHandler);
