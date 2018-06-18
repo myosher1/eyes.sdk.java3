@@ -56,7 +56,7 @@ public class Logger {
      * @param message The message to log as verbose.
      */
     public void verbose(String message) {
-        logHandler.onMessage(true, getPrefix() + " [VERBOSE] " + message);
+        logHandler.onMessage(true, "[VERBOSE] " + getPrefix() +  message);
     }
 
     /**
@@ -64,6 +64,6 @@ public class Logger {
      * @param message The message to log.
      */
     public void log(String message) {
-        logHandler.onMessage(false, getPrefix() + " [LOG    ] " + message);
+        logHandler.onMessage(false, "[LOG    ] " + getPrefix() + message);
     }
 }
