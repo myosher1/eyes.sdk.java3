@@ -83,7 +83,7 @@ public abstract class EyesBase {
 //    private String baselineBranchName;
 //    private Boolean saveDiffs;
 
-    private Configuration config;
+    private Configuration config = new Configuration();
 
     private FailureReports failureReports;
     private final Queue<Trigger> userInputs;
