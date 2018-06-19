@@ -7,9 +7,9 @@ import com.applitools.eyes.SessionType;
 public class Configuration {
 
     private BatchInfo batch;
-    private String branchName;
-    private String parentBranchName;
-    private String baselineBranchName;
+    private String branchName = System.getenv("APPLITOOLS_BRANCH");
+    private String parentBranchName = System.getenv("APPLITOOLS_PARENT_BRANCH");
+    private String baselineBranchName = System.getenv("APPLITOOLS_BASELINE_BRANCH");
     private String agentId;
     private String baselineEnvName;
     private String environmentName;
