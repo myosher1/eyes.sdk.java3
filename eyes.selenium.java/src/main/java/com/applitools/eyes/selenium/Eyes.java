@@ -21,6 +21,7 @@ import com.applitools.eyes.positioning.RegionProvider;
 import com.applitools.eyes.scaling.FixedScaleProviderFactory;
 import com.applitools.eyes.scaling.NullScaleProvider;
 import com.applitools.eyes.selenium.capture.*;
+import com.applitools.eyes.selenium.config.Configuration;
 import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.eyes.selenium.fluent.*;
 import com.applitools.eyes.selenium.frames.Frame;
@@ -73,7 +74,6 @@ public class Eyes extends EyesBase {
     private EyesWebDriver driver;
     private boolean dontGetTitle;
 
-    private boolean forceFullPageScreenshot;
     private boolean checkFrameOrElement;
 
     public Region getRegionToCheck() {
@@ -86,13 +86,20 @@ public class Eyes extends EyesBase {
 
     private Region regionToCheck = null;
 
-    private boolean hideScrollbars;
+
+    private Configuration config = new Configuration();
+
+    //private boolean forceFullPageScreenshot;
+    //private boolean hideScrollbars;
+    //private StitchMode stitchMode;
+    //private int waitBeforeScreenshots;
+    //private boolean hideCaret = true;
+
+
     private String originalOverflow;
 
     private ImageRotation rotation;
     private double devicePixelRatio;
-    private StitchMode stitchMode;
-    private int waitBeforeScreenshots;
     private PropertyHandler<RegionVisibilityStrategy> regionVisibilityStrategyHandler;
     private ElementPositionProvider elementPositionProvider;
     private SeleniumJavaScriptExecutor jsExecutor;
@@ -107,16 +114,15 @@ public class Eyes extends EyesBase {
     private EyesScreenshotFactory screenshotFactory;
 
     private boolean stitchContent = false;
-    private boolean hideCaret = true;
     private String rootElementForHidingScrollbars = null;
 
 
     public boolean getHideCaret() {
-        return hideCaret;
+        return config.getHideCaret();
     }
 
     public void setHideCaret(boolean hideCaret) {
-        this.hideCaret = hideCaret;
+        config.setHideCaret(hideCaret);
     }
 
     public boolean shouldStitchContent() {
@@ -132,12 +138,8 @@ public class Eyes extends EyesBase {
         super(serverUrl);
 
         checkFrameOrElement = false;
-        forceFullPageScreenshot = false;
         dontGetTitle = false;
-        hideScrollbars = true;
         devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
-        stitchMode = StitchMode.SCROLL;
-        waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
         regionVisibilityStrategyHandler = new SimplePropertyHandler<>();
         regionVisibilityStrategyHandler.set(new MoveToRegionVisibilityStrategy(logger));
     }
@@ -165,14 +167,14 @@ public class Eyes extends EyesBase {
      * @param shouldForce Whether to force a full page screenshot or not.
      */
     public void setForceFullPageScreenshot(boolean shouldForce) {
-        forceFullPageScreenshot = shouldForce;
+        config.setForceFullPageScreenshot(shouldForce);
     }
 
     /**
      * @return Whether Eyes should force a full page screenshot.
      */
     public boolean getForceFullPageScreenshot() {
-        return forceFullPageScreenshot;
+        return config.getForceFullPageScreenshot();
     }
 
     /**
@@ -183,18 +185,14 @@ public class Eyes extends EyesBase {
      *                              default value to be used.
      */
     public void setWaitBeforeScreenshots(int waitBeforeScreenshots) {
-        if (waitBeforeScreenshots <= 0) {
-            this.waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
-        } else {
-            this.waitBeforeScreenshots = waitBeforeScreenshots;
-        }
+        config.setWaitBeforeScreenshots(waitBeforeScreenshots);
     }
 
     /**
      * @return The time to wait just before taking a screenshot.
      */
     public int getWaitBeforeScreenshots() {
-        return waitBeforeScreenshots;
+        return config.getWaitBeforeScreenshots();
     }
 
     /**
@@ -225,7 +223,7 @@ public class Eyes extends EyesBase {
      */
     public void setStitchMode(StitchMode mode) {
         logger.verbose("setting stitch mode to " + mode);
-        stitchMode = mode;
+        config.setStitchMode(mode);
         if (driver != null) {
             initPositionProvider();
         }
@@ -235,7 +233,7 @@ public class Eyes extends EyesBase {
      * @return The current stitch mode settings.
      */
     public StitchMode getStitchMode() {
-        return stitchMode;
+        return config.getStitchMode();
     }
 
     /**
@@ -243,14 +241,14 @@ public class Eyes extends EyesBase {
      * @param shouldHide Whether to hide the scrollbars or not.
      */
     public void setHideScrollbars(boolean shouldHide) {
-        hideScrollbars = shouldHide;
+        config.setHideScrollbars(shouldHide);
     }
 
     /**
      * @return Whether or not scrollbars are hidden when taking screenshots.
      */
     public boolean getHideScrollbars() {
-        return hideScrollbars;
+        return config.getHideScrollbars();
     }
 
     /**
@@ -278,13 +276,21 @@ public class Eyes extends EyesBase {
         return devicePixelRatio;
     }
 
+    public WebDriver open(WebDriver driver, Configuration configuration) {
+        config = configuration;
+        return open(driver);
+    }
+
     /**
      * See {@link #open(WebDriver, String, String, RectangleSize, SessionType)}.
      * {@code sessionType} defaults to {@code null}.
      */
     public WebDriver open(WebDriver driver, String appName, String testName,
                           RectangleSize viewportSize) {
-        return open(driver, appName, testName, viewportSize, null);
+        config.setAppName(appName);
+        config.setTestName(testName);
+        config.setViewportSize(viewportSize);
+        return open(driver);
     }
 
     /**
@@ -293,7 +299,9 @@ public class Eyes extends EyesBase {
      * {@code sessionType} defaults to {@code null}.
      */
     public WebDriver open(WebDriver driver, String appName, String testName) {
-        return open(driver, appName, testName, null, null);
+        config.setAppName(appName);
+        config.setTestName(testName);
+        return open(driver);
     }
 
 
@@ -313,7 +321,14 @@ public class Eyes extends EyesBase {
      */
     protected WebDriver open(WebDriver driver, String appName, String testName,
                              RectangleSize viewportSize, SessionType sessionType) {
+        config.setAppName(appName);
+        config.setTestName(testName);
+        config.setViewportSize(viewportSize);
+        config.setSessionType(sessionType);
+        return open(driver);
+    }
 
+    protected WebDriver open(WebDriver driver) {
         if (getIsDisabled()) {
             logger.verbose("Ignored");
             return driver;
@@ -331,7 +346,7 @@ public class Eyes extends EyesBase {
         imageProvider = ImageProviderFactory.getImageProvider(userAgent, this, logger, this.driver);
         regionPositionCompensation = RegionPositionCompensationFactory.getRegionPositionCompensation(userAgent, this, logger);
 
-        openBase(appName, testName, viewportSize, sessionType);
+        openBase(config.getAppName(), config.getTestName(), config.getViewportSize(), config.getSessionType());
         ArgumentGuard.notNull(driver, "driver");
 
         devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
@@ -634,10 +649,10 @@ public class Eyes extends EyesBase {
     }
 
     public void check(ICheckSettings... checkSettings) {
-        boolean originalForceFPS = forceFullPageScreenshot;
+        boolean originalForceFPS = config.getForceFullPageScreenshot();
 
         if (checkSettings.length > 1) {
-            forceFullPageScreenshot = true;
+            config.setForceFullPageScreenshot(true);
         }
 
         Dictionary<Integer, GetRegion> getRegions = new Hashtable<>();
@@ -671,7 +686,7 @@ public class Eyes extends EyesBase {
             //check(settings);
         }
         matchRegions(getRegions, checkSettingsInternalDictionary, checkSettings);
-        forceFullPageScreenshot = originalForceFPS;
+        config.setForceFullPageScreenshot(originalForceFPS);
     }
 
     private void matchRegions(Dictionary<Integer, GetRegion> getRegions,
@@ -1740,7 +1755,7 @@ public class Eyes extends EyesBase {
                 elementPositionProvider = null;
             }
 
-            if (hideScrollbars) {
+            if (config.getHideScrollbars()) {
                 originalOverflow = eyesElement.getOverflow();
                 eyesElement.setOverflow("hidden");
             }
@@ -2031,7 +2046,7 @@ public class Eyes extends EyesBase {
         if (EyesSeleniumUtils.isMobileDevice(driver)) {
             return new FrameChain(logger);
         }
-        if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
+        if (this.config.getHideScrollbars() || (this.config.getStitchMode() == StitchMode.CSS && stitchContent)) {
             if (rootElementForHidingScrollbars == null) {
                 rootElementForHidingScrollbars = EyesSeleniumUtils.selectRootElement(this.driver);
             }
@@ -2063,7 +2078,7 @@ public class Eyes extends EyesBase {
         if (rootElementForHidingScrollbars == null) {
             rootElementForHidingScrollbars = EyesSeleniumUtils.selectRootElement(this.driver);
         }
-        if (this.hideScrollbars || (this.stitchMode == StitchMode.CSS && stitchContent)) {
+        if (this.config.getHideScrollbars() || (this.config.getStitchMode() == StitchMode.CSS && stitchContent)) {
             ((EyesTargetLocator) driver.switchTo()).frames(frameChain);
             FrameChain originalFC = this.originalFC.clone();
             FrameChain fc = this.originalFC.clone();
@@ -2128,7 +2143,7 @@ public class Eyes extends EyesBase {
             logger.verbose("Building screenshot object...");
             result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
                     new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
-        } else if (forceFullPageScreenshot || stitchContent) {
+        } else if (config.getForceFullPageScreenshot() || stitchContent) {
             logger.verbose("Full page screenshot requested.");
 
             // Save the current frame path.
