@@ -1630,7 +1630,7 @@ public abstract class EyesBase {
 
         logger.verbose("Application environment is " + appEnv);
 
-        sessionStartInfo = new SessionStartInfo(getBaseAgentId(), sessionType,
+        sessionStartInfo = new SessionStartInfo(getFullAgentId(), sessionType,
                 getAppName(), null, testName, testBatch, baselineEnvName, environmentName, appEnv,
                 defaultMatchSettings,
                 branchName != null ? branchName : System.getenv("APPLITOOLS_BRANCH"),
