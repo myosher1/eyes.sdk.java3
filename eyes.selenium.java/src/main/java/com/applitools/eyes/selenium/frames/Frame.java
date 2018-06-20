@@ -8,7 +8,9 @@ import com.applitools.eyes.Logger;
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import com.applitools.utils.ArgumentGuard;
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 /**
@@ -19,14 +21,15 @@ import org.openqa.selenium.WebElement;
 public final class Frame {
     // A user can switch into a frame by either its name,
     // index or by passing the relevant web element.
+    private final Logger logger;
     private final WebElement reference;
     private final Location location;
     private final RectangleSize size;
     private final RectangleSize innerSize;
     private final Location originalLocation;
-    private final String originalOverflow;
+    private String originalOverflow;
     private final JavascriptExecutor jsExecutor;
-    private final String rootElementForHidingScrollbars;
+    private WebElement scrollRootElement;
 
     /**
      * @param logger           A Logger instance.
@@ -39,7 +42,7 @@ public final class Frame {
      */
     public Frame(Logger logger, WebElement reference,
                  Location location, RectangleSize size, RectangleSize innerSize,
-                 Location originalLocation, String originalOverflow,
+                 Location originalLocation,
                  JavascriptExecutor jsExecutor) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(reference, "reference");
@@ -47,21 +50,19 @@ public final class Frame {
         ArgumentGuard.notNull(size, "size");
         ArgumentGuard.notNull(innerSize, "innerSize");
         ArgumentGuard.notNull(originalLocation, "originalLocation");
-        ArgumentGuard.notNull(originalOverflow, "originalOverflow");
         ArgumentGuard.notNull(jsExecutor, "jsExecutor");
 
         logger.verbose(String.format(
                 "Frame(logger, reference, %s, %s, %s, %s)",
                 location, size, innerSize, originalLocation));
 
+        this.logger = logger;
         this.reference = reference;
         this.location = location;
         this.size = size;
         this.innerSize = innerSize;
         this.originalLocation = originalLocation;
-        this.originalOverflow = originalOverflow;
         this.jsExecutor = jsExecutor;
-        this.rootElementForHidingScrollbars = EyesSeleniumUtils.selectRootElement(jsExecutor);
     }
 
     public WebElement getReference() {
@@ -88,11 +89,37 @@ public final class Frame {
         return originalOverflow;
     }
 
-    public void returnToOriginalOverflow() {
-        EyesSeleniumUtils.setOverflow(this.jsExecutor, originalOverflow, rootElementForHidingScrollbars);
+    public void returnToOriginalOverflow(WebDriver driver) {
+        WebElement scrollRootElement = this.scrollRootElement;
+        if (scrollRootElement == null) {
+            logger.verbose("no scroll root element. selecting default.");
+            scrollRootElement = driver.findElement(By.tagName("html"));
+        }
+        try {
+            EyesSeleniumUtils.setOverflow(originalOverflow, this.jsExecutor, scrollRootElement);
+        } catch (InterruptedException e) {
+            logger.log(e.toString());
+        }
     }
 
-    public void hideScrollbars() {
-        EyesSeleniumUtils.hideScrollbars(this.jsExecutor, 200, rootElementForHidingScrollbars);
+    public void hideScrollbars(WebDriver driver) {
+        WebElement scrollRootElement = this.scrollRootElement;
+        if (scrollRootElement == null) {
+            logger.verbose("no scroll root element. selecting default.");
+            scrollRootElement = driver.findElement(By.tagName("html"));
+        }
+        try {
+            this.originalOverflow = EyesSeleniumUtils.setOverflow("hidden", this.jsExecutor, scrollRootElement);
+        } catch (InterruptedException e) {
+            logger.log(e.toString());
+        }
+    }
+
+    public void setScrollRootElement(WebElement scrollRootElement) {
+        this.scrollRootElement = scrollRootElement;
+    }
+
+    public WebElement getScrollRootElement() {
+        return this.scrollRootElement;
     }
 }

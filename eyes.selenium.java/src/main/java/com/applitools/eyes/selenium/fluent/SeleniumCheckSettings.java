@@ -13,6 +13,8 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     private By targetSelector;
     private WebElement targetElement;
     private List<FrameLocator> frameChain = new ArrayList<>();
+    private By scrollRootSelector;
+    private WebElement scrollRootElement;
 
     SeleniumCheckSettings() { }
 
@@ -44,12 +46,24 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     }
 
     @Override
+    public By getScrollRootSelector() {
+        return this.scrollRootSelector;
+    }
+
+    @Override
+    public WebElement getScrollRootElement() {
+        return this.scrollRootElement;
+    }
+
+    @Override
     public SeleniumCheckSettings clone(){
         SeleniumCheckSettings clone = new SeleniumCheckSettings();
         super.populateClone(clone);
         clone.targetElement = this.targetElement;
         clone.targetSelector = this.targetSelector;
         clone.frameChain.addAll(this.frameChain);
+        clone.scrollRootElement = this.scrollRootElement;
+        clone.scrollRootSelector = this.scrollRootSelector;
         return clone;
     }
 
@@ -267,6 +281,36 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         SeleniumCheckSettings clone = this.clone();
         clone.floating(new FloatingRegionByElement(element, maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
         return clone;
+    }
+
+    public SeleniumCheckSettings ScrollRootElement(By selector)
+    {
+        if (frameChain.size() == 0)
+        {
+            SeleniumCheckSettings clone = this.clone();
+            clone.scrollRootSelector = selector;
+            return clone;
+        }
+        else
+        {
+            frameChain.get(frameChain.size() - 1).setScrollRootSelector(selector);
+            return this;
+        }
+    }
+
+    public SeleniumCheckSettings ScrollRootElement(WebElement element)
+    {
+        if (frameChain.size() == 0)
+        {
+            SeleniumCheckSettings clone = this.clone();
+            clone.scrollRootElement = element;
+            return clone;
+        }
+        else
+        {
+            frameChain.get(frameChain.size() - 1).setScrollRootElement(element);
+            return this;
+        }
     }
 
     @Override

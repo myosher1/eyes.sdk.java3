@@ -28,26 +28,31 @@ public class MatchWindowTask {
     private EyesScreenshot lastScreenshot = null;
     private MatchResult matchResult;
     private Region lastScreenshotBounds;
+    private EyesBase eyes;
 
     /**
      * @param logger            A logger instance.
      * @param serverConnector   Our gateway to the agent
      * @param runningSession    The running session in which we should match the window
      * @param retryTimeout      The default total time to retry matching (ms).
+     * @param eyes              The eyes object.
      * @param appOutputProvider A callback for getting the application output when performing match.
      */
     public MatchWindowTask(Logger logger, ServerConnector serverConnector,
                            RunningSession runningSession, int retryTimeout,
+                           EyesBase eyes,
                            AppOutputProvider appOutputProvider) {
         ArgumentGuard.notNull(serverConnector, "serverConnector");
         ArgumentGuard.notNull(runningSession, "runningSession");
         ArgumentGuard.greaterThanOrEqualToZero(retryTimeout, "retryTimeout");
+        ArgumentGuard.notNull(eyes, "eyes");
         ArgumentGuard.notNull(appOutputProvider, "appOutputProvider");
 
         this.logger = logger;
         this.serverConnector = serverConnector;
         this.runningSession = runningSession;
         this.defaultRetryTimeout = retryTimeout;
+        this.eyes = eyes;
         this.appOutputProvider = appOutputProvider;
     }
 
@@ -69,29 +74,35 @@ public class MatchWindowTask {
         this.defaultRetryTimeout = retryTimeout;
         this.appOutputProvider = null;
     }
+
     /**
      * Creates the match data and calls the server connector matchWindow method.
-     * @param userInputs         The user inputs related to the current appOutput.
-     * @param appOutput          The application output to be matched.
-     * @param tag                Optional tag to be associated with the match (can be {@code null}).
-     * @param ignoreMismatch     Whether to instruct the server to ignore the match attempt in case of a mismatch.
-     * @param imageMatchSettings The settings to use.
+     * @param userInputs            The user inputs related to the current appOutput.
+     * @param appOutput             The application output to be matched.
+     * @param tag                   Optional tag to be associated with the match (can be {@code null}).
+     * @param ignoreMismatch        Whether to instruct the server to ignore the match attempt in case of a mismatch.
+     * @param checkSettingsInternal The internal check settings to use.
+     * @param imageMatchSettings    The settings to use.
      * @return The match result.
      */
     public MatchResult performMatch(Trigger[] userInputs,
-                                     AppOutputWithScreenshot appOutput,
-                                     String tag, boolean ignoreMismatch,
-                                     ImageMatchSettings imageMatchSettings) {
+                                    AppOutputWithScreenshot appOutput,
+                                    String tag, boolean ignoreMismatch,
+                                    ICheckSettingsInternal checkSettingsInternal,
+                                    ImageMatchSettings imageMatchSettings) {
+
+        EyesScreenshot screenshot = appOutput.getScreenshot();
+
+        collectSimpleRegions(checkSettingsInternal, imageMatchSettings, this.eyes, screenshot);
+        collectFloatingRegions(checkSettingsInternal, imageMatchSettings, this.eyes, screenshot);
+
+        MatchWindowData.Options options = new MatchWindowData.Options(
+                tag, userInputs, ignoreMismatch,
+                false, false, false,
+                imageMatchSettings);
 
         // Prepare match data.
-        MatchWindowData data = new MatchWindowData(
-                userInputs,
-                appOutput.getAppOutput(),
-                tag,
-                ignoreMismatch,
-                new MatchWindowData.Options(tag, userInputs, ignoreMismatch,
-                        false, false, false,
-                        imageMatchSettings));
+        MatchWindowData data = new MatchWindowData(appOutput.getAppOutput(), tag, options);
 
         // Perform match.
         return serverConnector.matchWindow(runningSession, data);
@@ -174,12 +185,12 @@ public class MatchWindowTask {
     /**
      * Build match settings by merging the check settings and the default match settings.
      * @param checkSettingsInternal the settings to match the image by.
-     * @param eyes the Eyes object to use.
-     * @param screenshot the Screenshot wrapper object.
+     * @param eyes                  the Eyes object to use.
+     * @param screenshot            the Screenshot wrapper object.
      * @return Merged match settings.
      */
     public ImageMatchSettings createImageMatchSettings(ICheckSettingsInternal checkSettingsInternal,
-                                                               EyesBase eyes, EyesScreenshot screenshot) {
+                                                       EyesBase eyes, EyesScreenshot screenshot) {
         ImageMatchSettings imageMatchSettings = null;
         if (checkSettingsInternal != null) {
 
@@ -267,7 +278,7 @@ public class MatchWindowTask {
         AppOutputWithScreenshot appOutput = appOutputProvider.getAppOutput(region, lastScreenshot, checkSettingsInternal);
         EyesScreenshot screenshot = appOutput.getScreenshot();
         ImageMatchSettings matchSettings = createImageMatchSettings(checkSettingsInternal, eyes, screenshot);
-        matchResult = performMatch(userInputs, appOutput, tag, ignoreMismatch, matchSettings);
+        matchResult = performMatch(userInputs, appOutput, tag, ignoreMismatch, checkSettingsInternal, matchSettings);
         return screenshot;
     }
 
