@@ -55,6 +55,10 @@ public class Eyes extends EyesBase {
     private FrameChain originalFC;
     private PositionProvider currentFramePositionProvider = null;
 
+    public PositionProvider getCurrentFramePositionProvider() {
+        return currentFramePositionProvider;
+    }
+
     public interface WebDriverAction {
         void drive(WebDriver driver);
     }
