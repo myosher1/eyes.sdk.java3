@@ -82,8 +82,7 @@ public abstract class EyesBase {
 //    private String parentBranchName;
 //    private String baselineBranchName;
 //    private Boolean saveDiffs;
-
-    private Configuration config = new Configuration();
+    protected Configuration config;
 
     private FailureReports failureReports;
     private final Queue<Trigger> userInputs;
@@ -120,6 +119,8 @@ public abstract class EyesBase {
             return;
         }
 
+        ensureConfiguration();
+
         ArgumentGuard.notNull(serverUrl, "serverUrl");
 
         logger = new Logger();
@@ -144,6 +145,10 @@ public abstract class EyesBase {
         agentId = null;
         lastScreenshot = null;
         debugScreenshotsProvider = new NullDebugScreenshotProvider();
+    }
+
+    protected void ensureConfiguration() {
+        config = new Configuration();
     }
 
     /**

@@ -86,9 +86,6 @@ public class Eyes extends EyesBase {
 
     private Region regionToCheck = null;
 
-
-    private Configuration config = new Configuration();
-
     //private boolean forceFullPageScreenshot;
     //private boolean hideScrollbars;
     //private StitchMode stitchMode;
@@ -116,13 +113,20 @@ public class Eyes extends EyesBase {
     private boolean stitchContent = false;
     private String rootElementForHidingScrollbars = null;
 
+    protected void ensureConfiguration() {
+        config = new Configuration();
+    }
+
+    private Configuration getConfig(){
+        return (Configuration)config;
+    }
 
     public boolean getHideCaret() {
-        return config.getHideCaret();
+        return getConfig().getHideCaret();
     }
 
     public void setHideCaret(boolean hideCaret) {
-        config.setHideCaret(hideCaret);
+        getConfig().setHideCaret(hideCaret);
     }
 
     public boolean shouldStitchContent() {
@@ -167,14 +171,14 @@ public class Eyes extends EyesBase {
      * @param shouldForce Whether to force a full page screenshot or not.
      */
     public void setForceFullPageScreenshot(boolean shouldForce) {
-        config.setForceFullPageScreenshot(shouldForce);
+        getConfig().setForceFullPageScreenshot(shouldForce);
     }
 
     /**
      * @return Whether Eyes should force a full page screenshot.
      */
     public boolean getForceFullPageScreenshot() {
-        return config.getForceFullPageScreenshot();
+        return getConfig().getForceFullPageScreenshot();
     }
 
     /**
@@ -185,14 +189,14 @@ public class Eyes extends EyesBase {
      *                              default value to be used.
      */
     public void setWaitBeforeScreenshots(int waitBeforeScreenshots) {
-        config.setWaitBeforeScreenshots(waitBeforeScreenshots);
+        getConfig().setWaitBeforeScreenshots(waitBeforeScreenshots);
     }
 
     /**
      * @return The time to wait just before taking a screenshot.
      */
     public int getWaitBeforeScreenshots() {
-        return config.getWaitBeforeScreenshots();
+        return getConfig().getWaitBeforeScreenshots();
     }
 
     /**
@@ -223,7 +227,7 @@ public class Eyes extends EyesBase {
      */
     public void setStitchMode(StitchMode mode) {
         logger.verbose("setting stitch mode to " + mode);
-        config.setStitchMode(mode);
+        getConfig().setStitchMode(mode);
         if (driver != null) {
             initPositionProvider();
         }
@@ -233,7 +237,7 @@ public class Eyes extends EyesBase {
      * @return The current stitch mode settings.
      */
     public StitchMode getStitchMode() {
-        return config.getStitchMode();
+        return getConfig().getStitchMode();
     }
 
     /**
@@ -241,14 +245,14 @@ public class Eyes extends EyesBase {
      * @param shouldHide Whether to hide the scrollbars or not.
      */
     public void setHideScrollbars(boolean shouldHide) {
-        config.setHideScrollbars(shouldHide);
+        getConfig().setHideScrollbars(shouldHide);
     }
 
     /**
      * @return Whether or not scrollbars are hidden when taking screenshots.
      */
     public boolean getHideScrollbars() {
-        return config.getHideScrollbars();
+        return getConfig().getHideScrollbars();
     }
 
     /**
@@ -649,10 +653,10 @@ public class Eyes extends EyesBase {
     }
 
     public void check(ICheckSettings... checkSettings) {
-        boolean originalForceFPS = config.getForceFullPageScreenshot();
+        boolean originalForceFPS = getConfig().getForceFullPageScreenshot();
 
         if (checkSettings.length > 1) {
-            config.setForceFullPageScreenshot(true);
+            getConfig().setForceFullPageScreenshot(true);
         }
 
         Dictionary<Integer, GetRegion> getRegions = new Hashtable<>();
@@ -686,7 +690,7 @@ public class Eyes extends EyesBase {
             //check(settings);
         }
         matchRegions(getRegions, checkSettingsInternalDictionary, checkSettings);
-        config.setForceFullPageScreenshot(originalForceFPS);
+        getConfig().setForceFullPageScreenshot(originalForceFPS);
     }
 
     private void matchRegions(Dictionary<Integer, GetRegion> getRegions,
@@ -1060,7 +1064,7 @@ public class Eyes extends EyesBase {
             Point p = element.getLocation();
             Location elementLocation = new Location(p.getX(), p.getY());
 
-            if (originalFC.size() > 0 && !element.equals(originalFC.peek())) {
+            if (originalFC.size() > 0 && !element.equals(originalFC.peek().getReference())) {
                 switchTo.frames(originalFC);
             }
 
@@ -1755,7 +1759,7 @@ public class Eyes extends EyesBase {
                 elementPositionProvider = null;
             }
 
-            if (config.getHideScrollbars()) {
+            if (getConfig().getHideScrollbars()) {
                 originalOverflow = eyesElement.getOverflow();
                 eyesElement.setOverflow("hidden");
             }
@@ -2046,7 +2050,7 @@ public class Eyes extends EyesBase {
         if (EyesSeleniumUtils.isMobileDevice(driver)) {
             return new FrameChain(logger);
         }
-        if (this.config.getHideScrollbars() || (this.config.getStitchMode() == StitchMode.CSS && stitchContent)) {
+        if (getConfig().getHideScrollbars() || (getConfig().getStitchMode() == StitchMode.CSS && stitchContent)) {
             if (rootElementForHidingScrollbars == null) {
                 rootElementForHidingScrollbars = EyesSeleniumUtils.selectRootElement(this.driver);
             }
@@ -2075,10 +2079,7 @@ public class Eyes extends EyesBase {
         if (EyesSeleniumUtils.isMobileDevice(driver)) {
             return;
         }
-        if (rootElementForHidingScrollbars == null) {
-            rootElementForHidingScrollbars = EyesSeleniumUtils.selectRootElement(this.driver);
-        }
-        if (this.config.getHideScrollbars() || (this.config.getStitchMode() == StitchMode.CSS && stitchContent)) {
+        if (getConfig().getHideScrollbars() || (getConfig().getStitchMode() == StitchMode.CSS && stitchContent)) {
             ((EyesTargetLocator) driver.switchTo()).frames(frameChain);
             FrameChain originalFC = this.originalFC.clone();
             FrameChain fc = this.originalFC.clone();
@@ -2143,7 +2144,7 @@ public class Eyes extends EyesBase {
             logger.verbose("Building screenshot object...");
             result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
                     new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
-        } else if (config.getForceFullPageScreenshot() || stitchContent) {
+        } else if (getConfig().getForceFullPageScreenshot() || stitchContent) {
             logger.verbose("Full page screenshot requested.");
 
             // Save the current frame path.
