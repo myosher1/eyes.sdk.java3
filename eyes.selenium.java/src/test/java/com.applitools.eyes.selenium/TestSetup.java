@@ -75,6 +75,7 @@ public abstract class TestSetup implements ITest {
     }
 
     public void beforeMethod(String methodName) {
+        this.testName = methodName;
         System.out.println();
         System.out.println("==== Starting Test ====");
         System.out.println(this);
@@ -125,6 +126,10 @@ public abstract class TestSetup implements ITest {
             eyes.setDebugScreenshotsPath(path);
             eyes.setDebugScreenshotsPrefix(testName + "_");
             eyes.setSaveDebugScreenshots(true);
+            RemoteSessionEventHandler remoteSessionEventHandler = new RemoteSessionEventHandler(
+                    eyes.getLogger(), URI.create("http://localhost:3000/"), "MyAccessKey");
+            remoteSessionEventHandler.setThrowExceptions(false);
+            eyes.addSessionEventHandler(remoteSessionEventHandler);
         } else {
             logHandler = new StdoutLogHandler(false);
         }
@@ -134,12 +139,7 @@ public abstract class TestSetup implements ITest {
         eyes.addProperty("Selenium Session ID", webDriver.getSessionId().toString());
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
         eyes.addProperty("ScaleRatio", "" + eyes.getScaleRatio());
-        eyes.addProperty("Agent ID", eyes.getFullAgentId());
-
-        RemoteSessionEventHandler remoteSessionEventHandler = new RemoteSessionEventHandler(
-                eyes.getLogger(), URI.create("http://localhost:3000/"), "MyAccessKey");
-        remoteSessionEventHandler.setThrowExceptions(false);
-        eyes.addSessionEventHandler(remoteSessionEventHandler);
+        //eyes.addProperty("Agent ID", eyes.getFullAgentId());
 
         driver = eyes.open(webDriver,
                 testSuitName,
@@ -162,8 +162,9 @@ public abstract class TestSetup implements ITest {
 
     @Override
     public String toString() {
-        return String.format("%s (%s, %s, force FPS: %s)",
+        return String.format("%s.%s (%s, %s, force FPS: %s)",
                 this.getClass().getSimpleName(),
+                this.testName,
                 this.caps.getBrowserName(),
                 this.platform,
                 this.forceFPS);
