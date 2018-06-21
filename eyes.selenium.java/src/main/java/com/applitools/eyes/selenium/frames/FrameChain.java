@@ -57,7 +57,7 @@ public class FrameChain implements Iterable<Frame>{
     public FrameChain(Logger logger) {
         ArgumentGuard.notNull(logger, "logger");
         this.logger = logger;
-        frames = new LinkedList<>();
+        frames = new ArrayList<>();
     }
 
     /**
