@@ -62,26 +62,11 @@ public abstract class EyesBase {
     private boolean isOpen;
     private String agentId;
 
-    /**
-     * The default app name if no current name was provided. If this is
-     * {@code null} then there is no default appName.
-     */
-//    private String appName;
-//    private SessionType sessionType;
-//    private String testName;
-//
     private ImageMatchSettings defaultMatchSettings;
     private int matchTimeout;
-    //    private BatchInfo batch;
     private String hostApp;
     private String hostOS;
 
-//    private String baselineEnvName;
-//    private String environmentName;
-//    private String branchName;
-//    private String parentBranchName;
-//    private String baselineBranchName;
-//    private Boolean saveDiffs;
     protected Configuration config;
 
     private FailureReports failureReports;
@@ -141,7 +126,6 @@ public abstract class EyesBase {
         // New tests are automatically saved by default.
         saveNewTests = true;
         saveFailedTests = false;
-        //saveDiffs = null;
         agentId = null;
         lastScreenshot = null;
         debugScreenshotsProvider = new NullDebugScreenshotProvider();
@@ -752,8 +736,7 @@ public abstract class EyesBase {
             initProviders(true);
 
             if (runningSession == null) {
-                logger.verbose("Server session was not started");
-                logger.log("--- Empty test ended.");
+                logger.log("Server session was not started --- Empty test ended.");
                 return new TestResults();
             }
 
@@ -1633,15 +1616,6 @@ public abstract class EyesBase {
         sessionEventHandlers.initEnded();
 
         logger.verbose("Application environment is " + appEnv);
-
-//        sessionStartInfo = new SessionStartInfo(getFullAgentId(), sessionType,
-//                getAppName(), null, testName, testBatch, baselineEnvName, environmentName, appEnv,
-//                defaultMatchSettings,
-//                branchName != null ? branchName : System.getenv("APPLITOOLS_BRANCH"),
-//                parentBranchName != null ? parentBranchName : System.getenv("APPLITOOLS_PARENT_BRANCH"),
-//                baselineBranchName != null ? baselineBranchName : System.getenv("APPLITOOLS_BASELINE_BRANCH"),
-//                saveDiffs,
-//                properties);
 
         sessionStartInfo = new SessionStartInfo(config, getFullAgentId(), null,
                 appEnv, defaultMatchSettings, properties);

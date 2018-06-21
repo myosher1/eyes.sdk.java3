@@ -86,13 +86,6 @@ public class Eyes extends EyesBase {
 
     private Region regionToCheck = null;
 
-    //private boolean forceFullPageScreenshot;
-    //private boolean hideScrollbars;
-    //private StitchMode stitchMode;
-    //private int waitBeforeScreenshots;
-    //private boolean hideCaret = true;
-
-
     private String originalOverflow;
 
     private ImageRotation rotation;
