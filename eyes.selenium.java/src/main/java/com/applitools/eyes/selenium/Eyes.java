@@ -1064,13 +1064,7 @@ public class Eyes extends EyesBase {
             PositionProvider positionProvider = getElementPositionProvider(scrollRootElement);
             positionProvider.setPosition(prevFrame.getLocation());
 
-
-            if (fc.size() == 0) {
-                positionMemento = positionProvider.getState();
-            }
-            this.positionProvider.setPosition(frame.getLocation());
-
-            Region reg = new Region(Location.ZERO, frame.getInnerSize());
+            Region reg = new Region(Location.ZERO, prevFrame.getInnerSize());
             effectiveViewport.intersect(reg);
         }
         ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
@@ -2079,9 +2073,10 @@ public class Eyes extends EyesBase {
      * @param driver The driver to use for setting the viewport.
      * @param size   The required viewport size.
      */
-    public static void setViewportSize(WebDriver driver, RectangleSize size) {
+    private void setViewportSize(WebDriver driver, RectangleSize size) {
         ArgumentGuard.notNull(driver, "driver");
         EyesSeleniumUtils.setViewportSize(new Logger(), driver, size);
+        this.effectiveViewport = new Region(Location.ZERO, size);
     }
 
     @Override
@@ -2237,27 +2232,7 @@ public class Eyes extends EyesBase {
             result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);
         } else {
             ensureElementVisible(this.targetElement);
-
-            logger.verbose("Screenshot requested...");
-            BufferedImage screenshotImage = imageProvider.getImage();
-            debugScreenshotsProvider.save(screenshotImage, "original");
-
-            ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
-            if (scaleProvider.getScaleRatio() != 1.0) {
-                logger.verbose("scaling...");
-                screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
-                debugScreenshotsProvider.save(screenshotImage, "scaled");
-            }
-
-            CutProvider cutProvider = cutProviderHandler.get();
-            if (!(cutProvider instanceof NullCutProvider)) {
-                logger.verbose("cutting...");
-                screenshotImage = cutProvider.cut(screenshotImage);
-                debugScreenshotsProvider.save(screenshotImage, "cut");
-            }
-
-            logger.verbose("Creating screenshot object...");
-            result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
+            result = getScaledAndCroppedScreenshot(scaleProviderFactory);
         }
 
         if (getHideCaret() && activeElement != null) {
@@ -2269,6 +2244,31 @@ public class Eyes extends EyesBase {
         }
 
         logger.verbose("Done!");
+        return result;
+    }
+
+    private EyesWebDriverScreenshot getScaledAndCroppedScreenshot(ScaleProviderFactory scaleProviderFactory) {
+        EyesWebDriverScreenshot result;
+        logger.verbose("Screenshot requested...");
+        BufferedImage screenshotImage = imageProvider.getImage();
+        debugScreenshotsProvider.save(screenshotImage, "original");
+
+        ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
+        if (scaleProvider.getScaleRatio() != 1.0) {
+            logger.verbose("scaling...");
+            screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
+            debugScreenshotsProvider.save(screenshotImage, "scaled");
+        }
+
+        CutProvider cutProvider = cutProviderHandler.get();
+        if (!(cutProvider instanceof NullCutProvider)) {
+            logger.verbose("cutting...");
+            screenshotImage = cutProvider.cut(screenshotImage);
+            debugScreenshotsProvider.save(screenshotImage, "cut");
+        }
+
+        logger.verbose("Creating screenshot object...");
+        result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
         return result;
     }
 

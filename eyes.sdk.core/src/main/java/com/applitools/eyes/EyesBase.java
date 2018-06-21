@@ -730,8 +730,7 @@ public abstract class EyesBase {
             initProviders(true);
 
             if (runningSession == null) {
-                logger.verbose("Server session was not started");
-                logger.log("--- Empty test ended.");
+                logger.log("Server session was not started --- Empty test ended.");
                 return new TestResults();
             }
 
@@ -1599,11 +1598,11 @@ public abstract class EyesBase {
 
         BatchInfo testBatch = config.getBatch();
         if (testBatch == null) {
-            logger.verbose("No batch set");
+            logger.verbose("No batch set, creating a new one.");
             testBatch = new BatchInfo(null);
-        } else {
-            logger.verbose("Batch is " + testBatch);
+            config.setBatch(testBatch);
         }
+        logger.verbose("Batch is " + testBatch);
 
         sessionEventHandlers.initStarted();
 
@@ -1641,6 +1640,7 @@ public abstract class EyesBase {
                         RectangleSize targetSize = getViewportSize();
                         sessionEventHandlers.setSizeWillStart(targetSize);
                         viewportSizeHandler.set(targetSize);
+                        setViewportSize(targetSize);
                     }
                 } else {
                     RectangleSize targetSize = viewportSizeHandler.get();
