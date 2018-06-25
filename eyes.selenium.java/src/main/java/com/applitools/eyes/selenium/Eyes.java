@@ -115,8 +115,8 @@ public class Eyes extends EyesBase {
         config = new Configuration();
     }
 
-    private Configuration getConfig(){
-        return (Configuration)config;
+    private Configuration getConfig() {
+        return (Configuration) config;
     }
 
     public boolean getHideCaret() {
@@ -353,7 +353,6 @@ public class Eyes extends EyesBase {
 
         devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
         this.jsExecutor = new SeleniumJavaScriptExecutor(this.driver);
-        initPositionProvider();
 
         this.driver.setRotation(rotation);
         return this.driver;
@@ -875,7 +874,8 @@ public class Eyes extends EyesBase {
 
         int switchedToFrameCount = this.switchToFrame(seleniumCheckTarget);
 
-        this.scrollRootElement = this.getScrollRootElement(seleniumCheckTarget);
+        scrollRootElement = this.getScrollRootElement(seleniumCheckTarget);
+        positionProvider = SeleniumScrollPositionProviderFactory.getPositionProvider(logger, getStitchMode(), jsExecutor, scrollRootElement);
 
         this.regionToCheck = null;
 
@@ -2374,11 +2374,10 @@ public class Eyes extends EyesBase {
      * @return The currently set position provider.
      */
     public PositionProvider getElementPositionProvider(WebElement scrollRootElement) {
-        PositionProvider positionProvider = ((EyesRemoteWebElement)scrollRootElement).getPositionProvider();
-        if (positionProvider == null)
-        {
+        PositionProvider positionProvider = ((EyesRemoteWebElement) scrollRootElement).getPositionProvider();
+        if (positionProvider == null) {
             positionProvider = SeleniumScrollPositionProviderFactory.getPositionProvider(logger, getStitchMode(), jsExecutor, scrollRootElement);
-            ((EyesRemoteWebElement)scrollRootElement).setPositionProvider(positionProvider);
+            ((EyesRemoteWebElement) scrollRootElement).setPositionProvider(positionProvider);
         }
         logger.verbose("position provider: " + positionProvider);
         this.currentFramePositionProvider = positionProvider;

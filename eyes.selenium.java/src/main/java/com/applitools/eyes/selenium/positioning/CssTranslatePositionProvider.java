@@ -36,6 +36,7 @@ public class CssTranslatePositionProvider implements PositionProvider {
     public CssTranslatePositionProvider(Logger logger, IEyesJsExecutor executor, WebElement scrollRootElement) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(executor, "executor");
+        ArgumentGuard.notNull(scrollRootElement, "scrollRootElement");
 
         this.logger = logger;
         this.executor = executor;
@@ -58,7 +59,7 @@ public class CssTranslatePositionProvider implements PositionProvider {
     }
 
     public RectangleSize getEntireSize() {
-        logger.verbose("enter (scrollRootElement_: " + scrollRootElement + ")");
+        logger.verbose("enter (scrollRootElement: " + scrollRootElement + ")");
         Object retVal = executor.executeScript(JSGetEntirePageSize, scrollRootElement);
         List<Long> esAsList = (List<Long>) retVal;
         RectangleSize size = new RectangleSize(
