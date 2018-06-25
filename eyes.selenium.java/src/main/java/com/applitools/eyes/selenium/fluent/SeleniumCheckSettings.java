@@ -283,7 +283,7 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return clone;
     }
 
-    public SeleniumCheckSettings ScrollRootElement(By selector)
+    public SeleniumCheckSettings scrollRootElement(By selector)
     {
         if (frameChain.size() == 0)
         {
@@ -298,7 +298,7 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         }
     }
 
-    public SeleniumCheckSettings ScrollRootElement(WebElement element)
+    public SeleniumCheckSettings scrollRootElement(WebElement element)
     {
         if (frameChain.size() == 0)
         {
