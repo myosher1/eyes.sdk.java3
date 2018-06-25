@@ -8,7 +8,6 @@ import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.capture.EyesScreenshotFactory;
 import com.applitools.eyes.capture.ImageProvider;
 import com.applitools.eyes.diagnostics.TimedAppOutput;
-import com.applitools.eyes.events.ValidationInfo;
 import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.GetRegion;
 import com.applitools.eyes.fluent.ICheckSettings;
@@ -872,12 +871,12 @@ public class Eyes extends EyesBase {
 
     private void doCheck(ICheckSettings checkSettings, ISeleniumCheckTarget seleniumCheckTarget, String name, final Region targetRegion, EyesTargetLocator switchTo) throws InterruptedException {
 
-        int switchedToFrameCount = this.switchToFrame(seleniumCheckTarget);
-
         scrollRootElement = this.getScrollRootElement(seleniumCheckTarget);
         positionProvider = SeleniumScrollPositionProviderFactory.getPositionProvider(logger, getStitchMode(), jsExecutor, scrollRootElement);
 
         this.regionToCheck = null;
+
+        int switchedToFrameCount = this.switchToFrame(seleniumCheckTarget);
 
         FrameChain originalFC = null;
 
@@ -1111,8 +1110,10 @@ public class Eyes extends EyesBase {
             WebElement scrollRootElement;
             if (originalFC.size() > 0 && !element.equals(originalFC.peek().getReference())) {
                 switchTo.frames(originalFC);
+                logger.verbose("using document element as scroll root.");
                 scrollRootElement = driver.findElement(By.tagName("html"));
             } else {
+                logger.verbose("using this.scrollRootElement as scroll root.");
                 scrollRootElement = this.scrollRootElement;
             }
 
@@ -1548,6 +1549,7 @@ public class Eyes extends EyesBase {
 
     private WebElement getScrollRootElement(IScrollRootElementContainer scrollRootElementContainer) {
         if (scrollRootElementContainer == null) {
+            logger.verbose("returning documentElement");
             return driver.findElement(By.tagName("html"));
         }
 
@@ -1555,10 +1557,12 @@ public class Eyes extends EyesBase {
         if (scrollRootElement == null) {
             By scrollRootSelector = scrollRootElementContainer.getScrollRootSelector();
             if (scrollRootSelector == null) {
+                logger.verbose("no element nor selector found in scrollRootElementContainer. selecting documentElement.");
                 scrollRootSelector = By.tagName("html");
             }
             scrollRootElement = driver.findElement(scrollRootSelector);
         }
+        logger.verbose("returning " + scrollRootElement);
         return scrollRootElement;
     }
 
@@ -2155,8 +2159,8 @@ public class Eyes extends EyesBase {
         }
         if (getConfig().getHideScrollbars() || (getConfig().getStitchMode() == StitchMode.CSS && stitchContent)) {
             ((EyesTargetLocator) driver.switchTo()).frames(frameChain);
-            FrameChain originalFC = this.originalFC.clone();
-            FrameChain fc = this.originalFC.clone();
+            FrameChain originalFC = frameChain.clone();
+            FrameChain fc = frameChain.clone();
             if (fc.size() > 0) {
                 while (fc.size() > 0) {
                     Frame frame = fc.pop();

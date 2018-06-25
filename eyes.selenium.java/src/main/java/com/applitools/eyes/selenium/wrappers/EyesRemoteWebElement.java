@@ -582,7 +582,12 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     @Override
     public String toString() {
-        return String.format("EyesRemoteWebElement: %s (%s)", webElement.getTagName(), webElement.getId());
+        try {
+            return String.format("EyesRemoteWebElement: %s (%s)", webElement.getTagName(), webElement.getId());
+        }
+        catch (Exception ex){
+            return String.format("EyesRemoteWebElement: (%s)", webElement.getId());
+        }
     }
 
     public PositionProvider getPositionProvider() {
