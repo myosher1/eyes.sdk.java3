@@ -383,7 +383,7 @@ public class Eyes extends EyesBase {
                 setPositionProvider(new CssTranslatePositionProvider(logger, this.jsExecutor, this.scrollRootElement));
                 break;
             default:
-                setPositionProvider(new ScrollPositionProvider(logger, this.jsExecutor));
+                setPositionProvider(ScrollPositionProvider.getInstance(logger, this.jsExecutor));
         }
     }
 
@@ -1128,7 +1128,7 @@ public class Eyes extends EyesBase {
         FrameChain originalFrameChain = driver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
         switchTo.defaultContent();
-        ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor);
+        ScrollPositionProvider spp = ScrollPositionProvider.getInstance(logger, jsExecutor);
         Location location;
         try {
             location = spp.getCurrentPosition();
@@ -1807,7 +1807,7 @@ public class Eyes extends EyesBase {
         ensureElementVisible(targetElement);
 
         PositionProvider originalPositionProvider = positionProvider;
-        PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
+        PositionProvider scrollPositionProvider = ScrollPositionProvider.getInstance(logger, jsExecutor);
         Location originalScrollPosition = scrollPositionProvider.getCurrentPosition();
 
         String originalOverflow = null;
@@ -2289,7 +2289,7 @@ public class Eyes extends EyesBase {
     private FullPageCaptureAlgorithm createFullPageCaptureAlgorithm(ScaleProviderFactory scaleProviderFactory) {
         return new FullPageCaptureAlgorithm(logger, regionPositionCompensation,
                 getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
-                new ScrollPositionProvider(logger, this.jsExecutor),
+                ScrollPositionProvider.getInstance(logger, this.jsExecutor),
                 scaleProviderFactory,
                 cutProviderHandler.get(),
                 getStitchOverlap(),

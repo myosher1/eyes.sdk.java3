@@ -45,7 +45,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
     private static Location getDefaultContentScrollPosition(Logger logger, FrameChain currentFrames, EyesWebDriver driver) {
         IEyesJsExecutor jsExecutor = new SeleniumJavaScriptExecutor(driver);
-        PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor);
+        PositionProvider positionProvider = ScrollPositionProvider.getInstance(logger, jsExecutor);
         if (currentFrames.size() == 0) {
             return positionProvider.getCurrentPosition();
         }

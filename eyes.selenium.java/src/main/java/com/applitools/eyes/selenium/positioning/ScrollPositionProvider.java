@@ -4,6 +4,7 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.selenium.EyesSeleniumUtils;
+import com.applitools.eyes.selenium.SeleniumJavaScriptExecutor;
 import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.WebDriverException;
@@ -12,11 +13,20 @@ import java.util.List;
 
 public class ScrollPositionProvider implements PositionProvider {
 
-
     protected final Logger logger;
     protected final IEyesJsExecutor executor;
 
-    public ScrollPositionProvider(Logger logger, IEyesJsExecutor executor) {
+    private static ScrollPositionProvider instance;
+
+    public static ScrollPositionProvider getInstance(Logger logger, IEyesJsExecutor jsExecutor) {
+        if (instance == null) {
+            instance = new ScrollPositionProvider(logger, jsExecutor);
+        }
+        return instance;
+    }
+
+    private ScrollPositionProvider(Logger logger, IEyesJsExecutor executor) {
+
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(executor, "executor");
 
@@ -49,7 +59,7 @@ public class ScrollPositionProvider implements PositionProvider {
         logger.verbose("ScrollPositionProvider - Scrolling to " + location);
         Object retVal = executor.executeScript(
                 String.format("window.scrollTo(%d,%d); return [window.scrollX, window.scrollY];",
-                location.getX(), location.getY()));
+                        location.getX(), location.getY()));
         List<Long> esAsList = (List<Long>) retVal;
         Location actualLocation = new Location(
                 esAsList.get(0).intValue(),
@@ -59,7 +69,6 @@ public class ScrollPositionProvider implements PositionProvider {
     }
 
     /**
-     *
      * @return The entire size of the container which the position is relative
      * to.
      */

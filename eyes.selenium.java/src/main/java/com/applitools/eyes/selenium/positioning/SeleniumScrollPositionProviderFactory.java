@@ -14,7 +14,7 @@ public class SeleniumScrollPositionProviderFactory {
 
         switch (stitchMode)
         {
-            case SCROLL: return new ScrollPositionProvider(logger, jsExecutor);
+            case SCROLL: return ScrollPositionProvider.getInstance(logger, jsExecutor);
             case CSS: return new CssTranslatePositionProvider(logger, jsExecutor, scrollRootElement);
             default:
                 return null;

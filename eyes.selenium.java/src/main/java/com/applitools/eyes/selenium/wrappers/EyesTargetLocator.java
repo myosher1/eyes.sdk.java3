@@ -75,7 +75,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         this.driver = driver;
         this.targetLocator = targetLocator;
         this.jsExecutor = new SeleniumJavaScriptExecutor(driver);
-        this.scrollPosition = new ScrollPositionProvider(logger, jsExecutor);
+        this.scrollPosition = ScrollPositionProvider.getInstance(logger, jsExecutor);
     }
 
     public WebDriver frame(int index) {

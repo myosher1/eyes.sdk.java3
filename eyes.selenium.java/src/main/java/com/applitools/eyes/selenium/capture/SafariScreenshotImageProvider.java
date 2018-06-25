@@ -122,7 +122,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
             FrameChain currentFrameChain = ((EyesWebDriver) eyes.getDriver()).getFrameChain();
 
             if (currentFrameChain.size() == 0) {
-                PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor);
+                PositionProvider positionProvider = ScrollPositionProvider.getInstance(logger, jsExecutor);
                 loc = positionProvider.getCurrentPosition();
             } else {
                 loc = currentFrameChain.getDefaultContentScrollPosition();
