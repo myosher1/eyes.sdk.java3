@@ -786,6 +786,7 @@ public abstract class EyesBase {
             // Making sure that we reset the running session even if an
             // exception was thrown during close.
             runningSession = null;
+            logger.setSessionId("");
             logger.getLogHandler().close();
         }
     }
@@ -1321,6 +1322,7 @@ public abstract class EyesBase {
     }
 
     protected void openBase() {
+        logger.setSessionId("");
         logger.getLogHandler().open();
 
         try {

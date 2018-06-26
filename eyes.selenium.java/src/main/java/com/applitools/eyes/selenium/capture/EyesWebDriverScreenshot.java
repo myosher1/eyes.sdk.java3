@@ -40,7 +40,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     // The part of the frame window which is visible in the screenshot
     private final Region frameWindow;
 
-    // FIXME: 18/03/2018 Workaround specifcally for regions
+    // FIXME: 18/03/2018 Workaround specifically for regions
     private final Region regionWindow;
 
     private static Location getDefaultContentScrollPosition(Logger logger, FrameChain currentFrames, EyesWebDriver driver) {
@@ -179,12 +179,13 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
     private ScreenshotType updateScreenshotType(ScreenshotType screenshotType, BufferedImage image) {
         if (screenshotType == null) {
-            RectangleSize viewportSize = driver.getEyes().getViewportSize();
+            Eyes eyes = driver.getEyes();
+            RectangleSize viewportSize = eyes.getViewportSize();
 
-            boolean scaleViewport = driver.getEyes().shouldStitchContent();
+            boolean scaleViewport = eyes.shouldStitchContent();
 
             if (scaleViewport) {
-                double pixelRatio = driver.getEyes().getDevicePixelRatio();
+                double pixelRatio = eyes.getDevicePixelRatio();
                 viewportSize = viewportSize.scale(pixelRatio);
             }
 

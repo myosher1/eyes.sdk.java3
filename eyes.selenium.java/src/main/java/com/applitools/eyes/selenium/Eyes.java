@@ -377,13 +377,7 @@ public class Eyes extends EyesBase {
         // Setting the correct position provider.
         StitchMode stitchMode = getStitchMode();
         logger.verbose("initializing position provider. stitchMode: " + stitchMode);
-        switch (stitchMode) {
-            case CSS:
-                setPositionProvider(new CssTranslatePositionProvider(logger, this.jsExecutor, this.scrollRootElement));
-                break;
-            default:
-                setPositionProvider(ScrollPositionProvider.getInstance(logger, this.jsExecutor));
-        }
+        setPositionProvider(SeleniumScrollPositionProviderFactory.getPositionProvider(logger, stitchMode, jsExecutor, scrollRootElement));
     }
 
     /**
@@ -691,6 +685,10 @@ public class Eyes extends EyesBase {
             }
             //check(settings);
         }
+
+        currentFramePositionProvider = null;
+        positionProvider = SeleniumScrollPositionProviderFactory.getPositionProvider(logger, getStitchMode(), jsExecutor, scrollRootElement);
+
         matchRegions(getRegions, checkSettingsInternalDictionary, checkSettings);
         getConfig().setForceFullPageScreenshot(originalForceFPS);
     }
@@ -878,6 +876,7 @@ public class Eyes extends EyesBase {
     private void doCheck(ICheckSettings checkSettings, ISeleniumCheckTarget seleniumCheckTarget, String name, final Region targetRegion, EyesTargetLocator switchTo) throws InterruptedException {
 
         scrollRootElement = this.getScrollRootElement(seleniumCheckTarget);
+        currentFramePositionProvider = null;
         positionProvider = SeleniumScrollPositionProviderFactory.getPositionProvider(logger, getStitchMode(), jsExecutor, scrollRootElement);
 
         this.regionToCheck = null;
@@ -1548,7 +1547,7 @@ public class Eyes extends EyesBase {
     }
 
     private ScaleProviderFactory getScaleProviderFactory() {
-        return new ContextBasedScaleProviderFactory(logger, positionProvider.getEntireSize(),
+        return new ContextBasedScaleProviderFactory(logger, ScrollPositionProvider.getInstance(logger, jsExecutor).getEntireSize(),
                 viewportSizeHandler.get(), devicePixelRatio, false,
                 scaleProviderHandler);
     }
