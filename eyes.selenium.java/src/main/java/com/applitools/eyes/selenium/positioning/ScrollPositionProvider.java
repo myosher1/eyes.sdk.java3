@@ -9,20 +9,26 @@ import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.WebDriverException;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ScrollPositionProvider implements PositionProvider {
 
     protected final Logger logger;
     protected final IEyesJsExecutor executor;
 
-    private static ScrollPositionProvider instance;
+    private static Map<IEyesJsExecutor, ScrollPositionProvider> instances = new HashMap<>();
 
     public static ScrollPositionProvider getInstance(Logger logger, IEyesJsExecutor jsExecutor) {
-        if (instance == null) {
-            instance = new ScrollPositionProvider(logger, jsExecutor);
+        if (!instances.containsKey(jsExecutor)) {
+            instances.put(jsExecutor, new ScrollPositionProvider(logger, jsExecutor));
         }
-        return instance;
+        return instances.get(jsExecutor);
+    }
+
+    public static void removeInstance(IEyesJsExecutor jsExecutor) {
+        instances.remove(jsExecutor);
     }
 
     private ScrollPositionProvider(Logger logger, IEyesJsExecutor executor) {

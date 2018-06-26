@@ -394,6 +394,12 @@ public class Eyes extends EyesBase {
         return open(driver, appName, testName, null, sessionType);
     }
 
+    @Override
+    public TestResults close(boolean throwEx) {
+        ScrollPositionProvider.removeInstance(jsExecutor);
+        return super.close(throwEx);
+    }
+
     /**
      * See {@link #checkWindow(String)}.
      * {@code tag} defaults to {@code null}.

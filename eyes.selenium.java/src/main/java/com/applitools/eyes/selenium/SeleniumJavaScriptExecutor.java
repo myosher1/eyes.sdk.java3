@@ -15,4 +15,9 @@ public class SeleniumJavaScriptExecutor implements IEyesJsExecutor {
     public Object executeScript(String script, Object... args) {
         return this.driver.executeScript(script, args);
     }
+
+    @Override
+    public int hashCode() {
+        return driver.getRemoteWebDriver().getSessionId().hashCode();
+    }
 }
