@@ -25,6 +25,14 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
     public RemoteSessionEventHandler(Logger logger, URI serverUrl, String accessKey) {
         this(logger, serverUrl, accessKey, 30 * 1000);
     }
+    
+    public RemoteSessionEventHandler(URI serverUrl, String accessKey, int timeout) {
+        this(new Logger(), serverUrl, accessKey, timeout);
+    }
+
+    public RemoteSessionEventHandler(URI serverUrl, String accessKey) {
+        this(new Logger(), serverUrl, accessKey);
+    }
 
     private void sendMessage(HttpMethodCall method) {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
