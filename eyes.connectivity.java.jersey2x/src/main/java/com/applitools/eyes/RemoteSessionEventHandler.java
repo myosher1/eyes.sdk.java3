@@ -81,7 +81,7 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
                 Invocation.Builder invocationBuilder = defaultEndPoint.path(autSessionId)
                         .request(MediaType.APPLICATION_JSON);
 
-                return invocationBuilder.put(Entity.json("{\"action\": \"initEnded\"}"));
+                return invocationBuilder.put(Entity.json("{\"action\": \"initEnd\"}"));
             }
         });
     }
