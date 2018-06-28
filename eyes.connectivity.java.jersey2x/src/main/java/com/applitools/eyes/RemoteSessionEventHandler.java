@@ -1,6 +1,9 @@
 package com.applitools.eyes;
 
 import com.applitools.eyes.events.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -25,7 +28,7 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
     public RemoteSessionEventHandler(Logger logger, URI serverUrl, String accessKey) {
         this(logger, serverUrl, accessKey, 30 * 1000);
     }
-    
+
     public RemoteSessionEventHandler(URI serverUrl, String accessKey, int timeout) {
         this(new Logger(), serverUrl, accessKey, timeout);
     }
@@ -81,7 +84,7 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
                 Invocation.Builder invocationBuilder = defaultEndPoint.path(autSessionId)
                         .request(MediaType.APPLICATION_JSON);
 
-                return invocationBuilder.put(Entity.json("{\"action\": \"initEnded\"}"));
+                return invocationBuilder.put(Entity.json("{\"action\": \"initEnd\"}"));
             }
         });
     }
@@ -126,14 +129,24 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
     }
 
     @Override
-    public void testEnded(String autSessionId, TestResults testResults) {
+    public void testEnded(String autSessionId, final TestResults testResults) {
         final String autSessionIdFinal = autSessionId;
         sendMessage(new HttpMethodCall() {
             public Response call() {
                 Invocation.Builder invocationBuilder = defaultEndPoint.path(autSessionIdFinal)
                         .request(MediaType.APPLICATION_JSON);
+                // since the web API requires a root property for this message
+                ObjectMapper jsonMapper = new ObjectMapper();
+                jsonMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
+                String testResultJson;
+                try {
+                    testResultJson = jsonMapper.writeValueAsString(testResults);
+                } catch (JsonProcessingException e) {
+                    testResultJson = "{}";
+                    e.printStackTrace();
+                }
 
-                return invocationBuilder.put(Entity.json("{\"action\": \"testEnd\", \"testResults\":{}}"));
+                return invocationBuilder.put(Entity.json("{\"action\": \"testEnd\", \"testResults\":" + testResultJson + "}"));
             }
         });
     }
