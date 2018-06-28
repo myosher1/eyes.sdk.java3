@@ -1,7 +1,7 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 
 <suite name="Suite1" verbose="1" parallel="tests">
-    <test name="Test_WEB" parallel="instances">
+    <test name="Test_Web" parallel="instances">
         <classes>
             <class name="com.applitools.eyes.selenium.TestClassicApi" />
             <class name="com.applitools.eyes.selenium.TestFluentApi" />
