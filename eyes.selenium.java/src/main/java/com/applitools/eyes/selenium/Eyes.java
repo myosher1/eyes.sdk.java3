@@ -689,6 +689,8 @@ public class Eyes extends EyesBase {
             //check(settings);
         }
 
+        scrollRootElement = driver.findElement(By.tagName("html"));
+
         currentFramePositionProvider = null;
         positionProvider = SeleniumScrollPositionProviderFactory.getPositionProvider(logger, getStitchMode(), jsExecutor, scrollRootElement);
 
