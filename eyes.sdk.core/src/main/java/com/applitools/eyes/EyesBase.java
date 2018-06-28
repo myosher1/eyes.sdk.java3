@@ -1129,18 +1129,22 @@ public abstract class EyesBase {
         return result;
     }
 
+    protected ValidationInfo fireValidationWillStartEvent(String tag){
+        String autSessionId = getAUTSessionId();
+
+        ValidationInfo validationInfo = new ValidationInfo();
+        validationInfo.setValidationId("" + (++validationId));
+        validationInfo.setTag(tag);
+
+        getSessionEventHandlers().validationWillStart(autSessionId, validationInfo);
+
+        return validationInfo;
+    }
+
     private static MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
                                            ICheckSettings checkSettings, EyesBase self) {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
-
-        String autSessionId = self.getAUTSessionId();
-
-        ValidationInfo validationInfo = new ValidationInfo();
-        validationInfo.setValidationId("" + (++self.validationId));
-        validationInfo.setTag(tag);
-
-        self.getSessionEventHandlers().validationWillStart(autSessionId, validationInfo);
 
         // Update retry timeout if it wasn't specified.
         int retryTimeout = -1;
@@ -1172,9 +1176,6 @@ public abstract class EyesBase {
 
         result = self.matchWindowTask.matchWindow(self.getUserInputs(), regionProvider.getRegion(), tag,
                 self.shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, checkSettingsInternal, retryTimeout, self);
-
-        ValidationResult validationResult = new ValidationResult();
-        self.getSessionEventHandlers().validationEnded(autSessionId, validationInfo.getValidationId(), validationResult);
 
         return result;
     }
@@ -1330,6 +1331,8 @@ public abstract class EyesBase {
                 logger.verbose("Ignored");
                 return;
             }
+
+            sessionEventHandlers.testStarted(getAUTSessionId());
 
             validateApiKey();
             logOpenBase();
@@ -1599,8 +1602,6 @@ public abstract class EyesBase {
      */
     protected void startSession() {
         logger.verbose("startSession()");
-
-        sessionEventHandlers.testStarted(getAUTSessionId());
 
         ensureViewportSize();
 
