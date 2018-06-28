@@ -1839,7 +1839,7 @@ public class Eyes extends EyesBase {
                 (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
 
         this.regionToCheck = null;
-        PositionMemento originalPositionMemento = positionProvider.getState();
+        //PositionMemento originalPositionMemento = positionProvider.getState();
 
         ensureElementVisible(targetElement);
 
@@ -1893,7 +1893,7 @@ public class Eyes extends EyesBase {
 
             checkFrameOrElement = false;
 
-            originalPositionProvider.restoreState(originalPositionMemento);
+            //originalPositionProvider.restoreState(originalPositionMemento);
             scrollPositionProvider.setPosition(originalScrollPosition);
             positionProvider = originalPositionProvider;
             regionToCheck = null;
@@ -2284,6 +2284,7 @@ public class Eyes extends EyesBase {
             switchTo.frames(originalFrameChain);
             result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);
         } else {
+            logger.verbose("default case");
             ensureElementVisible(this.targetElement);
             result = getScaledAndCroppedScreenshot(scaleProviderFactory);
         }

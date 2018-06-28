@@ -49,7 +49,7 @@ public class TestListener implements ITestListener {
         //System.out.println("onTestFailure");
         Object instance = result.getInstance();
         if (instance instanceof TestSetup) {
-            afterMethod((TestSetup) instance);
+            afterMethodFailure((TestSetup) instance);
         }
     }
 
@@ -63,7 +63,15 @@ public class TestListener implements ITestListener {
         //System.out.println("onTestFailedButWithinSuccessPercentage");
         Object instance = result.getInstance();
         if (instance instanceof TestSetup) {
-            afterMethod((TestSetup) instance);
+            afterMethodFailure((TestSetup) instance);
+        }
+    }
+
+    private void afterMethodFailure(TestSetup testSetup) {
+        Eyes eyes = testSetup.eyes;
+        eyes.abortIfNotClosed();
+        if (testSetup.driver != null) {
+            testSetup.driver.quit();
         }
     }
 

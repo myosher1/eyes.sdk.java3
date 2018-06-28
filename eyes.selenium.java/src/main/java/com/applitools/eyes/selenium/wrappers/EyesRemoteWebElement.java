@@ -94,7 +94,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
         this.eyesDriver = eyesDriver;
 
         if (webElement instanceof RemoteWebElement) {
-            this.webElement = (RemoteWebElement)webElement;
+            this.webElement = (RemoteWebElement) webElement;
         } else {
             throw new EyesException("The input web element is not a RemoteWebElement.");
         }
@@ -226,9 +226,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
                             data.get(2).intValue(), data.get(3).intValue(),
                             data.get(4).intValue(), data.get(5).intValue())
             );
-        }
-        else
-        {
+        } else {
             retVal = new SizeAndBorders(RectangleSize.EMPTY, RectangularMargins.EMPTY);
         }
 
@@ -348,7 +346,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     @Override
     public void sendKeys(CharSequence... keysToSend) {
-        for(CharSequence keys : keysToSend) {
+        for (CharSequence keys : keysToSend) {
             String text = String.valueOf(keys);
             eyesDriver.getEyes().addTextTrigger(this, text);
         }
@@ -398,7 +396,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
      */
     private WebElement wrapElement(WebElement elementToWrap) {
         WebElement resultElement = elementToWrap;
-        if ((elementToWrap instanceof RemoteWebElement) && !(elementToWrap instanceof  EyesRemoteWebElement)) {
+        if ((elementToWrap instanceof RemoteWebElement) && !(elementToWrap instanceof EyesRemoteWebElement)) {
             resultElement = new EyesRemoteWebElement(logger, eyesDriver, elementToWrap);
         }
         return resultElement;
@@ -517,7 +515,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof  RemoteWebElement) && webElement.equals(obj);
+        return (obj instanceof RemoteWebElement) && webElement.equals(obj);
     }
 
     @Override
@@ -584,8 +582,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     public String toString() {
         try {
             return String.format("EyesRemoteWebElement: %s (%s)", webElement.getTagName(), webElement.getId());
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             return String.format("EyesRemoteWebElement: (%s)", webElement.getId());
         }
     }

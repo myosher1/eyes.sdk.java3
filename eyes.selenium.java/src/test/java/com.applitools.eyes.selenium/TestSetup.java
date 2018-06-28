@@ -121,8 +121,18 @@ public abstract class TestSetup implements ITest {
         LogHandler logHandler;
 
         if (System.getenv("CI") == null && logsPath != null) {
-            String path = logsPath + File.separator + "java" + File.separator + extendedTestName;
-            logHandler = new FileLogger(path + File.separator + testName + "_" + platform + ".log", true, true);
+            String path = logsPath + File.separator + "java";
+            String logFileName;
+
+            String logsMode = System.getenv("APPLITOOLS_LOG_MODE");
+            if (!"joint".equalsIgnoreCase(logsMode)) {
+                path += File.separator + extendedTestName;
+                logFileName = testName + "_" + platform + ".log";
+            } else {
+                logFileName = platform + ".log";
+            }
+
+            logHandler = new FileLogger(path + File.separator + logFileName, true, true);
             eyes.setDebugScreenshotsPath(path);
             eyes.setDebugScreenshotsPrefix(testName + "_");
             eyes.setSaveDebugScreenshots(true);
@@ -135,6 +145,12 @@ public abstract class TestSetup implements ITest {
         }
 
         eyes.setLogHandler(logHandler);
+
+        Logger logger = eyes.getLogger();
+        logger.getLogHandler().open();
+        logger.log("==== Starting Test ====");
+        logger.log(this.toString());
+
         eyes.clearProperties();
         eyes.addProperty("Selenium Session ID", webDriver.getSessionId().toString());
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");

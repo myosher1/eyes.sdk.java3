@@ -20,4 +20,9 @@ public class SeleniumJavaScriptExecutor implements IEyesJsExecutor {
     public int hashCode() {
         return driver.getRemoteWebDriver().getSessionId().hashCode();
     }
+
+    @Override
+    public String toString() {
+        return "SeleniumJavaScriptExecutor - session ID: " + driver.getRemoteWebDriver().getSessionId();
+    }
 }
