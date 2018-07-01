@@ -100,6 +100,10 @@ public abstract class TestSetup implements ITest {
             desiredCaps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
 
             caps.merge(desiredCaps);
+        } else if (seleniumServerUrl.equalsIgnoreCase("http://hub-cloud.browserstack.com/wd/hub")) {
+            seleniumServerUrl = "http://" + System.getenv("BROWSERSTACK_USERNAME") + ":" + System.getenv("BROWSERSTACK_ACCESS_KEY") + "@hub-cloud.browserstack.com/wd/hub";
+            desiredCaps.setCapability("platform", platform);
+            desiredCaps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
         }
 
         this.testName = testName + " " + caps.getBrowserName() + " " + platform;
