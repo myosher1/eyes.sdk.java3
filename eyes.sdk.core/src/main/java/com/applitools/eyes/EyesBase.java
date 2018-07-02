@@ -1753,5 +1753,13 @@ public abstract class EyesBase {
         this.sessionEventHandlers.addEventHandler(eventHandler);
     }
 
+    public void removeSessionEventHandler(ISessionEventHandler eventHandler) {
+        this.sessionEventHandlers.removeEventHandler(eventHandler);
+    }
+
+    public void clearSessionEventHandlers(){
+        this.sessionEventHandlers.clearEventHandlers();
+    }
+
     protected abstract String getAUTSessionId();
 }

@@ -622,15 +622,22 @@ public class EyesSeleniumUtils {
         try { parent = element.findElement(By.xpath("..")); }
         catch (Exception e) { parent = null; }
 
-        while (parent != null && !region.isSizeEmpty()){
-            Point parentLocation = parent.getLocation();
-            Dimension parentSize = parent.getSize();
-            Region parentRegion = new Region(parentLocation.getX(), parentLocation.getY(),
-                    parentSize.getWidth(), parentSize.getHeight());
+        try {
+            while (parent != null && !region.isSizeEmpty()) {
+                Point parentLocation = parent.getLocation();
+                Dimension parentSize = parent.getSize();
+                Region parentRegion = new Region(parentLocation.getX(), parentLocation.getY(),
+                        parentSize.getWidth(), parentSize.getHeight());
 
-            region.intersect(parentRegion);
-            try { parent = parent.findElement(By.xpath("..")); }
-            catch (Exception e) { parent = null; }
+                region.intersect(parentRegion);
+                try {
+                    parent = parent.findElement(By.xpath(".."));
+                } catch (Exception e) {
+                    parent = null;
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
 
         return region.getSize();
