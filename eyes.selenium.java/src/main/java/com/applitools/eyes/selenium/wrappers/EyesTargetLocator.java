@@ -145,15 +145,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
             logger.verbose("Making preparations...");
             driver.getFrameChain().pop();
             logger.verbose("Done! Switching to parent frame...");
-            try {
-                throw new WebDriverException();
-                //targetLocator.parentFrame();
-            } catch (Exception WebDriverException) {
-                targetLocator.defaultContent();
-                for (Frame frame : driver.getFrameChain()) {
-                    targetLocator.frame(frame.getReference());
-                }
-            }
+            parentFrame(targetLocator, driver.getFrameChain());
         }
         logger.verbose("Done!");
         return driver;
@@ -161,7 +153,6 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
 
     public static void parentFrame(WebDriver.TargetLocator targetLocator, FrameChain frameChainToParent) {
         try {
-            //throw new WebDriverException();
             targetLocator.parentFrame();
         } catch (Exception WebDriverException) {
             targetLocator.defaultContent();

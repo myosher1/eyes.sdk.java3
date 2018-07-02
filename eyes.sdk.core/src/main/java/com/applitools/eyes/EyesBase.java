@@ -9,7 +9,6 @@ import com.applitools.eyes.diagnostics.ResponseTimeAlgorithm;
 import com.applitools.eyes.events.ISessionEventHandler;
 import com.applitools.eyes.events.SessionEventHandlers;
 import com.applitools.eyes.events.ValidationInfo;
-import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.DiffsFoundException;
 import com.applitools.eyes.exceptions.NewTestException;
 import com.applitools.eyes.exceptions.TestFailedException;
@@ -125,6 +124,7 @@ public abstract class EyesBase {
 
         Region.initLogger(logger);
         ImageUtils.initLogger(logger);
+        GeneralUtils.initLogger(logger);
 
         initProviders();
 
