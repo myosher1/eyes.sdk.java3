@@ -26,6 +26,8 @@ public class RestClient {
         ClientResponse call();
     }
 
+    public static final int DEFAULT_APPLITOOLS_TIMEOUT = 1000 * 60 * 5; // ms
+
     private ProxySettings proxySettings;
     private int timeout; // seconds
 
@@ -42,7 +44,7 @@ public class RestClient {
      * @param timeout Connect/Read timeout in milliseconds. 0 equals infinity.
      * @param proxySettings (optional) Setting for communicating via proxy.
      */
-    private static Client buildRestClient(int timeout,
+    public static Client buildRestClient(int timeout,
                                           ProxySettings proxySettings) {
         // Creating the client configuration
         ClientConfig cc = new DefaultClientConfig();
@@ -82,7 +84,7 @@ public class RestClient {
      * @param serverUrl The URI of the rest server.
      */
     public RestClient(Logger logger, URI serverUrl) {
-        this(logger, serverUrl, 1000*60*5);
+        this(logger, serverUrl, DEFAULT_APPLITOOLS_TIMEOUT);
     }
 
 
