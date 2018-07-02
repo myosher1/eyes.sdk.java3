@@ -637,7 +637,7 @@ public class EyesSeleniumUtils {
                 }
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            GeneralUtils.logExceptionStackTrace(ex);
         }
 
         return region.getSize();

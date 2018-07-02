@@ -1,6 +1,7 @@
 package com.applitools.utils;
 
 import com.applitools.eyes.EyesException;
+import com.applitools.eyes.Logger;
 
 import java.io.*;
 import java.text.DateFormat;
@@ -10,8 +11,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * General purpose utilities.
@@ -28,6 +27,8 @@ public class GeneralUtils {
     @SuppressWarnings("SpellCheckingInspection")
     private static final String DATE_FORMAT_RFC1123 =
             "E, dd MMM yyyy HH:mm:ss 'GMT'";
+
+    private static Logger logger;
 
     private GeneralUtils() {}
 
@@ -204,5 +205,27 @@ public class GeneralUtils {
             throw new EyesException("Failed to read text from resource: ", e);
         }
         return sb.toString();
+    }
+
+    public static void logExceptionStackTrace(Exception ex) {
+        logExceptionStackTrace(logger, ex);
+    }
+
+    public static void logExceptionStackTrace(Logger logger, Exception ex) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream(2048);
+        PrintWriter writer = new PrintWriter(stream, true);
+        ex.printStackTrace(writer);
+        logger.log(ex.toString());
+        try {
+            logger.log(stream.toString("UTF-8"));
+            writer.close();
+            stream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void initLogger(Logger logger) {
+        GeneralUtils.logger = logger;
     }
 }
