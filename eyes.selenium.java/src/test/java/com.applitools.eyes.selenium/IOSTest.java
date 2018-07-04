@@ -66,7 +66,18 @@ public class IOSTest {
                         "iPad Air Simulator",
                         "iPad Air 2 Simulator"}), // device
                 Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
-                Arrays.asList(new Object[]{"10.0", "11.0"}), // OS Version
+                Arrays.asList(new Object[]{"11.0"}), // OS Version
+                Arrays.asList(new Object[]{false/*, true*/}) // fully
+        );
+
+        Object[][] iPadLegacyPermutations = TestUtils.generatePermutations(
+                Arrays.asList(new Object[]{
+                        "iPad Simulator",
+                        "iPad Pro (9.7 inch) Simulator",
+                        "iPad Air Simulator",
+                        "iPad Air 2 Simulator"}), // device
+                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
+                Arrays.asList(new Object[]{"10.0"}), // OS Version
                 Arrays.asList(new Object[]{false/*, true*/}) // fully
         );
 
@@ -75,6 +86,7 @@ public class IOSTest {
         returnValue.addAll(Arrays.asList(iPhonePermutations));
         returnValue.addAll(Arrays.asList(iPhone5Permutations));
         returnValue.addAll(Arrays.asList(iPadPermutations));
+        returnValue.addAll(Arrays.asList(iPadLegacyPermutations));
 
         return returnValue.toArray(new Object[0][]);
     }

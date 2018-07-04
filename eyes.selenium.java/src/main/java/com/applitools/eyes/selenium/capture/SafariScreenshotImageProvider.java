@@ -164,7 +164,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
         devicesRegions = new HashMap<>();
 
         devicesRegions.put(new DeviceData(1125,2436,11), new Region(0, 283, 1125, 1903));
-        devicesRegions.put(new DeviceData(2436,1125,11), new Region(0, 151, 2436, 930));
+        devicesRegions.put(new DeviceData(2436,1125,11), new Region(132, 151, 2436, 930));
 
         devicesRegions.put(new DeviceData(1242,2208,11), new Region(0, 211, 1242, 1863));
         devicesRegions.put(new DeviceData(2208,1242,11), new Region(0, 151, 2208, 1090));
@@ -192,6 +192,9 @@ public class SafariScreenshotImageProvider implements ImageProvider {
 
         devicesRegions.put(new DeviceData(2048,2732,10), new Region(0, 129, 2048, 2603));
         devicesRegions.put(new DeviceData(2732,2048,10), new Region(0, 129, 2732, 1919));
+
+        devicesRegions.put(new DeviceData(1668,2224,11), new Region(0, 141, 1668, 2083));
+        devicesRegions.put(new DeviceData(2224,1668,11), new Region(0, 141, 2224, 1527));
     }
 
     private static class DeviceData {
