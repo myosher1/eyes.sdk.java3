@@ -74,77 +74,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
                 Region crop = devicesRegions.get(deviceData);
                 image = ImageUtils.cropImage(image, crop);
             } else {
-
-                int topBarHeight = 20;
-                int leftBarWidth = 0;
-                int bottomBarHeight = 44;
-                int rightBarWidth = 0;
-                int urlBarHeight = 44;
-
-                int extraPhysicalTopPixels = 0;
-                int extraPhysicalBottomPixels = 0;
-
-                int displayLogicalWidth = (int) Math.ceil(imageWidth / scaleRatio);
-                int displayLogicalHeight = (int) Math.ceil(imageHeight / scaleRatio);
-
-                logger.verbose("physical device logical size: " + displayLogicalWidth + " x " + displayLogicalHeight);
-
-                if (displayLogicalHeight == 736 && displayLogicalWidth == 414) { // iPhone 5.5 inch
-                    logger.verbose("iPhone 5.5 inch detected");
-                    topBarHeight = 18;
-                } else if (displayLogicalHeight == 812 && displayLogicalWidth == 375) { // iPhone 5.8 inch p
-                    logger.verbose("iPhone 5.8 inch portrait detected");
-                    topBarHeight = 44;
-                    bottomBarHeight = 83;
-                } else if (displayLogicalWidth == 812 && displayLogicalHeight == 375) { // iPhone 5.8 inch l
-                    logger.verbose("iPhone 5.8 inch landscape detected");
-                    leftBarWidth = 44;
-                    rightBarWidth = 44;
-                }
-
-                if (displayLogicalHeight < displayLogicalWidth) {
-                    logger.verbose("landscape mode detected");
-                    topBarHeight = 0;
-                    if (displayLogicalWidth == 812 && displayLogicalHeight == 375) { // on iPhone X crop the home indicator.
-                        bottomBarHeight = 15;
-                    } else {
-                        bottomBarHeight = 0;
-                    }
-
-                    // on iPhone 5.5 inch with Safari 10 in landscape mode crop the tabs bar.
-                    if (displayLogicalWidth == 736 && displayLogicalHeight == 414 &&
-                            Integer.parseInt(userAgent.getBrowserMajorVersion()) < 11) {
-                        topBarHeight = 33;
-                    }
-                }
-
-                if (Integer.parseInt(userAgent.getBrowserMajorVersion()) >= 11) { // Safari >= 11
-                    logger.verbose("safari version 11 or higher detected");
-                    urlBarHeight = 50;
-                    if (displayLogicalHeight == 736 && displayLogicalWidth == 414) { // iPhone 5.5 inch
-                        topBarHeight = 20;
-                        extraPhysicalTopPixels = 1;
-                        extraPhysicalBottomPixels = 1;
-                    }
-                }
-
-                viewportSize = new RectangleSize(
-                        (int) Math.ceil(imageWidth - ((leftBarWidth + rightBarWidth) * scaleRatio)),
-                        (int) Math.ceil(imageHeight - ((topBarHeight + urlBarHeight + bottomBarHeight) * scaleRatio) - extraPhysicalTopPixels - extraPhysicalBottomPixels));
-
-                logger.verbose("computed physical viewport size: " + viewportSize);
-
-                logger.verbose("cropping IOS browser image");
-
-                image = ImageUtils.cropImage(
-                        image,
-                        new Region(
-                                (int) Math.ceil(leftBarWidth * scaleRatio),
-                                (int) Math.ceil(((topBarHeight + urlBarHeight) * scaleRatio) + extraPhysicalTopPixels),
-                                viewportSize.getWidth(),
-                                viewportSize.getHeight()
-                        )
-                );
+                logger.verbose("device not found in list. returning original image.");
             }
         } else if (!eyes.getForceFullPageScreenshot()) {
 
