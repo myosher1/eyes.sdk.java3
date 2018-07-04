@@ -636,6 +636,11 @@ public class Eyes extends EyesBase {
     }
 
     public void check(ICheckSettings... checkSettings) {
+        if (getIsDisabled()) {
+            logger.log(String.format("check(%s): Ignored", checkSettings));
+            return;
+        }
+
         boolean originalForceFPS = forceFullPageScreenshot;
 
         if (checkSettings.length > 1) {
@@ -810,12 +815,22 @@ public class Eyes extends EyesBase {
     }
 
     public void check(String name, ICheckSettings checkSettings) {
+        if (getIsDisabled()) {
+            logger.log(String.format("check('%s', %s): Ignored", name, checkSettings));
+            return;
+        }
+
         ArgumentGuard.notNull(checkSettings, "checkSettings");
         checkSettings = checkSettings.withName(name);
         this.check(checkSettings);
     }
 
     public void check(ICheckSettings checkSettings) {
+        if (getIsDisabled()) {
+            logger.log(String.format("check(%s): Ignored", checkSettings));
+            return;
+        }
+
         ArgumentGuard.notNull(checkSettings, "checkSettings");
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
@@ -1133,13 +1148,13 @@ public class Eyes extends EyesBase {
     public void checkRegion(final Region region, int matchTimeout, String tag) {
 
         if (getIsDisabled()) {
-            logger.log(String.format("CheckRegion([%s], %d, '%s'): Ignored", region, matchTimeout, tag));
+            logger.log(String.format("checkRegion([%s], %d, '%s'): Ignored", region, matchTimeout, tag));
             return;
         }
 
         ArgumentGuard.notNull(region, "region");
 
-        logger.verbose(String.format("CheckRegion([%s], %d, '%s')", region, matchTimeout, tag));
+        logger.verbose(String.format("checkRegion([%s], %d, '%s')", region, matchTimeout, tag));
 
         super.checkWindowBase(
                 new RegionProvider() {
