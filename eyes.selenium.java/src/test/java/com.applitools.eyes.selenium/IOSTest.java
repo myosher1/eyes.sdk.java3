@@ -38,21 +38,21 @@ public class IOSTest {
                 Arrays.asList(new Object[]{"iPhone X Simulator"}), // device
                 Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
                 Arrays.asList(new Object[]{"11.2"}), // OS Version
-                Arrays.asList(new Object[]{false/*, true*/}) // fully
+                Arrays.asList(new Object[]{false, true}) // fully
         );
 
         Object[][] iPhonePermutations = TestUtils.generatePermutations(
                 Arrays.asList(new Object[]{"iPhone 7 Simulator", "iPhone 6 Plus Simulator"}), // device
                 Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
                 Arrays.asList(new Object[]{"10.0", "11.0"}), // OS Version
-                Arrays.asList(new Object[]{false/*, true*/}) // fully
+                Arrays.asList(new Object[]{false, true}) // fully
         );
 
         Object[][] iPhone5Permutations = TestUtils.generatePermutations(
                 Arrays.asList(new Object[]{"iPhone 5s Simulator"}), // device
                 Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
                 Arrays.asList(new Object[]{"10.0"}), // OS Version
-                Arrays.asList(new Object[]{false/*, true*/}) // fully
+                Arrays.asList(new Object[]{false, true}) // fully
         );
 
         Object[][] iPadPermutations = TestUtils.generatePermutations(
@@ -67,7 +67,7 @@ public class IOSTest {
                         "iPad Air 2 Simulator"}), // device
                 Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
                 Arrays.asList(new Object[]{"11.0"}), // OS Version
-                Arrays.asList(new Object[]{false/*, true*/}) // fully
+                Arrays.asList(new Object[]{false, true}) // fully
         );
 
         Object[][] iPadLegacyPermutations = TestUtils.generatePermutations(
@@ -78,7 +78,7 @@ public class IOSTest {
                         "iPad Air 2 Simulator"}), // device
                 Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
                 Arrays.asList(new Object[]{"10.0"}), // OS Version
-                Arrays.asList(new Object[]{false/*, true*/}) // fully
+                Arrays.asList(new Object[]{false, true}) // fully
         );
 
         ArrayList<Object[]> returnValue = new ArrayList<>();
