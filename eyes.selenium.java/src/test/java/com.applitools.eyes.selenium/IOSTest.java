@@ -43,7 +43,7 @@ public class IOSTest {
 
         Object[][] iPhonePermutations = TestUtils.generatePermutations(
                 Arrays.asList(new Object[]{"iPhone 7 Simulator", "iPhone 6 Plus Simulator"}), // device
-                Arrays.asList(new Object[]{"portrait"/*, "landscape"*/}), // orientation
+                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
                 Arrays.asList(new Object[]{"10.0", "11.0"}), // OS Version
                 Arrays.asList(new Object[]{false/*, true*/}) // fully
         );
