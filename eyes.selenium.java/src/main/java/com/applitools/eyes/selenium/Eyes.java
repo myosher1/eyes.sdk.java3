@@ -637,7 +637,7 @@ public class Eyes extends EyesBase {
 
     public void check(ICheckSettings... checkSettings) {
         if (getIsDisabled()) {
-            logger.log(String.format("check(%s): Ignored", checkSettings));
+            logger.log(String.format("check(ICheckSettings[%d]): Ignored", checkSettings.length));
             return;
         }
 
@@ -720,10 +720,13 @@ public class Eyes extends EyesBase {
         ((EyesTargetLocator) driver.switchTo()).frames(this.originalFC);
     }
 
-    private List<EyesScreenshot> getSubScreenshots(Region bbox, EyesScreenshot screenshot, GetRegion getRegion) {
+    private List<EyesScreenshot> getSubScreenshots(Region bBox, EyesScreenshot screenshot, GetRegion getRegion) {
         List<EyesScreenshot> subScreenshots = new ArrayList<>();
         for (Region r : getRegion.getRegions(this, screenshot)) {
-            r = r.offset(-bbox.getLeft(), -bbox.getTop());
+            r = r.offset(-bBox.getLeft(), -bBox.getTop());
+            logger.verbose("original sub-region: " + r);
+            r = regionPositionCompensation.compensateRegionPosition(r, devicePixelRatio);
+            logger.verbose("sub-region after compensation: " + r);
             EyesScreenshot subScreenshot = screenshot.getSubScreenshot(r, false);
             subScreenshots.add(subScreenshot);
         }
@@ -2116,6 +2119,10 @@ public class Eyes extends EyesBase {
     @Override
     protected EyesScreenshot getSubScreenshot(EyesScreenshot screenshot, Region region, ICheckSettingsInternal checkSettingsInternal) {
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettingsInternal instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettingsInternal : null;
+
+        logger.verbose("original region: " + region);
+        region = regionPositionCompensation.compensateRegionPosition(region, devicePixelRatio);
+        logger.verbose("compensated region: " + region);
 
         if (seleniumCheckTarget == null) {
             // we should't get here, but just in case
