@@ -12,6 +12,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -23,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class IOSTest {
 
     private static BatchInfo batchInfo = new BatchInfo("Java3 Tests");
+    private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
 
     @BeforeClass
     public static void classSetup() {
@@ -97,7 +99,6 @@ public class IOSTest {
 
         eyes.setBatch(batchInfo);
 
-        // This is your api key, make sure you use it in all your tests.
         DesiredCapabilities caps = DesiredCapabilities.iphone();
 
         caps.setCapability("appiumVersion", "1.7.2");
@@ -110,21 +111,21 @@ public class IOSTest {
         caps.setCapability("username", System.getenv("SAUCE_USERNAME"));
         caps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
 
-        caps.setCapability("name", deviceName + " " + platformVersion + " " + deviceOrientation);
-
-        String sauceUrl = "http://ondemand.saucelabs.com/wd/hub";
-        WebDriver driver = new RemoteWebDriver(new URL(sauceUrl), caps);
-        driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
-
         String testName = String.format("%s %s %s", deviceName, platformVersion, deviceOrientation);
         if (fully) {
             testName += " fully";
         }
 
+        caps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
+
+        String sauceUrl = "http://ondemand.saucelabs.com/wd/hub";
+        WebDriver driver = new RemoteWebDriver(new URL(sauceUrl), caps);
+        driver.manage().timeouts().implicitlyWait(3, TimeUnit.SECONDS);
+
         if (System.getenv("CI") == null) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd HH_mm_ss_SSS");
-            String logPath = String.format("c:\\temp\\logs\\java\\IOSTest %s %s", testName, dateFormat.format(Calendar.getInstance().getTime()));
-            String logFilename = logPath + "\\log.log";
+            String logPath = logsPath + File.separator + "java" + File.separator + String.format("IOSTest %s %s", testName, dateFormat.format(Calendar.getInstance().getTime()));
+            String logFilename = logPath + File.separator + "log.log";
             eyes.setLogHandler(new FileLogger(logFilename, false, true));
             eyes.setSaveDebugScreenshots(true);
             eyes.setDebugScreenshotsPath(logPath);
