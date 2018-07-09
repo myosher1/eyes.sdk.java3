@@ -48,16 +48,18 @@ public class RestClient {
     public static Client buildRestClient(int timeout,
                                           ProxySettings proxySettings) {
 
-        URLConnectionClientHandler ch  = new URLConnectionClientHandler(new ConnectionFactory(proxySettings));
-
         // Creating the client configuration
         ClientConfig cc = new DefaultClientConfig();
         cc.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, timeout);
         cc.getProperties().put(ClientConfig.PROPERTY_READ_TIMEOUT, timeout);
 
-        // We ignore the proxy settings
-
-        return new Client(ch, cc);
+        if (proxySettings != null) {
+            URLConnectionClientHandler ch = new URLConnectionClientHandler(new ConnectionFactory(proxySettings));
+            return new Client(ch, cc);
+        } else {
+            // We ignore the proxy settings
+            return Client.create(cc);
+        }
     }
 
     /***
