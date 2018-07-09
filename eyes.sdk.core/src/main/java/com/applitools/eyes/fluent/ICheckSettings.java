@@ -16,12 +16,26 @@ public interface ICheckSettings {
     ICheckSettings ignore(Region region, Region... regions);
 
     /**
+     * Adds one or more ignore regions.
+     * @param regions An array of regions to ignore when validating the screenshot.
+     * @return An updated clone of this settings object.
+     */
+    ICheckSettings ignore(Region[] regions);
+
+    /**
      * Adds one or more layout regions.
      * @param region A region to match using the Layout method.
      * @param regions Optional extra regions to match using the Layout method.
      * @return An updated clone of this settings object.
      */
     ICheckSettings layout(Region region, Region... regions);
+
+    /**
+     * Adds one or more layout regions.
+     * @param regions An array of regions to match using the Layout method.
+     * @return An updated clone of this settings object.
+     */
+    ICheckSettings layout(Region[] regions);
 
     /**
      * Adds one or more strict regions.
@@ -32,12 +46,26 @@ public interface ICheckSettings {
     ICheckSettings strict(Region region, Region... regions);
 
     /**
+     * Adds one or more strict regions.
+     * @param regions An array of regions to match using the Strict method.
+     * @return An updated clone of this settings object.
+     */
+    ICheckSettings strict(Region[] regions);
+
+    /**
      * Adds one or more content regions.
      * @param region A region to match using the Content method.
      * @param regions Optional extra regions to match using the Content method.
      * @return An updated clone of this settings object.
      */
     ICheckSettings content(Region region, Region... regions);
+
+    /**
+     * Adds one or more content regions.
+     * @param regions An array of regions to match using the Content method.
+     * @return An updated clone of this settings object.
+     */
+    ICheckSettings content(Region[] regions);
 
     /**
      * Defines that the screenshot will contain the entire element or region, even if it's outside the view.
