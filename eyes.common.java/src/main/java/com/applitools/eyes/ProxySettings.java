@@ -42,7 +42,7 @@ public class ProxySettings {
      * @param password The password to be sent to the proxy.
      */
     public ProxySettings(String uri, String username, String password) {
-        this(uri, 80, username, password);
+        this(uri, 8888, username, password);
     }
 
     /**
