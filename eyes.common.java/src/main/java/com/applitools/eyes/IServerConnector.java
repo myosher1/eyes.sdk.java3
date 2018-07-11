@@ -5,7 +5,7 @@ import java.net.URI;
 /**
  * Defines the interface which should be implemented by a ServerConnector.
  */
-public interface ServerConnector {
+public interface IServerConnector {
     void setApiKey(String apiKey);
     String getApiKey();
 

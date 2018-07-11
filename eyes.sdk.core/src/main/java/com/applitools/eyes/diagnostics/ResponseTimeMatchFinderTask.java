@@ -10,7 +10,7 @@ import com.applitools.utils.BlockingInstanceContainer;
 public class ResponseTimeMatchFinderTask implements Runnable {
 
     private final long matchInterval;
-    private final ServerConnector serverConnector;
+    private final IServerConnector serverConnector;
     private final RunningSession runningSession;
     private final BlockingInstanceContainer<MatchWindowDataWithScreenshot>
             matchDataContainer;
@@ -31,7 +31,7 @@ public class ResponseTimeMatchFinderTask implements Runnable {
     public ResponseTimeMatchFinderTask(
             BlockingInstanceContainer<MatchWindowDataWithScreenshot>
                     matchDataContainer,
-            long matchInterval, ServerConnector serverConnector,
+            long matchInterval, IServerConnector serverConnector,
             RunningSession runningSession) {
 
         this.matchDataContainer = matchDataContainer;

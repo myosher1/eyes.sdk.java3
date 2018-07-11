@@ -7,6 +7,7 @@ import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
+
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
@@ -16,34 +17,32 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.TimeZone;
 
 /**
  * Provides an API for communication with the Applitools agent
  */
-public class Jersey2xServerConnector extends RestClient
-        implements ServerConnector {
+public class ServerConnector extends RestClient
+        implements IServerConnector {
 
     private static final int TIMEOUT = 1000 * 60 * 5; // 5 Minutes
     private static final String API_PATH = "/api/sessions/running";
     private static final String DEFAULT_CHARSET_NAME = "UTF-8";
 
-    protected String sdkName;
     private String apiKey = null;
 
     /***
      *
      * @param logger A logger instance.
-     * @param sdkName An identifier for the current agent. Can be any string.
      * @param serverUrl The URI of the Eyes server.
      */
-    public Jersey2xServerConnector(Logger logger, String sdkName,
-                                   URI serverUrl) {
+    public ServerConnector(Logger logger, URI serverUrl) {
         super(logger, serverUrl, TIMEOUT);
 
-        this.sdkName = sdkName;
         endPoint = endPoint.path(API_PATH);
-
     }
 
     /**

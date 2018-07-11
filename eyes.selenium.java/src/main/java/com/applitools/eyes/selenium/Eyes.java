@@ -125,13 +125,10 @@ public class Eyes extends EyesBase {
     }
 
     /**
-     * Creates a new (possibly disabled) Eyes instance that interacts with the
-     * Eyes Server at the specified url.
-     * @param serverUrl The Eyes server URL.
+     * Creates a new Eyes instance that interacts with the Eyes cloud
+     * service.
      */
-    public Eyes(URI serverUrl) {
-        super(serverUrl);
-
+    public Eyes() {
         checkFrameOrElement = false;
         forceFullPageScreenshot = false;
         dontGetTitle = false;
@@ -141,14 +138,6 @@ public class Eyes extends EyesBase {
         waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
         regionVisibilityStrategyHandler = new SimplePropertyHandler<>();
         regionVisibilityStrategyHandler.set(new MoveToRegionVisibilityStrategy(logger));
-    }
-
-    /**
-     * Creates a new Eyes instance that interacts with the Eyes cloud
-     * service.
-     */
-    public Eyes() {
-        this(getDefaultServerUrl());
     }
 
     @Override

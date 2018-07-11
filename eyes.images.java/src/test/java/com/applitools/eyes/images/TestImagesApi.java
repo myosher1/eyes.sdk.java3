@@ -27,6 +27,8 @@ public class TestImagesApi {
 
         eyes.setBatch(batchInfo);
 
+        //eyes.setProxy(new ProxySettings("localhost", 8888));
+
         String testName = method.getName();
         eyes.open(TEST_SUITE_NAME, testName);
 

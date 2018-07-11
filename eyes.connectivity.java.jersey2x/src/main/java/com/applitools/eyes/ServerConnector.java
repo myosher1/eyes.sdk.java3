@@ -6,45 +6,38 @@ package com.applitools.eyes;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-
+import org.apache.commons.codec.binary.Base64;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import javax.xml.bind.DatatypeConverter;
+import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * Provides an API for communication with the Applitools agent
  */
-public class Jersey1xServerConnector extends RestClient
-        implements ServerConnector {
+public class ServerConnector extends RestClient
+        implements IServerConnector {
 
     private static final int TIMEOUT = 1000 * 60 * 5; // 5 Minutes
     private static final String API_PATH = "/api/sessions/running";
     private static final String DEFAULT_CHARSET_NAME = "UTF-8";
 
-    protected String sdkName;
     private String apiKey = null;
 
     /***
+     *
      * @param logger A logger instance.
-     * @param sdkName An identifier for the current agent. Can be any string.
      * @param serverUrl The URI of the Eyes server.
      */
-    public Jersey1xServerConnector(Logger logger, String sdkName,
-                                   URI serverUrl) {
+    public ServerConnector(Logger logger, URI serverUrl) {
         super(logger, serverUrl, TIMEOUT);
-
-        this.sdkName = sdkName;
         endPoint = endPoint.path(API_PATH);
-
     }
 
     /**
@@ -124,7 +117,7 @@ public class Jersey1xServerConnector extends RestClient
         ArgumentGuard.notNull(sessionStartInfo, "sessionStartInfo");
 
         String postData;
-        ClientResponse response;
+        Response response;
         int statusCode;
         List<Integer> validStatusCodes;
         boolean isNewSession;
@@ -145,25 +138,24 @@ public class Jersey1xServerConnector extends RestClient
 
         try {
             response = endPoint.queryParam("apiKey", getApiKey()).
-                    accept(MediaType.APPLICATION_JSON).
-                    entity(postData, MediaType.APPLICATION_JSON_TYPE).
-                    post(ClientResponse.class);
+                    request(MediaType.APPLICATION_JSON).
+                    post(Entity.json(postData));
         } catch (RuntimeException e) {
-            logger.log("startSession(): Server request failed: " + e.getMessage());
+            logger.log("Server request failed: " + e.getMessage());
             throw e;
         }
 
         // Ok, let's create the running session from the response
         validStatusCodes = new ArrayList<>();
-        validStatusCodes.add(ClientResponse.Status.OK.getStatusCode());
-        validStatusCodes.add(ClientResponse.Status.CREATED.getStatusCode());
+        validStatusCodes.add(Response.Status.OK.getStatusCode());
+        validStatusCodes.add(Response.Status.CREATED.getStatusCode());
 
         runningSession = parseResponseWithJsonData(response, validStatusCodes,
                 RunningSession.class);
 
         // If this is a new session, we set this flag.
         statusCode = response.getStatus();
-        isNewSession = (statusCode == ClientResponse.Status.CREATED.getStatusCode());
+        isNewSession = (statusCode == Response.Status.CREATED.getStatusCode());
         runningSession.setIsNewSession(isNewSession);
 
         return runningSession;
@@ -184,27 +176,27 @@ public class Jersey1xServerConnector extends RestClient
         ArgumentGuard.notNull(runningSession, "runningSession");
 
         final String sessionId = runningSession.getId();
-        ClientResponse response;
+        Response response;
         List<Integer> validStatusCodes;
         TestResults result;
 
         HttpMethodCall delete = new HttpMethodCall() {
-            public ClientResponse call() {
+            public Response call() {
 
                 String currentTime = GeneralUtils.toRfc1123(
                         Calendar.getInstance(TimeZone.getTimeZone("UTC")));
 
                 // Building the request
-                WebResource.Builder builder = endPoint.path(sessionId)
+                Invocation.Builder invocationBuilder = endPoint.path(sessionId)
                         .queryParam("apiKey", getApiKey())
                         .queryParam("aborted", String.valueOf(isAborted))
                         .queryParam("updateBaseline", String.valueOf(save))
-                        .accept(MediaType.APPLICATION_JSON)
+                        .request(MediaType.APPLICATION_JSON)
                         .header("Eyes-Expect", "202-accepted")
                         .header("Eyes-Date", currentTime);
 
                 // Actually perform the method call and return the result
-                return builder.delete(ClientResponse.class);
+                return invocationBuilder.delete();
             }
         };
 
@@ -212,11 +204,27 @@ public class Jersey1xServerConnector extends RestClient
 
         // Ok, let's create the running session from the response
         validStatusCodes = new ArrayList<>();
-        validStatusCodes.add(ClientResponse.Status.OK.getStatusCode());
+        validStatusCodes.add(Response.Status.OK.getStatusCode());
 
         result = parseResponseWithJsonData(response, validStatusCodes,
                 TestResults.class);
         return result;
+    }
+
+    @Override
+    public void deleteSession(TestResults testResults) {
+        ArgumentGuard.notNull(testResults, "testResults");
+
+        Invocation.Builder invocationBuilder = restClient.target(serverUrl)
+                .path("/api/sessions/batches/")
+                .path(testResults.getBatchId())
+                .path("/")
+                .path(testResults.getId())
+                .queryParam("apiKey", getApiKey())
+                .queryParam("AccessToken", testResults.getSecretToken())
+                .request(MediaType.APPLICATION_JSON);
+
+        Response response = invocationBuilder.delete();
     }
 
     /**
@@ -236,13 +244,13 @@ public class Jersey1xServerConnector extends RestClient
         ArgumentGuard.notNull(runningSession, "runningSession");
         ArgumentGuard.notNull(matchData, "data");
 
-        ClientResponse response;
+        Response response;
         List<Integer> validStatusCodes;
         MatchResult result;
         String jsonData;
 
         // since we rather not add an empty "tag" param
-        WebResource runningSessionsEndpoint =
+        WebTarget runningSessionsEndpoint =
                 endPoint.path(runningSession.getId());
 
         // Serializing data into JSON (we'll treat it as binary later).
@@ -252,7 +260,7 @@ public class Jersey1xServerConnector extends RestClient
             jsonData = jsonMapper.writeValueAsString(matchData);
         } catch (IOException e) {
             throw new EyesException("Failed to serialize data for matchWindow!",
-                    e);
+                                    e);
         }
 
         // Convert the JSON to binary.
@@ -269,7 +277,7 @@ public class Jersey1xServerConnector extends RestClient
 
         // Getting the screenshot's bytes (notice this can be either
         // compressed/uncompressed form).
-        byte[] screenshot = DatatypeConverter.parseBase64Binary(
+        byte[] screenshot = Base64.decodeBase64(
                 matchData.getAppOutput().getScreenshot64());
 
         // Ok, let's create the request data
@@ -294,13 +302,13 @@ public class Jersey1xServerConnector extends RestClient
 
         // Sending the request
         response = runningSessionsEndpoint.queryParam("apiKey", getApiKey()).
-                accept(MediaType.APPLICATION_JSON).
-                entity(requestData, MediaType.APPLICATION_OCTET_STREAM_TYPE).
-                post(ClientResponse.class);
+                request(MediaType.APPLICATION_JSON).
+                post(Entity.entity(requestData,
+                        MediaType.APPLICATION_OCTET_STREAM));
 
         // Ok, let's create the running session from the response
         validStatusCodes = new ArrayList<>(1);
-        validStatusCodes.add(ClientResponse.Status.OK.getStatusCode());
+        validStatusCodes.add(Response.Status.OK.getStatusCode());
 
         result = parseResponseWithJsonData(response, validStatusCodes,
                 MatchResult.class);

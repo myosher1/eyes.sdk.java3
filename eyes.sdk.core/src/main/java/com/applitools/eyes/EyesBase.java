@@ -43,7 +43,7 @@ public abstract class EyesBase {
 
     private MatchWindowTask matchWindowTask;
 
-    protected ServerConnector serverConnector;
+    protected IServerConnector serverConnector;
     protected RunningSession runningSession;
     private SessionStartInfo sessionStartInfo;
     protected PropertyHandler<RectangleSize> viewportSizeHandler;
@@ -97,28 +97,12 @@ public abstract class EyesBase {
     private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
     private int validationId;
 
-    /**
-     * Creates a new {@code EyesBase}instance that interacts with the Eyes
-     * Server at the specified url.
-     * @param serverUrl The Eyes server URL.
-     */
-    public EyesBase(String serverUrl) throws URISyntaxException {
-        this(new URI(serverUrl));
-    }
-
-    /**
-     * Creates a new {@code EyesBase}instance that interacts with the Eyes
-     * Server at the specified url.
-     * @param serverUrl The Eyes server URL.
-     */
-    public EyesBase(URI serverUrl) {
+    public EyesBase() {
 
         if (isDisabled) {
             userInputs = null;
             return;
         }
-
-        ArgumentGuard.notNull(serverUrl, "serverUrl");
 
         logger = new Logger();
 
@@ -128,7 +112,6 @@ public abstract class EyesBase {
 
         initProviders();
 
-        serverConnector = ServerConnectorFactory.create(logger, getBaseAgentId(), serverUrl);
         matchTimeout = DEFAULT_MATCH_TIMEOUT;
         runningSession = null;
         defaultMatchSettings = new ImageMatchSettings();
@@ -205,12 +188,24 @@ public abstract class EyesBase {
     }
 
     /**
+     * Sets the server connector to use. MUST BE SET IN ORDER FOR THE EYES OBJECT TO WORK!
+     * @param serverConnector The server connector object to use.
+     */
+    public void setServerConnector(IServerConnector serverConnector) {
+        ArgumentGuard.notNull(serverConnector, "serverConnector");
+        this.serverConnector = serverConnector;
+    }
+
+    /**
      * Sets the API key of your applitools Eyes account.
      * @param apiKey The api key to set.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void setApiKey(String apiKey) {
         ArgumentGuard.notNull(apiKey, "apiKey");
+        if (serverConnector == null) {
+            throw new EyesException("server connector not set.");
+        }
         serverConnector.setApiKey(apiKey);
     }
 
@@ -218,6 +213,9 @@ public abstract class EyesBase {
      * @return The currently set API key or {@code null} if no key is set.
      */
     public String getApiKey() {
+        if (serverConnector == null) {
+            throw new EyesException("server connector not set.");
+        }
         return serverConnector.getApiKey();
     }
 
@@ -237,6 +235,9 @@ public abstract class EyesBase {
      *                  the default server.
      */
     public void setServerUrl(URI serverUrl) {
+        if (serverConnector == null) {
+            throw new EyesException("server connector not set.");
+        }
         if (serverUrl == null) {
             serverConnector.setServerUrl(getDefaultServerUrl());
         } else {
@@ -248,6 +249,9 @@ public abstract class EyesBase {
      * @return The URI of the eyes server.
      */
     public URI getServerUrl() {
+        if (serverConnector == null) {
+            throw new EyesException("server connector not set.");
+        }
         return serverConnector.getServerUrl();
     }
 
@@ -257,6 +261,9 @@ public abstract class EyesBase {
      *                      If {@code null} then no proxy is set.
      */
     public void setProxy(ProxySettings proxySettings) {
+        if (serverConnector == null) {
+            throw new EyesException("server connector not set.");
+        }
         serverConnector.setProxy(proxySettings);
     }
 
@@ -265,6 +272,9 @@ public abstract class EyesBase {
      * or {@code null} if no proxy is set.
      */
     public ProxySettings getProxy() {
+        if (serverConnector == null) {
+            throw new EyesException("server connector not set.");
+        }
         return serverConnector.getProxy();
     }
 
@@ -1148,7 +1158,7 @@ public abstract class EyesBase {
         return result;
     }
 
-    protected ValidationInfo fireValidationWillStartEvent(String tag){
+    protected ValidationInfo fireValidationWillStartEvent(String tag) {
         String autSessionId = getAUTSessionId();
 
         ValidationInfo validationInfo = new ValidationInfo();
@@ -1318,6 +1328,10 @@ public abstract class EyesBase {
      */
     protected void openBase(String appName, String testName,
                             RectangleSize viewportSize, SessionType sessionType) {
+
+        if (serverConnector == null) {
+            throw new EyesException("server connector not set.");
+        }
 
         logger.getLogHandler().open();
 
@@ -1611,7 +1625,9 @@ public abstract class EyesBase {
      */
     protected void startSession() {
         logger.verbose("startSession()");
-
+        if (serverConnector == null) {
+            throw new EyesException("server connector not set.");
+        }
         ensureViewportSize();
 
         BatchInfo testBatch;
@@ -1757,7 +1773,7 @@ public abstract class EyesBase {
         this.sessionEventHandlers.removeEventHandler(eventHandler);
     }
 
-    public void clearSessionEventHandlers(){
+    public void clearSessionEventHandlers() {
         this.sessionEventHandlers.clearEventHandlers();
     }
 

@@ -24,23 +24,6 @@ public class Eyes extends EyesBase {
     private String inferred;
 
     /**
-     * Creates a new (possibly disabled) Eyes instance that interacts
-     * with the Eyes Server at the specified url.
-     * @param serverUrl The Eyes server URL.
-     */
-    public Eyes(URI serverUrl) {
-        super(serverUrl);
-    }
-
-    /**
-     * Creates a new Eyes instance that interacts with the Eyes Server at the
-     * specified url.
-     */
-    public Eyes() {
-        this(getDefaultServerUrl());
-    }
-
-    /**
      * Get the base agent id.
      * @return Base agent id.
      */

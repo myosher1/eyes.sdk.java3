@@ -20,7 +20,7 @@ public class MatchWindowTask {
     private static final int MATCH_INTERVAL = 500; // Milliseconds
 
     private final Logger logger;
-    private final ServerConnector serverConnector;
+    private final IServerConnector serverConnector;
     private final RunningSession runningSession;
     private final int defaultRetryTimeout;
     private final AppOutputProvider appOutputProvider;
@@ -36,7 +36,7 @@ public class MatchWindowTask {
      * @param retryTimeout      The default total time to retry matching (ms).
      * @param appOutputProvider A callback for getting the application output when performing match.
      */
-    public MatchWindowTask(Logger logger, ServerConnector serverConnector,
+    public MatchWindowTask(Logger logger, IServerConnector serverConnector,
                            RunningSession runningSession, int retryTimeout,
                            AppOutputProvider appOutputProvider) {
         ArgumentGuard.notNull(serverConnector, "serverConnector");
@@ -57,7 +57,7 @@ public class MatchWindowTask {
      * @param runningSession    The running session in which we should match the window
      * @param retryTimeout      The default total time to retry matching (ms).
      */
-    public MatchWindowTask(Logger logger, ServerConnector serverConnector,
+    public MatchWindowTask(Logger logger, IServerConnector serverConnector,
                            RunningSession runningSession, int retryTimeout) {
         ArgumentGuard.notNull(serverConnector, "serverConnector");
         ArgumentGuard.notNull(runningSession, "runningSession");

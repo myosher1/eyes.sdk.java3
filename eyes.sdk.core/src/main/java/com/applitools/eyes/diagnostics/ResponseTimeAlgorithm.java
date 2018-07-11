@@ -88,7 +88,7 @@ public class ResponseTimeAlgorithm {
      * @param deadline The expected time by which the application should have been loaded. (Seconds)
      */
     public static void runNewProgressionSession(Logger logger,
-                                                ServerConnector serverConnector, RunningSession runningSession,
+                                                IServerConnector serverConnector, RunningSession runningSession,
                                                 AppOutputProvider appOutputProvider, RegionProvider regionProvider,
                                                 long startTime, int deadline) {
         logger.verbose("New progression session detected.");
@@ -152,7 +152,7 @@ public class ResponseTimeAlgorithm {
      * @return The result of the initial search.
      */
     private static ResponseTimeInitialMatchSearchResult
-    responseTimeInitialMatchSearch (Logger logger, ServerConnector
+    responseTimeInitialMatchSearch (Logger logger, IServerConnector
             serverConnector, RunningSession runningSession, AppOutputProvider
             appOutputProvider, RegionProvider regionProvider, long startTime,
             int deadline, int timeout, long matchInterval,
@@ -367,7 +367,7 @@ public class ResponseTimeAlgorithm {
      * @return The index of earliest match found.
      */
     private static int binarySearchEarliestMatch(Logger logger,
-            ServerConnector serverConnector, RunningSession runningSession,
+            IServerConnector serverConnector, RunningSession runningSession,
             List<MatchWindowDataWithScreenshot> dataToSearch, int fromIndex,
             int toIndex, int earliestMatchIndex) {
 
@@ -438,7 +438,7 @@ public class ResponseTimeAlgorithm {
      * @return The index of earliest match found.
      */
     private static int findEarliestMatchIndex(Logger logger,
-            ServerConnector serverConnector, RunningSession runningSession,
+            IServerConnector serverConnector, RunningSession runningSession,
             List<MatchWindowDataWithScreenshot> collectedData,
             MatchWindowDataWithScreenshot theMatch,
             MatchWindowDataWithScreenshot lastNonMatch) {
@@ -554,7 +554,7 @@ public class ResponseTimeAlgorithm {
      * @param theMatchIndex The index of the match within {@code collectedData},
      *                      or {@code -1} if no match was found.
      */
-    private static void setProgressionImages(Logger logger, ServerConnector
+    private static void setProgressionImages(Logger logger, IServerConnector
         serverConnector, RunningSession runningSession,
         List<MatchWindowDataWithScreenshot> collectedData, int theMatchIndex) {
 
@@ -659,7 +659,7 @@ public class ResponseTimeAlgorithm {
      * @return The earliest match found, or {@code null} if no match is found.
      */
     public static MatchWindowDataWithScreenshot
-    runProgressionSessionForExistingBaseline(Logger logger, ServerConnector
+    runProgressionSessionForExistingBaseline(Logger logger, IServerConnector
             serverConnector, RunningSession runningSession, AppOutputProvider
              appOutputProvider, RegionProvider regionProvider, long
             startTime, int deadline, int timeout, long matchInterval) {

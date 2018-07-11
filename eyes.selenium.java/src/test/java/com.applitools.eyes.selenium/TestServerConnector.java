@@ -1,6 +1,8 @@
 package com.applitools.eyes.selenium;
 
+import com.applitools.eyes.EyesBase;
 import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.ServerConnector;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.selenium.fluent.Target;
 import org.testng.annotations.Test;
@@ -13,8 +15,9 @@ import java.net.URI;
 public class TestServerConnector {
 
     @Test
-    public void TestDelete() throws MalformedURLException {
-        Eyes eyes = new Eyes(URI.create("https://localhost.applitools.com"));
+    public void TestDelete() {
+        Eyes eyes = new Eyes();
+        eyes.setServerConnector(new ServerConnector(eyes.getLogger(), EyesBase.getDefaultServerUrl()));
         WebDriver webDriver = new ChromeDriver();
         try {
             WebDriver driver = eyes.open(webDriver,

@@ -50,6 +50,7 @@ public abstract class TestSetup implements ITest {
 
         // Initialize the eyes SDK and set your private API key.
         eyes = new Eyes();
+        eyes.setServerConnector(new ServerConnector(eyes.getLogger(), EyesBase.getDefaultServerUrl()));
 
         RemoteSessionEventHandler remoteSessionEventHandler = new RemoteSessionEventHandler(
                 eyes.getLogger(), URI.create("http://localhost:3000/"), "MyAccessKey");
@@ -95,7 +96,7 @@ public abstract class TestSetup implements ITest {
         if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
             desiredCaps.setCapability("username", System.getenv("SAUCE_USERNAME"));
             desiredCaps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
-            desiredCaps.setCapability("seleniumVersion", "3.11.0");
+            //desiredCaps.setCapability("seleniumVersion", "3.11.0");
 
             if (caps.getBrowserName().equals("chrome")) {
                 desiredCaps.setCapability("chromedriverVersion", "2.37");
@@ -143,19 +144,23 @@ public abstract class TestSetup implements ITest {
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
         eyes.addProperty("ScaleRatio", "" + eyes.getScaleRatio());
         eyes.addProperty("Agent ID", eyes.getFullAgentId());
+        try {
+            driver = eyes.open(webDriver,
+                    testSuitName,
+                    testName,
+                    testedPageSize
+            );
 
-        driver = eyes.open(webDriver,
-                testSuitName,
-                testName,
-                testedPageSize
-        );
+            driver.get(testedPageUrl);
 
-        driver.get(testedPageUrl);
+            eyes.setForceFullPageScreenshot(forceFPS);
 
-        eyes.setForceFullPageScreenshot(forceFPS);
-
-        this.expectedIgnoreRegions.clear();
-        this.expectedFloatingRegions.clear();
+            this.expectedIgnoreRegions.clear();
+            this.expectedFloatingRegions.clear();
+        } catch (Exception ex) {
+            eyes.abortIfNotClosed();
+            webDriver.quit();
+        }
     }
 
     @Override

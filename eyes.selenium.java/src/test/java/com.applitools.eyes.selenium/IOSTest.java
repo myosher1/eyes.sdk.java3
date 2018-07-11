@@ -36,61 +36,63 @@ public class IOSTest {
 
     @DataProvider(parallel = true)
     public static Object[][] data() {
-        Object[][] iPhoneXPermutations = TestUtils.generatePermutations(
-                Arrays.asList(new Object[]{"iPhone X Simulator"}), // device
-                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
-                Arrays.asList(new Object[]{"11.2"}), // OS Version
-                Arrays.asList(new Object[]{false, true}) // fully
-        );
+//        Object[][] iPhoneXPermutations = TestUtils.generatePermutations(
+//                Arrays.asList(new Object[]{"iPhone X Simulator"}), // device
+//                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
+//                Arrays.asList(new Object[]{"11.2"}), // OS Version
+//                Arrays.asList(new Object[]{false, true}) // fully
+//        );
+//
+//        Object[][] iPhonePermutations = TestUtils.generatePermutations(
+//                Arrays.asList(new Object[]{"iPhone 7 Simulator", "iPhone 6 Plus Simulator"}), // device
+//                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
+//                Arrays.asList(new Object[]{"10.0", "11.0"}), // OS Version
+//                Arrays.asList(new Object[]{false, true}) // fully
+//        );
+//
+//        Object[][] iPhone5Permutations = TestUtils.generatePermutations(
+//                Arrays.asList(new Object[]{"iPhone 5s Simulator"}), // device
+//                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
+//                Arrays.asList(new Object[]{"10.0"}), // OS Version
+//                Arrays.asList(new Object[]{false, true}) // fully
+//        );
+//
+//        Object[][] iPadPermutations = TestUtils.generatePermutations(
+//                Arrays.asList(new Object[]{
+//                        "iPad Simulator",
+//                        "iPad Pro (9.7 inch) Simulator",
+//                        "iPad Pro (12.9 inch) Simulator",
+//                        "iPad Pro (12.9 inch) (2nd generation) Simulator",
+//                        "iPad Pro (10.5 inch) Simulator",
+//                        "iPad (5th generation) Simulator",
+//                        "iPad Air Simulator",
+//                        "iPad Air 2 Simulator"}), // device
+//                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
+//                Arrays.asList(new Object[]{"11.0"}), // OS Version
+//                Arrays.asList(new Object[]{false, true}) // fully
+//        );
+//
+//        Object[][] iPadLegacyPermutations = TestUtils.generatePermutations(
+//                Arrays.asList(new Object[]{
+//                        "iPad Simulator",
+//                        "iPad Pro (9.7 inch) Simulator",
+//                        "iPad Air Simulator",
+//                        "iPad Air 2 Simulator"}), // device
+//                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
+//                Arrays.asList(new Object[]{"10.0"}), // OS Version
+//                Arrays.asList(new Object[]{false, true}) // fully
+//        );
+//
+//        ArrayList<Object[]> returnValue = new ArrayList<>();
+//        returnValue.addAll(Arrays.asList(iPhoneXPermutations));
+//        returnValue.addAll(Arrays.asList(iPhonePermutations));
+//        returnValue.addAll(Arrays.asList(iPhone5Permutations));
+//        returnValue.addAll(Arrays.asList(iPadPermutations));
+//        returnValue.addAll(Arrays.asList(iPadLegacyPermutations));
 
-        Object[][] iPhonePermutations = TestUtils.generatePermutations(
-                Arrays.asList(new Object[]{"iPhone 7 Simulator", "iPhone 6 Plus Simulator"}), // device
-                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
-                Arrays.asList(new Object[]{"10.0", "11.0"}), // OS Version
-                Arrays.asList(new Object[]{false, true}) // fully
-        );
 
-        Object[][] iPhone5Permutations = TestUtils.generatePermutations(
-                Arrays.asList(new Object[]{"iPhone 5s Simulator"}), // device
-                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
-                Arrays.asList(new Object[]{"10.0"}), // OS Version
-                Arrays.asList(new Object[]{false, true}) // fully
-        );
-
-        Object[][] iPadPermutations = TestUtils.generatePermutations(
-                Arrays.asList(new Object[]{
-                        "iPad Simulator",
-                        "iPad Pro (9.7 inch) Simulator",
-                        "iPad Pro (12.9 inch) Simulator",
-                        "iPad Pro (12.9 inch) (2nd generation) Simulator",
-                        "iPad Pro (10.5 inch) Simulator",
-                        "iPad (5th generation) Simulator",
-                        "iPad Air Simulator",
-                        "iPad Air 2 Simulator"}), // device
-                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
-                Arrays.asList(new Object[]{"11.0"}), // OS Version
-                Arrays.asList(new Object[]{false, true}) // fully
-        );
-
-        Object[][] iPadLegacyPermutations = TestUtils.generatePermutations(
-                Arrays.asList(new Object[]{
-                        "iPad Simulator",
-                        "iPad Pro (9.7 inch) Simulator",
-                        "iPad Air Simulator",
-                        "iPad Air 2 Simulator"}), // device
-                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
-                Arrays.asList(new Object[]{"10.0"}), // OS Version
-                Arrays.asList(new Object[]{false, true}) // fully
-        );
-
-        ArrayList<Object[]> returnValue = new ArrayList<>();
-        returnValue.addAll(Arrays.asList(iPhoneXPermutations));
-        returnValue.addAll(Arrays.asList(iPhonePermutations));
-        returnValue.addAll(Arrays.asList(iPhone5Permutations));
-        returnValue.addAll(Arrays.asList(iPadPermutations));
-        returnValue.addAll(Arrays.asList(iPadLegacyPermutations));
-
-        return returnValue.toArray(new Object[0][]);
+        //return returnValue.toArray(new Object[0][]);
+        return new Object[][]{{"iPhone 5s Simulator", "landscape", "10.0", true}};
     }
 
     @Test(dataProvider = "data")
