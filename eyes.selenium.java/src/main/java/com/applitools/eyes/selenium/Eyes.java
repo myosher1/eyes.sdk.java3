@@ -624,6 +624,10 @@ public class Eyes extends EyesBase {
                 viewportSize);
     }
 
+    /**
+     * Takes multiple screenshots at once (given all <code>ICheckSettings</code> objects are on the same level).
+     * @param checkSettings Multiple <code>ICheckSettings</code> object representing different regions in the viewport.
+     */
     public void check(ICheckSettings... checkSettings) {
         if (getIsDisabled()) {
             logger.log(String.format("check(ICheckSettings[%d]): Ignored", checkSettings.length));
@@ -1163,6 +1167,7 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegion(WebElement, String)}.
      * {@code tag} defaults to {@code null}.
+     * @param element      The element which represents the region to check.
      */
     public void checkRegion(WebElement element) {
         check(null, Target.region(element));
@@ -1172,6 +1177,8 @@ public class Eyes extends EyesBase {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(WebElement)}, otherwise
      * behaves the same as {@link #checkElement(WebElement)}.
+     * @param element      The element which represents the region to check.
+     * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(WebElement element, boolean stitchContent) {
         check(null, Target.region(element).fully(stitchContent));
@@ -1180,6 +1187,8 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegion(WebElement, int, String)}.
      * Default match timeout is used.
+     * @param element      The element which represents the region to check.
+     * @param tag          An optional tag to be associated with the snapshot.
      */
     public void checkRegion(WebElement element, String tag) {
         check(tag, Target.region(element));
@@ -1189,6 +1198,9 @@ public class Eyes extends EyesBase {
      * if {@code stitchContent} is {@code false} then behaves the same {@link
      * #checkRegion(WebElement, String)}. Otherwise
      * behaves the same as {@link #checkElement(WebElement, String)}.
+     * @param element      The element which represents the region to check.
+     * @param tag          An optional tag to be associated with the snapshot.
+     * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(WebElement element, String tag, boolean stitchContent) {
         check(tag, Target.region(element).fully(stitchContent));
@@ -1212,6 +1224,10 @@ public class Eyes extends EyesBase {
      * if {@code stitchContent} is {@code false} then behaves the same {@link
      * #checkRegion(WebElement, int, String)}. Otherwise
      * behaves the same as {@link #checkElement(WebElement, String)}.
+     * @param element      The element which represents the region to check.
+     * @param matchTimeout The amount of time to retry matching. (Milliseconds)
+     * @param tag          An optional tag to be associated with the snapshot.
+     * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(WebElement element, int matchTimeout, String tag, boolean stitchContent) {
         check(tag, Target.region(element).timeout(matchTimeout).fully(stitchContent));
@@ -1220,6 +1236,7 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegion(By, String)}.
      * {@code tag} defaults to {@code null}.
+     * @param selector The selector by which to specify which region to check.
      */
     public void checkRegion(By selector) {
         check(null, Target.region(selector));
@@ -1229,6 +1246,8 @@ public class Eyes extends EyesBase {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(By)}. Otherwise, behaves the
      * same as {@code #checkElement(org.openqa.selenium.By)}
+     * @param selector      The selector by which to specify which region to check.
+     * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(By selector, boolean stitchContent) {
         check(null, Target.region(selector).fully(stitchContent));
@@ -1237,6 +1256,8 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegion(By, int, String)}.
      * Default match timeout is used.
+     * @param selector The selector by which to specify which region to check.
+     * @param tag      An optional tag to be associated with the screenshot.
      */
     public void checkRegion(By selector, String tag) {
         check(tag, Target.region(selector));
@@ -1246,6 +1267,9 @@ public class Eyes extends EyesBase {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(By, String)}. Otherwise,
      * behaves the same as {@link #checkElement(By, String)}.
+     * @param selector      The selector by which to specify which region to check.
+     * @param tag           An optional tag to be associated with the screenshot.
+     * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(By selector, String tag, boolean stitchContent) {
         check(tag, Target.region(selector).fully(stitchContent));
@@ -1254,7 +1278,7 @@ public class Eyes extends EyesBase {
     /**
      * Takes a snapshot of the application under test and matches a region
      * specified by the given selector with the expected region output.
-     * @param selector     Selects the region to check.
+     * @param selector     The selector by which to specify which region to check.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the screenshot.
      * @throws TestFailedException if a mismatch is detected and
@@ -1268,6 +1292,10 @@ public class Eyes extends EyesBase {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(By, int, String)}. Otherwise,
      * behaves the same as {@link #checkElement(By, int, String)}.
+     * @param selector      The selector by which to specify which region to check.
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
+     * @param tag           An optional tag to be associated with the screenshot.
+     * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(By selector, int matchTimeout, String tag, boolean stitchContent) {
         check(tag, Target.region(selector).timeout(matchTimeout).fully(stitchContent));
@@ -1276,6 +1304,10 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(int, By, String)}.
      * {@code tag} defaults to {@code null}.
+     * @param frameIndex    The index of the frame to switch to. (The same index
+     *                      as would be used in a call to
+     *                      driver.switchTo().frame()).
+     * @param selector      The selector by which to specify which region to check inside the frame.
      */
     public void checkRegionInFrame(int frameIndex, By selector) {
         checkRegionInFrame(frameIndex, selector, false);
@@ -1284,6 +1316,14 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(int, By, String)}.
      * {@code tag} defaults to {@code null}.
+     * @param frameIndex    The index of the frame to switch to. (The same index
+     *                      as would be used in a call to
+     *                      driver.switchTo().frame()).
+     * @param selector      The selector by which to specify which region to check inside the frame.
+     * @param stitchContent If {@code true}, stitch the internal content of
+     *                      the region (i.e., perform
+     *                      {@link #checkElement(By, int, String)} on the
+     *                      region.
      */
     public void checkRegionInFrame(int frameIndex, By selector, boolean stitchContent) {
         checkRegionInFrame(frameIndex, selector, null, stitchContent);
@@ -1292,6 +1332,11 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(int, By, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
+     * @param frameIndex    The index of the frame to switch to. (The same index
+     *                      as would be used in a call to
+     *                      driver.switchTo().frame()).
+     * @param selector      The selector by which to specify which region to check inside the frame.
+     * @param tag           An optional tag to be associated with the screenshot.
      */
     public void checkRegionInFrame(int frameIndex, By selector, String tag) {
         checkRegionInFrame(frameIndex, selector, tag, false);
@@ -1300,6 +1345,15 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * Default match timeout is used.
+     * @param frameIndex    The index of the frame to switch to. (The same index
+     *                      as would be used in a call to
+     *                      driver.switchTo().frame()).
+     * @param selector      The selector by which to specify which region to check inside the frame.
+     * @param tag           An optional tag to be associated with the screenshot.
+     * @param stitchContent If {@code true}, stitch the internal content of
+     *                      the region (i.e., perform
+     *                      {@link #checkElement(By, int, String)} on the
+     *                      region.
      */
     public void checkRegionInFrame(int frameIndex, By selector, String tag, boolean stitchContent) {
         checkRegionInFrame(frameIndex, selector, USE_DEFAULT_MATCH_TIMEOUT,
@@ -1309,6 +1363,12 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
+     * @param frameIndex    The index of the frame to switch to. (The same index
+     *                      as would be used in a call to
+     *                      driver.switchTo().frame()).
+     * @param selector      The selector by which to specify which region to check inside the frame.
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
+     * @param tag           An optional tag to be associated with the screenshot.
      */
     public void checkRegionInFrame(int frameIndex, By selector, int matchTimeout, String tag) {
         checkRegionInFrame(frameIndex, selector, matchTimeout, tag, false);
@@ -1337,6 +1397,9 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
+     * @param frameNameOrId The name or id of the frame to switch to. (as would
+     *                      be used in a call to driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector) {
         checkRegionInFrame(frameNameOrId, selector, false);
@@ -1345,6 +1408,13 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code tag} defaults to {@code null}.
+     * @param frameNameOrId The name or id of the frame to switch to. (as would
+     *                      be used in a call to driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check.
+     * @param stitchContent If {@code true}, stitch the internal content of
+     *                      the region (i.e., perform
+     *                      {@link #checkElement(By, int, String)} on the
+     *                      region.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector, boolean stitchContent) {
         checkRegionInFrame(frameNameOrId, selector, null, stitchContent);
@@ -1353,6 +1423,10 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
+     * @param frameNameOrId The name or id of the frame to switch to. (as would
+     *                      be used in a call to driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check.
+     * @param tag           An optional tag to be associated with the snapshot.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    String tag) {
@@ -1363,6 +1437,14 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * Default match timeout is used
+     * @param frameNameOrId The name or id of the frame to switch to. (as would
+     *                      be used in a call to driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check.
+     * @param tag           An optional tag to be associated with the snapshot.
+     * @param stitchContent If {@code true}, stitch the internal content of
+     *                      the region (i.e., perform
+     *                      {@link #checkElement(By, int, String)} on the
+     *                      region.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    String tag, boolean stitchContent) {
@@ -1373,6 +1455,11 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
+     * @param frameNameOrId The name or id of the frame to switch to. (as would
+     *                      be used in a call to driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check inside the frame.
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
+     * @param tag           An optional tag to be associated with the snapshot.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    int matchTimeout, String tag) {
@@ -1384,7 +1471,7 @@ public class Eyes extends EyesBase {
      * test and matches a region specified by the given selector.
      * @param frameNameOrId The name or id of the frame to switch to. (as would
      *                      be used in a call to driver.switchTo().frame()).
-     * @param selector      A Selector specifying the region to check.
+     * @param selector      A Selector specifying the region to check inside the frame.
      * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the snapshot.
      * @param stitchContent If {@code true}, stitch the internal content of
@@ -1400,6 +1487,10 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
+     * @param frameReference The element which is the frame to switch to. (as
+     *                       would be used in a call to
+     *                       driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check inside the frame.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector) {
         checkRegionInFrame(frameReference, selector, false);
@@ -1408,6 +1499,14 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code tag} defaults to {@code null}.
+     * @param frameReference The element which is the frame to switch to. (as
+     *                       would be used in a call to
+     *                       driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check inside the frame.
+     * @param stitchContent If {@code true}, stitch the internal content of
+     *                      the region (i.e., perform
+     *                      {@link #checkElement(By, int, String)} on the
+     *                      region.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector, boolean stitchContent) {
         checkRegionInFrame(frameReference, selector, null, stitchContent);
@@ -1416,6 +1515,11 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
+     * @param frameReference The element which is the frame to switch to. (as
+     *                       would be used in a call to
+     *                       driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check inside the frame.
+     * @param tag            An optional tag to be associated with the snapshot.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector, String tag) {
         checkRegionInFrame(frameReference, selector, tag, false);
@@ -1424,6 +1528,15 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, int, String, boolean)}.
      * Default match timeout is used.
+     * @param frameReference The element which is the frame to switch to. (as
+     *                       would be used in a call to
+     *                       driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check inside the frame.
+     * @param tag            An optional tag to be associated with the snapshot.
+     * @param stitchContent If {@code true}, stitch the internal content of
+     *                      the region (i.e., perform
+     *                      {@link #checkElement(By, int, String)} on the
+     *                      region.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector,
                                    String tag, boolean stitchContent) {
@@ -1434,6 +1547,12 @@ public class Eyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
+     * @param frameReference The element which is the frame to switch to. (as
+     *                       would be used in a call to
+     *                       driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check inside the frame.
+     * @param matchTimeout   The amount of time to retry matching. (Milliseconds)
+     * @param tag            An optional tag to be associated with the snapshot.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector,
                                    int matchTimeout, String tag) {
@@ -1447,8 +1566,7 @@ public class Eyes extends EyesBase {
      *                       would be used in a call to
      *                       driver.switchTo().frame()).
      * @param selector       A Selector specifying the region to check.
-     * @param matchTimeout   The amount of time to retry matching.
-     *                       (Milliseconds)
+     * @param matchTimeout   The amount of time to retry matching. (Milliseconds)
      * @param tag            An optional tag to be associated with the snapshot.
      * @param stitchContent  If {@code true}, stitch the internal content of
      *                       the region (i.e., perform
