@@ -9,9 +9,6 @@ import org.testng.annotations.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-
 public class TestServerConnector {
 
     @Test
