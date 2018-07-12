@@ -41,6 +41,24 @@ public class ServerConnector extends RestClient
         endPoint = endPoint.path(API_PATH);
     }
 
+    /***
+     * @param logger A logger instance.
+     */
+    public ServerConnector(Logger logger) {
+        this(logger, GeneralUtils.getDefaultServerUrl());
+    }
+
+    /***
+     * @param serverUrl The URI of the Eyes server.
+     */
+    public ServerConnector(URI serverUrl) {
+        this(null, serverUrl);
+    }
+
+    public ServerConnector(){
+        this((Logger)null);
+    }
+
     /**
      * Sets the API key of your applitools Eyes account.
      *

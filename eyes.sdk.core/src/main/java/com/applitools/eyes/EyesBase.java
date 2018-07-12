@@ -193,6 +193,9 @@ public abstract class EyesBase {
      */
     public void setServerConnector(IServerConnector serverConnector) {
         ArgumentGuard.notNull(serverConnector, "serverConnector");
+        if (serverConnector.getLogger() == null) {
+            serverConnector.setLogger(this.logger);
+        }
         this.serverConnector = serverConnector;
     }
 

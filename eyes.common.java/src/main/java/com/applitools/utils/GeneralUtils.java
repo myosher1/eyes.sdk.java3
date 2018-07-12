@@ -4,6 +4,8 @@ import com.applitools.eyes.EyesException;
 import com.applitools.eyes.Logger;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -227,5 +229,13 @@ public class GeneralUtils {
 
     public static void initLogger(Logger logger) {
         GeneralUtils.logger = logger;
+    }
+
+    public static URI getDefaultServerUrl() {
+        try {
+            return new URI("https://eyesapi.applitools.com");
+        } catch (URISyntaxException ex) {
+            throw new EyesException(ex.getMessage(), ex);
+        }
     }
 }

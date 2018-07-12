@@ -50,7 +50,7 @@ public abstract class TestSetup implements ITest {
 
         // Initialize the eyes SDK and set your private API key.
         eyes = new Eyes();
-        eyes.setServerConnector(new ServerConnector(eyes.getLogger(), EyesBase.getDefaultServerUrl()));
+        eyes.setServerConnector(new ServerConnector());
 
         RemoteSessionEventHandler remoteSessionEventHandler = new RemoteSessionEventHandler(
                 eyes.getLogger(), URI.create("http://localhost:3000/"), "MyAccessKey");

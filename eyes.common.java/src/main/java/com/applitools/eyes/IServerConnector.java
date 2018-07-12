@@ -12,6 +12,10 @@ public interface IServerConnector {
     void setServerUrl(URI serverUrl);
     URI getServerUrl();
 
+    void setLogger(Logger logger);
+    Logger getLogger();
+
+
     void setProxy(ProxySettings proxySettings);
     ProxySettings getProxy();
 
