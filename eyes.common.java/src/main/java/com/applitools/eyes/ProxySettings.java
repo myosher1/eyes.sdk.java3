@@ -51,7 +51,7 @@ public class ProxySettings {
      */
     @SuppressWarnings("UnusedDeclaration")
     public ProxySettings(String uri) {
-        this(uri, 80, null, null);
+        this(uri, 8888, null, null);
     }
 
     public String getUri() {
