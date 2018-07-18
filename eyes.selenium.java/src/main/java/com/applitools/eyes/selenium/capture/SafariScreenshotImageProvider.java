@@ -136,7 +136,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
         devicesRegions.put(new DeviceData(2224, 1668, 1112, 764, 11), new Region(0, 141, 2224, 1527));
     }
 
-    private static class DeviceData {
+    private class DeviceData {
         private int width;
         private int height;
         private int vpWidth;
