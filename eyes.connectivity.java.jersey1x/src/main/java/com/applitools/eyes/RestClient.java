@@ -9,7 +9,6 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.ClientFilter;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 
 import java.io.IOException;
@@ -56,7 +55,7 @@ public class RestClient {
 
         if (proxySettings != null) {
 
-            ClientFilter authFilter = new HTTPBasicAuthFilter(proxySettings.getUsername(), proxySettings.getPassword());
+            ClientFilter authFilter = new HTTPProxyBasicAuthFilter(proxySettings.getUsername(), proxySettings.getPassword());
             URLConnectionClientHandler ch = new URLConnectionClientHandler(new ConnectionFactory(proxySettings));
             Client client = new Client(ch, cc);
             client.addFilter(authFilter);
