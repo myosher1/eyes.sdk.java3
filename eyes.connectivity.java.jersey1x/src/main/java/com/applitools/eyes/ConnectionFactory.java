@@ -10,8 +10,8 @@ import com.sun.jersey.client.urlconnection.HttpURLConnectionFactory;
 
 public class ConnectionFactory implements HttpURLConnectionFactory {
 
-    Proxy proxy;
-    ProxySettings proxySettings;
+    private Proxy proxy;
+    private ProxySettings proxySettings;
 
     public ConnectionFactory(ProxySettings proxySettings) {
         this.proxySettings = proxySettings;

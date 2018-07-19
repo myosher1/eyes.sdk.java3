@@ -8,6 +8,8 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.ClientFilter;
+import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 
 import java.io.IOException;
@@ -41,12 +43,11 @@ public class RestClient {
     protected ObjectMapper jsonMapper;
 
     /**
-     *
-     * @param timeout Connect/Read timeout in milliseconds. 0 equals infinity.
+     * @param timeout       Connect/Read timeout in milliseconds. 0 equals infinity.
      * @param proxySettings (optional) Setting for communicating via proxy.
      */
     public static Client buildRestClient(int timeout,
-                                          ProxySettings proxySettings) {
+                                         ProxySettings proxySettings) {
 
         // Creating the client configuration
         ClientConfig cc = new DefaultClientConfig();
@@ -54,8 +55,12 @@ public class RestClient {
         cc.getProperties().put(ClientConfig.PROPERTY_READ_TIMEOUT, timeout);
 
         if (proxySettings != null) {
+
+            ClientFilter authFilter = new HTTPBasicAuthFilter(proxySettings.getUsername(), proxySettings.getPassword());
             URLConnectionClientHandler ch = new URLConnectionClientHandler(new ConnectionFactory(proxySettings));
-            return new Client(ch, cc);
+            Client client = new Client(ch, cc);
+            client.addFilter(authFilter);
+            return client;
         } else {
             // We ignore the proxy settings
             return Client.create(cc);
@@ -97,7 +102,7 @@ public class RestClient {
     /**
      * Sets the proxy settings to be used by the rest client.
      * @param proxySettings The proxy settings to be used by the rest client.
-     * If {@code null} then no proxy is set.
+     *                      If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void setProxyBase(ProxySettings proxySettings) {
@@ -108,7 +113,6 @@ public class RestClient {
     }
 
     /**
-     *
      * @return The current proxy settings used by the rest client,
      * or {@code null} if no proxy is set.
      */
@@ -119,7 +123,6 @@ public class RestClient {
 
     /**
      * Sets the connect and read timeouts for web requests.
-     *
      * @param timeout Connect/Read timeout in milliseconds. 0 equals infinity.
      */
     public void setTimeout(int timeout) {
@@ -131,7 +134,6 @@ public class RestClient {
     }
 
     /**
-     *
      * @return The timeout for web requests (in seconds).
      */
     public int getTimeout() {
@@ -152,7 +154,6 @@ public class RestClient {
     }
 
     /**
-     *
      * @return The URI of the eyes server.
      */
     protected URI getServerUrlBase() {
@@ -194,9 +195,8 @@ public class RestClient {
 
     /**
      * Builds an error message which includes the response data.
-     *
-     * @param errMsg The error message.
-     * @param statusCode The response status code.
+     * @param errMsg       The error message.
+     * @param statusCode   The response status code.
      * @param statusPhrase The response status phrase.
      * @param responseBody The response body.
      * @return An error message which includes the response data.
@@ -224,18 +224,17 @@ public class RestClient {
      * 1. Verify that we are able to read response data.
      * 2. verify that the status code is valid
      * 3. Parse the response data from JSON to the relevant type.
-     *
-     * @param response The response to parse.
+     * @param response             The response to parse.
      * @param validHttpStatusCodes The list of acceptable status codes.
-     * @param resultType The class object of the type of result this response
-     *                   should be parsed to.
-     * @param <T> The return value type.
+     * @param resultType           The class object of the type of result this response
+     *                             should be parsed to.
+     * @param <T>                  The return value type.
      * @return The parse response of the type given in {@code resultType}.
      * @throws EyesException For invalid status codes or if the response
-     * parsing failed.
+     *                       parsing failed.
      */
     protected <T> T parseResponseWithJsonData(ClientResponse response,
-        List<Integer> validHttpStatusCodes, Class<T> resultType)
+                                              List<Integer> validHttpStatusCodes, Class<T> resultType)
             throws EyesException {
         ArgumentGuard.notNull(response, "response");
         ArgumentGuard.notNull(validHttpStatusCodes, "validHttpStatusCodes");
