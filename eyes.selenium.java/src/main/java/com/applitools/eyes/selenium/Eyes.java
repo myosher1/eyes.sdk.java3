@@ -833,13 +833,13 @@ public class Eyes extends EyesBase {
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
         String name = checkSettingsInternal.getName();
 
+        logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
+
         ValidationInfo validationInfo = this.fireValidationWillStartEvent(name);
 
         if (!EyesSeleniumUtils.isMobileDevice(driver)) {
             logger.verbose("URL: " + driver.getCurrentUrl());
         }
-
-        logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
 
         this.stitchContent = checkSettingsInternal.getStitchContent();
 
