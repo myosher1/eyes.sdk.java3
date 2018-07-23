@@ -137,7 +137,6 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
                         .request(MediaType.APPLICATION_JSON);
                 // since the web API requires a root property for this message
                 ObjectMapper jsonMapper = new ObjectMapper();
-                jsonMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
                 String testResultJson;
                 try {
                     testResultJson = jsonMapper.writeValueAsString(testResults);
