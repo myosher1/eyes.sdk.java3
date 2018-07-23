@@ -17,12 +17,14 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
     private String autSessionId;
 
     private static final String SERVER_SUFFIX = "/applitools/sessions";
-    private final WebTarget defaultEndPoint;
+    private final String accessKey;
+    private WebTarget defaultEndPoint;
     private boolean throwExceptions = true;
 
     @SuppressWarnings("WeakerAccess")
     public RemoteSessionEventHandler(Logger logger, URI serverUrl, String accessKey, int timeout) {
         super(logger, serverUrl, timeout);
+        this.accessKey = accessKey;
         this.defaultEndPoint = endPoint.queryParam("accessKey", accessKey).path(SERVER_SUFFIX);
     }
 
@@ -36,6 +38,11 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
 
     public RemoteSessionEventHandler(URI serverUrl, String accessKey) {
         this(new Logger(), serverUrl, accessKey);
+    }
+
+    public void setProxy(ProxySettings proxySettings){
+        setProxyBase(proxySettings);
+        this.defaultEndPoint = endPoint.queryParam("accessKey", accessKey).path(SERVER_SUFFIX);
     }
 
     private void sendMessage(HttpMethodCall method) {
