@@ -2167,7 +2167,7 @@ public class Eyes extends EyesBase {
         try {
             return switchTo.frames(frames);
         } catch (WebDriverException e) {
-            logger.log("WARNING: Failed to swtich to original frame chain! " + e.getMessage());
+            logger.log("WARNING: Failed to switch to original frame chain! " + e.getMessage());
             return driver;
         }
     }
