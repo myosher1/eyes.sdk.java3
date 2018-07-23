@@ -44,6 +44,7 @@ public class ServerConnector extends RestClient
     /***
      * @param logger A logger instance.
      */
+    @SuppressWarnings("WeakerAccess")
     public ServerConnector(Logger logger) {
         this(logger, GeneralUtils.getDefaultServerUrl());
     }

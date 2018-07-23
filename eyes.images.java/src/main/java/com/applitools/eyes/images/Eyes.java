@@ -65,27 +65,26 @@ public class Eyes extends EyesBase {
         return checkImage_(NullRegionProvider.INSTANCE, image, name, false, checkSettings);
     }
 
-    @Deprecated
     /**
      * Superseded by {@link #checkImage(java.awt.image.BufferedImage)}.
      */
+    @Deprecated
     public boolean checkWindow(BufferedImage image) {
         return checkImage(image);
     }
 
-    @Deprecated
-    /**
-     * Superseded by {@link #checkImage(java.awt.image.BufferedImage, String)}.
+    /** Superseded by {@link #checkImage(java.awt.image.BufferedImage, String)}.
      */
+    @Deprecated
     public boolean checkWindow(BufferedImage image, String tag) {
         return checkImage(image, tag);
     }
 
-    @Deprecated
     /**
      * Superseded by {@link #checkImage(java.awt.image.BufferedImage, String,
      * boolean)}.
      */
+    @Deprecated
     public boolean checkWindow(BufferedImage image, String tag,
                                boolean ignoreMismatch) {
         return checkImage(image, tag, ignoreMismatch);

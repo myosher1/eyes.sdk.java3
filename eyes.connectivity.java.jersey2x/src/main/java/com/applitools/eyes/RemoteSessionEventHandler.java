@@ -20,6 +20,7 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
     private final WebTarget defaultEndPoint;
     private boolean throwExceptions = true;
 
+    @SuppressWarnings("WeakerAccess")
     public RemoteSessionEventHandler(Logger logger, URI serverUrl, String accessKey, int timeout) {
         super(logger, serverUrl, timeout);
         this.defaultEndPoint = endPoint.queryParam("accessKey", accessKey).path(SERVER_SUFFIX);

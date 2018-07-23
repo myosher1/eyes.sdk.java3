@@ -239,8 +239,7 @@ public class RestClient {
 
         T resultObject;
         int statusCode = response.getStatus();
-        String statusPhrase =
-                response.getClientResponseStatus().getReasonPhrase();
+        String statusPhrase =  ClientResponse.Status.fromStatusCode(statusCode).getReasonPhrase();
         String data = response.getEntity(String.class);
         response.close();
         // Validate the status code.
