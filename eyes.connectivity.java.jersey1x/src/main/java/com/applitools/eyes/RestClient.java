@@ -9,8 +9,12 @@ import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.ClientFilter;
+import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
 import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 
+import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -49,16 +53,32 @@ public class RestClient {
                                          ProxySettings proxySettings) {
 
         // Creating the client configuration
-        ClientConfig cc = new DefaultClientConfig();
-        cc.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, timeout);
-        cc.getProperties().put(ClientConfig.PROPERTY_READ_TIMEOUT, timeout);
+        ApacheHttpClient4Config cc = new DefaultApacheHttpClient4Config();
+        cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_CONNECT_TIMEOUT, timeout);
+        cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_READ_TIMEOUT, timeout);
 
         if (proxySettings != null) {
+            URI uri = URI.create(proxySettings.getUri());
+            UriBuilder uriBuilder = UriBuilder.fromUri(uri);
+            boolean changed = false;
+            if (uri.getScheme() == null && uri.getHost() == null && uri.getPath() != null) {
+                uriBuilder.scheme("http");
+                uriBuilder.host(uri.getPath());
+                uriBuilder.replacePath(null);
+                changed = true;
+            }
+            if (uri.getPort() != proxySettings.getPort()) {
+                uriBuilder.port(proxySettings.getPort());
+                changed = true;
+            }
+            if (changed) {
+                uri = uriBuilder.build();
+            }
+            cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_URI, uri);
+            cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_USERNAME, proxySettings.getUsername());
+            cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_PASSWORD, proxySettings.getPassword());
 
-            ClientFilter authFilter = new HTTPProxyBasicAuthFilter(proxySettings.getUsername(), proxySettings.getPassword());
-            URLConnectionClientHandler ch = new URLConnectionClientHandler(new ConnectionFactory(proxySettings));
-            Client client = new Client(ch, cc);
-            client.addFilter(authFilter);
+            ApacheHttpClient4 client = ApacheHttpClient4.create(cc);
             return client;
         } else {
             // We ignore the proxy settings
