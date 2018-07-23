@@ -315,8 +315,11 @@ public class Eyes extends EyesBase {
 
         openBase(appName, testName, viewportSize, sessionType);
 
-        String uaString = this.driver.getUserAgent();
+        String uaString = sessionStartInfo.getEnvironment().getInferred();
         if (uaString != null) {
+            if (uaString.startsWith("useragent:")) {
+                uaString = uaString.substring(10);
+            }
             userAgent = UserAgent.ParseUserAgentString(uaString, true);
         }
 

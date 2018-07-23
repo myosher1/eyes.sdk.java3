@@ -45,7 +45,7 @@ public abstract class EyesBase {
 
     protected IServerConnector serverConnector;
     protected RunningSession runningSession;
-    private SessionStartInfo sessionStartInfo;
+    protected SessionStartInfo sessionStartInfo;
     protected PropertyHandler<RectangleSize> viewportSizeHandler;
     protected EyesScreenshot lastScreenshot;
     protected PropertyHandler<ScaleProvider> scaleProviderHandler;
@@ -1366,6 +1366,8 @@ public abstract class EyesBase {
 
             this.isViewportSizeSet = false;
 
+            sessionEventHandlers.initStarted();
+
             beforeOpen();
 
             this.currentAppName = appName != null ? appName : this.appName;
@@ -1642,7 +1644,6 @@ public abstract class EyesBase {
             testBatch = batch;
         }
 
-        sessionEventHandlers.initStarted();
 
         AppEnvironment appEnv = getAppEnvironment();
 
