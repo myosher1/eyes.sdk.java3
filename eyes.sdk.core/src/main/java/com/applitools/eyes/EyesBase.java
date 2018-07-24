@@ -112,6 +112,8 @@ public abstract class EyesBase {
 
         initProviders();
 
+        setServerConnector(new ServerConnector());
+
         matchTimeout = DEFAULT_MATCH_TIMEOUT;
         runningSession = null;
         defaultMatchSettings = new ImageMatchSettings();

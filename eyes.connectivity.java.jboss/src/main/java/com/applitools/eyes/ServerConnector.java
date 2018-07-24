@@ -138,6 +138,8 @@ public class ServerConnector extends RestClient
 
         ArgumentGuard.notNull(sessionStartInfo, "sessionStartInfo");
 
+        logger.verbose("Using JBoss for REST API calls.");
+
         String postData;
         Response response;
         int statusCode;

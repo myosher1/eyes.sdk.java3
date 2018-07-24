@@ -136,6 +136,8 @@ public class ServerConnector extends RestClient
 
         ArgumentGuard.notNull(sessionStartInfo, "sessionStartInfo");
 
+        logger.verbose("Using Jersey1 for REST API calls.");
+
         String postData;
         ClientResponse response;
         int statusCode;

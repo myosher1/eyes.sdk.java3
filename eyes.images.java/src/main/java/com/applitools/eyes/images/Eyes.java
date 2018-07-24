@@ -4,6 +4,8 @@
 package com.applitools.eyes.images;
 
 import com.applitools.eyes.*;
+import com.applitools.eyes.events.ValidationInfo;
+import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.CheckSettings;
 import com.applitools.eyes.fluent.ICheckSettings;
@@ -374,8 +376,15 @@ public class Eyes extends EyesBase {
         // Set the title to be linked to the screenshot.
         title = (tag != null) ? tag : "";
 
-        MatchResult mr = checkWindowBase(regionProvider, tag, ignoreMismatch, checkSettings);
+        ValidationInfo validationInfo = this.fireValidationWillStartEvent(tag);
 
-        return mr.getAsExpected();
+        MatchResult result = checkWindowBase(regionProvider, tag, ignoreMismatch, checkSettings);
+
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.setAsExpected(result.getAsExpected());
+
+        getSessionEventHandlers().validationEnded(getAUTSessionId(), validationInfo.getValidationId(), validationResult);
+
+        return result.getAsExpected();
     }
 }
