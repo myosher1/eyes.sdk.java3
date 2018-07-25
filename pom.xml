@@ -75,6 +75,7 @@
         <module>eyes.sdk.core</module>
         <module>eyes.images.java</module>
         <module>eyes.selenium.java</module>
+        <module>eyes.sdk.distribution</module>
     </modules>
 
     <distributionManagement>
@@ -164,6 +165,16 @@
                             <serverId>ossrh</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/assembly/bin.xml</descriptor>
+                            </descriptors>
                         </configuration>
                     </plugin>
                 </plugins>
