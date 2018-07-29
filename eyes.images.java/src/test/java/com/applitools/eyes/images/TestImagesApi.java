@@ -26,6 +26,7 @@ public class TestImagesApi {
         eyes.setLogHandler(logHandler);
 
         eyes.setBatch(batchInfo);
+        eyes.setAgentId("My Custom Agent ID");
 
         //eyes.setProxy(new ProxySettings("localhost", 8888));
 

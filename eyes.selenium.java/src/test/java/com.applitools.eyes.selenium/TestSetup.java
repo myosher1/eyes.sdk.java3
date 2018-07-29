@@ -50,7 +50,7 @@ public abstract class TestSetup implements ITest {
 
         // Initialize the eyes SDK and set your private API key.
         eyes = new Eyes();
-        eyes.setServerConnector(new ServerConnector());
+        //eyes.setServerConnector(new ServerConnector());
 
         RemoteSessionEventHandler remoteSessionEventHandler = new RemoteSessionEventHandler(
                 eyes.getLogger(), URI.create("http://localhost:3000/"), "MyAccessKey");
@@ -141,6 +141,7 @@ public abstract class TestSetup implements ITest {
         }
 
         eyes.setLogHandler(logHandler);
+        eyes.clearProperties();
         eyes.addProperty("Selenium Session ID", webDriver.getSessionId().toString());
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
         eyes.addProperty("ScaleRatio", "" + eyes.getScaleRatio());
