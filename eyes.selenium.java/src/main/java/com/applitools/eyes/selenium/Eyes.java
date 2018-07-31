@@ -1892,22 +1892,25 @@ public class Eyes extends EyesBase {
             checkFrameOrElement = true;
 
             String displayStyle = eyesElement.getComputedStyle("display");
-            if (!displayStyle.equals("inline")) {
-                elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
-            } else {
-                elementPositionProvider = null;
-            }
 
             if (getConfig().getHideScrollbars()) {
                 originalOverflow = eyesElement.getOverflow();
                 eyesElement.setOverflow("hidden");
             }
 
-            int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
-            int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
-
             int elementWidth = eyesElement.getClientWidth();
             int elementHeight = eyesElement.getClientHeight();
+
+            if (!displayStyle.equals("inline") &&
+                    elementHeight <= effectiveViewport.getHeight() &&
+                    elementWidth <= effectiveViewport.getWidth()) {
+                elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
+            } else {
+                elementPositionProvider = null;
+            }
+
+            int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
+            int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
 
             final Region elementRegion = new Region(
                     pl.getX() + borderLeftWidth, pl.getY() + borderTopWidth,
