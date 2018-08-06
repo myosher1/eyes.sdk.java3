@@ -73,7 +73,7 @@ public class Eyes extends EyesBase {
     private static final int DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100;
 
     private EyesWebDriver driver;
-    private boolean dontGetTitle;
+    private boolean doNotGetTitle;
 
     private boolean checkFrameOrElement;
 
@@ -133,7 +133,7 @@ public class Eyes extends EyesBase {
      */
     public Eyes() {
         checkFrameOrElement = false;
-        dontGetTitle = false;
+        doNotGetTitle = false;
         devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
         regionVisibilityStrategyHandler = new SimplePropertyHandler<>();
         regionVisibilityStrategyHandler.set(new MoveToRegionVisibilityStrategy(logger));
@@ -701,7 +701,7 @@ public class Eyes extends EyesBase {
 
         FrameChain originalFC = tryHideScrollbars();
 
-        Region bbox = findBoundingBox(getRegions, checkSettings);
+        Region bBox = findBoundingBox(getRegions, checkSettings);
 
         MatchWindowTask mwt = new MatchWindowTask(logger, serverConnector, runningSession, getMatchTimeout(), this);
 
@@ -710,7 +710,7 @@ public class Eyes extends EyesBase {
 
         BufferedImage screenshotImage = algo.getStitchedRegion(
                 Region.EMPTY,
-                bbox, positionProvider);
+                bBox, positionProvider);
 
         debugScreenshotsProvider.save(screenshotImage, "original");
         EyesScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
@@ -719,7 +719,7 @@ public class Eyes extends EyesBase {
             if (((Hashtable<Integer, GetRegion>) getRegions).containsKey(i)) {
                 GetRegion getRegion = getRegions.get(i);
                 ICheckSettingsInternal checkSettingsInternal = checkSettingsInternalDictionary.get(i);
-                List<EyesScreenshot> subScreenshots = getSubScreenshots(bbox, screenshot, getRegion);
+                List<EyesScreenshot> subScreenshots = getSubScreenshots(bBox, screenshot, getRegion);
                 matchRegion(checkSettingsInternal, mwt, subScreenshots);
             }
         }
@@ -768,21 +768,21 @@ public class Eyes extends EyesBase {
     }
 
     private Region findBoundingBox(Dictionary<Integer, GetRegion> getRegions, ICheckSettings[] checkSettings, EyesScreenshot screenshot) {
-        Region bbox = null;
+        Region bBox = null;
         for (int i = 0; i < checkSettings.length; ++i) {
             GetRegion getRegion = getRegions.get(i);
             if (getRegion != null) {
                 List<Region> regions = getRegion.getRegions(this, screenshot);
                 for (Region region : regions) {
-                    if (bbox == null) {
-                        bbox = new Region(region);
+                    if (bBox == null) {
+                        bBox = new Region(region);
                     } else {
-                        bbox = bbox.expandToContain(region);
+                        bBox = bBox.expandToContain(region);
                     }
                 }
             }
         }
-        return bbox;
+        return bBox;
     }
 
     private WebElement getFrameElement(FrameLocator frameLocator) {
@@ -2356,12 +2356,12 @@ public class Eyes extends EyesBase {
 
     @Override
     protected String getTitle() {
-        if (!dontGetTitle) {
+        if (!doNotGetTitle) {
             try {
                 return driver.getTitle();
             } catch (Exception ex) {
                 logger.verbose("failed (" + ex.getMessage() + ")");
-                dontGetTitle = true;
+                doNotGetTitle = true;
             }
         }
 
