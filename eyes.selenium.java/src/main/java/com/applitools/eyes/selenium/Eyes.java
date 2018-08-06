@@ -51,10 +51,12 @@ import java.util.List;
 /**
  * The main API gateway for the SDK.
  */
+@SuppressWarnings("WeakerAccess")
 public class Eyes extends EyesBase {
 
     private FrameChain originalFC;
 
+    @SuppressWarnings("UnusedDeclaration")
     public interface WebDriverAction {
         void drive(WebDriver driver);
     }
@@ -1820,7 +1822,7 @@ public class Eyes extends EyesBase {
 
         SeleniumCheckSettings settings = Target.frame(framePath[0]);
         for (int i = 1; i < framePath.length; i++) {
-            settings.frame(framePath[i]);
+            settings = settings.frame(framePath[i]);
         }
         check(tag, settings.region(selector).timeout(matchTimeout).fully(stitchContent));
     }
@@ -1855,7 +1857,7 @@ public class Eyes extends EyesBase {
      * {@code tag} defaults to {@code null}.
      */
     public void checkElement(WebElement element) {
-        checkElement(element, null);
+        check(null, Target.region(element).fully());
     }
 
     /**
@@ -1863,7 +1865,7 @@ public class Eyes extends EyesBase {
      * Default match timeout is used.
      */
     public void checkElement(WebElement element, String tag) {
-        checkElement(element, USE_DEFAULT_MATCH_TIMEOUT, tag);
+        check(tag, Target.region(element).fully());
     }
 
     private MatchResult checkElement(String name, ICheckSettings checkSettings) {
@@ -1953,7 +1955,7 @@ public class Eyes extends EyesBase {
      * @throws TestFailedException if a mismatch is detected and immediate failure reports are enabled
      */
     public void checkElement(WebElement element, int matchTimeout, String tag) {
-        checkElement(element, tag, Target.region(element).timeout(matchTimeout));
+        check(tag, Target.region(element).timeout(matchTimeout).fully());
     }
 
     /**
@@ -1961,7 +1963,7 @@ public class Eyes extends EyesBase {
      * {@code tag} defaults to {@code null}.
      */
     public void checkElement(By selector) {
-        checkElement(selector, null);
+        check(null, Target.region(selector).fully());
     }
 
     /**
@@ -1969,7 +1971,7 @@ public class Eyes extends EyesBase {
      * Default match timeout is used.
      */
     public void checkElement(By selector, String tag) {
-        checkElement(selector, USE_DEFAULT_MATCH_TIMEOUT, tag);
+        check(tag, Target.region(selector).fully());
     }
 
     /**
@@ -1982,13 +1984,7 @@ public class Eyes extends EyesBase {
      *                             immediate failure reports are enabled
      */
     public void checkElement(By selector, int matchTimeout, String tag) {
-
-        if (getIsDisabled()) {
-            logger.log(String.format("CheckElement(selector, %d, '%s'): Ignored", matchTimeout, tag));
-            return;
-        }
-
-        checkElement(driver.findElement(selector), matchTimeout, tag);
+        check(tag, Target.region(selector).timeout(matchTimeout).fully());
     }
 
     /**
@@ -2178,16 +2174,14 @@ public class Eyes extends EyesBase {
         tryHideScrollbars();
     }
 
-
-    private WebDriver trySwitchToFrames(WebDriver driver, EyesTargetLocator switchTo, FrameChain frames) {
+    private void trySwitchToFrames(WebDriver driver, EyesTargetLocator switchTo, FrameChain frames) {
         if (EyesSeleniumUtils.isMobileDevice(driver)) {
-            return driver;
+            return;
         }
         try {
-            return switchTo.frames(frames);
+            switchTo.frames(frames);
         } catch (WebDriverException e) {
             logger.log("WARNING: Failed to switch to original frame chain! " + e.getMessage());
-            return driver;
         }
     }
 
@@ -2432,7 +2426,7 @@ public class Eyes extends EyesBase {
     /**
      * @return The currently set position provider.
      */
-    public PositionProvider getElementPositionProvider() {
+    private PositionProvider getElementPositionProvider() {
         return elementPositionProvider == null ? positionProvider : elementPositionProvider;
     }
 
