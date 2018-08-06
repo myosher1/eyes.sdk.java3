@@ -1189,7 +1189,7 @@ public abstract class EyesBase {
         self.logger.verbose("Calling match window...");
 
         result = self.matchWindowTask.matchWindow(self.getUserInputs(), regionProvider.getRegion(), tag,
-                self.shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, checkSettingsInternal, retryTimeout, self);
+                self.shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, checkSettingsInternal, retryTimeout);
 
         return result;
     }
@@ -1396,6 +1396,7 @@ public abstract class EyesBase {
                 serverConnector,
                 runningSession,
                 matchTimeout,
+                this,
                 // A callback which will call getAppOutput
                 new AppOutputProvider() {
                     @Override
@@ -1656,6 +1657,10 @@ public abstract class EyesBase {
             logger.log("--- Test started - " + testInfo);
             shouldMatchWindowRunOnceOnTimeout = false;
         }
+    }
+
+    protected Object getAgentSetup() {
+        return null;
     }
 
     private void ensureViewportSize() {

@@ -703,7 +703,7 @@ public class Eyes extends EyesBase {
 
         Region bbox = findBoundingBox(getRegions, checkSettings);
 
-        MatchWindowTask mwt = new MatchWindowTask(logger, serverConnector, runningSession, getMatchTimeout());
+        MatchWindowTask mwt = new MatchWindowTask(logger, serverConnector, runningSession, getMatchTimeout(), this);
 
         ScaleProviderFactory scaleProviderFactory = updateScalingParams();
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
@@ -748,7 +748,7 @@ public class Eyes extends EyesBase {
 
             debugScreenshotsProvider.save(subScreenshot.getImage(), String.format("subscreenshot_%s", name));
 
-            ImageMatchSettings ims = mwt.createImageMatchSettings(checkSettingsInternal, this, subScreenshot);
+            ImageMatchSettings ims = mwt.createImageMatchSettings(checkSettingsInternal, subScreenshot);
             AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()));
             AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, subScreenshot);
             MatchResult matchResult = mwt.performMatch(
@@ -2438,5 +2438,61 @@ public class Eyes extends EyesBase {
     @Override
     protected String getAUTSessionId() {
         return driver.getRemoteWebDriver().getSessionId().toString();
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    class EyesSeleniumAgentSetup {
+        class WebDriverInfo {
+            public String getName() {
+                return remoteWebDriver.getClass().getName();
+            }
+
+            public Capabilities getCapabilities() {
+                return remoteWebDriver.getCapabilities();
+            }
+        }
+
+        public EyesSeleniumAgentSetup() {
+            remoteWebDriver = driver.getRemoteWebDriver();
+        }
+
+        private RemoteWebDriver remoteWebDriver;
+
+        public String getSeleniumSessionId() {
+            return remoteWebDriver.getSessionId().toString();
+        }
+
+        public WebDriverInfo getWebDriver() {
+            return new WebDriverInfo();
+        }
+
+        public double getDevicePixelRatio() {
+            return Eyes.this.getDevicePixelRatio();
+        }
+
+        public String getCutProvider() {
+            return Eyes.this.cutProviderHandler.get().getClass().getName();
+        }
+
+        public String getScaleProvider() {
+            return Eyes.this.scaleProviderHandler.get().getClass().getName();
+        }
+
+        public StitchMode getStitchMode() {
+            return Eyes.this.getStitchMode();
+        }
+
+        public boolean getHideScrollbars() {
+            return Eyes.this.getHideScrollbars();
+        }
+
+        public boolean getForceFullPageScreenshot() {
+            return Eyes.this.getForceFullPageScreenshot();
+        }
+    }
+
+    @Override
+    protected Object getAgentSetup() {
+        return new EyesSeleniumAgentSetup();
     }
 }
