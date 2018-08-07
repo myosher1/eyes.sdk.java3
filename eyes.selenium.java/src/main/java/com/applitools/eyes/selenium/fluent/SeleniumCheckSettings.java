@@ -14,6 +14,8 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     private By targetSelector;
     private WebElement targetElement;
     private List<FrameLocator> frameChain = new ArrayList<>();
+    private WebElement scrollRootElement;
+    private By scrollRootSelector;
 
     SeleniumCheckSettings() {
     }
@@ -272,6 +274,34 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return clone;
     }
 
+    public SeleniumCheckSettings scrollRootElement(By selector)
+    {
+        SeleniumCheckSettings clone = this.clone();
+        if (frameChain.size() == 0)
+        {
+            clone.scrollRootSelector = selector;
+        }
+        else
+        {
+            frameChain.get(frameChain.size() - 1).setScrollRootSelector(selector);
+        }
+        return clone;
+    }
+
+    public SeleniumCheckSettings scrollRootElement(WebElement element)
+    {
+        SeleniumCheckSettings clone = this.clone();
+        if (frameChain.size() == 0)
+        {
+            clone.scrollRootElement = element;
+        }
+        else
+        {
+            frameChain.get(frameChain.size()- 1).setScrollRootElement(element);
+        }
+        return clone;
+    }
+
     @Override
     public SeleniumCheckSettings fully() {
         return (SeleniumCheckSettings) super.fully();
@@ -365,5 +395,15 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     @Override
     public SeleniumCheckSettings content(Region[] regions) {
         return (SeleniumCheckSettings) super.content(regions);
+    }
+
+    @Override
+    public WebElement getScrollRootElement() {
+        return scrollRootElement;
+    }
+
+    @Override
+    public By getScrollRootSelector() {
+        return scrollRootSelector;
     }
 }

@@ -110,7 +110,17 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
         this.screenshotType = updateScreenshotType(screenshotType, image);
 
-        PositionProvider positionProvider = driver.getEyes().getPositionProvider();
+        PositionProvider positionProvider;
+        Eyes eyes = driver.getEyes();
+        PositionProvider currentFramePositionProvider =eyes.getCurrentFramePositionProvider();
+        if (currentFramePositionProvider  != null)
+        {
+            positionProvider = currentFramePositionProvider;
+        }
+        else
+        {
+            positionProvider = eyes.getPositionProvider();
+        }
 
         frameChain = driver.getFrameChain();
         RectangleSize frameSize = getFrameSize(positionProvider);

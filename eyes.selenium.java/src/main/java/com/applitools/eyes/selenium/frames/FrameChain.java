@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Represents a path to a frame, including their location and scroll.
  */
-public class FrameChain implements Iterable<Frame>{
+public class FrameChain implements Iterable<Frame> {
     private final Logger logger;
     private List<Frame> frames;
 
@@ -28,6 +28,7 @@ public class FrameChain implements Iterable<Frame>{
      * @param c2 Frame chain to be compared against c1.
      * @return True if both frame chains represent the same frame, false otherwise.
      */
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isSameFrameChain(FrameChain c1, FrameChain c2) {
         int lc1 = c1.frames.size();
         int lc2 = c2.frames.size();
@@ -41,7 +42,7 @@ public class FrameChain implements Iterable<Frame>{
         Iterator<Frame> c2Iterator = c2.iterator();
 
         //noinspection ForLoopReplaceableByForEach
-        for(int i = 0; i<lc1; ++i) {
+        for (int i = 0; i < lc1; ++i) {
             if (!c1Iterator.next().getReference().equals(c2Iterator.next().getReference())) {
                 return false;
             }
@@ -63,7 +64,7 @@ public class FrameChain implements Iterable<Frame>{
     /**
      * Creates a frame chain which is a copy of the current frame.
      * @param logger A Logger instance.
-     * @param other A frame chain from which the current frame chain will be created.
+     * @param other  A frame chain from which the current frame chain will be created.
      */
     public FrameChain(Logger logger, FrameChain other) {
         ArgumentGuard.notNull(logger, "logger");
@@ -75,7 +76,6 @@ public class FrameChain implements Iterable<Frame>{
     }
 
     /**
-     *
      * @return The number of frames in the chain.
      */
     public int size() {
@@ -114,13 +114,12 @@ public class FrameChain implements Iterable<Frame>{
     }
 
     /**
-     *
      * @return The location of the current frame in the page.
      */
     public Location getCurrentFrameOffset() {
-        Location result = new Location(0 ,0);
+        Location result = new Location(0, 0);
 
-        for (Frame frame: frames) {
+        for (Frame frame : frames) {
             result = result.offset(frame.getLocation());
         }
 
@@ -128,7 +127,6 @@ public class FrameChain implements Iterable<Frame>{
     }
 
     /**
-     *
      * @return The outermost frame's location, or NoFramesException.
      */
     public Location getDefaultContentScrollPosition() {
@@ -139,18 +137,16 @@ public class FrameChain implements Iterable<Frame>{
     }
 
     /**
-     *
      * @return The size of the current frame.
      */
     public RectangleSize getCurrentFrameSize() {
         logger.verbose("getCurrentFrameSize()");
-        RectangleSize result = frames.get(frames.size()-1).getSize();
+        RectangleSize result = frames.get(frames.size() - 1).getOuterSize();
         logger.verbose("Done!");
         return result;
     }
 
     /**
-     *
      * @return The inner size of the current frame.
      */
     public RectangleSize getCurrentFrameInnerSize() {
@@ -161,13 +157,14 @@ public class FrameChain implements Iterable<Frame>{
     }
 
     /**
-     *
      * @return An iterator to go over the frames in the chain.
      */
+    @SuppressWarnings("NullableProblems")
     @Override
     public Iterator<Frame> iterator() {
         return new Iterator<Frame>() {
             Iterator<Frame> framesIterator = frames.iterator();
+
             public boolean hasNext() {
                 return framesIterator.hasNext();
             }
@@ -182,7 +179,8 @@ public class FrameChain implements Iterable<Frame>{
         };
     }
 
-    public FrameChain clone(){
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    public FrameChain clone() {
         return new FrameChain(this.logger, this);
     }
 }

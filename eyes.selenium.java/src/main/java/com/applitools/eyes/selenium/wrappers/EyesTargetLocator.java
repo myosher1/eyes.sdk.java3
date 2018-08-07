@@ -8,7 +8,9 @@ import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.positioning.PositionMemento;
+import com.applitools.eyes.selenium.Borders;
 import com.applitools.eyes.selenium.SeleniumJavaScriptExecutor;
+import com.applitools.eyes.selenium.SizeAndBorders;
 import com.applitools.eyes.selenium.frames.Frame;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
@@ -24,19 +26,23 @@ import java.util.List;
  */
 public class EyesTargetLocator implements WebDriver.TargetLocator {
 
-    private final Logger logger;
+    private static Logger logger = null;
     private final EyesWebDriver driver;
-    private final SeleniumJavaScriptExecutor jsExecutor;
     private final ScrollPositionProvider scrollPosition;
     private final WebDriver.TargetLocator targetLocator;
 
     private PositionMemento defaultContentPositionMemento;
 
+    public static void initLogger(Logger logger) {
+        ArgumentGuard.notNull(logger, "logger");
+        EyesTargetLocator.logger = logger;
+    }
+
     /**
      * Will be called before switching into a frame.
      * @param targetFrame The element about to be switched to.
      */
-    public void willSwitchToFrame(WebElement targetFrame) {
+    private void willSwitchToFrame(WebElement targetFrame) {
 
         ArgumentGuard.notNull(targetFrame, "targetFrame");
 
@@ -46,24 +52,19 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         Point pl = targetFrame.getLocation();
         Dimension ds = targetFrame.getSize();
 
-        int clientWidth = eyesFrame.getClientWidth();
-        int clientHeight = eyesFrame.getClientHeight();
+        SizeAndBorders sizeAndBorders = eyesFrame.getSizeAndBorders();
+        Borders borders = sizeAndBorders.getBorders();
+        RectangleSize frameInnerSize = sizeAndBorders.getSize();
 
-        int borderLeftWidth = eyesFrame.getComputedStyleInteger("border-left-width");
-        int borderTopWidth = eyesFrame.getComputedStyleInteger("border-top-width");
-
-        Location contentLocation = new Location(pl.getX() + borderLeftWidth, pl.getY() + borderTopWidth);
-
+        Location contentLocation = new Location(pl.getX() + borders.getLeft(), pl.getY() + borders.getTop());
         Location originalLocation = scrollPosition.getCurrentPosition();
-
-        String frameOverflow = eyesFrame.getOverflow();
 
         Frame frame = new Frame(logger, targetFrame,
                 contentLocation,
                 new RectangleSize(ds.getWidth(), ds.getHeight()),
-                new RectangleSize(clientWidth, clientHeight),
+                frameInnerSize,
                 originalLocation,
-                frameOverflow, this.driver);
+                this.driver);
 
         driver.getFrameChain().push(frame);
     }
@@ -73,20 +74,18 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
      * @param driver        The WebDriver from which the targetLocator was received.
      * @param targetLocator The actual TargetLocator object.
      */
-    public EyesTargetLocator(Logger logger, EyesWebDriver driver,
+    public EyesTargetLocator(EyesWebDriver driver,
                              WebDriver.TargetLocator targetLocator) {
-        ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(driver, "driver");
         ArgumentGuard.notNull(targetLocator, "targetLocator");
-        this.logger = logger;
         this.driver = driver;
         this.targetLocator = targetLocator;
-        this.jsExecutor = new SeleniumJavaScriptExecutor(driver);
+        SeleniumJavaScriptExecutor jsExecutor = new SeleniumJavaScriptExecutor(driver);
         this.scrollPosition = new ScrollPositionProvider(logger, jsExecutor);
     }
 
     public WebDriver frame(int index) {
-        logger.verbose(String.format("EyesTargetLocator.frame(%d)", index));
+        logger.verbose(String.format("(%d)", index));
         // Finding the target element so and reporting it using onWillSwitch.
         logger.verbose("Getting frames list...");
         List<WebElement> frames = driver.findElementsByCssSelector("frame, iframe");
@@ -104,8 +103,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     }
 
     public WebDriver frame(String nameOrId) {
-        logger.verbose(String.format("EyesTargetLocator.frame('%s')",
-                nameOrId));
+        logger.verbose(String.format("('%s')", nameOrId));
         // Finding the target element so we can report it.
         // We use find elements(plural) to avoid exception when the element
         // is not found.
@@ -130,7 +128,6 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     }
 
     public WebDriver frame(WebElement frameElement) {
-        logger.verbose("EyesTargetLocator.frame(element)");
         logger.verbose("Making preparations...");
         willSwitchToFrame(frameElement);
         logger.verbose("Done! Switching to frame...");
@@ -140,7 +137,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     }
 
     public WebDriver parentFrame() {
-        logger.verbose("EyesTargetLocator.parentFrame()");
+        logger.verbose("enter");
         if (driver.getFrameChain().size() != 0) {
             logger.verbose("Making preparations...");
             driver.getFrameChain().pop();
@@ -152,6 +149,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     }
 
     public static void parentFrame(WebDriver.TargetLocator targetLocator, FrameChain frameChainToParent) {
+        logger.verbose("enter (static)");
         try {
             targetLocator.parentFrame();
         } catch (Exception WebDriverException) {
@@ -162,14 +160,16 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         }
     }
 
+
     /**
      * Switches into every frame in the frame chain. This is used as way to
      * switch into nested frames (while considering scroll) in a single call.
      * @param frameChain The path to the frame to switch to.
      * @return The WebDriver with the switched context.
      */
+    @SuppressWarnings("UnusedReturnValue")
     public WebDriver framesDoScroll(FrameChain frameChain) {
-        logger.verbose("EyesTargetLocator.framesDoScroll(frameChain)");
+        logger.verbose("enter");
         driver.switchTo().defaultContent();
         defaultContentPositionMemento = scrollPosition.getState();
         for (Frame frame : frameChain) {
@@ -191,8 +191,9 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
      * @param frameChain The path to the frame to switch to.
      * @return The WebDriver with the switched context.
      */
+    @SuppressWarnings("UnusedReturnValue")
     public WebDriver frames(FrameChain frameChain) {
-        logger.verbose("EyesTargetLocator.frames(frameChain)");
+        logger.verbose("enter");
         driver.switchTo().defaultContent();
         for (Frame frame : frameChain) {
             driver.switchTo().frame(frame.getReference());
@@ -210,7 +211,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
      * @return The WebDriver with the switched context.
      */
     public WebDriver frames(String[] framesPath) {
-        logger.verbose("EyesTargetLocator.frames(framesPath)");
+        logger.verbose("enter");
         for (String frameNameOrId : framesPath) {
             logger.verbose("Switching to frame...");
             driver.switchTo().frame(frameNameOrId);
@@ -221,7 +222,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     }
 
     public WebDriver window(String nameOrHandle) {
-        logger.verbose("EyesTargetLocator.window()");
+        logger.verbose("enter");
         driver.getFrameChain().clear();
         logger.verbose("Done! Switching to window...");
         targetLocator.window(nameOrHandle);
@@ -230,7 +231,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     }
 
     public WebDriver defaultContent() {
-        logger.verbose("EyesTargetLocator.defaultContent()");
+        logger.verbose("enter");
         if (driver.getFrameChain().size() != 0) {
             logger.verbose("Making preparations...");
             driver.getFrameChain().clear();
@@ -242,19 +243,17 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     }
 
     public WebElement activeElement() {
-        logger.verbose("EyesTargetLocator.activeElement()");
         logger.verbose("Switching to element...");
         WebElement element = targetLocator.activeElement();
         if (!(element instanceof RemoteWebElement)) {
             throw new EyesException("Not a remote web element!");
         }
-        EyesRemoteWebElement result = new EyesRemoteWebElement(logger, driver, (RemoteWebElement) element);
+        EyesRemoteWebElement result = new EyesRemoteWebElement(logger, driver, element);
         logger.verbose("Done!");
         return result;
     }
 
     public Alert alert() {
-        logger.verbose("EyesTargetLocator.alert()");
         logger.verbose("Switching to alert...");
         Alert result = targetLocator.alert();
         logger.verbose("Done!");
@@ -262,6 +261,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     }
 
     public void resetScroll() {
+        logger.verbose("enter");
         if (defaultContentPositionMemento != null) {
             scrollPosition.restoreState(defaultContentPositionMemento);
         }

@@ -79,6 +79,12 @@ public class EyesSeleniumUtils {
             "-webkit-transform"
     };
 
+
+    private static final String JS_GET_ENTIRE_PAGE_SIZE =
+            "var width = Math.max(arguments[0].clientWidth, arguments[0].scrollWidth);" +
+                    "var height = Math.max(arguments[0].clientHeight, arguments[0].scrollHeight);" +
+                    "return [width, height];";
+
     /**
      * Extracts the location relative to the entire page from the coordinates
      * (e.g. as opposed to viewport)
@@ -201,46 +207,22 @@ public class EyesSeleniumUtils {
      */
     public static String setOverflow(JavascriptExecutor executor,
                                      String value,
-                                     String rootElement) {
-        if (rootElement == null) {
-            rootElement = "body";
-        }
+                                     WebElement rootElement) {
+        ArgumentGuard.notNull(executor, "executor");
+        ArgumentGuard.notNull(rootElement, "rootElement");
+
         String script = String.format(
-                "var origOverflow = document.%s.style.overflow; " +
-                        "document.%s.style.overflow = '%s'; " +
-                        "return origOverflow;",
-                rootElement, rootElement, value == null ? "" : value);
+                "var origOF = arguments[0].style.overflow; " +
+                        "arguments[0].style.overflow = '%s'; " +
+                        "return origOF;", value);
 
         try {
-            return (String) executor.executeScript(script);
+            String result = (String) executor.executeScript(script, rootElement);
+            GeneralUtils.sleep(200);
+            return result;
         } catch (WebDriverException e) {
             throw new EyesDriverOperationException("Failed to set overflow", e);
         }
-    }
-
-    /**
-     * Hides the scrollbars of the current context's document element.
-     *
-     * @param executor The executor to use for hiding the scrollbars.
-     * @param stabilizationTimeout The amount of time to wait for the "hide
-     *                             scrollbars" action to take effect
-     *                             (Milliseconds). Zero/negative values are ignored.
-     * @param rootElement The root element to change ('documentElement' or 'body').
-     * @return The previous value of the overflow property (could be
-     *          {@code null}).
-     */
-    public static String hideScrollbars(JavascriptExecutor executor,
-                                        int stabilizationTimeout,
-                                        String rootElement) {
-        String originalOverflow = setOverflow(executor, "hidden", rootElement);
-        if (stabilizationTimeout > 0) {
-            try {
-                Thread.sleep(stabilizationTimeout);
-            } catch (InterruptedException e) {
-                // Nothing to do.
-            }
-        }
-        return originalOverflow;
     }
 
     /**
@@ -272,6 +254,7 @@ public class EyesSeleniumUtils {
      * @param executor The executor to use.
      * @return The size of the entire content.
      */
+    @SuppressWarnings("unchecked")
     public static RectangleSize getCurrentFrameContentEntireSize(
             IEyesJsExecutor executor) {
         RectangleSize result;
@@ -286,6 +269,24 @@ public class EyesSeleniumUtils {
                     "Failed to extract entire size!");
         }
         return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static RectangleSize getEntireElementSize(IEyesJsExecutor executor, WebElement element){
+        RectangleSize result;
+        try {
+            //noinspection unchecked
+            Object retVal = executor.executeScript(JS_GET_ENTIRE_PAGE_SIZE, element);
+            List<Long> esAsList = (List<Long>)retVal;
+            result = new RectangleSize(esAsList.get(0).intValue(),
+                    esAsList.get(1).intValue());
+        } catch (WebDriverException e) {
+            GeneralUtils.logExceptionStackTrace(e);
+            throw new EyesDriverOperationException(
+                    "Failed to extract entire size!");
+        }
+        return result;
+
     }
 
     /**
@@ -542,18 +543,17 @@ public class EyesSeleniumUtils {
      */
     public static Map<String, String> getCurrentTransform(IEyesJsExecutor executor) {
 
-        String script = "return { ";
+        StringBuilder script = new StringBuilder("return { ");
 
         for (String key: JS_TRANSFORM_KEYS) {
-            script += "'" + key + "'" +
-                    ": document.documentElement.style['" + key + "'],";
+            script.append("'").append(key).append("'").append(": document.documentElement.style['").append(key).append("'],");
         }
 
         // Ending the list
-        script += " }";
+        script.append(" }");
 
         //noinspection unchecked
-        return (Map<String, String>) executor.executeScript(script);
+        return (Map<String, String>) executor.executeScript(script.toString());
 
     }
 
@@ -568,14 +568,13 @@ public class EyesSeleniumUtils {
     public static void setTransforms(IEyesJsExecutor executor,
                                     Map<String, String> transforms) {
 
-        String script = "";
+        StringBuilder script = new StringBuilder();
 
         for (Map.Entry<String, String> entry : transforms.entrySet()) {
-            script += "document.documentElement.style['" + entry.getKey() +
-                    "'] = '" + entry.getValue() + "';";
+            script.append("document.documentElement.style['").append(entry.getKey()).append("'] = '").append(entry.getValue()).append("';");
         }
 
-        executor.executeScript(script);
+        executor.executeScript(script.toString());
     }
 
     /**
