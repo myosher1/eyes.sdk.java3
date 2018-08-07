@@ -153,7 +153,9 @@ public abstract class TestSetup implements ITest {
                     testedPageSize
             );
 
-            driver.get(testedPageUrl);
+            if (testedPageUrl != null) {
+                driver.get(testedPageUrl);
+            }
 
             eyes.setForceFullPageScreenshot(forceFPS);
 

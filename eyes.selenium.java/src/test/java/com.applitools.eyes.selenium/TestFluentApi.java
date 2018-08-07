@@ -71,8 +71,9 @@ public class TestFluentApi extends TestSetup {
     public void TestCheckRegionInFrameInFrame_Fluent() {
         eyes.check("Fluent - Region in Frame in Frame", Target.frame("frame1")
                 .frame("frame1-1")
+                .fully()
                 .region(By.tagName("img"))
-                .fully());
+        );
     }
 
     @Test

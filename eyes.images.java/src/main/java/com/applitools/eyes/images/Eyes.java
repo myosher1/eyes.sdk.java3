@@ -9,7 +9,6 @@ import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.CheckSettings;
 import com.applitools.eyes.fluent.ICheckSettings;
-import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.positioning.NullRegionProvider;
 import com.applitools.eyes.positioning.RegionProvider;
 import com.applitools.eyes.triggers.MouseAction;
@@ -17,7 +16,6 @@ import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
-import java.net.URI;
 
 public class Eyes extends EyesBase {
 

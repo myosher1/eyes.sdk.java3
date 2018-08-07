@@ -1,5 +1,6 @@
 package com.applitools.eyes.selenium.fluent;
 
+import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.CheckSettings;
 import org.openqa.selenium.By;
@@ -14,7 +15,8 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     private WebElement targetElement;
     private List<FrameLocator> frameChain = new ArrayList<>();
 
-    SeleniumCheckSettings() { }
+    SeleniumCheckSettings() {
+    }
 
     SeleniumCheckSettings(Region region) {
         super(region);
@@ -34,7 +36,7 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     }
 
     @Override
-    public WebElement getTargetElement(){
+    public WebElement getTargetElement() {
         return this.targetElement;
     }
 
@@ -43,8 +45,9 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return this.frameChain;
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
-    public SeleniumCheckSettings clone(){
+    public SeleniumCheckSettings clone() {
         SeleniumCheckSettings clone = new SeleniumCheckSettings();
         super.populateClone(clone);
         clone.targetElement = this.targetElement;
@@ -270,12 +273,97 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     }
 
     @Override
-    public SeleniumCheckSettings fully(){
-        return (SeleniumCheckSettings)super.fully();
+    public SeleniumCheckSettings fully() {
+        return (SeleniumCheckSettings) super.fully();
     }
 
     @Override
-    public SeleniumCheckSettings fully(boolean fully){
-        return (SeleniumCheckSettings)super.fully(fully);
+    public SeleniumCheckSettings fully(boolean fully) {
+        return (SeleniumCheckSettings) super.fully(fully);
+    }
+
+    @Override
+    public SeleniumCheckSettings withName(String name) {
+        return (SeleniumCheckSettings) super.withName(name);
+    }
+
+    @Override
+    public SeleniumCheckSettings ignoreCaret(boolean ignoreCaret) {
+        return (SeleniumCheckSettings) super.ignoreCaret(ignoreCaret);
+    }
+
+    @Override
+    public SeleniumCheckSettings ignoreCaret() {
+        return (SeleniumCheckSettings) super.ignoreCaret();
+    }
+
+    @Override
+    public SeleniumCheckSettings matchLevel(MatchLevel matchLevel) {
+        return (SeleniumCheckSettings) super.matchLevel(matchLevel);
+    }
+
+    @Override
+    public SeleniumCheckSettings content() {
+        return (SeleniumCheckSettings) super.content();
+    }
+
+    @Override
+    public SeleniumCheckSettings strict() {
+        return (SeleniumCheckSettings) super.strict();
+    }
+
+    @Override
+    public SeleniumCheckSettings layout() {
+        return (SeleniumCheckSettings) super.layout();
+    }
+
+    @Override
+    public SeleniumCheckSettings exact() {
+        return (SeleniumCheckSettings) super.exact();
+    }
+
+    @Override
+    public SeleniumCheckSettings timeout(int timeoutMilliseconds) {
+        return (SeleniumCheckSettings) super.timeout(timeoutMilliseconds);
+    }
+
+    @Override
+    public SeleniumCheckSettings ignore(Region region, Region... regions) {
+        return (SeleniumCheckSettings) super.ignore(region, regions);
+    }
+
+    @Override
+    public SeleniumCheckSettings ignore(Region[] regions) {
+        return (SeleniumCheckSettings) super.ignore(regions);
+    }
+
+    @Override
+    public SeleniumCheckSettings layout(Region region, Region... regions) {
+        return (SeleniumCheckSettings) super.layout(region, regions);
+    }
+
+    @Override
+    public SeleniumCheckSettings layout(Region[] regions) {
+        return (SeleniumCheckSettings) super.layout(regions);
+    }
+
+    @Override
+    public SeleniumCheckSettings strict(Region region, Region... regions) {
+        return (SeleniumCheckSettings) super.strict(region, regions);
+    }
+
+    @Override
+    public SeleniumCheckSettings strict(Region[] regions) {
+        return (SeleniumCheckSettings) super.strict(regions);
+    }
+
+    @Override
+    public SeleniumCheckSettings content(Region region, Region... regions) {
+        return (SeleniumCheckSettings) super.content(region, regions);
+    }
+
+    @Override
+    public SeleniumCheckSettings content(Region[] regions) {
+        return (SeleniumCheckSettings) super.content(regions);
     }
 }
