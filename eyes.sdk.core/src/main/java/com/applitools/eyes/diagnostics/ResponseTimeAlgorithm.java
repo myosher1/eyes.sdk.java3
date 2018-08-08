@@ -69,7 +69,8 @@ public class ResponseTimeAlgorithm {
                 updatedAppOutput,
                 currentMwd.getTag(),
                 currentMwd.getIgnoreMismatch(),
-                currentMwd.getOptions());
+                currentMwd.getOptions(),
+                null);
 
         return new MatchWindowDataWithScreenshot(updatedMwd,
                 currentMwdws.getScreenshot());
@@ -125,7 +126,8 @@ public class ResponseTimeAlgorithm {
                 tag,
                 true,
                 new MatchWindowData.Options(tag, noUserInputs, false,
-                        false, false, false, null)
+                        false, false, false, null),
+                null
         );
         serverConnector.matchWindow(runningSession, mwd);
         logger.verbose("Finished saving.");
@@ -188,8 +190,7 @@ public class ResponseTimeAlgorithm {
 
         // The shared object to pass the capture data between threads.
         BlockingInstanceContainer<MatchWindowDataWithScreenshot>
-                matchDataContainer =
-                new BlockingInstanceContainer<MatchWindowDataWithScreenshot>();
+                matchDataContainer = new BlockingInstanceContainer<>();
 
         logger.verbose("Starting matcher thread.");
         ResponseTimeMatchFinderTask matcherTask =
@@ -273,7 +274,8 @@ public class ResponseTimeAlgorithm {
                     tag,
                     true,
                     new MatchWindowData.Options(tag, noUserInputs, true,
-                            true, false, false, null)
+                            true, false, false, null),
+                    null
             );
             currentWindowDataWithScreenshot =
                     new MatchWindowDataWithScreenshot(currentWindowData,
@@ -608,7 +610,8 @@ public class ResponseTimeAlgorithm {
                             true,
                             false,
                             null
-                    )
+                    ),
+                    null
             );
             serverConnector.matchWindow(runningSession, mwdToSend);
         }
@@ -633,7 +636,8 @@ public class ResponseTimeAlgorithm {
                         !forceMatch,
                         forceMatch,
                         null
-                )
+                ),
+                null
         );
         serverConnector.matchWindow(runningSession, mwdToSend);
         logger.verbose("Done setting images!");
@@ -675,8 +679,7 @@ public class ResponseTimeAlgorithm {
 
         logger.verbose("runProgressionSessionForExistingBaseline()");
 
-        List<MatchWindowDataWithScreenshot> collectedData =
-                new LinkedList<MatchWindowDataWithScreenshot>();
+        List<MatchWindowDataWithScreenshot> collectedData = new LinkedList<>();
 
         // Run initial progression search for a match.
         ResponseTimeInitialMatchSearchResult initialSearchResult =
