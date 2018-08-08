@@ -1124,9 +1124,11 @@ public abstract class EyesBase {
         ArgumentGuard.isValidState(getIsOpen(), "Eyes not open");
         ArgumentGuard.notNull(regionProvider, "regionProvider");
 
+        ensureRunningSession();
+
         beforeMatchWindow();
 
-        result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings, this);
+        result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings);
 
         afterMatchWindow();
 
@@ -1155,8 +1157,8 @@ public abstract class EyesBase {
         return validationInfo;
     }
 
-    private static MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
-                                           ICheckSettings checkSettings, EyesBase self) {
+    private MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
+                                    ICheckSettings checkSettings) {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
@@ -1166,7 +1168,7 @@ public abstract class EyesBase {
             retryTimeout = checkSettingsInternal.getTimeout();
         }
 
-        ImageMatchSettings defaultMatchSettings = self.getDefaultMatchSettings();
+        ImageMatchSettings defaultMatchSettings = getDefaultMatchSettings();
 
         // Set defaults if necessary
         if (checkSettingsInternal != null) {
@@ -1181,15 +1183,12 @@ public abstract class EyesBase {
             checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         }
 
-        self.logger.verbose(String.format("CheckWindowBase(%s, '%s', %b, %d)",
-                regionProvider.getClass(), tag, ignoreMismatch, retryTimeout));
+        Region region = regionProvider.getRegion();
+        logger.verbose("params: ([" + region + "], " + tag + ", " + retryTimeout + ")");
 
-        self.ensureRunningSession();
-
-        self.logger.verbose("Calling match window...");
-
-        result = self.matchWindowTask.matchWindow(self.getUserInputs(), regionProvider.getRegion(), tag,
-                self.shouldMatchWindowRunOnceOnTimeout, ignoreMismatch, checkSettingsInternal, retryTimeout);
+        result = matchWindowTask.matchWindow(
+                getUserInputs(), region, tag, shouldMatchWindowRunOnceOnTimeout, ignoreMismatch,
+                checkSettingsInternal, retryTimeout);
 
         return result;
     }
@@ -1383,6 +1382,7 @@ public abstract class EyesBase {
 
     private void ensureRunningSession() {
         if (runningSession != null) {
+            logger.log("session already running.");
             return;
         }
 

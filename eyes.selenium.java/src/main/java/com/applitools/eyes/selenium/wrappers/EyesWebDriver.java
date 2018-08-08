@@ -332,9 +332,9 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
                 }
             }
         }
-        logger.verbose("Execute script...");
+
+        @SuppressWarnings("UnnecessaryLocalVariable")
         Object result = driver.executeScript(script, args);
-        logger.verbose("Done!");
         return result;
     }
 
@@ -358,7 +358,6 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
 
         return driver.executeAsyncScript(script, args);
     }
-
 
     /**
      * @param forceQuery If true, we will perform the query even if we have a cached viewport size.

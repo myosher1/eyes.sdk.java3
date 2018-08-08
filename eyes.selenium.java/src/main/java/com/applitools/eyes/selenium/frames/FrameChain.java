@@ -70,9 +70,7 @@ public class FrameChain implements Iterable<Frame> {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(other, "other");
         this.logger = logger;
-        logger.verbose(String.format("Frame chain copy constructor (size %d)", other.size()));
         frames = new ArrayList<>(other.frames);
-        logger.verbose("Done!");
     }
 
     /**
