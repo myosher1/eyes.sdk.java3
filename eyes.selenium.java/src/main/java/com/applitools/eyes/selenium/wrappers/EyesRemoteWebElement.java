@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class EyesRemoteWebElement extends RemoteWebElement {
     private final Logger logger;
     private final EyesWebDriver eyesDriver;
@@ -58,31 +59,34 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     private final String JS_GET_CLIENT_WIDTH = "return arguments[0].clientWidth;";
     private final String JS_GET_CLIENT_HEIGHT = "return arguments[0].clientHeight;";
 
+    private final String JS_GET_CLIENT_SIZE = "return [arguments[0].clientWidth, arguments[0].clientHeight];";
+
     private final String JS_GET_BORDER_WIDTHS_ARR =
-            "var retval = retval || [];" +
+            "var retVal = retVal || [];" +
                     "if (window.getComputedStyle) { " +
                     "var computedStyle = window.getComputedStyle(elem, null);" +
-                    "retval.push(computedStyle.getPropertyValue('border-left-width'));" +
-                    "retval.push(computedStyle.getPropertyValue('border-top-width'));" +
-                    "retval.push(computedStyle.getPropertyValue('border-right-width')); " +
-                    "retval.push(computedStyle.getPropertyValue('border-bottom-width'));" +
+                    "retVal.push(computedStyle.getPropertyValue('border-left-width'));" +
+                    "retVal.push(computedStyle.getPropertyValue('border-top-width'));" +
+                    "retVal.push(computedStyle.getPropertyValue('border-right-width')); " +
+                    "retVal.push(computedStyle.getPropertyValue('border-bottom-width'));" +
                     "} else if (elem.currentStyle) { " +
-                    "retval.push(elem.currentStyle['border-left-width']);" +
-                    "retval.push(elem.currentStyle['border-top-width']);" +
-                    "retval.push(elem.currentStyle['border-right-width']);" +
-                    "retval.push(elem.currentStyle['border-bottom-width']);" +
+                    "retVal.push(elem.currentStyle['border-left-width']);" +
+                    "retVal.push(elem.currentStyle['border-top-width']);" +
+                    "retVal.push(elem.currentStyle['border-right-width']);" +
+                    "retVal.push(elem.currentStyle['border-bottom-width']);" +
                     "} else { " +
-                    "retval.push(0,0,0,0);" +
+                    "retVal.push(0,0,0,0);" +
                     "}";
 
+    @SuppressWarnings("unused")
     private final String JS_GET_BORDER_WIDTHS =
-            JS_GET_BORDER_WIDTHS_ARR + "return retval;";
+            JS_GET_BORDER_WIDTHS_ARR + "return retVal;";
 
     private final String JS_GET_SIZE_AND_BORDER_WIDTHS =
             "var elem = arguments[0]; " +
-                    "var retval = [arguments[0].clientWidth, arguments[0].clientHeight]; " +
+                    "var retVal = [arguments[0].clientWidth, arguments[0].clientHeight]; " +
                     JS_GET_BORDER_WIDTHS_ARR +
-                    "return retval;";
+                    "return retVal;";
 
     private PositionProvider positionProvider;
 
@@ -378,12 +382,12 @@ public class EyesRemoteWebElement extends RemoteWebElement {
                                                   elementsToWrap) {
         // This list will contain the found elements wrapped with our class.
         List<WebElement> wrappedElementsList =
-                new ArrayList<WebElement>(elementsToWrap.size());
+                new ArrayList<>(elementsToWrap.size());
 
         for (WebElement currentElement : elementsToWrap) {
             if (currentElement instanceof RemoteWebElement) {
                 wrappedElementsList.add(new EyesRemoteWebElement(logger,
-                        eyesDriver, (RemoteWebElement) currentElement));
+                        eyesDriver, currentElement));
             } else {
                 wrappedElementsList.add(currentElement);
             }
@@ -539,6 +543,14 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
         // TODO: Use the command delegation instead. (once the bug is fixed).
 //        return webElement.getOuterSize();
+    }
+
+    public RectangleSize getClientSize(){
+        Object retVal = eyesDriver.executeScript(JS_GET_CLIENT_SIZE, this);
+        @SuppressWarnings("unchecked") List<Float> esAsList = (List<Float>)retVal;
+        return new RectangleSize(
+                (int)Math.round(esAsList.get(0).doubleValue()),
+                (int)Math.round(esAsList.get(1).doubleValue()));
     }
 
     @Override
