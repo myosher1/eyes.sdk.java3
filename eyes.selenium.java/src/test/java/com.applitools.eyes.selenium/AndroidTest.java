@@ -1,7 +1,6 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.BatchInfo;
-import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.selenium.fluent.Target;
 import org.openqa.selenium.By;
@@ -18,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-public class IOSTest {
+public class AndroidTest {
 
     private static BatchInfo batchInfo = new BatchInfo("Java3 Tests");
 
@@ -32,42 +31,33 @@ public class IOSTest {
 
     @DataProvider(parallel = true)
     public static Object[][] data() {
-        Object[][] iPhoneXPermutations = TestUtils.generatePermutations(
-                Arrays.asList(new Object[]{"iPhone X Simulator"}), // device
+        Object[][] googlePixelPermutations = TestUtils.generatePermutations(
+                Arrays.asList(new Object[]{"Google Pixel GoogleAPI Emulator"}), // device
                 Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
-                Arrays.asList(new Object[]{"11.0"}), // OS Version
-                Arrays.asList(new Object[]{false, true}) // fully
-        );
-
-        Object[][] iPhonePermutations = TestUtils.generatePermutations(
-                Arrays.asList(new Object[]{"iPhone 7 Simulator", "iPhone 6 Plus Simulator"}), // device
-                Arrays.asList(new Object[]{"portrait", "landscape"}), // orientation
-                Arrays.asList(new Object[]{"10.0", "11.0"}), // OS Version
+                Arrays.asList(new Object[]{"7.1"}), // OS Version
                 Arrays.asList(new Object[]{false, true}) // fully
         );
 
         ArrayList<Object[]> returnValue = new ArrayList<>();
-        returnValue.addAll(Arrays.asList(iPhoneXPermutations));
-        returnValue.addAll(Arrays.asList(iPhonePermutations));
+        returnValue.addAll(Arrays.asList(googlePixelPermutations));
 
         return returnValue.toArray(new Object[0][]);
     }
 
     @Test(dataProvider = "data")
-    public void TestIOSSafariCrop(String deviceName, String deviceOrientation, String platformVersion, boolean fully) throws MalformedURLException {
+    public void TestAndroidChromeCrop(String deviceName, String deviceOrientation, String platformVersion, boolean fully) throws MalformedURLException {
         Eyes eyes = new Eyes();
 
         eyes.setBatch(batchInfo);
 
         // This is your api key, make sure you use it in all your tests.
         DesiredCapabilities caps = DesiredCapabilities.iphone();
-
         caps.setCapability("appiumVersion", "1.7.2");
         caps.setCapability("deviceName", deviceName);
         caps.setCapability("deviceOrientation", deviceOrientation);
         caps.setCapability("platformVersion", platformVersion);
-        caps.setCapability("platformName", "iOS");
-        caps.setCapability("browserName", "Safari");
+        caps.setCapability("platformName", "Android");
+        caps.setCapability("browserName", "Chrome");
 
         caps.setCapability("username", System.getenv("SAUCE_USERNAME"));
         caps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
@@ -101,7 +91,7 @@ public class IOSTest {
 
         try {
             driver.get("https://www.applitools.com/customers");
-            eyes.open(driver, "Eyes Selenium SDK - iOS Safari Cropping", testName);
+            eyes.open(driver, "Eyes Selenium SDK - Android Chrome Cropping", testName);
             eyes.check("Initial view", Target.region(By.cssSelector("body")).fully(fully));
             eyes.close();
         } finally {
