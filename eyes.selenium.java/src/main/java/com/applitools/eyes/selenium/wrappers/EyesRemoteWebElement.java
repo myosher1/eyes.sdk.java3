@@ -545,12 +545,12 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 //        return webElement.getOuterSize();
     }
 
-    public RectangleSize getClientSize(){
+    public RectangleSize getClientSize() {
         Object retVal = eyesDriver.executeScript(JS_GET_CLIENT_SIZE, this);
-        @SuppressWarnings("unchecked") List<Float> esAsList = (List<Float>)retVal;
+        @SuppressWarnings("unchecked") List<Float> esAsList = (List<Float>) retVal;
         return new RectangleSize(
-                (int)Math.round(esAsList.get(0).doubleValue()),
-                (int)Math.round(esAsList.get(1).doubleValue()));
+                (int) Math.round(esAsList.get(0).doubleValue()),
+                (int) Math.round(esAsList.get(1).doubleValue()));
     }
 
     @Override
@@ -573,13 +573,13 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     public SizeAndBorders getSizeAndBorders() {
         Object retVal = eyesDriver.executeScript(JS_GET_SIZE_AND_BORDER_WIDTHS, this);
-        @SuppressWarnings("unchecked") List<Object> esAsList = (List<Object>)retVal;
+        @SuppressWarnings("unchecked") List<Object> esAsList = (List<Object>) retVal;
         return new SizeAndBorders(
-                ((Long)esAsList.get(0)).intValue(),
-                ((Long)esAsList.get(1)).intValue(),
-                Integer.parseInt(((String)esAsList.get(2)).replace("px","")),
-                Integer.parseInt(((String)esAsList.get(3)).replace("px","")),
-                Integer.parseInt(((String)esAsList.get(4)).replace("px","")),
-                Integer.parseInt(((String)esAsList.get(5)).replace("px","")));
+                ((Long) esAsList.get(0)).intValue(),
+                ((Long) esAsList.get(1)).intValue(),
+                Integer.parseInt(((String) esAsList.get(2)).replace("px", "")),
+                Integer.parseInt(((String) esAsList.get(3)).replace("px", "")),
+                Integer.parseInt(((String) esAsList.get(4)).replace("px", "")),
+                Integer.parseInt(((String) esAsList.get(5)).replace("px", "")));
     }
 }

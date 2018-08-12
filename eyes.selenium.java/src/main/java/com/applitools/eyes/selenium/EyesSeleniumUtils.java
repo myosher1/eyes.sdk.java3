@@ -187,11 +187,11 @@ public class EyesSeleniumUtils {
 //                "document.body.style.overflow = 'hidden'; " +
 //                "var docElemScrollHeightAfter = document.documentElement.scrollHeight; " +
 //                "if (docElemScrollHeightBefore != docElemScrollHeightAfter) " +
-//                "var retval = 'documentElement'; " +
+//                "var retVal = 'documentElement'; " +
 //                "else " +
-//                "var retval = 'body'; " +
+//                "var retVal = 'body'; " +
 //                "document.body.style.overflow = originalBodyOverflow; " +
-//                "return retval;";
+//                "return retVal;";
 //
 //        return (String)executor.executeScript(script);
         return "documentElement";

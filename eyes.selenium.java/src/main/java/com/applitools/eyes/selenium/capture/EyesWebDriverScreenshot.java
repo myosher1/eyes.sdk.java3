@@ -39,7 +39,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     // The part of the frame window which is visible in the screenshot
     private final Region frameWindow;
 
-    // FIXME: 18/03/2018 Workaround specifcally for regions
+    // FIXME: 18/03/2018 Workaround specifically for regions
     private final Region regionWindow;
 
     private static Location getDefaultContentScrollPosition(Logger logger, FrameChain currentFrames, EyesWebDriver driver) {
