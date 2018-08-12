@@ -102,6 +102,9 @@ public class TestListener implements ITestListener {
                     ImageMatchSettings imageMatchSettings = actualAppOutput[0].getImageMatchSettings();
                     FloatingMatchSettings[] floating = imageMatchSettings.getFloating();
                     Region[] ignoreRegions = imageMatchSettings.getIgnore();
+                    Region[] layoutRegions = imageMatchSettings.getLayout();
+                    Region[] strictRegions = imageMatchSettings.getStrict();
+                    Region[] contentRegions = imageMatchSettings.getContent();
 
                     if (testSetup.compareExpectedRegions) {
                         if (testSetup.expectedFloatingRegions.size() > 0) {
@@ -112,6 +115,21 @@ public class TestListener implements ITestListener {
                         if (testSetup.expectedIgnoreRegions.size() > 0) {
                             HashSet<Region> ignoreRegionsSet = new HashSet<>(Arrays.asList(ignoreRegions));
                             Assert.assertEquals(ignoreRegionsSet, testSetup.expectedIgnoreRegions, "Ignore regions lists differ");
+                        }
+
+                        if (testSetup.expectedLayoutRegions.size() > 0) {
+                            HashSet<Region> layoutRegionsSet = new HashSet<>(Arrays.asList(layoutRegions));
+                            Assert.assertEquals(layoutRegionsSet, testSetup.expectedLayoutRegions, "Layout regions lists differ");
+                        }
+
+                        if (testSetup.expectedStrictRegions.size() > 0) {
+                            HashSet<Region> strictRegionsSet = new HashSet<>(Arrays.asList(strictRegions));
+                            Assert.assertEquals(strictRegionsSet, testSetup.expectedStrictRegions, "Strict regions lists differ");
+                        }
+
+                        if (testSetup.expectedContentRegions.size() > 0) {
+                            HashSet<Region> contentRegionsSet = new HashSet<>(Arrays.asList(contentRegions));
+                            Assert.assertEquals(contentRegionsSet, testSetup.expectedContentRegions, "Content regions lists differ");
                         }
                     }
                 }

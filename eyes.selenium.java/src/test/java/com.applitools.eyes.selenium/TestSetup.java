@@ -37,6 +37,9 @@ public abstract class TestSetup implements ITest {
 
     protected HashSet<FloatingMatchSettings> expectedFloatingRegions = new HashSet<>();
     protected HashSet<Region> expectedIgnoreRegions = new HashSet<>();
+    protected HashSet<Region> expectedLayoutRegions = new HashSet<>();
+    protected HashSet<Region> expectedStrictRegions = new HashSet<>();
+    protected HashSet<Region> expectedContentRegions = new HashSet<>();
 
     protected boolean compareExpectedRegions = false;
 
@@ -74,6 +77,18 @@ public abstract class TestSetup implements ITest {
 
     protected void setExpectedIgnoreRegions(Region... expectedIgnoreRegions) {
         this.expectedIgnoreRegions = new HashSet<>(Arrays.asList(expectedIgnoreRegions));
+    }
+
+    protected void setExpectedLayoutRegions(Region... expectedLayoutRegions) {
+        this.expectedLayoutRegions = new HashSet<>(Arrays.asList(expectedLayoutRegions));
+    }
+
+    protected void setExpectedStrictRegions(Region... expectedStrictRegions) {
+        this.expectedStrictRegions = new HashSet<>(Arrays.asList(expectedStrictRegions));
+    }
+
+    protected void setExpectedContentRegions(Region... expectedContentRegions) {
+        this.expectedContentRegions = new HashSet<>(Arrays.asList(expectedContentRegions));
     }
 
     protected void setExpectedFloatingsRegions(FloatingMatchSettings... expectedFloatingsRegions) {
@@ -160,6 +175,9 @@ public abstract class TestSetup implements ITest {
             eyes.setForceFullPageScreenshot(forceFPS);
 
             this.expectedIgnoreRegions.clear();
+            this.expectedLayoutRegions.clear();
+            this.expectedStrictRegions.clear();
+            this.expectedContentRegions.clear();
             this.expectedFloatingRegions.clear();
         } catch (Exception ex) {
             eyes.abortIfNotClosed();
