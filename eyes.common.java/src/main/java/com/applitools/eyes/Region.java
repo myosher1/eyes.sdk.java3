@@ -123,10 +123,17 @@ public class Region {
     }
 
     /**
-     * @return The (top,left) position of the current region.
+     * @return The (left, top) position of the current region.
      */
     public Location getLocation() {
         return new Location(left, top);
+    }
+
+    /**
+     * @return The (-left, -top) position of the current region.
+     */
+    public Location getNegativeLocation() {
+        return new Location(-left, -top);
     }
 
     /**

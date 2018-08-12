@@ -39,7 +39,6 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.awt.image.BufferedImage;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -724,13 +723,13 @@ public class Eyes extends EyesBase {
                 bBox, positionProvider);
 
         debugScreenshotsProvider.save(screenshotImage, "original");
-        EyesScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
+        EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage, null, bBox.getNegativeLocation());
 
         for (int i = 0; i < checkSettings.length; ++i) {
             if (((Hashtable<Integer, GetRegion>) getRegions).containsKey(i)) {
                 GetRegion getRegion = getRegions.get(i);
                 ICheckSettingsInternal checkSettingsInternal = checkSettingsInternalDictionary.get(i);
-                List<EyesScreenshot> subScreenshots = getSubScreenshots(bBox, screenshot, getRegion);
+                List<EyesScreenshot> subScreenshots = getSubScreenshots(screenshot, getRegion);
                 matchRegion(checkSettingsInternal, mwt, subScreenshots);
             }
         }
@@ -739,14 +738,13 @@ public class Eyes extends EyesBase {
         ((EyesTargetLocator) driver.switchTo()).frames(this.originalFC);
     }
 
-    private List<EyesScreenshot> getSubScreenshots(Region bBox, EyesScreenshot screenshot, GetRegion getRegion) {
+    private List<EyesScreenshot> getSubScreenshots(EyesWebDriverScreenshot screenshot, GetRegion getRegion) {
         List<EyesScreenshot> subScreenshots = new ArrayList<>();
-        for (Region r : getRegion.getRegions(this, screenshot)) {
-            r = r.offset(-bBox.getLeft(), -bBox.getTop());
+        for (Region r : getRegion.getRegions(this, screenshot, true)) {
             logger.verbose("original sub-region: " + r);
             r = regionPositionCompensation.compensateRegionPosition(r, devicePixelRatio);
             logger.verbose("sub-region after compensation: " + r);
-            EyesScreenshot subScreenshot = screenshot.getSubScreenshot(r, false);
+            EyesScreenshot subScreenshot = screenshot.getSubScreenshotForRegion(r, false);
             subScreenshots.add(subScreenshot);
         }
         return subScreenshots;
@@ -783,7 +781,7 @@ public class Eyes extends EyesBase {
         for (int i = 0; i < checkSettings.length; ++i) {
             GetRegion getRegion = getRegions.get(i);
             if (getRegion != null) {
-                List<Region> regions = getRegion.getRegions(this, screenshot);
+                List<Region> regions = getRegion.getRegions(this, screenshot, true);
                 for (Region region : regions) {
                     if (bBox == null) {
                         bBox = new Region(region);

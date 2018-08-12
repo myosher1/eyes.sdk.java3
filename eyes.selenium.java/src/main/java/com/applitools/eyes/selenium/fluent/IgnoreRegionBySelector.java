@@ -19,7 +19,7 @@ public class IgnoreRegionBySelector implements GetRegion {
     }
 
     @Override
-    public List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot) {
+    public List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot, boolean adjustLocation) {
         List<WebElement> elements = ((Eyes)eyesBase).getDriver().findElements(this.selector);
         List<Region> values = new ArrayList<>(elements.size());
         for (WebElement element : elements) {

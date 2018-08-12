@@ -159,18 +159,18 @@ public class MatchWindowTask {
                                       ImageMatchSettings imageMatchSettings,
                                       EyesScreenshot screenshot) {
 
-        imageMatchSettings.setIgnoreRegions(collectRegions(checkSettingsInternal.getIgnoreRegions(), screenshot));
-        imageMatchSettings.setLayoutRegions(collectRegions(checkSettingsInternal.getLayoutRegions(), screenshot));
-        imageMatchSettings.setStrictRegions(collectRegions(checkSettingsInternal.getStrictRegions(), screenshot));
-        imageMatchSettings.setContentRegions(collectRegions(checkSettingsInternal.getContentRegions(), screenshot));
+        imageMatchSettings.setIgnoreRegions(collectRegions(checkSettingsInternal.getIgnoreRegions(), screenshot, false));
+        imageMatchSettings.setLayoutRegions(collectRegions(checkSettingsInternal.getLayoutRegions(), screenshot, true));
+        imageMatchSettings.setStrictRegions(collectRegions(checkSettingsInternal.getStrictRegions(), screenshot, true));
+        imageMatchSettings.setContentRegions(collectRegions(checkSettingsInternal.getContentRegions(), screenshot, true));
     }
 
-    private Region[] collectRegions(GetRegion[] regionProviders, EyesScreenshot screenshot) {
+    private Region[] collectRegions(GetRegion[] regionProviders, EyesScreenshot screenshot, boolean adjustLocation) {
 
         List<Region> regions = new ArrayList<>();
         for (GetRegion regionProvider : regionProviders) {
             try {
-                regions.addAll(regionProvider.getRegions(eyes, screenshot));
+                regions.addAll(regionProvider.getRegions(eyes, screenshot, adjustLocation));
             }
             catch (OutOfBoundsException ex){
                 logger.log("WARNING - ignore region was out of bounds.");

@@ -173,8 +173,8 @@ public class TestFluentApi extends TestSetup {
         eyes.check("Fluent - Region by element", Target.window().fully().ignore(By.cssSelector(".ignore")));
         setExpectedIgnoreRegions(
                 new Region(172, 928, 456, 306),
-                new Region(8, 1270, 784, 206),
-                new Region(10, 284, 302, 182)
+                new Region(8, 1270, 790, 206),
+                new Region(10, 284, 800, 500)
         );
     }
 
