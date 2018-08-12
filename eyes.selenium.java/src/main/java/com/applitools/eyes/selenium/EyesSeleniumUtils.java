@@ -24,6 +24,7 @@ import java.util.Map;
  * We named this class EyesSeleniumUtils because there's a SeleniumUtils
  * class, and it caused collision.
  */
+@SuppressWarnings("WeakerAccess")
 public class EyesSeleniumUtils {
 
     private static final String NATIVE_APP = "NATIVE_APP";
@@ -177,6 +178,7 @@ public class EyesSeleniumUtils {
         return false;
     }
 
+    @SuppressWarnings("unused")
     public static String selectRootElement(JavascriptExecutor executor) {
         // FIXME: 16/06/2018 HOTFIX for returning using documentElement as default for "hideScrollbars"
         //  (selection logic does not work).
@@ -339,9 +341,7 @@ public class EyesSeleniumUtils {
     public static boolean setBrowserSize(Logger logger, WebDriver driver,
                                          RectangleSize requiredSize) {
         final int SLEEP = 1000;
-        final int RETRIES = 3;
-
-        int retriesLeft = RETRIES;
+        int retriesLeft = 3;
         Dimension dRequiredSize = new Dimension(requiredSize.getWidth(), requiredSize.getHeight());
         Dimension dCurrentSize;
         RectangleSize currentSize;
@@ -358,6 +358,7 @@ public class EyesSeleniumUtils {
         return currentSize == requiredSize;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public static boolean setBrowserSizeByViewportSize(Logger logger, WebDriver driver,
                                                        RectangleSize actualViewportSize,
                                                        RectangleSize requiredViewportSize) {
@@ -573,8 +574,7 @@ public class EyesSeleniumUtils {
      */
     public static void setTransform(IEyesJsExecutor executor,
                                     String transform) {
-        Map<String, String> transforms =
-                new HashMap<String, String>(JS_TRANSFORM_KEYS.length);
+        Map<String, String> transforms = new HashMap<>(JS_TRANSFORM_KEYS.length);
 
         for (String key : JS_TRANSFORM_KEYS) {
             transforms.put(key, transform);
@@ -605,8 +605,11 @@ public class EyesSeleniumUtils {
         Region region = new Region(location.getX(), location.getY(), size.getWidth(), size.getHeight());
         WebElement parent;
 
-        try { parent = element.findElement(By.xpath("..")); }
-        catch (Exception e) { parent = null; }
+        try {
+            parent = element.findElement(By.xpath(".."));
+        } catch (Exception e) {
+            parent = null;
+        }
 
         try {
             while (parent != null && !region.isSizeEmpty()) {
