@@ -221,6 +221,22 @@ public class JBossServerConnector extends RestClient
         return result;
     }
 
+    @Override
+    public void deleteSession(TestResults testResults) {
+        ArgumentGuard.notNull(testResults, "testResults");
+
+        Invocation.Builder invocationBuilder = restClient.target(serverUrl)
+                .path("/api/sessions/batches/")
+                .path(testResults.getBatchId())
+                .path("/")
+                .path(testResults.getId())
+                .queryParam("apiKey", getApiKey())
+                .queryParam("AccessToken", testResults.getSecretToken())
+                .request(MediaType.APPLICATION_JSON);
+
+        Response response = invocationBuilder.delete();
+    }
+
     /**
      * Matches the current window (held by the WebDriver) to the expected
      * window.
