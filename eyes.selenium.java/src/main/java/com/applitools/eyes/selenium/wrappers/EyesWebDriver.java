@@ -68,7 +68,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
             try {
                 logger.verbose("Trying to automatically normalize rotation...");
                 if (EyesSeleniumUtils.isMobileDevice(driver) &&
-                        EyesSeleniumUtils.isLandscapeOrientation(driver)
+                        EyesSeleniumUtils.isLandscapeOrientation(logger,driver)
                         && image.getHeight() > image.getWidth()) {
                     // For Android, we need to rotate images to the right, and
                     // for iOS to the left.
