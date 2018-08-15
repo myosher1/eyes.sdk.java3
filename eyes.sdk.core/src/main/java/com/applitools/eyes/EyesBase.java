@@ -1629,11 +1629,10 @@ public abstract class EyesBase {
         BatchInfo testBatch = config.getBatch();
         if (testBatch == null) {
             logger.verbose("No batch set");
-            testBatch = new BatchInfo(null);
+            config.setBatch(new BatchInfo(null));
         } else {
             logger.verbose("Batch is " + testBatch);
         }
-
 
         AppEnvironment appEnv = getAppEnvironment();
 
