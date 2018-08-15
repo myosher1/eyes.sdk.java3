@@ -17,6 +17,7 @@ import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
 
+@SuppressWarnings({"WeakerAccess", "UnusedReturnValue"})
 public class Eyes extends EyesBase {
 
     private String title;
@@ -56,6 +57,7 @@ public class Eyes extends EyesBase {
 
     public boolean check(String name, ICheckSettings checkSettings) {
         IImagesCheckTarget imagesCheckTarget = (checkSettings instanceof IImagesCheckTarget) ? (IImagesCheckTarget) checkSettings : null;
+        assert imagesCheckTarget != null;
         BufferedImage image = imagesCheckTarget.getImage();
 
         if (viewportSizeHandler.get() == null) {

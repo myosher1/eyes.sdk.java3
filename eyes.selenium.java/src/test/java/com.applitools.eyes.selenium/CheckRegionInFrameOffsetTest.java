@@ -8,15 +8,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 /**
  * This encapsulates a test for a specific bug which caused a region to be taken incorrectly.
  * The region is inside a {@code iframe} which is inside an absolute positioned {@code div} element.
  */
 public class CheckRegionInFrameOffsetTest {
-    public static void main(String[] args) throws URISyntaxException, IOException, InterruptedException {
+    public static void main(String[] args) {
 
         // Test 1
         WebDriver driver = new ChromeDriver();

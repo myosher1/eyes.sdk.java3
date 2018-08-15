@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class RemoteSessionEventHandler extends RestClient implements ISessionEventHandler {
 
     private String autSessionId;
@@ -22,14 +23,12 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
     private WebTarget defaultEndPoint;
     private boolean throwExceptions = true;
 
-    @SuppressWarnings("WeakerAccess")
     public RemoteSessionEventHandler(Logger logger, URI serverUrl, String accessKey, int timeout) {
         super(logger, serverUrl, timeout);
         this.accessKey = accessKey;
         this.defaultEndPoint = endPoint.queryParam("accessKey", accessKey).path(SERVER_SUFFIX);
     }
 
-    @SuppressWarnings("WeakerAccess")
     public RemoteSessionEventHandler(Logger logger, URI serverUrl, String accessKey) {
         this(logger, serverUrl, accessKey, 30 * 1000);
     }

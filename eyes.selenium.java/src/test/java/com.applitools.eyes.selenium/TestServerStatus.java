@@ -22,6 +22,7 @@ public class TestServerStatus {
     private Eyes eyes;
     private WebDriver webDriver;
 
+    @SuppressWarnings("SpellCheckingInspection")
     @BeforeClass
     public void setup() throws MalformedURLException {
         eyes = new Eyes();
@@ -48,7 +49,7 @@ public class TestServerStatus {
     }
 
     @Test(expectedExceptions = DiffsFoundException.class)
-    public void TestSessionSummary_Status_Failed() throws MalformedURLException {
+    public void TestSessionSummary_Status_Failed() {
         WebDriver driver = eyes.open(webDriver,
                 TestServerStatus.class.getSimpleName(),
                 TestServerStatus.class.getSimpleName(), new RectangleSize(800, 599));
@@ -59,7 +60,7 @@ public class TestServerStatus {
     }
 
     @Test(expectedExceptions = NewTestException.class)
-    public void TestSessionSummary_Status_New() throws MalformedURLException {
+    public void TestSessionSummary_Status_New() {
         String uuid = "_" + UUID.randomUUID().toString();
 
         WebDriver driver = eyes.open(webDriver,

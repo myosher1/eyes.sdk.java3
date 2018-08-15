@@ -1,12 +1,8 @@
 package com.applitools.eyes.selenium.capture;
 
-import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.Region;
 import com.applitools.eyes.capture.ImageProvider;
 import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.selenium.frames.Frame;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.wrappers.EyesTargetLocator;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;

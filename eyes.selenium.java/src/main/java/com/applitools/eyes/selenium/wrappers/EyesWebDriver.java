@@ -26,9 +26,7 @@ import java.util.*;
  * functionality as {@link org.openqa.selenium.remote.RemoteWebDriver}.
  */
 public class EyesWebDriver implements HasCapabilities, HasInputDevices,
-        FindsByClassName, FindsByCssSelector, FindsById, FindsByLinkText,
-        FindsByName, FindsByTagName, FindsByXPath, JavascriptExecutor,
-        SearchContext, TakesScreenshot, WebDriver, HasTouchScreen {
+        JavascriptExecutor, SearchContext, TakesScreenshot, WebDriver, HasTouchScreen {
 
     private final Logger logger;
     private final Eyes eyes;

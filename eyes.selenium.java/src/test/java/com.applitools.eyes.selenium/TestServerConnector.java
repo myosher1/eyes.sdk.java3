@@ -1,9 +1,6 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.EyesBase;
-import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.ServerConnector;
-import com.applitools.eyes.TestResults;
+import com.applitools.eyes.*;
 import com.applitools.eyes.selenium.fluent.Target;
 import org.testng.annotations.Test;
 import org.openqa.selenium.WebDriver;

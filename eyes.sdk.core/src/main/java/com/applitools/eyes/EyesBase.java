@@ -35,6 +35,7 @@ import java.util.Queue;
 /**
  * Applitools Eyes Base for Java API .
  */
+@SuppressWarnings("WeakerAccess")
 public abstract class EyesBase {
 
     private static final int DEFAULT_MATCH_TIMEOUT = 2000; // Milliseconds
@@ -807,10 +808,9 @@ public abstract class EyesBase {
 
     /**
      * Ends the test.
-     * @param isDeadlineExceeded If {@code true} the test will fail (unless
-     *                           it's a new test).
-     * @throws TestFailedException
-     * @throws NewTestException
+     * @param isDeadlineExceeded If {@code true} the test will fail (unless it's a new test).
+     * @throws TestFailedException Thrown when the test is failed on the Eyes server.
+     * @throws NewTestException    Thrown when the test is new on the Eyes server.
      */
     protected void closeResponseTime(boolean isDeadlineExceeded) {
         try {
@@ -1248,7 +1248,7 @@ public abstract class EyesBase {
         //If there's an action to do
         Thread actionThread = null;
         if (action != null) {
-            logger.verbose("Starting webdriver action.");
+            logger.verbose("Starting WebDriver action.");
             actionThread = new Thread(action);
             actionThread.start();
         }

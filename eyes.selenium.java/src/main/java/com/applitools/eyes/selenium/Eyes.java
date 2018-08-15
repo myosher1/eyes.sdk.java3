@@ -73,9 +73,6 @@ public class Eyes extends EyesBase {
     // Seconds
     private static final int RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE = 20;
 
-    // Milliseconds
-    private static final int DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100;
-
     private EyesWebDriver driver;
     private boolean doNotGetTitle;
 
@@ -2514,6 +2511,7 @@ public class Eyes extends EyesBase {
     /**
      * @return The currently set position provider.
      */
+    @SuppressWarnings("unused")
     private PositionProvider getElementPositionProvider() {
         return elementPositionProvider == null ? positionProvider : elementPositionProvider;
     }

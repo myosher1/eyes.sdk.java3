@@ -11,6 +11,7 @@ import com.sun.jersey.api.client.WebResource;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
 
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class RemoteSessionEventHandler extends RestClient implements ISessionEventHandler {
 
     private String autSessionId;
@@ -20,7 +21,6 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
     private WebResource defaultEndPoint;
     private boolean throwExceptions = true;
 
-    @SuppressWarnings("WeakerAccess")
     public RemoteSessionEventHandler(Logger logger, URI serverUrl, String accessKey, int timeout) {
         super(logger, serverUrl, timeout);
         this.accessKey = accessKey;
