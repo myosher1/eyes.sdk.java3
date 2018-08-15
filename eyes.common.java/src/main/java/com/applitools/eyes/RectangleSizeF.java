@@ -7,11 +7,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Represents a 2D size.
  */
-public class RectangleSize {
-    private int width;
-    private int height;
+public class RectangleSizeF {
+    private float width;
+    private float height;
 
-    public static RectangleSize EMPTY = new RectangleSize(0,0);
+    public static RectangleSizeF EMPTY = new RectangleSizeF(0,0);
 
     /**
      * Creates a new RectangleSize instance.
@@ -19,12 +19,18 @@ public class RectangleSize {
      * @param height The height of the rectangle.
      */
     @JsonCreator
-    public RectangleSize(@JsonProperty("width") int width, @JsonProperty("height") int height) {
+    public RectangleSizeF(@JsonProperty("width") float width, @JsonProperty("height") float height) {
         ArgumentGuard.greaterThanOrEqualToZero(width, "width");
         ArgumentGuard.greaterThanOrEqualToZero(height, "height");
 
         this.width = width;
         this.height = height;
+    }
+
+    public RectangleSizeF(RectangleSize size) {
+        ArgumentGuard.notNull(size,"size");
+        this.width = size.getWidth();
+        this.height = size.getHeight();
     }
 
     public boolean isEmpty() {
@@ -34,14 +40,14 @@ public class RectangleSize {
     /**
      * @return The rectangle's width.
      */
-    public int getWidth() {
+    public float getWidth() {
         return width;
     }
 
     /**
      * @return The rectangle's height.
      */
-    public int getHeight() {
+    public float getHeight() {
         return height;
     }
 
@@ -50,18 +56,16 @@ public class RectangleSize {
      * @param size A string representing width and height separated by "x".
      * @return An instance representing the input size.
      */
-    public static RectangleSize parse(String size) {
+    public static RectangleSizeF parse(String size) {
         ArgumentGuard.notNull(size, "size");
         String[] parts = size.split("x");
         if (parts.length != 2) {
-            throw new IllegalArgumentException(
-                    "Not a valid size string: " + size);
+            throw new IllegalArgumentException("Not a valid size string: " + size);
         }
 
-        return new RectangleSize(
-                Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+        return new RectangleSizeF(
+                Float.parseFloat(parts[0]), Float.parseFloat(parts[1]));
     }
-
 
     /**
      * Get a scaled version of the current size.
@@ -69,13 +73,12 @@ public class RectangleSize {
      * @param scaleRatio The ratio by which to scale.
      * @return A scaled version of the current size.
      */
-    public RectangleSize scale(double scaleRatio) {
-        return new RectangleSize((int) Math.ceil(width * scaleRatio),
-                (int) Math.ceil(height * scaleRatio));
+    public RectangleSizeF scale(double scaleRatio) {
+        return new RectangleSizeF(width * (float)scaleRatio, height * (float)scaleRatio);
     }
 
     /**
-     * @param obj A {@link RectangleSize} instance to be
+     * @param obj A {@link RectangleSizeF} instance to be
      *            checked for equality with the current instance.
      * @return {@code true} if and only if the input objects are equal by
      *          value, {@code false} otherwise.
@@ -86,17 +89,17 @@ public class RectangleSize {
             return true;
         }
 
-        if (!(obj instanceof RectangleSize)) {
+        if (!(obj instanceof RectangleSizeF)) {
             return false;
         }
 
-        RectangleSize other = (RectangleSize) obj;
+        RectangleSizeF other = (RectangleSizeF) obj;
         return width == other.width && height == other.height;
     }
 
     @Override
     public int hashCode() {
-        return width ^ height;
+        return (int)width ^ (int)height;
     }
 
 
