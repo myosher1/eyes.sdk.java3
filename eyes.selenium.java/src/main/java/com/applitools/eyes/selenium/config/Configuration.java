@@ -6,8 +6,8 @@ public class Configuration extends com.applitools.eyes.config.Configuration {
     private static final int DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100;
 
     private boolean forceFullPageScreenshot;
-    private int waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;;
-    private StitchMode stitchMode= StitchMode.SCROLL;;
+    private int waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
+    private StitchMode stitchMode = StitchMode.SCROLL;
     private boolean hideScrollbars = true;
     private boolean hideCaret = true;
 

@@ -330,7 +330,7 @@ public class Eyes extends EyesBase {
 
         screenshotFactory = new EyesWebDriverScreenshotFactory(logger, this.driver);
 
-        openBase(config.getAppName(), config.getTestName(), config.getViewportSize(), config.getSessionType());
+        openBase();
 
         String uaString = sessionStartInfo.getEnvironment().getInferred();
         if (uaString != null) {
