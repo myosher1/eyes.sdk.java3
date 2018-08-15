@@ -1,7 +1,7 @@
 package com.applitools.eyes.positioning;
 
 import com.applitools.eyes.Location;
-import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.RectangleSizeF;
 
 /**
  * An implementation of {@link PositionProvider} which throws an exception
@@ -19,7 +19,7 @@ public class InvalidPositionProvider implements PositionProvider {
                 "This class does not implement methods!");
     }
 
-    public RectangleSize getEntireSize() {
+    public RectangleSizeF getEntireSize() {
         throw new IllegalStateException(
                 "This class does not implement methods!");
     }

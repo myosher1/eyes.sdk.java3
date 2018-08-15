@@ -6,8 +6,8 @@ import com.applitools.utils.ArgumentGuard;
  * A location in a two-dimensional plane.
  */
 public final class Location implements Cloneable {
-    private final int x;
-    private final int y;
+    private final float x;
+    private final float y;
 
     public static final Location ZERO = new Location(0,0);
 
@@ -17,7 +17,7 @@ public final class Location implements Cloneable {
      * @param x The X coordinate of this location.
      * @param y The Y coordinate of this location.
      */
-    public Location(int x, int y) {
+    public Location(float x, float y) {
         this.x = x;
         this.y = y;
     }
@@ -39,7 +39,7 @@ public final class Location implements Cloneable {
 
     @Override
     public int hashCode() {
-        return this.getX() + this.getY();
+        return (int)(this.getX() + this.getY());
     }
 
     /**
@@ -60,7 +60,7 @@ public final class Location implements Cloneable {
      * @param dy The amount to offset the y-coordinate.
      * @return A location translated by the specified amount.
      */
-    public Location offset(int dx, int dy) {
+    public Location offset(float dx, float dy) {
         return new Location(x + dx, y + dy);
     }
 
@@ -81,20 +81,20 @@ public final class Location implements Cloneable {
      * @return A scaled copy of the current location.
      */
     public Location scale(double scaleRatio) {
-        return new Location((int) Math.ceil(x * scaleRatio), (int) Math.ceil(y * scaleRatio));
+        return new Location((float)(x * scaleRatio), (float)(y * scaleRatio));
     }
 
     /**
      * @return The X coordinate of this location.
      */
-    public int getX() {
+    public float getX() {
         return x;
     }
 
     /**
      * @return The Y coordinate of this location.
      */
-    public int getY() {
+    public float getY() {
         return y;
     }
 

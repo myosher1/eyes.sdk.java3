@@ -93,8 +93,8 @@ public class EyesMouse implements Mouse {
         logger.verbose("mouseMove(" + location + ")");
 
         if (location != null) {
-            int newX = Math.max(0, location.getX());
-            int newY = Math.max(0, location.getY());
+            float newX = Math.max(0, location.getX());
+            float newY = Math.max(0, location.getY());
             mouseLocation = new Location(newX, newY);
 
             addMouseTrigger(MouseAction.Move);

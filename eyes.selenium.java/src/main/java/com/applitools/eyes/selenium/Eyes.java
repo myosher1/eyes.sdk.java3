@@ -768,10 +768,10 @@ public class Eyes extends EyesBase {
     }
 
     private Region findBoundingBox(Dictionary<Integer, GetRegion> getRegions, ICheckSettings[] checkSettings) {
-        RectangleSize rectSize = getViewportSize();
+        RectangleSizeF rectSize = new RectangleSizeF(getViewportSize());
 
         EyesScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver,
-                new BufferedImage(rectSize.getWidth(), rectSize.getHeight(), BufferedImage.TYPE_INT_RGB));
+                new BufferedImage(Math.round(rectSize.getWidth()), Math.round(rectSize.getHeight()), BufferedImage.TYPE_INT_RGB));
 
         return findBoundingBox(getRegions, checkSettings, screenshot);
     }
@@ -1678,7 +1678,7 @@ public class Eyes extends EyesBase {
 
     private ScaleProviderFactory getScaleProviderFactory() {
         WebElement element = driver.findElement(By.tagName("html"));
-        RectangleSize entireSize = EyesSeleniumUtils.getEntireElementSize(jsExecutor, element);
+        RectangleSizeF entireSize = EyesSeleniumUtils.getEntireElementSize(jsExecutor, element);
         return new ContextBasedScaleProviderFactory(logger, entireSize,
                 viewportSizeHandler.get(), devicePixelRatio, false,
                 scaleProviderHandler);
@@ -2198,7 +2198,7 @@ public class Eyes extends EyesBase {
             throw new TestFailedException("Failed to set the viewport size", e);
         }
         ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
-        viewportSizeHandler.set(new RectangleSize(size.getWidth(), size.getHeight()));
+        viewportSizeHandler.set(size);
     }
 
     /**
@@ -2350,7 +2350,7 @@ public class Eyes extends EyesBase {
 
             logger.verbose("Building screenshot object...");
             result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
-                    new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
+                    new RectangleSizeF(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
         } else if (getConfig().getForceFullPageScreenshot() || stitchContent) {
             logger.verbose("Full page screenshot requested.");
 

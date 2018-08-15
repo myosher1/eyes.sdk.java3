@@ -1,18 +1,18 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.RectangleSizeF;
 
 public class SizeAndBorders {
 
-    private RectangleSize size;
+    private RectangleSizeF size;
     private Borders borders;
 
     public SizeAndBorders(int width, int height, int left, int top, int right, int bottom) {
-        size = new RectangleSize(width, height);
+        size = new RectangleSizeF(width, height);
         borders = new Borders(left, top, right, bottom);
     }
 
-    public RectangleSize getSize() {
+    public RectangleSizeF getSize() {
         return size;
     }
 

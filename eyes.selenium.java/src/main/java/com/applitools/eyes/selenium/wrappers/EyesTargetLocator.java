@@ -6,7 +6,7 @@ package com.applitools.eyes.selenium.wrappers;
 import com.applitools.eyes.EyesException;
 import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.RectangleSizeF;
 import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.selenium.Borders;
 import com.applitools.eyes.selenium.SeleniumJavaScriptExecutor;
@@ -54,14 +54,14 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
 
         SizeAndBorders sizeAndBorders = eyesFrame.getSizeAndBorders();
         Borders borders = sizeAndBorders.getBorders();
-        RectangleSize frameInnerSize = sizeAndBorders.getSize();
+        RectangleSizeF frameInnerSize = sizeAndBorders.getSize();
 
         Location contentLocation = new Location(pl.getX() + borders.getLeft(), pl.getY() + borders.getTop());
         Location originalLocation = scrollPosition.getCurrentPosition();
 
         Frame frame = new Frame(logger, targetFrame,
                 contentLocation,
-                new RectangleSize(ds.getWidth(), ds.getHeight()),
+                new RectangleSizeF(ds.getWidth(), ds.getHeight()),
                 frameInnerSize,
                 originalLocation,
                 this.driver);

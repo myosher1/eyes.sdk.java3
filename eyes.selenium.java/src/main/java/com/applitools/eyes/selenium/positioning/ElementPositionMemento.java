@@ -17,11 +17,11 @@ public class ElementPositionMemento extends PositionMemento {
         position = new Location(l);
     }
 
-    public int getX() {
+    public float getX() {
         return position.getX();
     }
 
-    public int getY() {
+    public float getY() {
         return position.getY();
     }
 }

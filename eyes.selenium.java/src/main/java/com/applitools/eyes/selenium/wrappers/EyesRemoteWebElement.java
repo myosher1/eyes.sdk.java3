@@ -47,8 +47,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
             "return arguments[0].scrollHeight;";
 
     private final String JS_SCROLL_TO_FORMATTED_STR =
-            "arguments[0].scrollLeft = %d;" +
-                    "arguments[0].scrollTop = %d;";
+            "arguments[0].scrollLeft = %f; arguments[0].scrollTop = %f;";
 
     private final String JS_GET_OVERFLOW =
             "return arguments[0].style.overflow;";
@@ -545,10 +544,10 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 //        return webElement.getOuterSize();
     }
 
-    public RectangleSize getClientSize() {
+    public RectangleSizeF getClientSize() {
         Object retVal = eyesDriver.executeScript(JS_GET_CLIENT_SIZE, this);
         @SuppressWarnings("unchecked") List<Float> esAsList = (List<Float>) retVal;
-        return new RectangleSize(
+        return new RectangleSizeF(
                 (int) Math.round(esAsList.get(0).doubleValue()),
                 (int) Math.round(esAsList.get(1).doubleValue()));
     }

@@ -25,7 +25,7 @@ public class ImageUtils {
     public static final int REQUIRED_IMAGE_TYPE = BufferedImage.TYPE_4BYTE_ABGR;
     private static Logger logger = new Logger();
 
-    public static void setLogHandler(LogHandler logHandler){
+    public static void setLogHandler(LogHandler logHandler) {
         ArgumentGuard.notNull(logHandler, "logHandler");
         logger.setLogHandler(logHandler);
     }
@@ -44,7 +44,6 @@ public class ImageUtils {
 
     /**
      * Encodes a given image as PNG.
-     *
      * @param image The image to encode.
      * @return The PNG bytes representation of the image.
      */
@@ -63,7 +62,7 @@ public class ImageUtils {
         } catch (IOException e) {
             throw new EyesException("Failed to encode image", e);
         } finally {
-            try{
+            try {
                 pngBytesStream.close();
             } catch (IOException e) {
                 //noinspection ThrowFromFinallyBlock
@@ -76,11 +75,9 @@ public class ImageUtils {
     /**
      * Creates a {@code BufferedImage} from an image file specified by {@code
      * path}.
-     *
      * @param path The path to the image file.
      * @return A {@code BufferedImage} instance.
-     * @throws com.applitools.eyes.EyesException If there was a problem
-     * creating the {@code BufferedImage} instance.
+     * @throws EyesException If there was a problem creating the {@code BufferedImage} instance.
      */
     public static BufferedImage imageFromFile(String path) throws
             EyesException {
@@ -99,11 +96,9 @@ public class ImageUtils {
     /**
      * Creates a {@link BufferedImage} from an image file specified by {@code
      * resource}.
-     *
      * @param resource The resource path.
      * @return A {@code BufferedImage} instance.
-     * @throws EyesException If there was a problem
-     * creating the {@code BufferedImage} instance.
+     * @throws EyesException If there was a problem creating the {@code BufferedImage} instance.
      */
     public static BufferedImage imageFromResource(String resource) throws
             EyesException {
@@ -124,11 +119,9 @@ public class ImageUtils {
     /**
      * Creates a {@code BufferedImage} instance from a base64 encoding of an
      * image's bytes.
-     *
      * @param image64 The base64 encoding of an image's bytes.
      * @return A {@code BufferedImage} instance.
-     * @throws com.applitools.eyes.EyesException If there was a problem
-     * creating the {@code BufferedImage} instance.
+     * @throws EyesException If there was a problem creating the {@code BufferedImage} instance.
      */
     public static BufferedImage imageFromBase64(String image64) throws
             EyesException {
@@ -141,7 +134,6 @@ public class ImageUtils {
     }
 
     /**
-     *
      * @param image The image from which to get its base64 representation.
      * @return The base64 representation of the image (bytes encoded as PNG).
      */
@@ -154,11 +146,9 @@ public class ImageUtils {
 
     /**
      * Creates a BufferedImage instance from raw image bytes.
-     *
      * @param imageBytes The raw bytes of the image.
      * @return A BufferedImage instance representing the image.
-     * @throws EyesException If there was a problem
-     * creating the {@code BufferedImage} instance.
+     * @throws EyesException If there was a problem creating the {@code BufferedImage} instance.
      */
     public static BufferedImage imageFromBytes(byte[] imageBytes) throws
             EyesException {
@@ -178,8 +168,7 @@ public class ImageUtils {
 
     /**
      * Get a copy of the part of the image given by region.
-     *
-     * @param image The image from which to get the part.
+     * @param image  The image from which to get the part.
      * @param region The region which should be copied from the image.
      * @return The part of the image.
      */
@@ -189,8 +178,8 @@ public class ImageUtils {
 
         // Get the clipped region as a BufferedImage.
         BufferedImage imagePart = image.getSubimage(
-                region.getLeft(), region.getTop(), region.getWidth(),
-                region.getHeight());
+                Math.round(region.getLeft()), Math.round(region.getTop()),
+                Math.round(region.getWidth()), Math.round(region.getHeight()));
         // IMPORTANT We copy the image this way because just using getSubImage
         // created a later problem (maybe an actual Java bug): the pixels
         // weren't what they were supposed to be.
@@ -200,9 +189,8 @@ public class ImageUtils {
 
     /**
      * Rotates an image by the given degrees.
-     *
      * @param image The image to rotate.
-     * @param deg The degrees by which to rotate the image.
+     * @param deg   The degrees by which to rotate the image.
      * @return A rotated image.
      */
     public static BufferedImage rotateImage(BufferedImage image, double deg) {
@@ -234,8 +222,8 @@ public class ImageUtils {
 
         // Notice we must first perform translation so the rotated result
         // will be properly positioned.
-        g.translate((rotatedWidth-originalWidth)/2,
-                (rotatedHeight-originalHeight)/2);
+        g.translate((rotatedWidth - originalWidth) / 2,
+                (rotatedHeight - originalHeight) / 2);
 
         g.rotate(radians, originalWidth / 2, originalHeight / 2);
 
@@ -247,12 +235,12 @@ public class ImageUtils {
 
     /**
      * Creates a copy of an image with an updated image type.
-     *
-     * @param src The image to copy.
+     * @param src         The image to copy.
      * @param updatedType The type of the copied image.
      *                    See {@link BufferedImage#getType()}.
      * @return A copy of the {@code src} of the requested type.
      */
+    @SuppressWarnings("WeakerAccess")
     public static BufferedImage copyImageWithType(BufferedImage src,
                                                   int updatedType) {
         ArgumentGuard.notNull(src, "src");
@@ -266,8 +254,7 @@ public class ImageUtils {
 
     /**
      * Scales an image by the given ratio
-     *
-     * @param image The image to scale.
+     * @param image         The image to scale.
      * @param scaleProvider The encapsulation of the required scaling.
      * @return If the scale ratio != 1, returns a new scaled image,
      * otherwise, returns the original image.
@@ -283,8 +270,7 @@ public class ImageUtils {
 
     /**
      * Scales an image by the given ratio
-     *
-     * @param image The image to scale.
+     * @param image      The image to scale.
      * @param scaleRatio Factor to multiply the image dimensions by
      * @return If the scale ratio != 1, returns a new scaled image,
      * otherwise, returns the original image.
@@ -310,13 +296,13 @@ public class ImageUtils {
 
     /**
      * Scales an image by the given ratio
-     *
-     * @param image The image to scale.
-     * @param targetWidth The width to resize the image to
+     * @param image        The image to scale.
+     * @param targetWidth  The width to resize the image to
      * @param targetHeight The height to resize the image to
      * @return If the size of image equal to target size, returns the original image,
      * otherwise, returns a new resized image.
      */
+    @SuppressWarnings("WeakerAccess")
     public static BufferedImage resizeImage(BufferedImage image, int targetWidth, int targetHeight) {
         ArgumentGuard.notNull(image, "image");
         ArgumentGuard.notNull(targetWidth, "targetWidth");
@@ -506,33 +492,33 @@ public class ImageUtils {
 
     /**
      * Removes a given region from the image.
-     * @param image The image to crop.
+     * @param image        The image to crop.
      * @param regionToCrop The region to crop from the image.
      * @return A new image without the cropped region.
      */
     public static BufferedImage cropImage(BufferedImage image,
                                           Region regionToCrop) {
-        Region imageRegion = new Region(0,0, image.getWidth(), image.getHeight());
+        Region imageRegion = new Region(0, 0, image.getWidth(), image.getHeight());
         imageRegion.intersect(regionToCrop);
-        if (imageRegion.isSizeEmpty()){
+        if (imageRegion.isSizeEmpty()) {
             logger.log("WARNING - requested cropped area results in zero-size image! Cropped not performed. Returning original image.");
             return image;
         }
 
-        if (!imageRegion.equals(regionToCrop)){
+        if (!imageRegion.equals(regionToCrop)) {
             logger.log("WARNING - requested cropped area overflows image boundaries.");
         }
 
-        BufferedImage croppedImage = Scalr.crop(image, imageRegion.getLeft(),
-                imageRegion.getTop(), imageRegion.getWidth(),
-                imageRegion.getHeight());
+        BufferedImage croppedImage = Scalr.crop(image,
+                Math.round(imageRegion.getLeft()), Math.round(imageRegion.getTop()),
+                Math.round(imageRegion.getWidth()), Math.round(imageRegion.getHeight()));
 
         return normalizeImageType(croppedImage);
     }
 
     /**
      * Save image to local file system
-     * @param image The image to save.
+     * @param image    The image to save.
      * @param filename The path to save image
      */
     public static void saveImage(BufferedImage image, String filename) {

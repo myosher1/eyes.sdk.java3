@@ -123,7 +123,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         }
 
         frameChain = driver.getFrameChain();
-        RectangleSize frameSize = getFrameSize(positionProvider);
+        RectangleSizeF frameSize = getFrameSize(positionProvider);
         currentFrameScrollPosition = getUpdatedScrollPosition(positionProvider);
         frameLocationInScreenshot = getUpdatedFrameLocationInScreenshot(logger, frameLocationInScreenshot);
 
@@ -164,8 +164,8 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         return sp;
     }
 
-    private RectangleSize getFrameSize(PositionProvider positionProvider) {
-        RectangleSize frameSize;
+    private RectangleSizeF getFrameSize(PositionProvider positionProvider) {
+        RectangleSizeF frameSize;
         if (frameChain.size() != 0) {
             frameSize = frameChain.getCurrentFrameInnerSize();
         } else {
@@ -175,7 +175,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             try {
                 frameSize = positionProvider.getEntireSize();
             } catch (EyesDriverOperationException e) {
-                frameSize = this.driver.getDefaultContentViewportSize();
+                frameSize = new RectangleSizeF(this.driver.getDefaultContentViewportSize());
             }
         }
         return frameSize;
@@ -249,7 +249,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
      */
     public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver,
                                    BufferedImage image,
-                                   RectangleSize entireFrameSize) {
+                                   RectangleSizeF entireFrameSize) {
         super(logger, image);
         ArgumentGuard.notNull(driver, "driver");
         ArgumentGuard.notNull(entireFrameSize, "entireFrameSize");
@@ -303,7 +303,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
                 ImageUtils.getImagePart(image, asIsSubScreenshotRegion);
 
         EyesWebDriverScreenshot result = new EyesWebDriverScreenshot(logger, driver, subScreenshotImage,
-                new RectangleSize(subScreenshotImage.getWidth(), subScreenshotImage.getHeight()));
+                new RectangleSizeF(subScreenshotImage.getWidth(), subScreenshotImage.getHeight()));
 
         logger.verbose("Done!");
         return result;
@@ -332,7 +332,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
         EyesWebDriverScreenshot result = new EyesWebDriverScreenshot(logger, driver, subScreenshotImage,
                 new Region(region.getLocation(),
-                        new RectangleSize(subScreenshotImage.getWidth(), subScreenshotImage.getHeight())));
+                        new RectangleSizeF(subScreenshotImage.getWidth(), subScreenshotImage.getHeight())));
 
         logger.verbose("Done!");
         return result;

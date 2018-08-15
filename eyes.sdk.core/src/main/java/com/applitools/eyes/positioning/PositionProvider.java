@@ -1,7 +1,7 @@
 package com.applitools.eyes.positioning;
 
 import com.applitools.eyes.Location;
-import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.RectangleSizeF;
 
 /**
  * Encapsulates page/element positioning.
@@ -25,7 +25,7 @@ public interface PositionProvider {
      * @return The entire size of the container which the position is relative
      * to.
      */
-    RectangleSize getEntireSize();
+    RectangleSizeF getEntireSize();
 
     /**
      * Get the current state of the position provider. This is different from

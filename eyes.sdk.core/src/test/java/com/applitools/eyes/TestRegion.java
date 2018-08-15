@@ -36,7 +36,7 @@ public class TestRegion {
         Assert.assertEquals(width, region.getWidth(), "width");
         Assert.assertEquals(height, region.getHeight(), "height");
 
-        region = new Region(new Location(left, top), new RectangleSize(width, height));
+        region = new Region(new Location(left, top), new RectangleSizeF(width, height));
         Assert.assertEquals(left, region.getLeft(), "left");
         Assert.assertEquals(top, region.getTop(), "top");
         Assert.assertEquals(width, region.getWidth(), "width");
@@ -72,7 +72,7 @@ public class TestRegion {
         }
 
         try {
-            new Region(null, new RectangleSize(3, 4));
+            new Region(null, new RectangleSizeF(3, 4));
             Assert.fail("Location must not be null!");
         } catch (IllegalArgumentException e) {
         }
@@ -135,8 +135,8 @@ public class TestRegion {
         Region.initLogger(new Logger());
         Location l1 = new Location(10, 10);
         Location l2 = new Location(20, 30);
-        RectangleSize s1 = new RectangleSize(50, 100);
-        RectangleSize s2 = new RectangleSize(100, 50);
+        RectangleSizeF s1 = new RectangleSizeF(50, 100);
+        RectangleSizeF s2 = new RectangleSizeF(100, 50);
 
         r1 = new Region(l1, s1);
         r2 = new Region(l2, s2);
@@ -212,7 +212,7 @@ public class TestRegion {
                 expectedSerialization, "Region serialization does not match!");
 
         r = new Region(new Location(left, top),
-                new RectangleSize(width, height));
+                new RectangleSizeF(width, height));
         actualSerialization = jsonMapper.writeValueAsString(r);
         Assert.assertEquals(actualSerialization,
                 expectedSerialization, "Region serialization does not match for location/size constructor!");

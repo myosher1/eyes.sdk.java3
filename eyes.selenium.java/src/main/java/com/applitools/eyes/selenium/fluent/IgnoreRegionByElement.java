@@ -26,7 +26,7 @@ public class IgnoreRegionByElement implements GetRegion {
                 CoordinatesType.CONTEXT_RELATIVE);
 
         List<Region> value = new ArrayList<>();
-        value.add(new Region(adjustedLocation, new RectangleSize(size.getWidth(), size.getHeight()),
+        value.add(new Region(adjustedLocation, new RectangleSizeF(size.getWidth(), size.getHeight()),
                 CoordinatesType.SCREENSHOT_AS_IS));
 
         return value;

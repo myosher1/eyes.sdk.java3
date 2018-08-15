@@ -2,8 +2,6 @@ package com.applitools.eyes.selenium.fluent;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.fluent.GetFloatingRegion;
-import com.applitools.eyes.selenium.Eyes;
-import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
@@ -39,8 +37,10 @@ public class FloatingRegionByElement implements GetFloatingRegion {
 
         List<FloatingMatchSettings> value = new ArrayList<>();
 
-        value.add(new FloatingMatchSettings(adjustedLocation.getX(), adjustedLocation.getY(), size.getWidth(),
-                size.getHeight(), maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
+        value.add(new FloatingMatchSettings(
+                Math.round(adjustedLocation.getX()), Math.round(adjustedLocation.getY()),
+                Math.round(size.getWidth()), Math.round(size.getHeight()),
+                maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
 
         return value;
     }

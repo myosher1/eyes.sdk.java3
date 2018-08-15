@@ -70,6 +70,18 @@ public class ArgumentGuard {
     }
 
     /**
+     * Fails if the input integer parameter is negative.
+     * @param param The input parameter.
+     * @param paramName The input parameter name.
+     */
+    public static void greaterThanOrEqualToZero(double param, String paramName)
+            throws IllegalArgumentException {
+        if (0 > param) {
+            throw new IllegalArgumentException(paramName + " < 0");
+        }
+    }
+
+    /**
      * Fails if the input integer parameter is smaller than 1.
      * @param param The input parameter.
      * @param paramName The input parameter name.

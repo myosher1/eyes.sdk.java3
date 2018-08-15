@@ -54,8 +54,8 @@ public class ScrollPositionProvider implements PositionProvider {
      * @return The entire size of the container which the position is relative
      * to.
      */
-    public RectangleSize getEntireSize() {
-        RectangleSize result = EyesSeleniumUtils.getCurrentFrameContentEntireSize(executor);
+    public RectangleSizeF getEntireSize() {
+        RectangleSizeF result = EyesSeleniumUtils.getCurrentFrameContentEntireSize(executor);
         logger.verbose("ScrollPositionProvider - Entire size: " + result);
         return result;
     }

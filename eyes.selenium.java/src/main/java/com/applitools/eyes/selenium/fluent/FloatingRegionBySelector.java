@@ -35,14 +35,16 @@ public class FloatingRegionBySelector implements GetFloatingRegion {
 
         for (WebElement element : elements) {
             Point locationAsPoint = element.getLocation();
-            RectangleSize size = EyesSeleniumUtils.getElementVisibleSize(element);
+            RectangleSizeF size = EyesSeleniumUtils.getElementVisibleSize(element);
 
             // Element's coordinates are context relative, so we need to convert them first.
             Location adjustedLocation = screenshot.getLocationInScreenshot(new Location(locationAsPoint.getX(), locationAsPoint.getY()),
                     CoordinatesType.CONTEXT_RELATIVE);
 
-            values.add(new FloatingMatchSettings(adjustedLocation.getX(), adjustedLocation.getY(), size.getWidth(),
-                    size.getHeight(), maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
+            values.add(new FloatingMatchSettings(
+                    Math.round(adjustedLocation.getX()), Math.round(adjustedLocation.getY()),
+                    Math.round(size.getWidth()), Math.round(size.getHeight()),
+                    maxUpOffset, maxDownOffset, maxLeftOffset, maxRightOffset));
         }
 
         return values;

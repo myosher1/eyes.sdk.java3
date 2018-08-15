@@ -5,7 +5,7 @@ package com.applitools.eyes.selenium.frames;
 
 import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.RectangleSizeF;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -22,8 +22,8 @@ public final class Frame {
     // index or by passing the relevant web element.
     private final WebElement reference;
     private final Location location;
-    private final RectangleSize outerSize;
-    private final RectangleSize innerSize;
+    private final RectangleSizeF outerSize;
+    private final RectangleSizeF innerSize;
     private final Location originalLocation;
     private final JavascriptExecutor jsExecutor;
     private final Logger logger;
@@ -41,7 +41,7 @@ public final class Frame {
      * @param jsExecutor       The Javascript Executor to use. Usually that will be the WebDriver.
      */
     public Frame(Logger logger, WebElement reference,
-                 Location location, RectangleSize outerSize, RectangleSize innerSize,
+                 Location location, RectangleSizeF outerSize, RectangleSizeF innerSize,
                  Location originalLocation, JavascriptExecutor jsExecutor) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(reference, "reference");
@@ -72,11 +72,11 @@ public final class Frame {
         return location;
     }
 
-    public RectangleSize getOuterSize() {
+    public RectangleSizeF getOuterSize() {
         return outerSize;
     }
 
-    public RectangleSize getInnerSize() {
+    public RectangleSizeF getInnerSize() {
         return innerSize;
     }
 

@@ -5,7 +5,6 @@ package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
-import com.applitools.eyes.selenium.wrappers.EyesRemoteWebElement;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
@@ -233,8 +232,7 @@ public class EyesSeleniumUtils {
             IEyesJsExecutor executor) {
         //noinspection unchecked
         List<Number> positionAsList = (List<Number>) executor.executeScript(JS_GET_CURRENT_SCROLL_POSITION);
-        return new Location((int) Math.ceil(positionAsList.get(0).doubleValue()),
-                (int) Math.ceil(positionAsList.get(1).doubleValue()));
+        return new Location(positionAsList.get(0).floatValue(), positionAsList.get(1).floatValue());
     }
 
     /**
@@ -244,7 +242,7 @@ public class EyesSeleniumUtils {
      */
     public static void setCurrentScrollPosition(IEyesJsExecutor executor,
                                                 Location location) {
-        executor.executeScript(String.format("window.scrollTo(%d,%d)",
+        executor.executeScript(String.format("window.scrollTo(%f,%f)",
                 location.getX(), location.getY()));
     }
 
@@ -253,14 +251,14 @@ public class EyesSeleniumUtils {
      * @return The size of the entire content.
      */
     @SuppressWarnings("unchecked")
-    public static RectangleSize getCurrentFrameContentEntireSize(
+    public static RectangleSizeF getCurrentFrameContentEntireSize(
             IEyesJsExecutor executor) {
-        RectangleSize result;
+        RectangleSizeF result;
         try {
             //noinspection unchecked
             Object retVal = executor.executeScript(JS_GET_CONTENT_ENTIRE_SIZE);
             List<Long> esAsList = (List<Long>) retVal;
-            result = new RectangleSize(esAsList.get(0).intValue(),
+            result = new RectangleSizeF(esAsList.get(0).intValue(),
                     esAsList.get(1).intValue());
         } catch (WebDriverException e) {
             throw new EyesDriverOperationException(
@@ -270,13 +268,13 @@ public class EyesSeleniumUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static RectangleSize getEntireElementSize(IEyesJsExecutor executor, WebElement element) {
-        RectangleSize result;
+    public static RectangleSizeF getEntireElementSize(IEyesJsExecutor executor, WebElement element) {
+        RectangleSizeF result;
         try {
             //noinspection unchecked
             Object retVal = executor.executeScript(JS_GET_ENTIRE_PAGE_SIZE, element);
             List<Long> esAsList = (List<Long>) retVal;
-            result = new RectangleSize(esAsList.get(0).intValue(),
+            result = new RectangleSizeF(esAsList.get(0).intValue(),
                     esAsList.get(1).intValue());
         } catch (WebDriverException e) {
             GeneralUtils.logExceptionStackTrace(e);
@@ -339,18 +337,18 @@ public class EyesSeleniumUtils {
     }
 
     public static boolean setBrowserSize(Logger logger, WebDriver driver,
-                                         RectangleSize requiredSize) {
+                                         RectangleSizeF requiredSize) {
         final int SLEEP = 1000;
         int retriesLeft = 3;
-        Dimension dRequiredSize = new Dimension(requiredSize.getWidth(), requiredSize.getHeight());
+        Dimension dRequiredSize = new Dimension(Math.round(requiredSize.getWidth()), Math.round(requiredSize.getHeight()));
         Dimension dCurrentSize;
-        RectangleSize currentSize;
+        RectangleSizeF currentSize;
         do {
             logger.verbose("Trying to set browser size to: " + requiredSize);
             driver.manage().window().setSize(dRequiredSize);
             GeneralUtils.sleep(SLEEP);
             dCurrentSize = driver.manage().window().getSize();
-            currentSize = new RectangleSize(dCurrentSize.getWidth(),
+            currentSize = new RectangleSizeF(dCurrentSize.getWidth(),
                     dCurrentSize.getHeight());
             logger.verbose("Current browser size: " + currentSize);
         } while (--retriesLeft > 0 && !currentSize.equals(requiredSize));
@@ -364,7 +362,7 @@ public class EyesSeleniumUtils {
                                                        RectangleSize requiredViewportSize) {
         Dimension browserSize = driver.manage().window().getSize();
         logger.verbose("Current browser size: " + browserSize);
-        RectangleSize requiredBrowserSize = new RectangleSize(
+        RectangleSizeF requiredBrowserSize = new RectangleSizeF(
                 browserSize.width +
                         (requiredViewportSize.getWidth() - actualViewportSize.getWidth()),
                 browserSize.height +
@@ -424,23 +422,23 @@ public class EyesSeleniumUtils {
             return;
         }
 
-        final int MAX_DIFF = 3;
-        int widthDiff = actualViewportSize.getWidth() - requiredSize.getWidth();
-        int widthStep = widthDiff > 0 ? -1 : 1; // -1 for smaller size, 1 for larger
-        int heightDiff = actualViewportSize.getHeight() - requiredSize.getHeight();
-        int heightStep = heightDiff > 0 ? -1 : 1;
+        final float MAX_DIFF = 3;
+        float widthDiff = actualViewportSize.getWidth() - requiredSize.getWidth();
+        float widthStep = widthDiff > 0 ? -1 : 1; // -1 for smaller size, 1 for larger
+        float heightDiff = actualViewportSize.getHeight() - requiredSize.getHeight();
+        float heightStep = heightDiff > 0 ? -1 : 1;
 
         Dimension dBrowserSize = driver.manage().window().getSize();
-        RectangleSize browserSize = new RectangleSize(dBrowserSize.getWidth(),
+        RectangleSizeF browserSize = new RectangleSizeF(dBrowserSize.getWidth(),
                 dBrowserSize.getHeight());
 
-        int currWidthChange = 0;
-        int currHeightChange = 0;
+        float currWidthChange = 0;
+        float currHeightChange = 0;
         // We try the zoom workaround only if size difference is reasonable.
         if (Math.abs(widthDiff) <= MAX_DIFF && Math.abs(heightDiff) <= MAX_DIFF) {
             logger.verbose("Trying workaround for zoom...");
-            int retriesLeft = Math.abs((widthDiff == 0 ? 1 : widthDiff) * (heightDiff == 0 ? 1 : heightDiff)) * 2;
-            RectangleSize lastRequiredBrowserSize = null;
+            float retriesLeft = Math.abs((widthDiff == 0 ? 1 : widthDiff) * (heightDiff == 0 ? 1 : heightDiff)) * 2;
+            RectangleSizeF lastRequiredBrowserSize = null;
             do {
                 logger.verbose("Retries left: " + retriesLeft);
                 // We specifically use "<=" (and not "<"), so to give an extra resize attempt
@@ -454,7 +452,7 @@ public class EyesSeleniumUtils {
                     currHeightChange += heightStep;
                 }
 
-                RectangleSize requiredBrowserSize = new RectangleSize(browserSize.getWidth() + currWidthChange,
+                RectangleSizeF requiredBrowserSize = new RectangleSizeF(browserSize.getWidth() + currWidthChange,
                         browserSize.getHeight() + currHeightChange);
                 if (requiredBrowserSize.equals(lastRequiredBrowserSize)) {
                     logger.verbose("Browser size is as required but viewport size does not match!");
@@ -599,7 +597,7 @@ public class EyesSeleniumUtils {
      * @param element The element for which to return the size.
      * @return The given element's visible portion size.
      */
-    public static RectangleSize getElementVisibleSize(WebElement element) {
+    public static RectangleSizeF getElementVisibleSize(WebElement element) {
         Point location = element.getLocation();
         Dimension size = element.getSize();
         Region region = new Region(location.getX(), location.getY(), size.getWidth(), size.getHeight());

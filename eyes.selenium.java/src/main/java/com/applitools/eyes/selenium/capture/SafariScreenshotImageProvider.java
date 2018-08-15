@@ -10,7 +10,6 @@ import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ImageUtils;
 import org.openqa.selenium.OutputType;
-import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.TakesScreenshot;
 
 import java.awt.image.BufferedImage;
@@ -66,7 +65,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
 
             DeviceData deviceData = new DeviceData(
                     imageWidth, imageHeight,
-                    originalViewportSize.getWidth(), originalViewportSize.getHeight(),
+                    Math.round(originalViewportSize.getWidth()), Math.round(originalViewportSize.getHeight()),
                     Integer.parseInt(userAgent.getBrowserMajorVersion()));
 
             if (devicesRegions.containsKey(deviceData)) {

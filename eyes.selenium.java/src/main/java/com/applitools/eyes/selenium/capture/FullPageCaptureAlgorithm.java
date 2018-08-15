@@ -57,7 +57,7 @@ public class FullPageCaptureAlgorithm {
 
     private void saveDebugScreenshotPart(BufferedImage image, Region region, String name) {
 
-        String suffix = String.format("part-%s-%d_%d_%dx%d",
+        String suffix = String.format("part-%s-%f_%f_%fx%f",
                 name, region.getLeft(), region.getTop(), region.getWidth(), region.getHeight());
 
         debugScreenshotsProvider.save(image, suffix);
@@ -113,14 +113,14 @@ public class FullPageCaptureAlgorithm {
         }
 
         if (fullArea == null || fullArea.isEmpty()) {
-            RectangleSize entireSize;
+            RectangleSizeF entireSize;
             try {
                 entireSize = positionProvider.getEntireSize();
                 logger.verbose("Entire size of region context: " + entireSize);
             } catch (EyesDriverOperationException e) {
                 logger.log("WARNING: Failed to extract entire size of region context" + e.getMessage());
                 logger.log("Using image size instead: " + image.getWidth() + "x" + image.getHeight());
-                entireSize = new RectangleSize(image.getWidth(), image.getHeight());
+                entireSize = new RectangleSizeF(image.getWidth(), image.getHeight());
             }
 
             // Notice that this might still happen even if we used
@@ -137,13 +137,13 @@ public class FullPageCaptureAlgorithm {
         // These will be used for storing the actual stitched size (it is
         // sometimes less than the size extracted via "getEntireSize").
         Location lastSuccessfulLocation;
-        RectangleSize lastSuccessfulPartSize;
+        RectangleSizeF lastSuccessfulPartSize;
 
         // The screenshot part is a bit smaller than the screenshot size,
         // in order to eliminate duplicate bottom scroll bars, as well as fixed
         // position footers.
-        RectangleSize partImageSize =
-                new RectangleSize(image.getWidth(),
+        RectangleSizeF partImageSize =
+                new RectangleSizeF(image.getWidth(),
                         Math.max(image.getHeight() - stitchingOverlap, MIN_SCREENSHOT_PART_HEIGHT));
 
         logger.verbose(String.format("entire page region: %s, image part size: %s", fullArea, partImageSize));
@@ -155,7 +155,7 @@ public class FullPageCaptureAlgorithm {
         logger.verbose("Creating stitchedImage container.");
         //Notice stitchedImage uses the same type of image as the screenshots.
         BufferedImage stitchedImage = new BufferedImage(
-                fullArea.getWidth(), fullArea.getHeight(), image.getType());
+                Math.round(fullArea.getWidth()), Math.round(fullArea.getHeight()), image.getType());
 
         logger.verbose("Done! Adding initial screenshot..");
         // Starting with the screenshot we already captured at (0,0).
@@ -166,7 +166,7 @@ public class FullPageCaptureAlgorithm {
         logger.verbose("Done!");
 
         lastSuccessfulLocation = new Location(0, 0);
-        lastSuccessfulPartSize = new RectangleSize(initialPart.getWidth(), initialPart.getHeight());
+        lastSuccessfulPartSize = new RectangleSizeF(initialPart.getWidth(), initialPart.getHeight());
 
         // Take screenshot and stitch for each screenshot part.
         logger.verbose("Getting the rest of the image parts...");
@@ -217,14 +217,14 @@ public class FullPageCaptureAlgorithm {
 
             // Stitching the current part.
             logger.verbose("Stitching part into the image container...");
-            stitchedImage.getRaster().setRect(targetPosition.getX(), targetPosition.getY(), partImage.getData());
+            stitchedImage.getRaster().setRect(Math.round(targetPosition.getX()), Math.round(targetPosition.getY()), partImage.getData());
             logger.verbose("Done!");
 
             lastSuccessfulLocation = originPosition;
         }
 
         if (partImage != null) {
-            lastSuccessfulPartSize = new RectangleSize(partImage.getWidth(), partImage.getHeight());
+            lastSuccessfulPartSize = new RectangleSizeF(partImage.getWidth(), partImage.getHeight());
         }
 
         logger.verbose("Stitching done!");
@@ -232,8 +232,8 @@ public class FullPageCaptureAlgorithm {
         originProvider.restoreState(originalPosition);
 
         // If the actual image size is smaller than the extracted size, we crop the image.
-        int actualImageWidth = lastSuccessfulLocation.getX() + lastSuccessfulPartSize.getWidth();
-        int actualImageHeight = lastSuccessfulLocation.getY() + lastSuccessfulPartSize.getHeight();
+        float actualImageWidth = lastSuccessfulLocation.getX() + lastSuccessfulPartSize.getWidth();
+        float actualImageHeight = lastSuccessfulLocation.getY() + lastSuccessfulPartSize.getHeight();
         logger.verbose("Extracted entire size: " + fullArea.getSize());
         logger.verbose("Actual stitched size: " + actualImageWidth + "x" + actualImageHeight);
 

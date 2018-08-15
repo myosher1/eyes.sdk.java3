@@ -27,7 +27,7 @@ public class StitchingStepDefs {
     private void divideIntoSubRegions(int width, int height, boolean isFixedSize) throws Throwable {
         try {
             subRegions = regionToDivide.getSubRegions(
-                    new RectangleSize(width, height), isFixedSize);
+                    new RectangleSizeF(width, height), isFixedSize);
         } catch (IllegalArgumentException e) {
             illegalArgumentExceptionThrown = true;
         }
@@ -45,7 +45,7 @@ public class StitchingStepDefs {
 
     @When("^I divide the region into sub regions with width (\\d+) and height (\\d+) without specifying sub-region type$")
     public void I_divide_the_region_into_sub_regions_with_width_and_height_without_specifying_sub_region_type(int width, int height) throws Throwable {
-        subRegions = regionToDivide.getSubRegions(new RectangleSize(width, height));
+        subRegions = regionToDivide.getSubRegions(new RectangleSizeF(width, height));
     }
 
     @Then("^I get the following sub-regions:$")

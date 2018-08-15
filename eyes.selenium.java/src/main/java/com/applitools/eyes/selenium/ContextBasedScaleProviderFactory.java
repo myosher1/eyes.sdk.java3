@@ -1,9 +1,6 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.Logger;
-import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.ScaleProvider;
-import com.applitools.eyes.ScaleProviderFactory;
+import com.applitools.eyes.*;
 import com.applitools.utils.PropertyHandler;
 
 /**
@@ -12,7 +9,7 @@ import com.applitools.utils.PropertyHandler;
 public class ContextBasedScaleProviderFactory extends ScaleProviderFactory {
 
     private final Logger logger;
-    private final RectangleSize topLevelContextEntireSize;
+    private final RectangleSizeF topLevelContextEntireSize;
     private final RectangleSize viewportSize;
     private final double devicePixelRatio;
     private final boolean isMobileDevice;
@@ -29,7 +26,7 @@ public class ContextBasedScaleProviderFactory extends ScaleProviderFactory {
      *                                  platform on which the application is
      *                                  running.
      */
-    public ContextBasedScaleProviderFactory(Logger logger, RectangleSize topLevelContextEntireSize,
+    public ContextBasedScaleProviderFactory(Logger logger, RectangleSizeF topLevelContextEntireSize,
                                             RectangleSize viewportSize, double devicePixelRatio, boolean isMobileDevice,
                                             PropertyHandler<ScaleProvider> scaleProviderHandler) {
         super(scaleProviderHandler);

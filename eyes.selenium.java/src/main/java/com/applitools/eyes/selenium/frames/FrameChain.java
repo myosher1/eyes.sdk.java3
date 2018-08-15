@@ -6,7 +6,7 @@ package com.applitools.eyes.selenium.frames;
 import com.applitools.eyes.EyesException;
 import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.RectangleSizeF;
 import com.applitools.eyes.selenium.exceptions.NoFramesException;
 import com.applitools.utils.ArgumentGuard;
 
@@ -137,9 +137,9 @@ public class FrameChain implements Iterable<Frame> {
     /**
      * @return The size of the current frame.
      */
-    public RectangleSize getCurrentFrameSize() {
+    public RectangleSizeF getCurrentFrameSize() {
         logger.verbose("getCurrentFrameSize()");
-        RectangleSize result = frames.get(frames.size() - 1).getOuterSize();
+        RectangleSizeF result = frames.get(frames.size() - 1).getOuterSize();
         logger.verbose("Done!");
         return result;
     }
@@ -147,9 +147,9 @@ public class FrameChain implements Iterable<Frame> {
     /**
      * @return The inner size of the current frame.
      */
-    public RectangleSize getCurrentFrameInnerSize() {
+    public RectangleSizeF getCurrentFrameInnerSize() {
         logger.verbose("GetCurrentFrameInnerSize()");
-        RectangleSize result = frames.get(frames.size() - 1).getInnerSize();
+        RectangleSizeF result = frames.get(frames.size() - 1).getInnerSize();
         logger.verbose("Done!");
         return result;
     }

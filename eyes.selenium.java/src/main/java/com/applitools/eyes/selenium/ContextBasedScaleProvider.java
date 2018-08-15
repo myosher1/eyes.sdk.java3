@@ -2,13 +2,14 @@ package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.RectangleSizeF;
 import com.applitools.eyes.ScaleProvider;
 import com.applitools.utils.ArgumentGuard;
 
-@SuppressWarnings("SpellCheckingInspection")
 /**
  * Scale provider which determines the scale ratio according to the context.
  */
+@SuppressWarnings("SpellCheckingInspection")
 public class ContextBasedScaleProvider implements ScaleProvider {
 
     // Allowed deviations for viewport size and default content entire size.
@@ -18,7 +19,7 @@ public class ContextBasedScaleProvider implements ScaleProvider {
 
     private final Logger logger;
     private final double devicePixelRatio;
-    private final RectangleSize topLevelContextEntireSize;
+    private final RectangleSizeF topLevelContextEntireSize;
     private final RectangleSize viewportSize;
     private final boolean isMobileDevice;
     private double scaleRatio;
@@ -42,8 +43,8 @@ public class ContextBasedScaleProvider implements ScaleProvider {
      */
     @SuppressWarnings("WeakerAccess")
     public ContextBasedScaleProvider(Logger logger,
-            RectangleSize topLevelContextEntireSize, RectangleSize viewportSize,
-            double devicePixelRatio, boolean isMobileDevice) {
+                                     RectangleSizeF topLevelContextEntireSize, RectangleSize viewportSize,
+                                     double devicePixelRatio, boolean isMobileDevice) {
 
         this.logger = logger;
         this.topLevelContextEntireSize = topLevelContextEntireSize;
@@ -71,7 +72,7 @@ public class ContextBasedScaleProvider implements ScaleProvider {
      */
     public void updateScaleRatio(int imageToScaleWidth) {
         int viewportWidth = viewportSize.getWidth();
-        int dcesWidth = topLevelContextEntireSize.getWidth();
+        float dcesWidth = topLevelContextEntireSize.getWidth();
 
         // If the image's width is the same as the viewport's width or the
         // top level context's width, no scaling is necessary.

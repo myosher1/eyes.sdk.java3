@@ -29,9 +29,9 @@ public class MoveToRegionVisibilityStrategy implements
 
         // We set the location to "almost" the location we were asked. This is because sometimes, moving the browser
         // to the specific pixel where the element begins, causes the element to be slightly out of the viewport.
-        int dstX = location.getX() - VISIBILITY_OFFSET;
+        float dstX = location.getX() - VISIBILITY_OFFSET;
         dstX = dstX < 0 ? 0 : dstX;
-        int dstY = location.getY() - VISIBILITY_OFFSET;
+        float dstY = location.getY() - VISIBILITY_OFFSET;
         dstY = dstY < 0 ? 0 : dstY;
         positionProvider.setPosition(new Location(dstX, dstY));
 

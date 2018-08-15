@@ -32,7 +32,7 @@ public class IgnoreRegionBySelector implements GetRegion {
                     new Location(locationAsPoint.getX(), locationAsPoint.getY()),
                     CoordinatesType.CONTEXT_RELATIVE);
 
-            values.add(new Region(adjustedLocation,  new RectangleSize(size.getWidth(), size.getHeight()),
+            values.add(new Region(adjustedLocation,  new RectangleSizeF(size.getWidth(), size.getHeight()),
                     CoordinatesType.SCREENSHOT_AS_IS));
         }
         return values;

@@ -15,13 +15,13 @@ import java.util.List;
 public class Region {
     private static Logger logger = new Logger();
     @JsonProperty("left")
-    private int left;
+    private float left;
     @JsonProperty("top")
-    private int top;
+    private float top;
     @JsonProperty("width")
-    private int width;
+    private float width;
     @JsonProperty("height")
-    private int height;
+    private float height;
     @JsonProperty("coordinatesType")
     private CoordinatesType coordinatesType;
 
@@ -40,14 +40,14 @@ public class Region {
     }
 
     @JsonCreator()
-    public Region(@JsonProperty("left") int left,
-                  @JsonProperty("top") int top,
-                  @JsonProperty("width") int width,
-                  @JsonProperty("height") int height) {
+    public Region(@JsonProperty("left") float left,
+                  @JsonProperty("top") float top,
+                  @JsonProperty("width") float width,
+                  @JsonProperty("height") float height) {
         this(left, top, width, height, CoordinatesType.SCREENSHOT_AS_IS);
     }
 
-    public Region(int left, int top, int width, int height, CoordinatesType coordinatesType) {
+    public Region(float left, float top, float width, float height, CoordinatesType coordinatesType) {
         ArgumentGuard.greaterThanOrEqualToZero(width, "width");
         ArgumentGuard.greaterThanOrEqualToZero(height, "height");
 
@@ -94,14 +94,18 @@ public class Region {
 
     @Override
     public int hashCode() {
-        return (left + top + width + height);
+        return (int)(left + top + width + height);
     }
 
-    public Region(Location location, RectangleSize size) {
+    public Region(Location location, RectangleSizeF size) {
         this(location, size, CoordinatesType.SCREENSHOT_AS_IS);
     }
 
-    public Region(Location location, RectangleSize size, CoordinatesType coordinatesType) {
+    public Region(Location location, RectangleSize size) {
+        this(location, new RectangleSizeF(size), CoordinatesType.SCREENSHOT_AS_IS);
+    }
+
+    public Region(Location location, RectangleSizeF size, CoordinatesType coordinatesType) {
         ArgumentGuard.notNull(location, "location");
         ArgumentGuard.notNull(size, "size");
 
@@ -142,7 +146,7 @@ public class Region {
      * @param dy The Y axis offset.
      * @return A region with an offset location.
      */
-    public Region offset(int dx, int dy) {
+    public Region offset(float dx, float dy) {
         return new Region(getLocation().offset(dx, dy), getSize(), getCoordinatesType());
     }
 
@@ -159,8 +163,8 @@ public class Region {
     /**
      * @return The size of the region.
      */
-    public RectangleSize getSize() {
-        return new RectangleSize(width, height);
+    public RectangleSizeF getSize() {
+        return new RectangleSizeF(width, height);
     }
 
     /**
@@ -177,7 +181,7 @@ public class Region {
     /**
      * @param size The updated size of the region.
      */
-    public void setSize(RectangleSize size) {
+    public void setSize(RectangleSizeF size) {
         width = size.getWidth();
         height = size.getHeight();
     }
@@ -200,14 +204,14 @@ public class Region {
      * returned.
      */
     private static Iterable<Region> getSubRegionsWithFixedSize(
-            Region containerRegion, RectangleSize subRegionSize) {
+            Region containerRegion, RectangleSizeF subRegionSize) {
         ArgumentGuard.notNull(containerRegion, "containerRegion");
         ArgumentGuard.notNull(subRegionSize, "subRegionSize");
 
         List<Region> subRegions = new LinkedList<>();
 
-        int subRegionWidth = subRegionSize.getWidth();
-        int subRegionHeight = subRegionSize.getHeight();
+        float subRegionWidth = subRegionSize.getWidth();
+        float subRegionHeight = subRegionSize.getHeight();
 
         ArgumentGuard.greaterThanZero(subRegionWidth, "subRegionSize width");
         ArgumentGuard.greaterThanZero(subRegionHeight, "subRegionSize height");
@@ -228,9 +232,9 @@ public class Region {
             return subRegions;
         }
 
-        int currentTop = containerRegion.top;
-        int bottom = containerRegion.top + containerRegion.height - 1;
-        int right = containerRegion.left + containerRegion.width - 1;
+        float currentTop = containerRegion.top;
+        float bottom = containerRegion.top + containerRegion.height - 1;
+        float right = containerRegion.left + containerRegion.width - 1;
 
         CoordinatesType currentType = containerRegion.getCoordinatesType();
 
@@ -240,7 +244,7 @@ public class Region {
                 currentTop = (bottom - subRegionHeight) + 1;
             }
 
-            int currentLeft = containerRegion.left;
+            float currentLeft = containerRegion.left;
             while (currentLeft <= right) {
                 if (currentLeft + subRegionWidth > right) {
                     currentLeft = (right - subRegionWidth) + 1;
@@ -265,7 +269,7 @@ public class Region {
      * only a single region is returned.
      */
     private static Iterable<Region> getSubRegionsWithVaryingSize(
-            Region containerRegion, RectangleSize maxSubRegionSize) {
+            Region containerRegion, RectangleSizeF maxSubRegionSize) {
         ArgumentGuard.notNull(containerRegion, "containerRegion");
         ArgumentGuard.notNull(maxSubRegionSize, "maxSubRegionSize");
         ArgumentGuard.greaterThanZero(maxSubRegionSize.getWidth(),
@@ -275,28 +279,28 @@ public class Region {
 
         List<Region> subRegions = new LinkedList<>();
 
-        int currentTop = containerRegion.top;
-        int bottom = containerRegion.top + containerRegion.height;
-        int right = containerRegion.left + containerRegion.width;
+        float currentTop = containerRegion.top;
+        float bottom = containerRegion.top + containerRegion.height;
+        float right = containerRegion.left + containerRegion.width;
 
         CoordinatesType currentType = containerRegion.getCoordinatesType();
 
         while (currentTop < bottom) {
 
-            int currentBottom = currentTop + maxSubRegionSize.getHeight();
+            float currentBottom = currentTop + maxSubRegionSize.getHeight();
             if (currentBottom > bottom) {
                 currentBottom = bottom;
             }
 
-            int currentLeft = containerRegion.left;
+            float currentLeft = containerRegion.left;
             while (currentLeft < right) {
-                int currentRight = currentLeft + maxSubRegionSize.getWidth();
+                float currentRight = currentLeft + maxSubRegionSize.getWidth();
                 if (currentRight > right) {
                     currentRight = right;
                 }
 
-                int currentHeight = currentBottom - currentTop;
-                int currentWidth = currentRight - currentLeft;
+                float currentHeight = currentBottom - currentTop;
+                float currentWidth = currentRight - currentLeft;
 
                 subRegions.add(new Region(currentLeft, currentTop,
                         currentWidth, currentHeight, currentType));
@@ -320,7 +324,7 @@ public class Region {
      * subRegionSize} is equal or greater than the current region,
      * only a single region is returned.
      */
-    public Iterable<Region> getSubRegions(RectangleSize subRegionSize,
+    public Iterable<Region> getSubRegions(RectangleSizeF subRegionSize,
                                           boolean isFixedSize) {
         if (isFixedSize) {
             return getSubRegionsWithFixedSize(this, subRegionSize);
@@ -330,10 +334,10 @@ public class Region {
     }
 
     /**
-     * See {@link #getSubRegions(RectangleSize, boolean)}.
+     * See {@link #getSubRegions(RectangleSizeF, boolean)}.
      * {@code isFixedSize} defaults to {@code false}.
      */
-    public Iterable<Region> getSubRegions(RectangleSize subRegionSize) {
+    public Iterable<Region> getSubRegions(RectangleSizeF subRegionSize) {
         return getSubRegions(subRegionSize, false);
     }
 
@@ -346,11 +350,11 @@ public class Region {
      */
     @SuppressWarnings("UnusedDeclaration")
     public boolean contains(Region other) {
-        int right = left + width;
-        int otherRight = other.getLeft() + other.getWidth();
+        float right = left + width;
+        float otherRight = other.getLeft() + other.getWidth();
 
-        int bottom = top + height;
-        int otherBottom = other.getTop() + other.getHeight();
+        float bottom = top + height;
+        float otherBottom = other.getTop() + other.getHeight();
 
         return top <= other.getTop() && left <= other.getLeft()
                 && bottom >= otherBottom && right >= otherRight;
@@ -375,14 +379,15 @@ public class Region {
      * @param other The region to check intersection with.
      * @return True if the regions are intersected, false otherwise.
      */
+    @SuppressWarnings("WeakerAccess")
     public boolean isIntersected(Region other) {
-        int right = left + width;
-        int bottom = top + height;
+        float right = left + width;
+        float bottom = top + height;
 
-        int otherLeft = other.getLeft();
-        int otherTop = other.getTop();
-        int otherRight = otherLeft + other.getWidth();
-        int otherBottom = otherTop + other.getHeight();
+        float otherLeft = other.getLeft();
+        float otherTop = other.getTop();
+        float otherRight = otherLeft + other.getWidth();
+        float otherBottom = otherTop + other.getHeight();
 
         return (((left <= otherLeft && otherLeft <= right)
                 || (otherLeft <= left && left <= otherRight))
@@ -405,22 +410,22 @@ public class Region {
         }
 
         // The regions intersect. So let's first find the left & top values
-        int otherLeft = other.getLeft();
-        int otherTop = other.getTop();
+        float otherLeft = other.getLeft();
+        float otherTop = other.getTop();
 
-        int intersectionLeft = (left >= otherLeft) ? left : otherLeft;
-        int intersectionTop = (top >= otherTop) ? top : otherTop;
+        float intersectionLeft = (left >= otherLeft) ? left : otherLeft;
+        float intersectionTop = (top >= otherTop) ? top : otherTop;
 
         // Now the width and height of the intersect
-        int right = left + width;
-        int otherRight = otherLeft + other.getWidth();
-        int intersectionRight = (right <= otherRight) ? right : otherRight;
-        int intersectionWidth = intersectionRight - intersectionLeft;
+        float right = left + width;
+        float otherRight = otherLeft + other.getWidth();
+        float intersectionRight = (right <= otherRight) ? right : otherRight;
+        float intersectionWidth = intersectionRight - intersectionLeft;
 
-        int bottom = top + height;
-        int otherBottom = otherTop + other.getHeight();
-        int intersectionBottom = (bottom <= otherBottom) ? bottom : otherBottom;
-        int intersectionHeight = intersectionBottom - intersectionTop;
+        float bottom = top + height;
+        float otherBottom = otherTop + other.getHeight();
+        float intersectionBottom = (bottom <= otherBottom) ? bottom : otherBottom;
+        float intersectionHeight = intersectionBottom - intersectionTop;
 
         left = intersectionLeft;
         top = intersectionTop;
@@ -430,59 +435,59 @@ public class Region {
     }
 
 
-    public int getLeft() {
+    public float getLeft() {
         return left;
     }
 
-    public int getTop() {
+    public float getTop() {
         return top;
     }
 
-    public int getWidth() {
+    public float getWidth() {
         return width;
     }
 
-    public int getHeight() {
+    public float getHeight() {
         return height;
     }
 
 
-    public void setLeft(int value) {
+    public void setLeft(float value) {
         left = value;
     }
 
-    public void setTop(int value) {
+    public void setTop(float value) {
         top = value;
     }
 
-    public void setWidth(int value) {
+    public void setWidth(float value) {
         width = value;
     }
 
-    public void setHeight(int value) {
+    public void setHeight(float value) {
         height = value;
     }
 
     public Location getMiddleOffset() {
-        int middleX = width / 2;
-        int middleY = height / 2;
+        float middleX = width / 2;
+        float middleY = height / 2;
 
         return new Location(middleX, middleY);
     }
 
     public Region expandToContain(Region region) {
-        int left = Math.min(this.left, region.left);
-        int top = Math.min(this.top, region.top);
+        float left = Math.min(this.left, region.left);
+        float top = Math.min(this.top, region.top);
 
-        int thisRight = this.left + this.width;
-        int otherRight = region.left + region.width;
-        int maxRight = Math.max(thisRight, otherRight);
-        int width = maxRight - left;
+        float thisRight = this.left + this.width;
+        float otherRight = region.left + region.width;
+        float maxRight = Math.max(thisRight, otherRight);
+        float width = maxRight - left;
 
-        int thisBottom = this.top + this.height;
-        int otherBottom = region.top + region.height;
-        int maxBottom = Math.max(thisBottom, otherBottom);
-        int height = maxBottom - top;
+        float thisBottom = this.top + this.height;
+        float otherBottom = region.top + region.height;
+        float maxBottom = Math.max(thisBottom, otherBottom);
+        float height = maxBottom - top;
 
         return new Region(left, top, width, height);
     }

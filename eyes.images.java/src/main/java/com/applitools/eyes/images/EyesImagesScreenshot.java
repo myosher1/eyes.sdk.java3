@@ -27,7 +27,7 @@ public class EyesImagesScreenshot extends EyesScreenshot {
         super(logger, image);
         ArgumentGuard.notNull(location, "location");
         this.bounds = new Region(location,
-                new RectangleSize(image.getWidth(), image.getHeight()));
+                new RectangleSizeF(image.getWidth(), image.getHeight()));
     }
 
     /**

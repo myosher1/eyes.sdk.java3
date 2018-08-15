@@ -54,10 +54,10 @@ public class ElementPositionProvider implements PositionProvider {
      * @return The entire size of the container which the position is relative
      * to.
      */
-    public RectangleSize getEntireSize() {
+    public RectangleSizeF getEntireSize() {
         logger.verbose("enter");
 
-        RectangleSize result = new RectangleSize(element.getScrollWidth(), element.getScrollHeight());
+        RectangleSizeF result = new RectangleSizeF(element.getScrollWidth(), element.getScrollHeight());
 
         logger.verbose("Entire size: " + result);
         return result;
