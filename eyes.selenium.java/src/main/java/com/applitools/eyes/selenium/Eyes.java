@@ -1124,13 +1124,10 @@ public class Eyes extends EyesBase {
             Location elementLocation = new Location(p.getX(), p.getY());
 
             WebElement scrollRootElement;
-            if (originalFC.size() > 0 && !element.equals(originalFC.peek().getReference()))
-            {
+            if (originalFC.size() > 0 && !element.equals(originalFC.peek().getReference())) {
                 switchTo.frames(originalFC);
                 scrollRootElement = driver.findElement(By.tagName("html"));
-            }
-            else
-            {
+            } else {
                 scrollRootElement = this.scrollRootElement;
             }
 
@@ -1971,6 +1968,9 @@ public class Eyes extends EyesBase {
             }
 
             result = checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
+        } catch (Exception ex) {
+            GeneralUtils.logExceptionStackTrace(ex);
+            result = null;
         } finally {
             if (originalOverflow != null) {
                 eyesElement.setOverflow(originalOverflow);
@@ -2280,7 +2280,7 @@ public class Eyes extends EyesBase {
             }
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
             logger.verbose("done restoring scrollbars.");
-        } else{
+        } else {
             logger.verbose("no need to restore scrollbars.");
         }
         driver.getFrameChain().clear();

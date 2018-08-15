@@ -362,7 +362,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
      * @return The viewport size of the default content (outer most frame).
      */
     public RectangleSize getDefaultContentViewportSize(boolean forceQuery) {
-        logger.verbose("getDefaultContentViewportSize(forceQuery: " + forceQuery + ")");
+        logger.verbose("params (forceQuery: " + forceQuery + ")");
 
         if (defaultContentViewportSize != null && !forceQuery) {
             logger.verbose("Using cached viewport size: " + defaultContentViewportSize);
