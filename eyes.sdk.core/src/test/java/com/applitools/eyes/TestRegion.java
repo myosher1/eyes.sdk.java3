@@ -78,12 +78,12 @@ public class TestRegion {
         }
 
         try {
-            new Region(new Location(1, 2), null);
+            new Region(new Location(1, 2), (RectangleSize) null);
             Assert.fail("Size must not be null!");
         } catch (IllegalArgumentException e) {
         }
         try {
-            new Region(null, null);
+            new Region(null, (RectangleSize) null);
             Assert.fail("Location and size must not be null!");
         } catch (IllegalArgumentException e) {
         }
@@ -167,7 +167,7 @@ public class TestRegion {
 
 
     @Test
-    public void test_Region_Deserialization() throws JsonProcessingException {
+    public void test_Region_Deserialization() {
         int left = 1;
         int top = 2;
         int width = 3;

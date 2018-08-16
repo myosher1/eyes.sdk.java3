@@ -139,12 +139,7 @@ public class FullPageCaptureAlgorithm {
         Location lastSuccessfulLocation;
         RectangleSizeF lastSuccessfulPartSize;
 
-        // The screenshot part is a bit smaller than the screenshot size,
-        // in order to eliminate duplicate bottom scroll bars, as well as fixed
-        // position footers.
-        RectangleSizeF partImageSize =
-                new RectangleSizeF(image.getWidth(),
-                        Math.max(image.getHeight() - stitchingOverlap, MIN_SCREENSHOT_PART_HEIGHT));
+        RectangleSizeF partImageSize = new RectangleSizeF(image.getWidth(), image.getHeight());
 
         logger.verbose(String.format("entire page region: %s, image part size: %s", fullArea, partImageSize));
 
@@ -168,14 +163,16 @@ public class FullPageCaptureAlgorithm {
         lastSuccessfulLocation = new Location(0, 0);
         lastSuccessfulPartSize = new RectangleSizeF(initialPart.getWidth(), initialPart.getHeight());
 
+        stitchedImage = stitchParts(fullArea, positionProvider, originalStitchedState, originalPosition, pixelRatio, scaledCutProvider, regionInScreenshot, lastSuccessfulLocation, lastSuccessfulPartSize, imageParts, stitchedImage);
+
+        return stitchedImage;
+    }
+
+    private BufferedImage stitchParts(Region fullArea, PositionProvider positionProvider, PositionMemento originalStitchedState, PositionMemento originalPosition, double pixelRatio, CutProvider scaledCutProvider, Region regionInScreenshot, Location lastSuccessfulLocation, RectangleSizeF lastSuccessfulPartSize, Iterable<Region> imageParts, BufferedImage stitchedImage) {
         // Take screenshot and stitch for each screenshot part.
         logger.verbose("Getting the rest of the image parts...");
         BufferedImage partImage = null;
         for (Region partRegion : imageParts) {
-            // Skipping screenshot for 0,0 (already taken)
-//            if (partRegion.getLeft() == 0 && partRegion.getTop() == 0) {
-//                continue;
-//            }
             logger.verbose(String.format("Taking screenshot for %s", partRegion));
             // Set the position to the part's top/left.
             positionProvider.setPosition(partRegion.getLocation());
