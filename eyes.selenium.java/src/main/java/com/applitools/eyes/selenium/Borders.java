@@ -1,31 +1,31 @@
 package com.applitools.eyes.selenium;
 
 public class Borders {
-    private int left;
-    private int top;
-    private int right;
-    private int bottom;
+    private float left;
+    private float top;
+    private float right;
+    private float bottom;
 
-    public Borders(int left, int top, int right, int bottom) {
+    public Borders(float left, float top, float right, float bottom) {
         this.left = left;
         this.top = top;
         this.right = right;
         this.bottom = bottom;
     }
 
-    public int getLeft() {
+    public float getLeft() {
         return left;
     }
 
-    public int getTop() {
+    public float getTop() {
         return top;
     }
 
-    public int getRight() {
+    public float getRight() {
         return right;
     }
 
-    public int getBottom() {
+    public float getBottom() {
         return bottom;
     }
 }

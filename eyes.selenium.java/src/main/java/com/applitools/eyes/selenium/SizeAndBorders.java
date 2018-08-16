@@ -7,7 +7,7 @@ public class SizeAndBorders {
     private RectangleSizeF size;
     private Borders borders;
 
-    public SizeAndBorders(int width, int height, int left, int top, int right, int bottom) {
+    public SizeAndBorders(float width, float height, float left, float top, float right, float bottom) {
         size = new RectangleSizeF(width, height);
         borders = new Borders(left, top, right, bottom);
     }

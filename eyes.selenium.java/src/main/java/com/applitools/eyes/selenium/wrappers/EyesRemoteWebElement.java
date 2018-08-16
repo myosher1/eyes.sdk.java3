@@ -2,6 +2,7 @@ package com.applitools.eyes.selenium.wrappers;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.positioning.PositionProvider;
+import com.applitools.eyes.selenium.Borders;
 import com.applitools.eyes.selenium.SizeAndBorders;
 import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.utils.ArgumentGuard;
@@ -79,13 +80,18 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     @SuppressWarnings("unused")
     private final String JS_GET_BORDER_WIDTHS =
-            JS_GET_BORDER_WIDTHS_ARR + "return retVal;";
+            "var elem = arguments[0]; " +
+                    JS_GET_BORDER_WIDTHS_ARR + "return retVal.join(';');";
 
     private final String JS_GET_SIZE_AND_BORDER_WIDTHS =
             "var elem = arguments[0]; " +
-                    "var retVal = [arguments[0].clientWidth, arguments[0].clientHeight]; " +
+                    "var retVal = [elem.clientWidth, elem.clientHeight]; " +
                     JS_GET_BORDER_WIDTHS_ARR +
-                    "return retVal;";
+                    "return retVal.join(';');";
+
+    private final String JS_GET_BOUNDS =
+            "var rect = arguments[0].getBoundingClientRect();" +
+                    "return rect.x+';'+rect.y+';'+rect.width+';'+rect.height;";
 
     private PositionProvider positionProvider;
 
@@ -121,30 +127,12 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     }
 
     public Region getBounds() {
-        Point weLocation = webElement.getLocation();
-        int left = weLocation.getX();
-        int top = weLocation.getY();
-        int width = 0;
-        int height = 0;
-
-        try {
-            Dimension weSize = webElement.getSize();
-            width = weSize.getWidth();
-            height = weSize.getHeight();
-        } catch (Exception ex) {
-            // Not supported on all platforms.
-        }
-
-        if (left < 0) {
-            width = Math.max(0, width + left);
-            left = 0;
-        }
-
-        if (top < 0) {
-            height = Math.max(0, height + top);
-            top = 0;
-        }
-
+        String retVal = (String)eyesDriver.executeScript(JS_GET_BOUNDS, this);
+        String[] valuesStr = retVal.split(";");
+        float left = Float.parseFloat(valuesStr[0]);
+        float top = Float.parseFloat(valuesStr[1]);
+        float width = Float.parseFloat(valuesStr[2]);
+        float height = Float.parseFloat(valuesStr[3]);
         return new Region(left, top, width, height, CoordinatesType.CONTEXT_RELATIVE);
     }
 
@@ -570,15 +558,25 @@ public class EyesRemoteWebElement extends RemoteWebElement {
         this.positionProvider = positionProvider;
     }
 
+    public Borders getBorderWidths() {
+        String retVal = (String)eyesDriver.executeScript(JS_GET_BORDER_WIDTHS, this);
+        String[] valuesStr = retVal.split(";");
+        return new Borders(
+                Float.parseFloat(valuesStr[0].replace("px", "")),
+                Float.parseFloat(valuesStr[1].replace("px", "")),
+                Float.parseFloat(valuesStr[2].replace("px", "")),
+                Float.parseFloat(valuesStr[3].replace("px", "")));
+    }
+
     public SizeAndBorders getSizeAndBorders() {
-        Object retVal = eyesDriver.executeScript(JS_GET_SIZE_AND_BORDER_WIDTHS, this);
-        @SuppressWarnings("unchecked") List<Object> esAsList = (List<Object>) retVal;
+        String retVal = (String)eyesDriver.executeScript(JS_GET_SIZE_AND_BORDER_WIDTHS, this);
+        String[] valuesStr = retVal.split(";");
         return new SizeAndBorders(
-                ((Long) esAsList.get(0)).intValue(),
-                ((Long) esAsList.get(1)).intValue(),
-                Integer.parseInt(((String) esAsList.get(2)).replace("px", "")),
-                Integer.parseInt(((String) esAsList.get(3)).replace("px", "")),
-                Integer.parseInt(((String) esAsList.get(4)).replace("px", "")),
-                Integer.parseInt(((String) esAsList.get(5)).replace("px", "")));
+                Float.parseFloat(valuesStr[0]),
+                Float.parseFloat(valuesStr[1]),
+                Float.parseFloat(valuesStr[2].replace("px", "")),
+                Float.parseFloat(valuesStr[3].replace("px", "")),
+                Float.parseFloat(valuesStr[4].replace("px", "")),
+                Float.parseFloat(valuesStr[5].replace("px", "")));
     }
 }

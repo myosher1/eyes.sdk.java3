@@ -1928,7 +1928,8 @@ public class Eyes extends EyesBase {
 
         String originalOverflow = null;
 
-        Point pl = eyesElement.getLocation();
+        Region bounds = eyesElement.getBounds();
+//        Point pl = eyesElement.getLocation();
         MatchResult result;
         try {
             checkFrameOrElement = true;
@@ -1940,8 +1941,8 @@ public class Eyes extends EyesBase {
                 eyesElement.setOverflow("hidden");
             }
 
-            int elementWidth = eyesElement.getClientWidth();
-            int elementHeight = eyesElement.getClientHeight();
+            float elementWidth = bounds.getWidth();
+            float elementHeight =  bounds.getHeight();
 
             if (!displayStyle.equals("inline") &&
                     elementHeight <= effectiveViewport.getHeight() &&
@@ -1951,11 +1952,10 @@ public class Eyes extends EyesBase {
                 elementPositionProvider = null;
             }
 
-            int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
-            int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
+            Borders borders = eyesElement.getBorderWidths();
 
             final Region elementRegion = new Region(
-                    pl.getX() + borderLeftWidth, pl.getY() + borderTopWidth,
+                    bounds.getLeft() + borders.getLeft(), bounds.getTop() + borders.getTop(),
                     elementWidth, elementHeight, CoordinatesType.SCREENSHOT_AS_IS);
 
             logger.verbose("Element region: " + elementRegion);
