@@ -1,6 +1,7 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.FloatingMatchSettings;
+import com.applitools.eyes.RegionF;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.selenium.fluent.Target;
@@ -186,7 +187,7 @@ public class TestFluentApi extends TestSetup {
                 Target.region(By.id("overflowing-div-image")).fully().withName("overflowing div image (fully)"),
                 Target.frame("frame1").frame("frame1-1").fully().withName("Full Frame in Frame"),
                 Target.frame("frame1").withName("frame1"),
-                Target.region(new Region(30, 50, 300, 620)).withName("rectangle")
+                Target.region(new RegionF(30, 50, 300, 620)).withName("rectangle")
         );
     }
 }

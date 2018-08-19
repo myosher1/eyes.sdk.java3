@@ -3,6 +3,7 @@ package com.applitools.eyes.selenium.wrappers;
 import com.applitools.eyes.*;
 import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.selenium.Borders;
+import com.applitools.eyes.selenium.BoundsAndBorders;
 import com.applitools.eyes.selenium.SizeAndBorders;
 import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.utils.ArgumentGuard;
@@ -93,6 +94,12 @@ public class EyesRemoteWebElement extends RemoteWebElement {
             "var rect = arguments[0].getBoundingClientRect();" +
                     "return rect.x+';'+rect.y+';'+rect.width+';'+rect.height;";
 
+    private final String JS_GET_BOUNDS_AND_BORDER_WIDTHS =
+            "var elem = arguments[0]; " +
+                    "var rect = elem.getBoundingClientRect();" +
+                    JS_GET_BORDER_WIDTHS_ARR +
+                    "return rect.x+';'+rect.y+';'+rect.width+';'+rect.height+';'+retVal.join(';');";
+
     private PositionProvider positionProvider;
 
     public EyesRemoteWebElement(Logger logger, EyesWebDriver eyesDriver, WebElement webElement) {
@@ -126,14 +133,14 @@ public class EyesRemoteWebElement extends RemoteWebElement {
         }
     }
 
-    public Region getBounds() {
-        String retVal = (String)eyesDriver.executeScript(JS_GET_BOUNDS, this);
+    public RegionF getBounds() {
+        String retVal = (String) eyesDriver.executeScript(JS_GET_BOUNDS, this);
         String[] valuesStr = retVal.split(";");
         float left = Float.parseFloat(valuesStr[0]);
         float top = Float.parseFloat(valuesStr[1]);
         float width = Float.parseFloat(valuesStr[2]);
         float height = Float.parseFloat(valuesStr[3]);
-        return new Region(left, top, width, height, CoordinatesType.CONTEXT_RELATIVE);
+        return new RegionF(left, top, width, height, CoordinatesType.CONTEXT_RELATIVE);
     }
 
     /**
@@ -152,6 +159,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     /**
      * @return The integer value of a computed style.
      */
+    @SuppressWarnings("WeakerAccess")
     public int getComputedStyleInteger(String propStyle) {
         return Math.round(Float.valueOf(getComputedStyle(propStyle).trim().
                 replace("px", "")));
@@ -253,7 +261,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     public void click() {
 
         // Letting the driver know about the current action.
-        Region currentControl = getBounds();
+        RegionF currentControl = getBounds();
         eyesDriver.getEyes().addMouseTrigger(MouseAction.Click, this);
         logger.verbose(String.format("click(%s)", currentControl));
 
@@ -559,7 +567,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     }
 
     public Borders getBorderWidths() {
-        String retVal = (String)eyesDriver.executeScript(JS_GET_BORDER_WIDTHS, this);
+        String retVal = (String) eyesDriver.executeScript(JS_GET_BORDER_WIDTHS, this);
         String[] valuesStr = retVal.split(";");
         return new Borders(
                 Float.parseFloat(valuesStr[0].replace("px", "")),
@@ -569,7 +577,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     }
 
     public SizeAndBorders getSizeAndBorders() {
-        String retVal = (String)eyesDriver.executeScript(JS_GET_SIZE_AND_BORDER_WIDTHS, this);
+        String retVal = (String) eyesDriver.executeScript(JS_GET_SIZE_AND_BORDER_WIDTHS, this);
         String[] valuesStr = retVal.split(";");
         return new SizeAndBorders(
                 Float.parseFloat(valuesStr[0]),
@@ -578,5 +586,19 @@ public class EyesRemoteWebElement extends RemoteWebElement {
                 Float.parseFloat(valuesStr[3].replace("px", "")),
                 Float.parseFloat(valuesStr[4].replace("px", "")),
                 Float.parseFloat(valuesStr[5].replace("px", "")));
+    }
+
+    public BoundsAndBorders getBoundsAndBorders() {
+        String retVal = (String) eyesDriver.executeScript(JS_GET_BOUNDS_AND_BORDER_WIDTHS, this);
+        String[] valuesStr = retVal.split(";");
+        return new BoundsAndBorders(
+                Float.parseFloat(valuesStr[0]),
+                Float.parseFloat(valuesStr[1]),
+                Float.parseFloat(valuesStr[2]),
+                Float.parseFloat(valuesStr[3]),
+                Float.parseFloat(valuesStr[4].replace("px", "")),
+                Float.parseFloat(valuesStr[5].replace("px", "")),
+                Float.parseFloat(valuesStr[6].replace("px", "")),
+                Float.parseFloat(valuesStr[7].replace("px", "")));
     }
 }

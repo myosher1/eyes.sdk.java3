@@ -600,7 +600,7 @@ public class EyesSeleniumUtils {
     public static RectangleSizeF getElementVisibleSize(WebElement element) {
         Point location = element.getLocation();
         Dimension size = element.getSize();
-        Region region = new Region(location.getX(), location.getY(), size.getWidth(), size.getHeight());
+        RegionF region = new RegionF(location.getX(), location.getY(), size.getWidth(), size.getHeight());
         WebElement parent;
 
         try {
@@ -613,7 +613,7 @@ public class EyesSeleniumUtils {
             while (parent != null && !region.isSizeEmpty()) {
                 Point parentLocation = parent.getLocation();
                 Dimension parentSize = parent.getSize();
-                Region parentRegion = new Region(parentLocation.getX(), parentLocation.getY(),
+                RegionF parentRegion = new RegionF(parentLocation.getX(), parentLocation.getY(),
                         parentSize.getWidth(), parentSize.getHeight());
 
                 region.intersect(parentRegion);

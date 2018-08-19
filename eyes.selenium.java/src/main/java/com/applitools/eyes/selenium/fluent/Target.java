@@ -1,6 +1,6 @@
 package com.applitools.eyes.selenium.fluent;
 
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
@@ -11,7 +11,7 @@ public class Target {
         return new SeleniumCheckSettings();
     }
 
-    public static SeleniumCheckSettings region(Region region)
+    public static SeleniumCheckSettings region(RegionF region)
     {
         return new SeleniumCheckSettings(region);
     }

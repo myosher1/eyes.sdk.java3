@@ -5,7 +5,7 @@ import com.applitools.eyes.Logger;
 import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.eyes.triggers.MouseAction;
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.interactions.Mouse;
 import org.openqa.selenium.interactions.internal.Coordinates;
@@ -147,6 +147,6 @@ public class EyesMouse implements Mouse {
         // Notice we send a copy of 'mouseLocation' to make sure the callee
         // will not change its values thus affecting our internal state.
         eyesDriver.getEyes().addMouseTrigger(
-                action, Region.EMPTY, mouseLocation);
+                action, RegionF.EMPTY, mouseLocation);
     }
 }

@@ -95,6 +95,7 @@ public abstract class TestSetup implements ITest {
         this.expectedFloatingRegions = new HashSet<>(Arrays.asList(expectedFloatingsRegions));
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     public void beforeMethod(String methodName) {
         System.out.println();
         System.out.println("==== Starting Test ====");

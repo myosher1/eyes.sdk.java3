@@ -7,7 +7,7 @@ import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import com.applitools.eyes.triggers.MouseAction;
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.interactions.TouchScreen;
 import org.openqa.selenium.interactions.internal.Coordinates;
@@ -44,7 +44,7 @@ public class EyesTouchScreen implements TouchScreen {
         Location location = EyesSeleniumUtils.getPageLocation(where);
         logger.verbose("tap(" + location + ")");
 
-        driver.getEyes().addMouseTrigger(MouseAction.Click, Region.EMPTY,
+        driver.getEyes().addMouseTrigger(MouseAction.Click, RegionF.EMPTY,
                 location);
 
         touch.singleTap(where);
@@ -77,7 +77,7 @@ public class EyesTouchScreen implements TouchScreen {
         logger.verbose("tap(" + location + ")");
 
         driver.getEyes().addMouseTrigger(MouseAction.DoubleClick,
-                Region.EMPTY, location);
+                RegionF.EMPTY, location);
 
         touch.doubleTap(where);
     }

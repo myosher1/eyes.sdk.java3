@@ -1,6 +1,7 @@
 package com.applitools.eyes.fluent;
 
 import com.applitools.eyes.MatchLevel;
+import com.applitools.eyes.RegionF;
 import com.applitools.eyes.Region;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.List;
  */
 public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
 
-    private Region targetRegion;
+    private RegionF targetRegion;
     private MatchLevel matchLevel = null;
     private Boolean ignoreCaret = null;
     private boolean stitchContent = false;
@@ -25,7 +26,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
 
     protected CheckSettings() { }
 
-    protected CheckSettings(Region region) {
+    protected CheckSettings(RegionF region) {
         this.targetRegion = region;
     }
 
@@ -318,7 +319,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     }
 
     @Override
-    public Region getTargetRegion() {
+    public RegionF getTargetRegion() {
         return this.targetRegion;
     }
 
@@ -375,7 +376,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         return this.name;
     }
 
-    protected void updateTargetRegion(Region region) {
+    protected void updateTargetRegion(RegionF region) {
         this.targetRegion = region;
     }
 

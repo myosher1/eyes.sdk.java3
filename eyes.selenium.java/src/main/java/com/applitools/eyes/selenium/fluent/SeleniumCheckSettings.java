@@ -1,6 +1,7 @@
 package com.applitools.eyes.selenium.fluent;
 
 import com.applitools.eyes.MatchLevel;
+import com.applitools.eyes.RegionF;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.CheckSettings;
 import org.openqa.selenium.By;
@@ -20,7 +21,7 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     SeleniumCheckSettings() {
     }
 
-    SeleniumCheckSettings(Region region) {
+    SeleniumCheckSettings(RegionF region) {
         super(region);
     }
 
@@ -90,7 +91,7 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return clone;
     }
 
-    public SeleniumCheckSettings region(Region region) {
+    public SeleniumCheckSettings region(RegionF region) {
         SeleniumCheckSettings clone = this.clone();
         clone.updateTargetRegion(region);
         return clone;

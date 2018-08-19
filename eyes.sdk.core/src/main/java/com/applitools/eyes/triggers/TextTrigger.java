@@ -3,7 +3,7 @@
  */
 package com.applitools.eyes.triggers;
 
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 import com.applitools.eyes.Trigger;
 import com.applitools.utils.ArgumentGuard;
 
@@ -14,9 +14,9 @@ public class TextTrigger extends Trigger {
     private String text;
 
     // Can be null.
-    private Region control;
+    private RegionF control;
 
-    public TextTrigger(Region control, String text) {
+    public TextTrigger(RegionF control, String text) {
         ArgumentGuard.notNull(control, "control");
         ArgumentGuard.notNullOrEmpty(text, "text");
 
@@ -28,7 +28,7 @@ public class TextTrigger extends Trigger {
         return text;
     }
 
-    public Region getControl() {
+    public RegionF getControl() {
         return control;
     }
 

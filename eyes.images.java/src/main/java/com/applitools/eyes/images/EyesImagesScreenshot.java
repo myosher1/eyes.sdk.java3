@@ -14,7 +14,7 @@ public class EyesImagesScreenshot extends EyesScreenshot {
 
     // The screenshot region in coordinates relative to the "entire screen"
     // (e.g., relative to the default content in case of a web page).
-    protected Region bounds;
+    protected RegionF bounds;
 
     /**
      * Ctor.
@@ -26,7 +26,7 @@ public class EyesImagesScreenshot extends EyesScreenshot {
     public EyesImagesScreenshot(Logger logger, BufferedImage image, Location location) {
         super(logger, image);
         ArgumentGuard.notNull(location, "location");
-        this.bounds = new Region(location,
+        this.bounds = new RegionF(location,
                 new RectangleSizeF(image.getWidth(), image.getHeight()));
     }
 
@@ -47,12 +47,12 @@ public class EyesImagesScreenshot extends EyesScreenshot {
      * @return Sub screenshot.
      */
     @Override
-    public EyesScreenshot getSubScreenshot(Region region, boolean throwIfClipped) {
+    public EyesScreenshot getSubScreenshot(RegionF region, boolean throwIfClipped) {
 
         ArgumentGuard.notNull(region, "region");
 
         // We want to get the sub-screenshot in as-is coordinates type.
-        Region subScreenshotRegion = getIntersectedRegion(region, CoordinatesType.SCREENSHOT_AS_IS);
+        RegionF subScreenshotRegion = getIntersectedRegion(region, CoordinatesType.SCREENSHOT_AS_IS);
 
         if (subScreenshotRegion.isSizeEmpty() ||
                 (throwIfClipped &&
@@ -65,7 +65,7 @@ public class EyesImagesScreenshot extends EyesScreenshot {
 
         // Notice that we need the bounds-relative coordinates as parameter
         // for new sub-screenshot.
-        Region relativeSubScreenshotRegion =
+        RegionF relativeSubScreenshotRegion =
                 convertRegionLocation(subScreenshotRegion,
                         CoordinatesType.SCREENSHOT_AS_IS,
                         CoordinatesType.CONTEXT_RELATIVE);
@@ -155,16 +155,16 @@ public class EyesImagesScreenshot extends EyesScreenshot {
      * @return The region of the intersected region.
      */
     @Override
-    public Region getIntersectedRegion(Region region,
-            CoordinatesType resultCoordinatesType) {
+    public RegionF getIntersectedRegion(RegionF region,
+                                        CoordinatesType resultCoordinatesType) {
 
         ArgumentGuard.notNull(region, "region");
 
         if (region.isSizeEmpty()) {
-            return new Region(region);
+            return new RegionF(region);
         }
 
-        Region intersectedRegion = convertRegionLocation(region,
+        RegionF intersectedRegion = convertRegionLocation(region,
                 region.getCoordinatesType(), CoordinatesType.CONTEXT_RELATIVE);
 
         intersectedRegion.intersect(bounds);

@@ -4,7 +4,7 @@
 package com.applitools.eyes.triggers;
 
 import com.applitools.eyes.Location;
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 import com.applitools.eyes.Trigger;
 import com.applitools.utils.ArgumentGuard;
 
@@ -14,7 +14,7 @@ import com.applitools.utils.ArgumentGuard;
  */
 public class MouseTrigger extends Trigger {
     private MouseAction mouseAction;
-    private Region control;
+    private RegionF control;
 
     /**
      * Relative to the top left corner of {@link #control}, or null if unknown.
@@ -22,7 +22,7 @@ public class MouseTrigger extends Trigger {
     private Location location;
 
 
-    public MouseTrigger(MouseAction mouseAction, Region control,
+    public MouseTrigger(MouseAction mouseAction, RegionF control,
                         Location location) {
 
         ArgumentGuard.notNull(mouseAction, "mouseAction");
@@ -37,7 +37,7 @@ public class MouseTrigger extends Trigger {
         return mouseAction;
     }
 
-    public Region getControl() {
+    public RegionF getControl() {
         return control;
     }
 

@@ -28,4 +28,12 @@ public class Borders {
     public float getBottom() {
         return bottom;
     }
+
+    public float getHorizontal() {
+        return left + right;
+    }
+
+    public float getVertical() {
+        return top + bottom;
+    }
 }

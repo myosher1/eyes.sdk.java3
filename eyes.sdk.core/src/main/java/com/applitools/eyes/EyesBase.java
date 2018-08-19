@@ -94,7 +94,7 @@ public abstract class EyesBase {
 
         logger = new Logger();
 
-        Region.initLogger(logger);
+        RegionF.initLogger(logger);
         ImageUtils.initLogger(logger);
         GeneralUtils.initLogger(logger);
 
@@ -1183,7 +1183,7 @@ public abstract class EyesBase {
             checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         }
 
-        Region region = regionProvider.getRegion();
+        RegionF region = regionProvider.getRegion();
         logger.verbose("params: ([" + region + "], " + tag + ", " + retryTimeout + ")");
 
         result = matchWindowTask.matchWindow(
@@ -1258,7 +1258,7 @@ public abstract class EyesBase {
         // A callback which will call getAppOutput
         AppOutputProvider appOutputProvider = new AppOutputProvider() {
             public AppOutputWithScreenshot getAppOutput(
-                    Region region,
+                    RegionF region,
                     EyesScreenshot lastScreenshot,
                     ICheckSettingsInternal checkSettingsInternal) {
                 // FIXME - If we use compression here it hurts us later (because of another screenshot order).
@@ -1400,7 +1400,7 @@ public abstract class EyesBase {
                 // A callback which will call getAppOutput
                 new AppOutputProvider() {
                     @Override
-                    public AppOutputWithScreenshot getAppOutput(Region region, EyesScreenshot lastScreenshot,
+                    public AppOutputWithScreenshot getAppOutput(RegionF region, EyesScreenshot lastScreenshot,
                                                                 ICheckSettingsInternal checkSettingsInternal) {
                         return getAppOutputWithScreenshot(region, lastScreenshot, checkSettingsInternal);
                     }
@@ -1504,7 +1504,7 @@ public abstract class EyesBase {
      * @param control The control's position relative to the window.
      * @param text    The trigger's text.
      */
-    protected void addTextTriggerBase(Region control, String text) {
+    protected void addTextTriggerBase(RegionF control, String text) {
         if (getIsDisabled()) {
             logger.verbose(String.format("Ignoring '%s' (disabled)", text));
             return;
@@ -1514,7 +1514,7 @@ public abstract class EyesBase {
         ArgumentGuard.notNull(text, "text");
 
         // We don't want to change the objects we received.
-        control = new Region(control);
+        control = new RegionF(control);
 
         if (lastScreenshot == null) {
             logger.verbose(String.format("Ignoring '%s' (no screenshot)",
@@ -1543,7 +1543,7 @@ public abstract class EyesBase {
      *                (location is relative to the window).
      * @param cursor  The cursor's position relative to the control.
      */
-    protected void addMouseTriggerBase(MouseAction action, Region control,
+    protected void addMouseTriggerBase(MouseAction action, RegionF control,
                                        Location cursor) {
         if (getIsDisabled()) {
             logger.verbose(String.format("Ignoring %s (disabled)", action));
@@ -1575,7 +1575,7 @@ public abstract class EyesBase {
             return;
         }
 
-        Region controlScreenshotIntersect =
+        RegionF controlScreenshotIntersect =
                 lastScreenshot.getIntersectedRegion(control, CoordinatesType.SCREENSHOT_AS_IS);
 
         // If the region is NOT empty, we'll give the coordinates relative to
@@ -1686,7 +1686,7 @@ public abstract class EyesBase {
         }
     }
 
-    protected EyesScreenshot getSubScreenshot(EyesScreenshot screenshot, Region region, ICheckSettingsInternal checkSettingsInternal) {
+    protected EyesScreenshot getSubScreenshot(EyesScreenshot screenshot, RegionF region, ICheckSettingsInternal checkSettingsInternal) {
         return screenshot.getSubScreenshot(region, false);
     }
 
@@ -1696,7 +1696,7 @@ public abstract class EyesBase {
      * @return The updated app output and screenshot.
      */
     private AppOutputWithScreenshot getAppOutputWithScreenshot(
-            Region region, EyesScreenshot lastScreenshot, ICheckSettingsInternal checkSettingsInternal) {
+            RegionF region, EyesScreenshot lastScreenshot, ICheckSettingsInternal checkSettingsInternal) {
 
         logger.verbose("getting screenshot...");
         // Getting the screenshot (abstract function implemented by each SDK).

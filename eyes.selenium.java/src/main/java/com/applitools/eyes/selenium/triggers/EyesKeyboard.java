@@ -4,7 +4,7 @@
 package com.applitools.eyes.selenium.triggers;
 
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 import com.applitools.eyes.selenium.wrappers.EyesRemoteWebElement;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ArgumentGuard;
@@ -35,7 +35,7 @@ public class EyesKeyboard implements Keyboard {
 
     public void sendKeys(CharSequence... charSequences) {
 
-        Region control = Region.EMPTY;
+        RegionF control = RegionF.EMPTY;
 
         // We first find the active element to get the region
         WebElement activeElement = eyesDriver.switchTo().activeElement();

@@ -29,7 +29,7 @@ public class MatchWindowTask {
 
     private EyesScreenshot lastScreenshot = null;
     private MatchResult matchResult;
-    private Region lastScreenshotBounds;
+    private RegionF lastScreenshotBounds;
     private EyesBase eyes;
 
     /**
@@ -130,7 +130,7 @@ public class MatchWindowTask {
      * @return Returns the results of the match
      */
     public MatchResult matchWindow(Trigger[] userInputs,
-                                   Region region, String tag,
+                                   RegionF region, String tag,
                                    boolean shouldRunOnceOnTimeout,
                                    boolean ignoreMismatch,
                                    ICheckSettingsInternal checkSettingsInternal,
@@ -219,7 +219,7 @@ public class MatchWindowTask {
         return imageMatchSettings;
     }
 
-    private EyesScreenshot takeScreenshot(Trigger[] userInputs, Region region, String tag,
+    private EyesScreenshot takeScreenshot(Trigger[] userInputs, RegionF region, String tag,
                                           boolean shouldMatchWindowRunOnceOnTimeout,
                                           boolean ignoreMismatch, ICheckSettingsInternal checkSettingsInternal,
                                           int retryTimeout) {
@@ -245,7 +245,7 @@ public class MatchWindowTask {
         return screenshot;
     }
 
-    private EyesScreenshot retryTakingScreenshot(Trigger[] userInputs, Region region, String tag, boolean ignoreMismatch,
+    private EyesScreenshot retryTakingScreenshot(Trigger[] userInputs, RegionF region, String tag, boolean ignoreMismatch,
                                                  ICheckSettingsInternal checkSettingsInternal, int retryTimeout) {
         // Start the retry timer.
         long start = System.currentTimeMillis();
@@ -276,7 +276,7 @@ public class MatchWindowTask {
         return screenshot;
     }
 
-    private EyesScreenshot tryTakeScreenshot(Trigger[] userInputs, Region region, String tag,
+    private EyesScreenshot tryTakeScreenshot(Trigger[] userInputs, RegionF region, String tag,
                                              boolean ignoreMismatch, ICheckSettingsInternal checkSettingsInternal) {
         AppOutputWithScreenshot appOutput = appOutputProvider.getAppOutput(region, lastScreenshot, checkSettingsInternal);
         EyesScreenshot screenshot = appOutput.getScreenshot();
@@ -291,21 +291,21 @@ public class MatchWindowTask {
         }
     }
 
-    private void updateBounds(Region region) {
+    private void updateBounds(RegionF region) {
         if (region.isSizeEmpty()) {
             if (lastScreenshot == null) {
                 // We set an "infinite" image size since we don't know what the screenshot size is...
-                lastScreenshotBounds = new Region(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
+                lastScreenshotBounds = new RegionF(0, 0, Integer.MAX_VALUE, Integer.MAX_VALUE);
             } else {
                 BufferedImage image = lastScreenshot.getImage();
-                lastScreenshotBounds = new Region(0, 0, image.getWidth(), image.getHeight());
+                lastScreenshotBounds = new RegionF(0, 0, image.getWidth(), image.getHeight());
             }
         } else {
             lastScreenshotBounds = region;
         }
     }
 
-    public Region getLastScreenshotBounds() {
+    public RegionF getLastScreenshotBounds() {
         return lastScreenshotBounds;
     }
 

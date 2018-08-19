@@ -1,11 +1,11 @@
 package com.applitools.eyes.positioning;
 
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 
 public class NullRegionProvider implements RegionProvider {
     @Override
-    public Region getRegion() {
-        return Region.EMPTY;
+    public RegionF getRegion() {
+        return RegionF.EMPTY;
     }
 
     public static final NullRegionProvider INSTANCE = new NullRegionProvider();

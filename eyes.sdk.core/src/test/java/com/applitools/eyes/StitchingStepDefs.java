@@ -13,15 +13,15 @@ import java.util.List;
  */
 public class StitchingStepDefs {
 
-    private Region regionToDivide = null;
-    private Iterable<Region> subRegions = null;
+    private RegionF regionToDivide = null;
+    private Iterable<RegionF> subRegions = null;
     private boolean illegalArgumentExceptionThrown = false;
 
     @Given("^I have a region with left (\\d+) and top (\\d+) and width (\\d+) and height (\\d+)$")
     public void I_have_a_region_with_width_and_height(int left, int top,
                                                       int width, int height)
             throws Throwable {
-        regionToDivide = new Region(left, top, width, height);
+        regionToDivide = new RegionF(left, top, width, height);
     }
 
     private void divideIntoSubRegions(int width, int height, boolean isFixedSize) throws Throwable {
@@ -51,10 +51,10 @@ public class StitchingStepDefs {
     @Then("^I get the following sub-regions:$")
     public void I_get_the_following_sub_regions(DataTable validSubRegionsDT)
             throws Throwable {
-        List<Region> validSubRegions = validSubRegionsDT.asList(Region.class);
+        List<RegionF> validSubRegions = validSubRegionsDT.asList(RegionF.class);
 
         int subRegionsSize = 0;
-        for (Region currentSubRegion : subRegions) {
+        for (RegionF currentSubRegion : subRegions) {
             Assert.assertTrue(validSubRegions.contains(currentSubRegion),"Invalid Sub region: " + currentSubRegion);
             ++subRegionsSize;
         }

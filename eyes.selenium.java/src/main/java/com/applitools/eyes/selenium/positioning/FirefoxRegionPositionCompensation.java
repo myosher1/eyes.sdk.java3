@@ -2,7 +2,7 @@ package com.applitools.eyes.selenium.positioning;
 
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.OSNames;
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 import com.applitools.eyes.UserAgent;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.frames.FrameChain;
@@ -21,7 +21,7 @@ public class FirefoxRegionPositionCompensation implements RegionPositionCompensa
     }
 
     @Override
-    public Region compensateRegionPosition(Region region, double pixelRatio) {
+    public RegionF compensateRegionPosition(RegionF region, double pixelRatio) {
         logger.verbose(userAgent.toString());
         logger.verbose("pixel ratio: " + pixelRatio);
 
@@ -45,7 +45,7 @@ public class FirefoxRegionPositionCompensation implements RegionPositionCompensa
         region = region.offset(0, -(int) Math.ceil(pixelRatio / 2));
 
         if (region.getWidth() <= 0 || region.getHeight() <= 0) {
-            return Region.EMPTY;
+            return RegionF.EMPTY;
         }
 
         return region;

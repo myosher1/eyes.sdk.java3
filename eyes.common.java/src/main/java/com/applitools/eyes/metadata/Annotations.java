@@ -2,7 +2,7 @@
 package com.applitools.eyes.metadata;
 
 import com.applitools.eyes.FloatingMatchSettings;
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 import com.fasterxml.jackson.annotation.*;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -19,13 +19,13 @@ public class Annotations {
     @JsonProperty("floating")
     private FloatingMatchSettings[] floating = null;
     @JsonProperty("ignore")
-    private Region[] ignore = null;
+    private RegionF[] ignore = null;
     @JsonProperty("strict")
-    private Region[] strict = null;
+    private RegionF[] strict = null;
     @JsonProperty("content")
-    private Region[] content = null;
+    private RegionF[] content = null;
     @JsonProperty("layout")
-    private Region[] layout = null;
+    private RegionF[] layout = null;
 
     @JsonProperty("floating")
     public FloatingMatchSettings[] getFloating() {
@@ -38,42 +38,42 @@ public class Annotations {
     }
 
     @JsonProperty("ignore")
-    public Region[] getIgnore() {
+    public RegionF[] getIgnore() {
         return ignore;
     }
 
     @JsonProperty("ignore")
-    public void setIgnore(Region[] ignore) {
+    public void setIgnore(RegionF[] ignore) {
         this.ignore = ignore;
     }
 
     @JsonProperty("strict")
-    public Region[] getStrict() {
+    public RegionF[] getStrict() {
         return strict;
     }
 
     @JsonProperty("strict")
-    public void setStrict(Region[] strict) {
+    public void setStrict(RegionF[] strict) {
         this.strict = strict;
     }
 
     @JsonProperty("content")
-    public Region[] getContent() {
+    public RegionF[] getContent() {
         return content;
     }
 
     @JsonProperty("content")
-    public void setContent(Region[] content) {
+    public void setContent(RegionF[] content) {
         this.content = content;
     }
 
     @JsonProperty("layout")
-    public Region[] getLayout() {
+    public RegionF[] getLayout() {
         return layout;
     }
 
     @JsonProperty("layout")
-    public void setLayout(Region[] layout) {
+    public void setLayout(RegionF[] layout) {
         this.layout = layout;
     }
 }

@@ -1,7 +1,7 @@
 package com.applitools.eyes.selenium.fluent;
 
 import com.applitools.eyes.*;
-import com.applitools.eyes.fluent.GetRegion;
+import com.applitools.eyes.fluent.GetRegionsF;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
@@ -9,15 +9,15 @@ import org.openqa.selenium.WebElement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IgnoreRegionByElement implements GetRegion {
+public class SimpleRegionFByElement implements GetRegionsF {
     private WebElement element;
 
-    public IgnoreRegionByElement(WebElement element) {
+    public SimpleRegionFByElement(WebElement element) {
         this.element = element;
     }
 
     @Override
-    public List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot, boolean adjustLocation) {
+    public List<RegionF> getRegions(EyesBase eyesBase, EyesScreenshot screenshot, boolean adjustLocation) {
         Point locationAsPoint = element.getLocation();
         Dimension size = element.getSize();
 
@@ -25,10 +25,9 @@ public class IgnoreRegionByElement implements GetRegion {
         Location adjustedLocation = screenshot.getLocationInScreenshot(new Location(locationAsPoint.getX(), locationAsPoint.getY()),
                 CoordinatesType.CONTEXT_RELATIVE);
 
-        List<Region> value = new ArrayList<>();
-        value.add(new Region(
-                Math.round(adjustedLocation.getX()), Math.round(adjustedLocation.getY()),
-                size.getWidth(), size.getHeight(),
+        List<RegionF> value = new ArrayList<>();
+        value.add(new RegionF(adjustedLocation,
+                new RectangleSizeF(size.getWidth(), size.getHeight()),
                 CoordinatesType.SCREENSHOT_AS_IS));
 
         return value;

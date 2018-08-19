@@ -173,7 +173,7 @@ public class ImageUtils {
      * @return The part of the image.
      */
     public static BufferedImage getImagePart(BufferedImage image,
-                                             Region region) {
+                                             RegionF region) {
         ArgumentGuard.notNull(image, "image");
 
         // Get the clipped region as a BufferedImage.
@@ -497,8 +497,8 @@ public class ImageUtils {
      * @return A new image without the cropped region.
      */
     public static BufferedImage cropImage(BufferedImage image,
-                                          Region regionToCrop) {
-        Region imageRegion = new Region(0, 0, image.getWidth(), image.getHeight());
+                                          RegionF regionToCrop) {
+        RegionF imageRegion = new RegionF(0, 0, image.getWidth(), image.getHeight());
         imageRegion.intersect(regionToCrop);
         if (imageRegion.isSizeEmpty()) {
             logger.log("WARNING - requested cropped area results in zero-size image! Cropped not performed. Returning original image.");

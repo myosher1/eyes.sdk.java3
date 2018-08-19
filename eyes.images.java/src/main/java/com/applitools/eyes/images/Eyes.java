@@ -206,7 +206,7 @@ public class Eyes extends EyesBase {
      * @return Whether or not the image matched the baseline.
      * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
-    public boolean checkRegion(BufferedImage image, final Region region, String tag, boolean ignoreMismatch) {
+    public boolean checkRegion(BufferedImage image, final RegionF region, String tag, boolean ignoreMismatch) {
         if (getIsDisabled()) {
             logger.verbose(String.format(
                     "CheckRegion(Image, [%s], '%s', %b): Ignored",
@@ -223,7 +223,7 @@ public class Eyes extends EyesBase {
         }
 
         return checkImage_(new RegionProvider() {
-            public Region getRegion() {
+            public RegionF getRegion() {
                 return region;
             }
         }, image, tag, ignoreMismatch, new CheckSettings(USE_DEFAULT_TIMEOUT));
@@ -237,7 +237,7 @@ public class Eyes extends EyesBase {
      * @param tag    An optional tag to be associated with the validation checkpoint.
      * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
-    public void checkRegion(BufferedImage image, Region region, String tag) {
+    public void checkRegion(BufferedImage image, RegionF region, String tag) {
         checkRegion(image, region, tag, false);
     }
 
@@ -247,7 +247,7 @@ public class Eyes extends EyesBase {
      * @param region The region to validate within the image.
      * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
-    public void checkRegion(BufferedImage image, Region region) {
+    public void checkRegion(BufferedImage image, RegionF region) {
         checkRegion(image, region, null, false);
     }
 
@@ -258,7 +258,7 @@ public class Eyes extends EyesBase {
      *                relative coordinates).
      * @param cursor  The cursor's position relative to the control.
      */
-    public void addMouseTrigger(MouseAction action, Region control, Location cursor) {
+    public void addMouseTrigger(MouseAction action, RegionF control, Location cursor) {
         addMouseTriggerBase(action, control, cursor);
     }
 
@@ -267,7 +267,7 @@ public class Eyes extends EyesBase {
      * @param control The control's context-relative region.
      * @param text    The trigger's text.
      */
-    public void addTextTrigger(Region control, String text) {
+    public void addTextTrigger(RegionF control, String text) {
         addTextTriggerBase(control, text);
     }
 

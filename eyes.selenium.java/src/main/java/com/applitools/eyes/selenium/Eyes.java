@@ -11,10 +11,7 @@ import com.applitools.eyes.diagnostics.TimedAppOutput;
 import com.applitools.eyes.events.ValidationInfo;
 import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.TestFailedException;
-import com.applitools.eyes.fluent.GetRegion;
-import com.applitools.eyes.fluent.ICheckSettings;
-import com.applitools.eyes.fluent.ICheckSettingsInternal;
-import com.applitools.eyes.fluent.IgnoreRegionByRectangle;
+import com.applitools.eyes.fluent.*;
 import com.applitools.eyes.positioning.*;
 import com.applitools.eyes.scaling.FixedScaleProviderFactory;
 import com.applitools.eyes.scaling.NullScaleProvider;
@@ -78,15 +75,15 @@ public class Eyes extends EyesBase {
 
     private boolean checkFrameOrElement;
 
-    public Region getRegionToCheck() {
+    public RegionF getRegionToCheck() {
         return regionToCheck;
     }
 
-    public void setRegionToCheck(Region regionToCheck) {
+    public void setRegionToCheck(RegionF regionToCheck) {
         this.regionToCheck = regionToCheck;
     }
 
-    private Region regionToCheck = null;
+    private RegionF regionToCheck = null;
 
     private String originalOverflow;
 
@@ -101,7 +98,7 @@ public class Eyes extends EyesBase {
     private RegionPositionCompensation regionPositionCompensation;
     private WebElement targetElement = null;
     private PositionMemento positionMemento;
-    private Region effectiveViewport = Region.EMPTY;
+    private RegionF effectiveViewport = RegionF.EMPTY;
 
     private EyesScreenshotFactory screenshotFactory;
 
@@ -659,7 +656,7 @@ public class Eyes extends EyesBase {
             getConfig().setForceFullPageScreenshot(true);
         }
 
-        Dictionary<Integer, GetRegion> getRegions = new Hashtable<>();
+        Dictionary<Integer, GetRegionsF> getRegions = new Hashtable<>();
         Dictionary<Integer, ICheckSettingsInternal> checkSettingsInternalDictionary = new Hashtable<>();
 
         for (int i = 0; i < checkSettings.length; ++i) {
@@ -668,10 +665,10 @@ public class Eyes extends EyesBase {
 
             checkSettingsInternalDictionary.put(i, checkSettingsInternal);
 
-            Region targetRegion = checkSettingsInternal.getTargetRegion();
+            RegionF targetRegion = checkSettingsInternal.getTargetRegion();
 
             if (targetRegion != null) {
-                getRegions.put(i, new IgnoreRegionByRectangle(targetRegion));
+                getRegions.put(i, new SimpleRegionByRectangleF(targetRegion));
             } else {
                 ISeleniumCheckTarget seleniumCheckTarget =
                         (settings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) settings : null;
@@ -683,11 +680,10 @@ public class Eyes extends EyesBase {
                     }
 
                     if (targetElement != null) {
-                        getRegions.put(i, new IgnoreRegionByElement(targetElement));
+                        getRegions.put(i, new SimpleRegionFByElement(targetElement));
                     }
                 }
             }
-            //check(settings);
         }
 
         this.scrollRootElement = driver.findElement(By.tagName("html"));
@@ -698,7 +694,7 @@ public class Eyes extends EyesBase {
         getConfig().setForceFullPageScreenshot(originalForceFPS);
     }
 
-    private void matchRegions(Dictionary<Integer, GetRegion> getRegions,
+    private void matchRegions(Dictionary<Integer, GetRegionsF> getRegions,
                               Dictionary<Integer, ICheckSettingsInternal> checkSettingsInternalDictionary,
                               ICheckSettings[] checkSettings) {
 
@@ -708,7 +704,7 @@ public class Eyes extends EyesBase {
 
         FrameChain originalFC = tryHideScrollbars();
 
-        Region bBox = findBoundingBox(getRegions, checkSettings);
+        RegionF bBox = findBoundingBox(getRegions, checkSettings);
 
         MatchWindowTask mwt = new MatchWindowTask(logger, serverConnector, runningSession, getMatchTimeout(), this);
 
@@ -716,15 +712,15 @@ public class Eyes extends EyesBase {
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
 
         BufferedImage screenshotImage = algo.getStitchedRegion(
-                Region.EMPTY,
+                RegionF.EMPTY,
                 bBox, positionProvider);
 
         debugScreenshotsProvider.save(screenshotImage, "original");
         EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage, null, bBox.getNegativeLocation());
 
         for (int i = 0; i < checkSettings.length; ++i) {
-            if (((Hashtable<Integer, GetRegion>) getRegions).containsKey(i)) {
-                GetRegion getRegion = getRegions.get(i);
+            if (((Hashtable<Integer, GetRegionsF>) getRegions).containsKey(i)) {
+                GetRegionsF getRegion = getRegions.get(i);
                 ICheckSettingsInternal checkSettingsInternal = checkSettingsInternalDictionary.get(i);
                 List<EyesScreenshot> subScreenshots = getSubScreenshots(screenshot, getRegion);
                 matchRegion(checkSettingsInternal, mwt, subScreenshots);
@@ -735,9 +731,9 @@ public class Eyes extends EyesBase {
         ((EyesTargetLocator) driver.switchTo()).frames(this.originalFC);
     }
 
-    private List<EyesScreenshot> getSubScreenshots(EyesWebDriverScreenshot screenshot, GetRegion getRegion) {
+    private List<EyesScreenshot> getSubScreenshots(EyesWebDriverScreenshot screenshot, GetRegionsF getRegion) {
         List<EyesScreenshot> subScreenshots = new ArrayList<>();
-        for (Region r : getRegion.getRegions(this, screenshot, true)) {
+        for (RegionF r : getRegion.getRegions(this, screenshot, true)) {
             logger.verbose("original sub-region: " + r);
             r = regionPositionCompensation.compensateRegionPosition(r, devicePixelRatio);
             logger.verbose("sub-region after compensation: " + r);
@@ -764,7 +760,7 @@ public class Eyes extends EyesBase {
         }
     }
 
-    private Region findBoundingBox(Dictionary<Integer, GetRegion> getRegions, ICheckSettings[] checkSettings) {
+    private RegionF findBoundingBox(Dictionary<Integer, GetRegionsF> getRegions, ICheckSettings[] checkSettings) {
         RectangleSizeF rectSize = new RectangleSizeF(getViewportSize());
 
         EyesScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver,
@@ -773,15 +769,15 @@ public class Eyes extends EyesBase {
         return findBoundingBox(getRegions, checkSettings, screenshot);
     }
 
-    private Region findBoundingBox(Dictionary<Integer, GetRegion> getRegions, ICheckSettings[] checkSettings, EyesScreenshot screenshot) {
-        Region bBox = null;
+    private RegionF findBoundingBox(Dictionary<Integer, GetRegionsF> getRegions, ICheckSettings[] checkSettings, EyesScreenshot screenshot) {
+        RegionF bBox = null;
         for (int i = 0; i < checkSettings.length; ++i) {
-            GetRegion getRegion = getRegions.get(i);
+            GetRegionsF getRegion = getRegions.get(i);
             if (getRegion != null) {
-                List<Region> regions = getRegion.getRegions(this, screenshot, true);
-                for (Region region : regions) {
+                List<RegionF> regions = getRegion.getRegions(this, screenshot, true);
+                for (RegionF region : regions) {
                     if (bBox == null) {
-                        bBox = new Region(region);
+                        bBox = new RegionF(region);
                     } else {
                         bBox = bBox.expandToContain(region);
                     }
@@ -869,7 +865,7 @@ public class Eyes extends EyesBase {
 
         this.stitchContent = checkSettingsInternal.getStitchContent();
 
-        final Region targetRegion = checkSettingsInternal.getTargetRegion();
+        final RegionF targetRegion = checkSettingsInternal.getTargetRegion();
 
         this.originalFC = driver.getFrameChain().clone();
 
@@ -886,8 +882,8 @@ public class Eyes extends EyesBase {
             originalFC = tryHideScrollbars();
             result = this.checkWindowBase(new RegionProvider() {
                 @Override
-                public Region getRegion() {
-                    return new Region(targetRegion.getLocation(), targetRegion.getSize(), CoordinatesType.CONTEXT_RELATIVE);
+                public RegionF getRegion() {
+                    return new RegionF(targetRegion.getLocation(), targetRegion.getSize(), CoordinatesType.CONTEXT_RELATIVE);
                 }
             }, name, false, checkSettings);
         } else if (seleniumCheckTarget != null) {
@@ -1022,7 +1018,7 @@ public class Eyes extends EyesBase {
 
         MatchResult result = checkWindowBase(new RegionProvider() {
             @Override
-            public Region getRegion() {
+            public RegionF getRegion() {
                 return getFullFrameOrElementRegion();
             }
         }, name, false, checkSettings);
@@ -1031,7 +1027,7 @@ public class Eyes extends EyesBase {
         return result;
     }
 
-    private Region getFullFrameOrElementRegion() {
+    private RegionF getFullFrameOrElementRegion() {
         logger.verbose("checkFrameOrElement: " + checkFrameOrElement);
         if (checkFrameOrElement) {
 
@@ -1055,7 +1051,7 @@ public class Eyes extends EyesBase {
             setRegionToCheck(screenshot.getFrameWindow());
         }
 
-        return Region.EMPTY;
+        return RegionF.EMPTY;
     }
 
     private FrameChain ensureFrameVisible() {
@@ -1086,7 +1082,7 @@ public class Eyes extends EyesBase {
             PositionProvider positionProvider = getElementPositionProvider(scrollRootElement);
             positionProvider.setPosition(prevFrame.getLocation());
 
-            Region reg = new Region(Location.ZERO, prevFrame.getInnerSize());
+            RegionF reg = new RegionF(Location.ZERO, prevFrame.getInnerSize());
             effectiveViewport.intersect(reg);
         }
         ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
@@ -1108,12 +1104,12 @@ public class Eyes extends EyesBase {
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
 
         EyesRemoteWebElement eyesRemoteWebElement = new EyesRemoteWebElement(logger, driver, element);
-        Region elementBounds = eyesRemoteWebElement.getBounds();
+        RegionF elementBounds = eyesRemoteWebElement.getBounds();
 
         Location currentFrameOffset = originalFC.getCurrentFrameOffset();
         elementBounds = elementBounds.offset(currentFrameOffset.getX(), currentFrameOffset.getY());
 
-        Region viewportBounds = getViewportScrollBounds();
+        RegionF viewportBounds = getViewportScrollBounds();
 
         logger.verbose("viewportBounds: " + viewportBounds + " ; elementBounds: " + elementBounds);
 
@@ -1136,10 +1132,10 @@ public class Eyes extends EyesBase {
         }
     }
 
-    private Region getViewportScrollBounds() {
+    private RegionF getViewportScrollBounds() {
         if (!getScrollToRegion()) {
             logger.log("WARNING: no region visibility strategy! returning an empty region!");
-            return Region.EMPTY;
+            return RegionF.EMPTY;
         }
         FrameChain originalFrameChain = driver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
@@ -1153,7 +1149,7 @@ public class Eyes extends EyesBase {
             logger.log("Assuming position is 0,0");
             location = new Location(0, 0);
         }
-        Region viewportBounds = new Region(location, getViewportSize());
+        RegionF viewportBounds = new RegionF(location, getViewportSize());
         switchTo.frames(originalFrameChain);
         return viewportBounds;
     }
@@ -1169,10 +1165,10 @@ public class Eyes extends EyesBase {
 
         MatchResult result = checkWindowBase(new RegionProvider() {
             @Override
-            public Region getRegion() {
+            public RegionF getRegion() {
                 Point p = targetElement.getLocation();
                 Dimension d = targetElement.getSize();
-                return new Region(p.getX(), p.getY(), d.getWidth(), d.getHeight(), CoordinatesType.CONTEXT_RELATIVE);
+                return new RegionF(p.getX(), p.getY(), d.getWidth(), d.getHeight(), CoordinatesType.CONTEXT_RELATIVE);
             }
         }, name, false, checkSettings);
         logger.verbose("Done! trying to scroll back to original position.");
@@ -1182,11 +1178,11 @@ public class Eyes extends EyesBase {
     }
 
     /**
-     * See {@link #checkRegion(Region, int, String)}.
+     * See {@link #checkRegion(RegionF, int, String)}.
      * {@code tag} defaults to {@code null}.
      * Default match timeout is used.
      */
-    public void checkRegion(Region region) {
+    public void checkRegion(RegionF region) {
         checkRegion(region, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
@@ -1197,7 +1193,7 @@ public class Eyes extends EyesBase {
      * @param tag          An optional tag to be associated with the snapshot.
      * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
-    public void checkRegion(final Region region, int matchTimeout, String tag) {
+    public void checkRegion(final RegionF region, int matchTimeout, String tag) {
 
         if (getIsDisabled()) {
             logger.log(String.format("checkRegion([%s], %d, '%s'): Ignored", region, matchTimeout, tag));
@@ -1210,7 +1206,7 @@ public class Eyes extends EyesBase {
 
         super.checkWindowBase(
                 new RegionProvider() {
-                    public Region getRegion() {
+                    public RegionF getRegion() {
                         return region;
                     }
                 },
@@ -1928,8 +1924,7 @@ public class Eyes extends EyesBase {
 
         String originalOverflow = null;
 
-        Region bounds = eyesElement.getBounds();
-//        Point pl = eyesElement.getLocation();
+        BoundsAndBorders boundsAndBorders = eyesElement.getBoundsAndBorders();
         MatchResult result;
         try {
             checkFrameOrElement = true;
@@ -1941,6 +1936,7 @@ public class Eyes extends EyesBase {
                 eyesElement.setOverflow("hidden");
             }
 
+            RegionF bounds = boundsAndBorders.getBounds();
             float elementWidth = bounds.getWidth();
             float elementHeight =  bounds.getHeight();
 
@@ -1952,11 +1948,12 @@ public class Eyes extends EyesBase {
                 elementPositionProvider = null;
             }
 
-            Borders borders = eyesElement.getBorderWidths();
+            Borders borders = boundsAndBorders.getBorders();
 
-            final Region elementRegion = new Region(
+            final RegionF elementRegion = new RegionF(
                     bounds.getLeft() + borders.getLeft(), bounds.getTop() + borders.getTop(),
-                    elementWidth, elementHeight, CoordinatesType.SCREENSHOT_AS_IS);
+                    elementWidth - borders.getHorizontal(), elementHeight-borders.getVertical(),
+                    CoordinatesType.SCREENSHOT_AS_IS);
 
             logger.verbose("Element region: " + elementRegion);
 
@@ -2035,7 +2032,7 @@ public class Eyes extends EyesBase {
      * @param control The control on which the trigger is activated (context relative coordinates).
      * @param cursor  The cursor's position relative to the control.
      */
-    public void addMouseTrigger(MouseAction action, Region control, Location cursor) {
+    public void addMouseTrigger(MouseAction action, RegionF control, Location cursor) {
         if (getIsDisabled()) {
             logger.verbose(String.format("Ignoring %s (disabled)", action));
             return;
@@ -2072,7 +2069,7 @@ public class Eyes extends EyesBase {
         Point pl = element.getLocation();
         Dimension ds = element.getSize();
 
-        Region elementRegion = new Region(pl.getX(), pl.getY(), ds.getWidth(),
+        RegionF elementRegion = new RegionF(pl.getX(), pl.getY(), ds.getWidth(),
                 ds.getHeight());
 
         // Triggers are actually performed on the previous window.
@@ -2101,7 +2098,7 @@ public class Eyes extends EyesBase {
      * @param control The control's context-relative region.
      * @param text    The trigger's text.
      */
-    public void addTextTrigger(Region control, String text) {
+    public void addTextTrigger(RegionF control, String text) {
         if (getIsDisabled()) {
             logger.verbose(String.format("Ignoring '%s' (disabled)", text));
             return;
@@ -2137,7 +2134,7 @@ public class Eyes extends EyesBase {
         Point pl = element.getLocation();
         Dimension ds = element.getSize();
 
-        Region elementRegion = new Region(pl.getX(), pl.getY(), ds.getWidth(), ds.getHeight());
+        RegionF elementRegion = new RegionF(pl.getX(), pl.getY(), ds.getWidth(), ds.getHeight());
 
         addTextTrigger(elementRegion, text);
     }
@@ -2187,7 +2184,7 @@ public class Eyes extends EyesBase {
 
         try {
             EyesSeleniumUtils.setViewportSize(logger, driver, size);
-            effectiveViewport = new Region(Location.ZERO, size);
+            effectiveViewport = new RegionF(Location.ZERO, size);
         } catch (EyesException e) {
             // Just in case the user catches this error
             ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
@@ -2287,7 +2284,7 @@ public class Eyes extends EyesBase {
     }
 
     @Override
-    protected EyesScreenshot getSubScreenshot(EyesScreenshot screenshot, Region region, ICheckSettingsInternal
+    protected EyesScreenshot getSubScreenshot(EyesScreenshot screenshot, RegionF region, ICheckSettingsInternal
             checkSettingsInternal) {
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettingsInternal instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettingsInternal : null;
 
@@ -2359,7 +2356,7 @@ public class Eyes extends EyesBase {
 
             switchTo.defaultContent();
 
-            BufferedImage fullPageImage = algo.getStitchedRegion(Region.EMPTY, null, positionProvider);
+            BufferedImage fullPageImage = algo.getStitchedRegion(RegionF.EMPTY, null, positionProvider);
 
             switchTo.frames(originalFrameChain);
             result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);

@@ -24,7 +24,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
     private final IEyesJsExecutor jsExecutor;
     private final UserAgent userAgent;
 
-    private static Map<DeviceData, Region> devicesRegions = null;
+    private static Map<DeviceData, RegionF> devicesRegions = null;
 
     public SafariScreenshotImageProvider(Eyes eyes, Logger logger, TakesScreenshot tsInstance, UserAgent userAgent) {
         this.eyes = eyes;
@@ -70,7 +70,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
 
             if (devicesRegions.containsKey(deviceData)) {
                 logger.verbose("device data found in hash table");
-                Region crop = devicesRegions.get(deviceData);
+                RegionF crop = devicesRegions.get(deviceData);
                 image = ImageUtils.cropImage(image, crop);
             } else {
                 logger.verbose("device not found in list. returning original image.");
@@ -89,7 +89,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
 
             loc = loc.scale(scaleRatio);
 
-            image = ImageUtils.cropImage(image, new Region(loc, viewportSize));
+            image = ImageUtils.cropImage(image, new RegionF(loc, viewportSize));
         }
 
         return image;
@@ -98,41 +98,41 @@ public class SafariScreenshotImageProvider implements ImageProvider {
     private void initDeviceRegionsTable() {
         devicesRegions = new HashMap<>();
 
-        devicesRegions.put(new DeviceData(1125, 2436, 375, 635, 11), new Region(0, 283, 1125, 1903));
-        devicesRegions.put(new DeviceData(2436, 1125, 724, 325, 11), new Region(132, 151, 2436, 930));
+        devicesRegions.put(new DeviceData(1125, 2436, 375, 635, 11), new RegionF(0, 283, 1125, 1903));
+        devicesRegions.put(new DeviceData(2436, 1125, 724, 325, 11), new RegionF(132, 151, 2436, 930));
 
-        devicesRegions.put(new DeviceData(1242, 2208, 414, 622, 11), new Region(0, 211, 1242, 1863));
-        devicesRegions.put(new DeviceData(2208, 1242, 736, 364, 11), new Region(0, 151, 2208, 1090));
+        devicesRegions.put(new DeviceData(1242, 2208, 414, 622, 11), new RegionF(0, 211, 1242, 1863));
+        devicesRegions.put(new DeviceData(2208, 1242, 736, 364, 11), new RegionF(0, 151, 2208, 1090));
 
-        devicesRegions.put(new DeviceData(1242, 2208, 414, 628, 10), new Region(0, 193, 1242, 1882));
-        devicesRegions.put(new DeviceData(2208, 1242, 736, 337, 10), new Region(0, 231, 2208, 1010));
+        devicesRegions.put(new DeviceData(1242, 2208, 414, 628, 10), new RegionF(0, 193, 1242, 1882));
+        devicesRegions.put(new DeviceData(2208, 1242, 736, 337, 10), new RegionF(0, 231, 2208, 1010));
 
-        devicesRegions.put(new DeviceData(750, 1334, 375, 553, 11), new Region(0, 141, 750, 1104));
-        devicesRegions.put(new DeviceData(1334, 750, 667, 325, 11), new Region(0, 101, 1334, 648));
+        devicesRegions.put(new DeviceData(750, 1334, 375, 553, 11), new RegionF(0, 141, 750, 1104));
+        devicesRegions.put(new DeviceData(1334, 750, 667, 325, 11), new RegionF(0, 101, 1334, 648));
 
-        devicesRegions.put(new DeviceData(750, 1334, 375, 559, 10), new Region(0, 129, 750, 1116));
-        devicesRegions.put(new DeviceData(1334, 750, 667, 331, 10), new Region(0, 89, 1334, 660));
+        devicesRegions.put(new DeviceData(750, 1334, 375, 559, 10), new RegionF(0, 129, 750, 1116));
+        devicesRegions.put(new DeviceData(1334, 750, 667, 331, 10), new RegionF(0, 89, 1334, 660));
 
-        devicesRegions.put(new DeviceData(640, 1136, 320, 460, 10), new Region(0, 129, 640, 918));
-        devicesRegions.put(new DeviceData(1136, 640, 568, 232, 10), new Region(0, 89, 1136, 462));
+        devicesRegions.put(new DeviceData(640, 1136, 320, 460, 10), new RegionF(0, 129, 640, 918));
+        devicesRegions.put(new DeviceData(1136, 640, 568, 232, 10), new RegionF(0, 89, 1136, 462));
 
-        devicesRegions.put(new DeviceData(1536, 2048, 768, 954, 11), new Region(0, 141, 1536, 1907));
-        devicesRegions.put(new DeviceData(2048, 1536, 1024, 698, 11), new Region(0, 141, 2048, 1395));
+        devicesRegions.put(new DeviceData(1536, 2048, 768, 954, 11), new RegionF(0, 141, 1536, 1907));
+        devicesRegions.put(new DeviceData(2048, 1536, 1024, 698, 11), new RegionF(0, 141, 2048, 1395));
 
-        devicesRegions.put(new DeviceData(1536, 2048, 768, 922, 11), new Region(0, 206, 1536, 1842));
-        devicesRegions.put(new DeviceData(2048, 1536, 1024, 666, 11), new Region(0, 206, 2048, 1330));
+        devicesRegions.put(new DeviceData(1536, 2048, 768, 922, 11), new RegionF(0, 206, 1536, 1842));
+        devicesRegions.put(new DeviceData(2048, 1536, 1024, 666, 11), new RegionF(0, 206, 2048, 1330));
 
-        devicesRegions.put(new DeviceData(1536, 2048, 768, 960, 10), new Region(0, 129, 1536, 1919));
-        devicesRegions.put(new DeviceData(2048, 1536, 1024, 704, 10), new Region(0, 129, 2048, 1407));
+        devicesRegions.put(new DeviceData(1536, 2048, 768, 960, 10), new RegionF(0, 129, 1536, 1919));
+        devicesRegions.put(new DeviceData(2048, 1536, 1024, 704, 10), new RegionF(0, 129, 2048, 1407));
 
-        devicesRegions.put(new DeviceData(1536, 2048, 768, 928, 10), new Region(0, 194, 1536, 1854));
-        devicesRegions.put(new DeviceData(2048, 1536, 1024, 672, 10), new Region(0, 194, 2048, 1342));
+        devicesRegions.put(new DeviceData(1536, 2048, 768, 928, 10), new RegionF(0, 194, 1536, 1854));
+        devicesRegions.put(new DeviceData(2048, 1536, 1024, 672, 10), new RegionF(0, 194, 2048, 1342));
 
-        devicesRegions.put(new DeviceData(2048, 2732, 1024, 1296, 11), new Region(0, 141, 2048, 2591));
-        devicesRegions.put(new DeviceData(2732, 2048, 1366, 954, 11), new Region(0, 141, 2732, 1907));
+        devicesRegions.put(new DeviceData(2048, 2732, 1024, 1296, 11), new RegionF(0, 141, 2048, 2591));
+        devicesRegions.put(new DeviceData(2732, 2048, 1366, 954, 11), new RegionF(0, 141, 2732, 1907));
 
-        devicesRegions.put(new DeviceData(1668, 2224, 834, 1042, 11), new Region(0, 141, 1668, 2083));
-        devicesRegions.put(new DeviceData(2224, 1668, 1112, 764, 11), new Region(0, 141, 2224, 1527));
+        devicesRegions.put(new DeviceData(1668, 2224, 834, 1042, 11), new RegionF(0, 141, 1668, 2083));
+        devicesRegions.put(new DeviceData(2224, 1668, 1112, 764, 11), new RegionF(0, 141, 2224, 1527));
     }
 
     private class DeviceData {

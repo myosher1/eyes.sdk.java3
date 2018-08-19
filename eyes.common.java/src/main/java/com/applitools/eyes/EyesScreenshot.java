@@ -35,7 +35,7 @@ public abstract class EyesScreenshot {
      *                        fully contained in the screenshot.
      * @return A screenshot instance containing the given region.
      */
-    public abstract EyesScreenshot getSubScreenshot(Region region, boolean throwIfClipped);
+    public abstract EyesScreenshot getSubScreenshot(RegionF region, boolean throwIfClipped);
 
     /**
      * Converts a location's coordinates with the {@code from} coordinates type
@@ -69,8 +69,8 @@ public abstract class EyesScreenshot {
      * @param coordinatesType The coordinates type of {@code region}.
      * @return The intersected region, in {@code coordinatesType} coordinates.
      */
-    public abstract Region getIntersectedRegion(Region region,
-                                       CoordinatesType coordinatesType);
+    public abstract RegionF getIntersectedRegion(RegionF region,
+                                                 CoordinatesType coordinatesType);
     /**
      * Converts a region's location coordinates with the {@code from}
      * coordinates type to the {@code to} coordinates type.
@@ -80,13 +80,13 @@ public abstract class EyesScreenshot {
      * @return A new region which is the transformation of {@code region} to
      * the {@code to} coordinates type.
      */
-    public Region convertRegionLocation(Region region,
-                                        CoordinatesType from,
-                                        CoordinatesType to) {
+    public RegionF convertRegionLocation(RegionF region,
+                                         CoordinatesType from,
+                                         CoordinatesType to) {
         ArgumentGuard.notNull(region, "region");
 
         if (region.isSizeEmpty()) {
-            return new Region(region);
+            return new RegionF(region);
         }
 
         ArgumentGuard.notNull(from, "from");
@@ -97,6 +97,6 @@ public abstract class EyesScreenshot {
         Location updatedLocation = convertLocation(originalLocation, from, to);
         logger.verbose("updated location: " + updatedLocation);
 
-        return new Region(updatedLocation, region.getSize());
+        return new RegionF(updatedLocation, region.getSize());
     }
 }

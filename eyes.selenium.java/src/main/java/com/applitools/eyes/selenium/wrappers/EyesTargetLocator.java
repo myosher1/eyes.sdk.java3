@@ -3,14 +3,11 @@
  */
 package com.applitools.eyes.selenium.wrappers;
 
-import com.applitools.eyes.EyesException;
-import com.applitools.eyes.Location;
-import com.applitools.eyes.Logger;
-import com.applitools.eyes.RectangleSizeF;
+import com.applitools.eyes.*;
 import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.selenium.Borders;
+import com.applitools.eyes.selenium.BoundsAndBorders;
 import com.applitools.eyes.selenium.SeleniumJavaScriptExecutor;
-import com.applitools.eyes.selenium.SizeAndBorders;
 import com.applitools.eyes.selenium.frames.Frame;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
@@ -49,19 +46,23 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         EyesRemoteWebElement eyesFrame = (targetFrame instanceof EyesRemoteWebElement) ?
                 (EyesRemoteWebElement) targetFrame : new EyesRemoteWebElement(logger, driver, targetFrame);
 
-        Point pl = targetFrame.getLocation();
-        Dimension ds = targetFrame.getSize();
+        BoundsAndBorders boundsAndBorders = eyesFrame.getBoundsAndBorders();
+        Borders borders = boundsAndBorders.getBorders();
+        RegionF bounds = boundsAndBorders.getBounds();
 
-        SizeAndBorders sizeAndBorders = eyesFrame.getSizeAndBorders();
-        Borders borders = sizeAndBorders.getBorders();
-        RectangleSizeF frameInnerSize = sizeAndBorders.getSize();
+        RectangleSizeF frameInnerSize = new RectangleSizeF(
+                bounds.getWidth() - borders.getHorizontal(),
+                bounds.getHeight() - borders.getVertical());
 
-        Location contentLocation = new Location(pl.getX() + borders.getLeft(), pl.getY() + borders.getTop());
+        Location contentLocation = new Location(
+                bounds.getLeft() + borders.getLeft(),
+                bounds.getTop() + borders.getTop());
+
         Location originalLocation = scrollPosition.getCurrentPosition();
 
         Frame frame = new Frame(logger, targetFrame,
                 contentLocation,
-                new RectangleSizeF(ds.getWidth(), ds.getHeight()),
+                bounds.getSize(),
                 frameInnerSize,
                 originalLocation,
                 this.driver);

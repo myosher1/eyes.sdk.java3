@@ -1,7 +1,7 @@
 package com.applitools.eyes.selenium.positioning;
 
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 
 public interface RegionPositionCompensation {
-    Region compensateRegionPosition(Region region, double pixelRatio);
+    RegionF compensateRegionPosition(RegionF region, double pixelRatio);
 }

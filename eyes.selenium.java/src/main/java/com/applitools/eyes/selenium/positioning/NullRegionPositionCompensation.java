@@ -1,11 +1,11 @@
 package com.applitools.eyes.selenium.positioning;
 
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 
 public class NullRegionPositionCompensation implements RegionPositionCompensation {
 
     @Override
-    public Region compensateRegionPosition(Region region, double pixelRatio) {
+    public RegionF compensateRegionPosition(RegionF region, double pixelRatio) {
         return region;
     }
 }

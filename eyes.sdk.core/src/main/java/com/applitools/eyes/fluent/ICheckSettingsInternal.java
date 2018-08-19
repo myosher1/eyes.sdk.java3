@@ -1,10 +1,10 @@
 package com.applitools.eyes.fluent;
 
 import com.applitools.eyes.MatchLevel;
-import com.applitools.eyes.Region;
+import com.applitools.eyes.RegionF;
 
 public interface ICheckSettingsInternal {
-    Region getTargetRegion();
+    RegionF getTargetRegion();
     int getTimeout();
     boolean getStitchContent();
     MatchLevel getMatchLevel();

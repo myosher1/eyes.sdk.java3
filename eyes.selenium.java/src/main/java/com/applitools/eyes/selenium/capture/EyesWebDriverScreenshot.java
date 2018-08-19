@@ -37,10 +37,10 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     private final Location frameLocationInScreenshot;
 
     // The part of the frame window which is visible in the screenshot
-    private final Region frameWindow;
+    private final RegionF frameWindow;
 
     // FIXME: 18/03/2018 Workaround specifically for regions
-    private final Region regionWindow;
+    private final RegionF regionWindow;
 
     private static Location getDefaultContentScrollPosition(Logger logger, FrameChain currentFrames, EyesWebDriver driver) {
         IEyesJsExecutor jsExecutor = new SeleniumJavaScriptExecutor(driver);
@@ -130,13 +130,13 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         this.frameLocationInScreenshot = frameLocationInScreenshot;
 
         logger.verbose("Calculating frame window...");
-        this.frameWindow = new Region(frameLocationInScreenshot, frameSize);
-        this.frameWindow.intersect(new Region(0, 0, image.getWidth(), image.getHeight()));
+        this.frameWindow = new RegionF(frameLocationInScreenshot, frameSize);
+        this.frameWindow.intersect(new RegionF(0, 0, image.getWidth(), image.getHeight()));
         if (this.frameWindow.getWidth() <= 0 || this.frameWindow.getHeight() <= 0) {
             throw new EyesException("Got empty frame window for screenshot!");
         }
 
-        regionWindow = new Region(0,0,0,0); // FIXME: 18/03/2018 Region workaround
+        regionWindow = new RegionF(0,0,0,0); // FIXME: 18/03/2018 Region workaround
 
         logger.verbose("Done!");
     }
@@ -222,7 +222,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
      * @param screenshotRegion    The region of the screenshot.
      */
     public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver,
-                                   BufferedImage image, Region screenshotRegion) {
+                                   BufferedImage image, RegionF screenshotRegion) {
         super(logger, image);
         ArgumentGuard.notNull(driver, "driver");
         ArgumentGuard.notNull(screenshotRegion, "screenshotRegion");
@@ -234,8 +234,8 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
         currentFrameScrollPosition = new Location(0, 0);
         frameLocationInScreenshot = new Location(0, 0);
-        frameWindow = new Region(new Location(0, 0), screenshotRegion.getSize());
-        regionWindow = new Region(screenshotRegion);
+        frameWindow = new RegionF(new Location(0, 0), screenshotRegion.getSize());
+        regionWindow = new RegionF(screenshotRegion);
     }
 
     // TODO replace "entireFrameSize" as frame window ctor identifier
@@ -260,15 +260,15 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
         currentFrameScrollPosition = new Location(0, 0);
         frameLocationInScreenshot = new Location(0, 0);
-        frameWindow = new Region(new Location(0, 0), entireFrameSize);
-        regionWindow = new Region(0,0,0,0); // FIXME: 18/03/2018 Region workaround
+        frameWindow = new RegionF(new Location(0, 0), entireFrameSize);
+        regionWindow = new RegionF(0,0,0,0); // FIXME: 18/03/2018 Region workaround
     }
 
     /**
      * @return The region of the frame which is available in the screenshot,
      * in screenshot coordinates.
      */
-    public Region getFrameWindow() {
+    public RegionF getFrameWindow() {
         return frameWindow;
     }
 
@@ -281,14 +281,14 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     }
 
     @Override
-    public EyesWebDriverScreenshot getSubScreenshot(Region region, boolean throwIfClipped) {
+    public EyesWebDriverScreenshot getSubScreenshot(RegionF region, boolean throwIfClipped) {
 
         logger.verbose(String.format("getSubScreenshot([%s], %b)", region, throwIfClipped));
 
         ArgumentGuard.notNull(region, "region");
 
         // We calculate intersection based on as-is coordinates.
-        Region asIsSubScreenshotRegion = getIntersectedRegion(region, CoordinatesType.SCREENSHOT_AS_IS);
+        RegionF asIsSubScreenshotRegion = getIntersectedRegion(region, CoordinatesType.SCREENSHOT_AS_IS);
 
         if (asIsSubScreenshotRegion.isSizeEmpty() ||
                 (throwIfClipped &&
@@ -309,14 +309,14 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         return result;
     }
 
-    public EyesWebDriverScreenshot getSubScreenshotForRegion(Region region, boolean throwIfClipped) {
+    public EyesWebDriverScreenshot getSubScreenshotForRegion(RegionF region, boolean throwIfClipped) {
 
         logger.verbose(String.format("getSubScreenshot([%s], %b)", region, throwIfClipped));
 
         ArgumentGuard.notNull(region, "region");
 
         // We calculate intersection based on as-is coordinates.
-        Region asIsSubScreenshotRegion = getIntersectedRegion(region, CoordinatesType.SCREENSHOT_AS_IS);
+        RegionF asIsSubScreenshotRegion = getIntersectedRegion(region, CoordinatesType.SCREENSHOT_AS_IS);
 
         if (asIsSubScreenshotRegion.isEmpty() ||
                 (throwIfClipped &&
@@ -331,7 +331,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
                 ImageUtils.getImagePart(image, asIsSubScreenshotRegion);
 
         EyesWebDriverScreenshot result = new EyesWebDriverScreenshot(logger, driver, subScreenshotImage,
-                new Region(region.getLocation(),
+                new RegionF(region.getLocation(),
                         new RectangleSizeF(subScreenshotImage.getWidth(), subScreenshotImage.getHeight())));
 
         logger.verbose("Done!");
@@ -465,16 +465,16 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     }
 
     @Override
-    public Region getIntersectedRegion(Region region,
-                                       CoordinatesType resultCoordinatesType) {
+    public RegionF getIntersectedRegion(RegionF region,
+                                        CoordinatesType resultCoordinatesType) {
 
         if (region.isSizeEmpty()) {
-            return new Region(region);
+            return new RegionF(region);
         }
 
         CoordinatesType originalCoordinatesType = region.getCoordinatesType();
 
-        Region intersectedRegion = convertRegionLocation(region,
+        RegionF intersectedRegion = convertRegionLocation(region,
                 originalCoordinatesType, CoordinatesType.SCREENSHOT_AS_IS);
 
         switch (originalCoordinatesType) {
@@ -486,7 +486,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
             // If the request is screenshot based, we intersect with the image
             case SCREENSHOT_AS_IS:
-                intersectedRegion.intersect(new Region(0, 0,
+                intersectedRegion.intersect(new RegionF(0, 0,
                         image.getWidth(), image.getHeight()));
                 break;
 
@@ -516,13 +516,13 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
      * @return The intersected region, in {@code SCREENSHOT_AS_IS} coordinates
      * type.
      */
-    public Region getIntersectedRegion(WebElement element) {
+    public RegionF getIntersectedRegion(WebElement element) {
         ArgumentGuard.notNull(element, "element");
 
         Point pl = element.getLocation();
         Dimension ds = element.getSize();
 
-        Region elementRegion = new Region(pl.getX(), pl.getY(), ds.getWidth(),
+        RegionF elementRegion = new RegionF(pl.getX(), pl.getY(), ds.getWidth(),
                 ds.getHeight());
 
         // Since the element coordinates are in context relative

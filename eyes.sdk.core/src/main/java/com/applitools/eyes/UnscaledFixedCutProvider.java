@@ -31,25 +31,25 @@ public class UnscaledFixedCutProvider implements CutProvider {
     public BufferedImage cut(BufferedImage image) {
         if (header > 0) {
             image = ImageUtils.cropImage(image,
-                    new Region(0, header, image.getWidth(),
+                    new RegionF(0, header, image.getWidth(),
                             image.getHeight() - header));
         }
 
         if (footer > 0) {
             image = ImageUtils.cropImage(image,
-                    new Region(0, 0,
+                    new RegionF(0, 0,
                             image.getWidth(), image.getHeight() - footer));
         }
 
         if (left > 0) {
             image = ImageUtils.cropImage(image,
-                    new Region(left, 0, image.getWidth() - left,
+                    new RegionF(left, 0, image.getWidth() - left,
                             image.getHeight()));
         }
 
         if (right > 0) {
             image = ImageUtils.cropImage(image,
-                    new Region(0, 0, image.getWidth() - right,
+                    new RegionF(0, 0, image.getWidth() - right,
                             image.getHeight()));
         }
 

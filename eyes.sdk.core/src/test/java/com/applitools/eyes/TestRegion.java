@@ -30,60 +30,60 @@ public class TestRegion {
         int top = 2;
         int width = 3;
         int height = 4;
-        Region region = new Region(left, top, width, height);
+        RegionF region = new RegionF(left, top, width, height);
         Assert.assertEquals(left, region.getLeft(), "left");
         Assert.assertEquals(top, region.getTop(), "top");
         Assert.assertEquals(width, region.getWidth(), "width");
         Assert.assertEquals(height, region.getHeight(), "height");
 
-        region = new Region(new Location(left, top), new RectangleSizeF(width, height));
+        region = new RegionF(new Location(left, top), new RectangleSizeF(width, height));
         Assert.assertEquals(left, region.getLeft(), "left");
         Assert.assertEquals(top, region.getTop(), "top");
         Assert.assertEquals(width, region.getWidth(), "width");
         Assert.assertEquals(height, region.getHeight(), "height");
 
         // This should still be ok (another way to say "empty region")
-        new Region(1, 2, 0, 0);
+        new RegionF(1, 2, 0, 0);
 
         // Making sure negative positions are valid.
         try {
-            new Region(-1, 2, 3, 4);
+            new RegionF(-1, 2, 3, 4);
         } catch (IllegalArgumentException e) {
             Assert.fail("Left can be <= 0");
         }
 
         try {
-            new Region(1, -2, 3, 4);
+            new RegionF(1, -2, 3, 4);
         } catch (IllegalArgumentException e) {
             Assert.fail("Top can be <= 0");
         }
 
 
         try {
-            new Region(1, 2, -1, 0);
+            new RegionF(1, 2, -1, 0);
             Assert.fail("Width must be >=0");
         } catch (IllegalArgumentException e) {
         }
 
         try {
-            new Region(1, 2, 3, -1);
+            new RegionF(1, 2, 3, -1);
             Assert.fail("Height must be >=0");
         } catch (IllegalArgumentException e) {
         }
 
         try {
-            new Region(null, new RectangleSizeF(3, 4));
+            new RegionF(null, new RectangleSizeF(3, 4));
             Assert.fail("Location must not be null!");
         } catch (IllegalArgumentException e) {
         }
 
         try {
-            new Region(new Location(1, 2), (RectangleSize) null);
+            new RegionF(new Location(1, 2), (RectangleSize) null);
             Assert.fail("Size must not be null!");
         } catch (IllegalArgumentException e) {
         }
         try {
-            new Region(null, (RectangleSize) null);
+            new RegionF(null, (RectangleSize) null);
             Assert.fail("Location and size must not be null!");
         } catch (IllegalArgumentException e) {
         }
@@ -96,9 +96,9 @@ public class TestRegion {
         int width = 3;
         int height = 4;
 
-        Region original, other;
-        original = new Region(left, top, width, height);
-        other = new Region(original);
+        RegionF original, other;
+        original = new RegionF(left, top, width, height);
+        other = new RegionF(original);
 
         Assert.assertEquals(other.getLeft(), original.getLeft(), "left");
         Assert.assertEquals(other.getTop(), original.getTop(), "top");
@@ -111,7 +111,7 @@ public class TestRegion {
 
     @Test
     public void testLocation() {
-        Region r = new Region(1, 2, 3, 4);
+        RegionF r = new RegionF(1, 2, 3, 4);
 
         Assert.assertEquals(r.getLocation(), new Location(1, 2), "invalid location");
 
@@ -121,7 +121,7 @@ public class TestRegion {
 
     @Test
     public void testContains() {
-        Region region = new Region(1, 1, 10, 10);
+        RegionF region = new RegionF(1, 1, 10, 10);
         Location containedLocation = new Location(2, 5);
         Location outsideLocation = new Location(20, 5);
 
@@ -131,15 +131,15 @@ public class TestRegion {
 
     @Test
     public void testIntersect() {
-        Region r1, r2;
-        Region.initLogger(new Logger());
+        RegionF r1, r2;
+        RegionF.initLogger(new Logger());
         Location l1 = new Location(10, 10);
         Location l2 = new Location(20, 30);
         RectangleSizeF s1 = new RectangleSizeF(50, 100);
         RectangleSizeF s2 = new RectangleSizeF(100, 50);
 
-        r1 = new Region(l1, s1);
-        r2 = new Region(l2, s2);
+        r1 = new RegionF(l1, s1);
+        r2 = new RegionF(l2, s2);
 
         r1.intersect(r2);
         Assert.assertEquals(r1.getLeft(), 20, "intersected x");
@@ -148,15 +148,15 @@ public class TestRegion {
         Assert.assertEquals(r1.getHeight(), 50, "intersected height");
 
         // Regions which don't intersect should return an empty region.
-        r2.intersect(new Region(5, 5, 10, 10));
-        Assert.assertEquals(r2, Region.EMPTY, "no overlap");
+        r2.intersect(new RegionF(5, 5, 10, 10));
+        Assert.assertEquals(r2, RegionF.EMPTY, "no overlap");
     }
 
     @Test
     public void testEqualsAndHashCode() {
-        Region r1, r2;
-        r1 = new Region(1, 2, 3, 4);
-        r2 = new Region(r1);
+        RegionF r1, r2;
+        r1 = new RegionF(1, 2, 3, 4);
+        r2 = new RegionF(r1);
         Assert.assertEquals(r1, r2, "Regions should be equal!");
         Assert.assertEquals(r1.hashCode(), r2.hashCode(), "Hashes should be equal!");
 
@@ -182,8 +182,8 @@ public class TestRegion {
                             + "\"height\":" + String.valueOf(height)
                             + "}";
 
-            Region actualDeserialization = jsonMapper.readValue(jsonData, Region.class);
-            Region expectedDeserialization = new Region(left, top, width, height);
+            RegionF actualDeserialization = jsonMapper.readValue(jsonData, RegionF.class);
+            RegionF expectedDeserialization = new RegionF(left, top, width, height);
             Assert.assertEquals(actualDeserialization, expectedDeserialization, "Region deserialization does not match!");
         } catch (IOException e) {
             Assert.fail(e.getMessage());
@@ -205,13 +205,13 @@ public class TestRegion {
                         + "\"coordinatesType\":\"SCREENSHOT_AS_IS\""
                         + "}";
 
-        Region r = new Region(left, top, width, height);
+        RegionF r = new RegionF(left, top, width, height);
         String actualSerialization = jsonMapper.writeValueAsString(r);
 
         Assert.assertEquals(actualSerialization,
                 expectedSerialization, "Region serialization does not match!");
 
-        r = new Region(new Location(left, top),
+        r = new RegionF(new Location(left, top),
                 new RectangleSizeF(width, height));
         actualSerialization = jsonMapper.writeValueAsString(r);
         Assert.assertEquals(actualSerialization,
@@ -273,7 +273,7 @@ public class TestRegion {
 
     @Test
     public void testMiddleOffset() {
-        Region r = new Region(1, 1, 10, 20);
+        RegionF r = new RegionF(1, 1, 10, 20);
 
         Location middleOffset = r.getMiddleOffset();
         Assert.assertEquals(middleOffset.getX(), 5, "X middle is not correct!");

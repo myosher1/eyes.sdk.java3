@@ -50,7 +50,7 @@ public class AppiumJsCommandExtractor {
 
             Map<String, String> tapObject;
 
-            Region control;
+            RegionF control;
             Location location;
 
             double x, y;
@@ -96,7 +96,7 @@ public class AppiumJsCommandExtractor {
                 Dimension elementSize = referencedElement.getSize();
 
 
-                control = new Region(elementPosition.getX(),
+                control = new RegionF(elementPosition.getX(),
                                         elementPosition.getY(),
                                         elementSize.getWidth(),
                                         elementSize.getHeight());
@@ -122,7 +122,7 @@ public class AppiumJsCommandExtractor {
 
                 // creating a fake control, for which the tap is at the right
                 // bottom corner
-                control = new Region(0, 0,
+                control = new RegionF(0, 0,
                                     (int) Math.round(x), (int) Math.round(y));
             }
 
