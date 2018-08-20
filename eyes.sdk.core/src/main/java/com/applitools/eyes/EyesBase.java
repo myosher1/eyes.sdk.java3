@@ -50,7 +50,7 @@ public abstract class EyesBase {
     protected EyesScreenshot lastScreenshot;
     protected PropertyHandler<ScaleProvider> scaleProviderHandler;
     protected PropertyHandler<CutProvider> cutProviderHandler;
-    protected PositionProvider positionProvider;
+    protected PropertyHandler<PositionProvider> positionProviderHandler;
 
     // Will be checked <b>before</b> any argument validation. If true,
     // all method will immediately return without performing any action.
@@ -154,7 +154,8 @@ public abstract class EyesBase {
             scaleProviderHandler.set(new NullScaleProvider());
             cutProviderHandler = new SimplePropertyHandler<>();
             cutProviderHandler.set(new NullCutProvider());
-            positionProvider = new InvalidPositionProvider();
+            positionProviderHandler = new SimplePropertyHandler<>();
+            positionProviderHandler.set(new InvalidPositionProvider());
             viewportSizeHandler = new SimplePropertyHandler<>();
             viewportSizeHandler.set(null);
 
@@ -171,8 +172,9 @@ public abstract class EyesBase {
             cutProviderHandler.set(new NullCutProvider());
         }
 
-        if (positionProvider == null) {
-            positionProvider = new InvalidPositionProvider();
+        if (positionProviderHandler == null) {
+            positionProviderHandler = new SimplePropertyHandler<>();
+            positionProviderHandler.set(new InvalidPositionProvider());
         }
 
         if (viewportSizeHandler == null) {
@@ -1056,14 +1058,20 @@ public abstract class EyesBase {
      * @return The currently set position provider.
      */
     public PositionProvider getPositionProvider() {
-        return positionProvider;
+        return positionProviderHandler.get();
     }
 
     /**
      * @param positionProvider The position provider to be used.
      */
     public void setPositionProvider(PositionProvider positionProvider) {
-        this.positionProvider = positionProvider;
+        if (positionProvider != null) {
+            positionProviderHandler = new ReadOnlyPropertyHandler<>(logger,
+                    positionProvider);
+        } else {
+            positionProviderHandler = new SimplePropertyHandler<>();
+            positionProviderHandler.set(new InvalidPositionProvider());
+        }
     }
 
     /**

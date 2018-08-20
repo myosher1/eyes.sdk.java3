@@ -12,8 +12,8 @@ import com.applitools.utils.ArgumentGuard;
  */
 public class CssTranslatePositionProvider implements PositionProvider {
 
-    private final Logger logger;
-    private final IEyesJsExecutor executor;
+    protected final Logger logger;
+    protected final IEyesJsExecutor executor;
     private Location lastSetPosition; // cache.
 
     public CssTranslatePositionProvider(Logger logger, IEyesJsExecutor executor) {

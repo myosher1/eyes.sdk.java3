@@ -366,10 +366,10 @@ public class Eyes extends EyesBase {
         logger.verbose("initializing position provider. stitchMode: " + stitchMode);
         switch (stitchMode) {
             case CSS:
-                setPositionProvider(new CssTranslatePositionProvider(logger, this.jsExecutor));
+                positionProviderHandler.set(new CssTranslatePositionProvider(logger, this.jsExecutor));
                 break;
             default:
-                setPositionProvider(new ScrollPositionProvider(logger, this.jsExecutor));
+                positionProviderHandler.set(new ScrollPositionProvider(logger, this.jsExecutor));
         }
     }
 
@@ -697,7 +697,7 @@ public class Eyes extends EyesBase {
 
         BufferedImage screenshotImage = algo.getStitchedRegion(
                 Region.EMPTY,
-                bbox, positionProvider);
+                bbox, positionProviderHandler.get());
 
         debugScreenshotsProvider.save(screenshotImage, "original");
         EyesScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
@@ -891,7 +891,7 @@ public class Eyes extends EyesBase {
         }
 
         if (this.positionMemento != null) {
-            this.positionProvider.restoreState(this.positionMemento);
+            this.positionProviderHandler.get().restoreState(this.positionMemento);
             this.positionMemento = null;
         }
 
@@ -1023,9 +1023,9 @@ public class Eyes extends EyesBase {
             Frame frame = fc.pop();
             EyesTargetLocator.parentFrame(driver.getRemoteWebDriver().switchTo(), fc);
             if (fc.size() == 0) {
-                positionMemento = positionProvider.getState();
+                positionMemento = positionProviderHandler.get().getState();
             }
-            this.positionProvider.setPosition(frame.getLocation());
+            this.positionProviderHandler.get().setPosition(frame.getLocation());
 
             Region reg = new Region(Location.ZERO, frame.getInnerSize());
             effectiveViewport.intersect(reg);
@@ -1066,7 +1066,7 @@ public class Eyes extends EyesBase {
                 switchTo.frames(originalFC);
             }
 
-            this.positionProvider.setPosition(elementLocation);
+            this.positionProviderHandler.get().setPosition(elementLocation);
         }
     }
 
@@ -1491,7 +1491,7 @@ public class Eyes extends EyesBase {
     }
 
     private ScaleProviderFactory getScaleProviderFactory() {
-        return new ContextBasedScaleProviderFactory(logger, positionProvider.getEntireSize(),
+        return new ContextBasedScaleProviderFactory(logger, positionProviderHandler.get().getEntireSize(),
                 viewportSizeHandler.get(), devicePixelRatio, false,
                 scaleProviderHandler);
     }
@@ -1736,11 +1736,10 @@ public class Eyes extends EyesBase {
                 (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
 
         this.regionToCheck = null;
-        PositionMemento originalPositionMemento = positionProvider.getState();
+        PositionMemento originalPositionMemento = positionProviderHandler.get().getState();
 
         ensureElementVisible(targetElement);
 
-        PositionProvider originalPositionProvider = positionProvider;
         PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
         Location originalScrollPosition = scrollPositionProvider.getCurrentPosition();
 
@@ -1790,9 +1789,8 @@ public class Eyes extends EyesBase {
 
             checkFrameOrElement = false;
 
-            originalPositionProvider.restoreState(originalPositionMemento);
+            positionProviderHandler.get().restoreState(originalPositionMemento);
             scrollPositionProvider.setPosition(originalScrollPosition);
-            positionProvider = originalPositionProvider;
             regionToCheck = null;
             elementPositionProvider = null;
         }
@@ -2159,7 +2157,7 @@ public class Eyes extends EyesBase {
 
             switchTo.defaultContent();
 
-            BufferedImage fullPageImage = algo.getStitchedRegion(Region.EMPTY, null, positionProvider);
+            BufferedImage fullPageImage = algo.getStitchedRegion(Region.EMPTY, null, positionProviderHandler.get());
 
             switchTo.frames(originalFrameChain);
             result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);
@@ -2288,7 +2286,7 @@ public class Eyes extends EyesBase {
      * @return The currently set position provider.
      */
     public PositionProvider getElementPositionProvider() {
-        return elementPositionProvider == null ? positionProvider : elementPositionProvider;
+        return elementPositionProvider == null ? positionProviderHandler.get() : elementPositionProvider;
     }
 
     @Override
