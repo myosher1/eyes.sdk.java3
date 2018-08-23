@@ -44,6 +44,8 @@ public class StartInfo {
     private ImageMatchSettings defaultMatchSettings;
     @JsonProperty("agentId")
     private String agentId;
+    @JsonProperty("render")
+    private boolean render;
     @JsonProperty("properties")
     private Object[] properties = null;
 
@@ -157,6 +159,16 @@ public class StartInfo {
         this.agentId = agentId;
     }
 
+    @JsonProperty("render")
+    public boolean getRender() {
+        return render;
+    }
+
+    @JsonProperty("render")
+    public void setRender(boolean render) {
+        this.render = render;
+    }
+
     @JsonProperty("properties")
     public Object[] getProperties() {
         return properties;
@@ -166,5 +178,4 @@ public class StartInfo {
     public void setProperties(Object[] properties) {
         this.properties = properties;
     }
-
 }

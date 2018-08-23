@@ -25,7 +25,7 @@ public class ServerConnector extends RestClient
         implements IServerConnector {
 
     private static final int TIMEOUT = 1000 * 60 * 5; // 5 Minutes
-    private static final String API_PATH = "/api/sessions/running";
+    private static final String API_PATH = "/api/sessions";
     private static final String DEFAULT_CHARSET_NAME = "UTF-8";
 
     private String apiKey = null;
@@ -156,7 +156,7 @@ public class ServerConnector extends RestClient
         }
 
         try {
-            response = endPoint.queryParam("apiKey", getApiKey()).
+            response = endPoint.path("running").queryParam("apiKey", getApiKey()).
                     request(MediaType.APPLICATION_JSON).
                     post(Entity.json(postData));
         } catch (RuntimeException e) {
@@ -206,7 +206,7 @@ public class ServerConnector extends RestClient
                         Calendar.getInstance(TimeZone.getTimeZone("UTC")));
 
                 // Building the request
-                Invocation.Builder invocationBuilder = endPoint.path(sessionId)
+                Invocation.Builder invocationBuilder = endPoint.path("running").path(sessionId)
                         .queryParam("apiKey", getApiKey())
                         .queryParam("aborted", String.valueOf(isAborted))
                         .queryParam("updateBaseline", String.valueOf(save))
@@ -270,7 +270,7 @@ public class ServerConnector extends RestClient
 
         // since we rather not add an empty "tag" param
         WebTarget runningSessionsEndpoint =
-                endPoint.path(runningSession.getId());
+                endPoint.path("running").path(runningSession.getId());
 
         // Serializing data into JSON (we'll treat it as binary later).
         // IMPORTANT This serializes everything EXCEPT for the screenshot (which
@@ -334,5 +334,31 @@ public class ServerConnector extends RestClient
 
         return result;
 
+    }
+
+    @Override
+    public String postDomSnapshot(String resultsUrl, String domJson) {
+        RestClient restClient = new RestClient(logger, URI.create(resultsUrl));
+        restClient.setProxyBase(getProxy());
+        Response response = restClient.endPoint.request(MediaType.APPLICATION_JSON).post(Entity.json(domJson));
+        return response.getHeaderString("Location");
+    }
+
+    @Override
+    public RenderingInfo getRenderingInfo() {
+        Response response;
+        try {
+            response = endPoint.path("renderinfo").queryParam("apiKey", getApiKey())
+                    .request(MediaType.APPLICATION_JSON).get();
+
+        } catch (RuntimeException e) {
+            logger.log("getRenderingInfo request failed: " + e.getMessage());
+            throw e;
+        }
+
+        List<Integer> validStatusCodes = new ArrayList<>();
+        validStatusCodes.add(Response.Status.OK.getStatusCode());
+
+        return parseResponseWithJsonData(response, validStatusCodes, RenderingInfo.class);
     }
 }

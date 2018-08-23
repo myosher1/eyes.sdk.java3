@@ -82,6 +82,7 @@ public abstract class EyesBase {
 
     private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
     private int validationId;
+    private String domUrl;
 
     public EyesBase() {
 
@@ -1128,7 +1129,9 @@ public abstract class EyesBase {
 
         beforeMatchWindow();
 
-        result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings);
+        String domJson = tryCaptureDom();
+
+        result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings, domJson);
 
         afterMatchWindow();
 
@@ -1158,7 +1161,7 @@ public abstract class EyesBase {
     }
 
     private MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
-                                    ICheckSettings checkSettings) {
+                                    ICheckSettings checkSettings, String domJson) {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
@@ -1186,11 +1189,25 @@ public abstract class EyesBase {
         RegionF region = regionProvider.getRegion();
         logger.verbose("params: ([" + region + "], " + tag + ", " + retryTimeout + ")");
 
+        tryPostDomSnapshot(domJson);
+
         result = matchWindowTask.matchWindow(
                 getUserInputs(), region, tag, shouldMatchWindowRunOnceOnTimeout, ignoreMismatch,
                 checkSettingsInternal, retryTimeout);
 
         return result;
+    }
+
+    private void tryPostDomSnapshot(String domJson) {
+        if (domJson == null) return;
+        if (this.runningSession == null) return;
+        RenderingInfo renderingInfo = this.runningSession.getRenderingInfo();
+        if (renderingInfo == null) return;
+        String resultsUrl = renderingInfo.getResultsUrl();
+        if (resultsUrl != null)
+        {
+            this.domUrl = serverConnector.postDomSnapshot(resultsUrl, domJson);
+        }
     }
 
     private void validateResult(String tag, MatchResult result) {
@@ -1292,6 +1309,10 @@ public abstract class EyesBase {
 
         logger.verbose("Done!");
         return result;
+    }
+
+    protected String tryCaptureDom() {
+        return null;
     }
 
     protected void beforeOpen() {
@@ -1645,6 +1666,9 @@ public abstract class EyesBase {
 
         logger.verbose("Starting server session...");
         runningSession = serverConnector.startSession(sessionStartInfo);
+
+        logger.verbose("getting rendering info...");
+        runningSession.setRenderingInfo(serverConnector.getRenderingInfo());
 
         logger.verbose("Server session ID is " + runningSession.getId());
 

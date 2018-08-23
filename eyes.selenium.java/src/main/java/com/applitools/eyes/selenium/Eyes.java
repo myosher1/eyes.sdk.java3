@@ -2518,6 +2518,13 @@ public class Eyes extends EyesBase {
         return driver.getRemoteWebDriver().getSessionId().toString();
     }
 
+    @Override
+    protected String tryCaptureDom()
+    {
+        logger.verbose("getting window DOM...");
+        return DomCapture.getWindowDOM(driver);
+    }
+
     @SuppressWarnings("UnusedDeclaration")
     class EyesSeleniumAgentSetup {
         class WebDriverInfo {

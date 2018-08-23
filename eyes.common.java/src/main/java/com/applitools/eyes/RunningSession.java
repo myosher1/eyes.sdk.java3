@@ -16,6 +16,7 @@ public class RunningSession {
     private String baselineId;
     private String batchId;
     private String sessionId;
+    private RenderingInfo renderingInfo;
 
     public RunningSession() {
         isNewSession = false;
@@ -67,5 +68,13 @@ public class RunningSession {
 
     public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
+    }
+
+    public RenderingInfo getRenderingInfo() {
+        return renderingInfo;
+    }
+
+    public void setRenderingInfo(RenderingInfo renderingInfo) {
+        this.renderingInfo = renderingInfo;
     }
 }
