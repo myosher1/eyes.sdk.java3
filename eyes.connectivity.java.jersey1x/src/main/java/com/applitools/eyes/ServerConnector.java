@@ -23,6 +23,7 @@ import java.util.TimeZone;
 /**
  * Provides an API for communication with the Applitools agent
  */
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class ServerConnector extends RestClient
         implements IServerConnector {
 
@@ -338,6 +339,47 @@ public class ServerConnector extends RestClient
                 MatchResult.class);
 
         return result;
+    }
 
+    @Override
+    public String postDomSnapshot(String domJson) {
+        ClientResponse response;
+        try {
+            response = endPoint.path("running/data").
+                    queryParam("apiKey", getApiKey()).
+                    accept(MediaType.APPLICATION_JSON).
+                    entity(domJson, MediaType.APPLICATION_JSON_TYPE).
+                    post(ClientResponse.class);
+
+        } catch (RuntimeException e) {
+            logger.log("postDomSnapshot request failed: " + e.getMessage());
+            throw e;
+        }
+
+        int status = response.getStatus();
+        if (status == ClientResponse.Status.CREATED.getStatusCode()) {
+            return response.getHeaders().getFirst("Location");
+        }
+        logger.log("Error: postDomSnapshot response status: " + status);
+        return null;
+    }
+
+    @SuppressWarnings("SpellCheckingInspection")
+    @Override
+    public RenderingInfo getRenderingInfo() {
+        ClientResponse response;
+        try {
+            response = endPoint.path("renderinfo").
+                    queryParam("apiKey", getApiKey()).
+                    accept(MediaType.APPLICATION_JSON).get(ClientResponse.class);
+        } catch (RuntimeException e) {
+            logger.log("getRenderingInfo request failed: " + e.getMessage());
+            throw e;
+        }
+
+        List<Integer> validStatusCodes = new ArrayList<>();
+        validStatusCodes.add(ClientResponse.Status.OK.getStatusCode());
+
+        return parseResponseWithJsonData(response, validStatusCodes, RenderingInfo.class);
     }
 }

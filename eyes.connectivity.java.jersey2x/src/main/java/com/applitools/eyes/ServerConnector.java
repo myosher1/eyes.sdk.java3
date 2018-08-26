@@ -7,6 +7,7 @@ import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
+
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
@@ -21,6 +22,7 @@ import java.util.*;
 /**
  * Provides an API for communication with the Applitools agent
  */
+@SuppressWarnings("WeakerAccess")
 public class ServerConnector extends RestClient
         implements IServerConnector {
 
@@ -53,13 +55,12 @@ public class ServerConnector extends RestClient
         this(null, serverUrl);
     }
 
-    public ServerConnector(){
-        this((Logger)null);
+    public ServerConnector() {
+        this((Logger) null);
     }
 
     /**
      * Sets the API key of your applitools Eyes account.
-     *
      * @param apiKey The api key to set.
      */
     public void setApiKey(String apiKey) {
@@ -77,7 +78,7 @@ public class ServerConnector extends RestClient
     /**
      * Sets the proxy settings to be used by the rest client.
      * @param proxySettings The proxy settings to be used by the rest client.
-     * If {@code null} then no proxy is set.
+     *                      If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void setProxy(ProxySettings proxySettings) {
@@ -88,7 +89,6 @@ public class ServerConnector extends RestClient
     }
 
     /**
-     *
      * @return The current proxy settings used by the rest client,
      * or {@code null} if no proxy is set.
      */
@@ -121,12 +121,11 @@ public class ServerConnector extends RestClient
      * Starts a new running session in the agent. Based on the given parameters,
      * this running session will either be linked to an existing session, or to
      * a completely new session.
-     *
      * @param sessionStartInfo The start parameters for the session.
      * @return RunningSession object which represents the current running
-     *         session
+     * session
      * @throws EyesException For invalid status codes, or if response parsing
-     *          failed.
+     *                       failed.
      */
     public RunningSession startSession(SessionStartInfo sessionStartInfo)
             throws EyesException {
@@ -182,11 +181,10 @@ public class ServerConnector extends RestClient
 
     /**
      * Stops the running session.
-     *
      * @param runningSession The running session to be stopped.
      * @return TestResults object for the stopped running session
      * @throws EyesException For invalid status codes, or if response parsing
-     *          failed.
+     *                       failed.
      */
     public TestResults stopSession(final RunningSession runningSession,
                                    final boolean isAborted, final boolean save)
@@ -243,18 +241,17 @@ public class ServerConnector extends RestClient
                 .queryParam("AccessToken", testResults.getSecretToken())
                 .request(MediaType.APPLICATION_JSON);
 
-        Response response = invocationBuilder.delete();
+        invocationBuilder.delete();
     }
 
     /**
      * Matches the current window (held by the WebDriver) to the expected
      * window.
-     *
      * @param runningSession The current agent's running session.
-     * @param matchData Encapsulation of a capture taken from the application.
+     * @param matchData      Encapsulation of a capture taken from the application.
      * @return The results of the window matching.
      * @throws EyesException For invalid status codes, or response parsing
-     * failed.
+     *                       failed.
      */
     public MatchResult matchWindow(RunningSession runningSession,
                                    MatchWindowData matchData)
@@ -279,7 +276,7 @@ public class ServerConnector extends RestClient
             jsonData = jsonMapper.writeValueAsString(matchData);
         } catch (IOException e) {
             throw new EyesException("Failed to serialize data for matchWindow!",
-                                    e);
+                    e);
         }
 
         // Convert the JSON to binary.
@@ -337,20 +334,32 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public String postDomSnapshot(String resultsUrl, String domJson) {
-        RestClient restClient = new RestClient(logger, URI.create(resultsUrl));
-        restClient.setProxyBase(getProxy());
-        Response response = restClient.endPoint.request(MediaType.APPLICATION_JSON).post(Entity.json(domJson));
-        return response.getHeaderString("Location");
+    public String postDomSnapshot(String domJson) {
+        Response response;
+        try {
+            response = endPoint.path("running/data").queryParam("apiKey", getApiKey())
+                    .request(MediaType.APPLICATION_JSON).
+                            post(Entity.json(domJson));
+        } catch (RuntimeException e) {
+            logger.log("postDomSnapshot request failed: " + e.getMessage());
+            throw e;
+        }
+
+        Response.StatusType status = response.getStatusInfo();
+        if (status == Response.Status.CREATED) {
+            return response.getHeaderString("Location");
+        }
+        logger.log("Error: postDomSnapshot response status: " + status);
+        return null;
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     @Override
     public RenderingInfo getRenderingInfo() {
         Response response;
         try {
             response = endPoint.path("renderinfo").queryParam("apiKey", getApiKey())
                     .request(MediaType.APPLICATION_JSON).get();
-
         } catch (RuntimeException e) {
             logger.log("getRenderingInfo request failed: " + e.getMessage());
             throw e;

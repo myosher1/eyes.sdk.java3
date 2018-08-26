@@ -1200,14 +1200,7 @@ public abstract class EyesBase {
 
     private void tryPostDomSnapshot(String domJson) {
         if (domJson == null) return;
-        if (this.runningSession == null) return;
-        RenderingInfo renderingInfo = this.runningSession.getRenderingInfo();
-        if (renderingInfo == null) return;
-        String resultsUrl = renderingInfo.getResultsUrl();
-        if (resultsUrl != null)
-        {
-            this.domUrl = serverConnector.postDomSnapshot(resultsUrl, domJson);
-        }
+        this.domUrl = serverConnector.postDomSnapshot(domJson);
     }
 
     private void validateResult(String tag, MatchResult result) {
@@ -1667,8 +1660,8 @@ public abstract class EyesBase {
         logger.verbose("Starting server session...");
         runningSession = serverConnector.startSession(sessionStartInfo);
 
-        logger.verbose("getting rendering info...");
-        runningSession.setRenderingInfo(serverConnector.getRenderingInfo());
+        //logger.verbose("getting rendering info...");
+        //runningSession.setRenderingInfo(serverConnector.getRenderingInfo());
 
         logger.verbose("Server session ID is " + runningSession.getId());
 

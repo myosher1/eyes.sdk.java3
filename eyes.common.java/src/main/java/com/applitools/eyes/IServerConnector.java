@@ -67,7 +67,7 @@ public interface IServerConnector {
     MatchResult matchWindow(RunningSession runningSession,
                             MatchWindowData matchData);
 
-    String postDomSnapshot(String resultsUrl, String domJson);
+    String postDomSnapshot(String domJson);
 
     RenderingInfo getRenderingInfo();
 }
