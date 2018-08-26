@@ -108,24 +108,7 @@ public abstract class TestSetup implements ITest {
                 .replace(' ', '_')
                 .replace("]", "");
 
-        String seleniumServerUrl = System.getenv("SELENIUM_SERVER_URL");
-        if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
-            desiredCaps.setCapability("username", System.getenv("SAUCE_USERNAME"));
-            desiredCaps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
-            //desiredCaps.setCapability("seleniumVersion", "3.11.0");
-
-            if (caps.getBrowserName().equals("chrome")) {
-                desiredCaps.setCapability("chromedriverVersion", "2.37");
-            }
-
-            desiredCaps.setCapability("platform", platform);
-            desiredCaps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
-
-        } else if (seleniumServerUrl.equalsIgnoreCase("http://hub-cloud.browserstack.com/wd/hub")) {
-            seleniumServerUrl = "http://" + System.getenv("BROWSERSTACK_USERNAME") + ":" + System.getenv("BROWSERSTACK_ACCESS_KEY") + "@hub-cloud.browserstack.com/wd/hub";
-            desiredCaps.setCapability("platform", platform);
-            desiredCaps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
-        }
+        String seleniumServerUrl = setupSpecialServers(testName);
 
         caps.merge(desiredCaps);
 
@@ -184,6 +167,29 @@ public abstract class TestSetup implements ITest {
             eyes.abortIfNotClosed();
             webDriver.quit();
         }
+    }
+
+    @SuppressWarnings("SpellCheckingInspection")
+    private String setupSpecialServers(String testName) {
+        String seleniumServerUrl = System.getenv("SELENIUM_SERVER_URL");
+        if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
+            desiredCaps.setCapability("username", System.getenv("SAUCE_USERNAME"));
+            desiredCaps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
+            //desiredCaps.setCapability("seleniumVersion", "3.11.0");
+
+            if (caps.getBrowserName().equals("chrome")) {
+                desiredCaps.setCapability("chromedriverVersion", "2.37");
+            }
+
+            desiredCaps.setCapability("platform", platform);
+            desiredCaps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
+
+        } else if (seleniumServerUrl.equalsIgnoreCase("http://hub-cloud.browserstack.com/wd/hub")) {
+            seleniumServerUrl = "http://" + System.getenv("BROWSERSTACK_USERNAME") + ":" + System.getenv("BROWSERSTACK_ACCESS_KEY") + "@hub-cloud.browserstack.com/wd/hub";
+            desiredCaps.setCapability("platform", platform);
+            desiredCaps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
+        }
+        return seleniumServerUrl;
     }
 
     @Override
