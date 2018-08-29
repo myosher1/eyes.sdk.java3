@@ -57,10 +57,10 @@ public class MatchWindowTask {
     }
 
     /**
-     * @param logger            A logger instance.
-     * @param serverConnector   Our gateway to the agent
-     * @param runningSession    The running session in which we should match the window
-     * @param retryTimeout      The default total time to retry matching (ms).
+     * @param logger          A logger instance.
+     * @param serverConnector Our gateway to the agent
+     * @param runningSession  The running session in which we should match the window
+     * @param retryTimeout    The default total time to retry matching (ms).
      */
     public MatchWindowTask(Logger logger, IServerConnector serverConnector,
                            RunningSession runningSession, int retryTimeout,
@@ -76,6 +76,7 @@ public class MatchWindowTask {
         this.eyes = eyes;
         this.appOutputProvider = null;
     }
+
     /**
      * Creates the match data and calls the server connector matchWindow method.
      * @param userInputs         The user inputs related to the current appOutput.
@@ -86,9 +87,9 @@ public class MatchWindowTask {
      * @return The match result.
      */
     public MatchResult performMatch(Trigger[] userInputs,
-                                     AppOutputWithScreenshot appOutput,
-                                     String tag, boolean ignoreMismatch,
-                                     ImageMatchSettings imageMatchSettings) {
+                                    AppOutputWithScreenshot appOutput,
+                                    String tag, boolean ignoreMismatch,
+                                    ImageMatchSettings imageMatchSettings) {
 
         String agentSetupStr = "";
         if (eyes != null) {
@@ -124,9 +125,10 @@ public class MatchWindowTask {
      * @param tag                    Optional tag to be associated with the match (can be {@code null}).
      * @param shouldRunOnceOnTimeout Force a single match attempt at the end of the match timeout.
      * @param ignoreMismatch         Whether to instruct the server to ignore the match attempt in case of a mismatch.
-     * @param checkSettingsInternal     The settings to use.
+     * @param checkSettingsInternal  The settings to use.
      * @param retryTimeout           The amount of time to retry matching in milliseconds or a
      *                               negative value to use the default retry timeout.
+     * @param domUrl                 The URL where the DOM is.
      * @return Returns the results of the match
      */
     public MatchResult matchWindow(Trigger[] userInputs,
@@ -134,7 +136,7 @@ public class MatchWindowTask {
                                    boolean shouldRunOnceOnTimeout,
                                    boolean ignoreMismatch,
                                    ICheckSettingsInternal checkSettingsInternal,
-                                   int retryTimeout) {
+                                   int retryTimeout, String domUrl) {
 
         if (retryTimeout < 0) {
             retryTimeout = defaultRetryTimeout;
@@ -143,15 +145,17 @@ public class MatchWindowTask {
         logger.verbose(String.format("retryTimeout = %d", retryTimeout));
 
         EyesScreenshot screenshot = takeScreenshot(userInputs, region, tag,
-                shouldRunOnceOnTimeout, ignoreMismatch, checkSettingsInternal, retryTimeout);
+                shouldRunOnceOnTimeout, ignoreMismatch, checkSettingsInternal, retryTimeout, domUrl);
 
         if (ignoreMismatch) {
+            logger.verbose("exit - ignoreMismatch is true");
             return matchResult;
         }
 
         updateLastScreenshot(screenshot);
         updateBounds(region);
 
+        logger.verbose("exit");
         return matchResult;
     }
 
@@ -159,23 +163,28 @@ public class MatchWindowTask {
                                       ImageMatchSettings imageMatchSettings,
                                       EyesScreenshot screenshot) {
 
-        imageMatchSettings.setIgnoreRegions(collectRegions(checkSettingsInternal.getIgnoreRegions(), screenshot, false));
-        imageMatchSettings.setLayoutRegions(collectRegions(checkSettingsInternal.getLayoutRegions(), screenshot, true));
-        imageMatchSettings.setStrictRegions(collectRegions(checkSettingsInternal.getStrictRegions(), screenshot, true));
-        imageMatchSettings.setContentRegions(collectRegions(checkSettingsInternal.getContentRegions(), screenshot, true));
+        imageMatchSettings.setIgnoreRegions(collectRegions(checkSettingsInternal.getIgnoreRegions(), screenshot, false, "ignore"));
+        imageMatchSettings.setLayoutRegions(collectRegions(checkSettingsInternal.getLayoutRegions(), screenshot, true, "layout"));
+        imageMatchSettings.setStrictRegions(collectRegions(checkSettingsInternal.getStrictRegions(), screenshot, true, "strict"));
+        imageMatchSettings.setContentRegions(collectRegions(checkSettingsInternal.getContentRegions(), screenshot, true, "content"));
     }
 
-    private Region[] collectRegions(GetRegion[] regionProviders, EyesScreenshot screenshot, boolean adjustLocation) {
+    private Region[] collectRegions(GetRegion[] regionProviders, EyesScreenshot screenshot, boolean adjustLocation, String type) {
 
         List<Region> regions = new ArrayList<>();
+        logger.verbose(String.format("collecting %s regions from %d providers.", type, regionProviders.length));
+        int totalCount = 0;
         for (GetRegion regionProvider : regionProviders) {
             try {
-                regions.addAll(regionProvider.getRegions(eyes, screenshot, adjustLocation));
-            }
-            catch (OutOfBoundsException ex){
+                List<Region> providedRegions = regionProvider.getRegions(eyes, screenshot, adjustLocation);
+                regions.addAll(providedRegions);
+                logger.verbose(String.format("collected %d %s regions from %s.", providedRegions.size(), type, regionProvider.getClass().getSimpleName()));
+                totalCount += providedRegions.size();
+            } catch (OutOfBoundsException ex) {
                 logger.log("WARNING - ignore region was out of bounds.");
             }
         }
+        logger.verbose(String.format("collected total of %d %s regions.", totalCount, type));
         return regions.toArray(new Region[0]);
     }
 
@@ -192,10 +201,11 @@ public class MatchWindowTask {
     /**
      * Build match settings by merging the check settings and the default match settings.
      * @param checkSettingsInternal the settings to match the image by.
-     * @param screenshot the Screenshot wrapper object.
+     * @param screenshot            the Screenshot wrapper object.
      * @return Merged match settings.
      */
     public ImageMatchSettings createImageMatchSettings(ICheckSettingsInternal checkSettingsInternal, EyesScreenshot screenshot) {
+        logger.verbose("enter");
         ImageMatchSettings imageMatchSettings = null;
         if (checkSettingsInternal != null) {
 
@@ -216,13 +226,15 @@ public class MatchWindowTask {
             collectSimpleRegions(checkSettingsInternal, imageMatchSettings, screenshot);
             collectFloatingRegions(checkSettingsInternal, imageMatchSettings, screenshot);
         }
+        logger.verbose("exit");
         return imageMatchSettings;
     }
 
     private EyesScreenshot takeScreenshot(Trigger[] userInputs, RegionF region, String tag,
                                           boolean shouldMatchWindowRunOnceOnTimeout,
                                           boolean ignoreMismatch, ICheckSettingsInternal checkSettingsInternal,
-                                          int retryTimeout) {
+                                          int retryTimeout, String domUrl) {
+        logger.verbose("enter");
         long elapsedTimeStart = System.currentTimeMillis();
         EyesScreenshot screenshot;
 
@@ -233,10 +245,10 @@ public class MatchWindowTask {
             if (shouldMatchWindowRunOnceOnTimeout) {
                 GeneralUtils.sleep(retryTimeout);
             }
-            screenshot = tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal);
+            screenshot = tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal, domUrl);
         } else {
             screenshot = retryTakingScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal,
-                    retryTimeout);
+                    retryTimeout, domUrl);
         }
 
         double elapsedTime = (System.currentTimeMillis() - elapsedTimeStart) / 1000;
@@ -246,8 +258,9 @@ public class MatchWindowTask {
     }
 
     private EyesScreenshot retryTakingScreenshot(Trigger[] userInputs, RegionF region, String tag, boolean ignoreMismatch,
-                                                 ICheckSettingsInternal checkSettingsInternal, int retryTimeout) {
+                                                 ICheckSettingsInternal checkSettingsInternal, int retryTimeout, String domUrl) {
         // Start the retry timer.
+        logger.verbose("enter");
         long start = System.currentTimeMillis();
 
         EyesScreenshot screenshot = null;
@@ -260,7 +273,7 @@ public class MatchWindowTask {
             // Wait before trying again.
             GeneralUtils.sleep(MATCH_INTERVAL);
 
-            screenshot = tryTakeScreenshot(userInputs, region, tag, true, checkSettingsInternal);
+            screenshot = tryTakeScreenshot(userInputs, region, tag, true, checkSettingsInternal, domUrl);
 
             if (matchResult.getAsExpected()) {
                 break;
@@ -271,17 +284,21 @@ public class MatchWindowTask {
 
         // if we're here because we haven't found a match yet, try once more
         if (!matchResult.getAsExpected()) {
-            screenshot = tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal);
+            screenshot = tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal, domUrl);
         }
+        logger.verbose("exit");
         return screenshot;
     }
 
     private EyesScreenshot tryTakeScreenshot(Trigger[] userInputs, RegionF region, String tag,
-                                             boolean ignoreMismatch, ICheckSettingsInternal checkSettingsInternal) {
-        AppOutputWithScreenshot appOutput = appOutputProvider.getAppOutput(region, lastScreenshot, checkSettingsInternal);
+                                             boolean ignoreMismatch, ICheckSettingsInternal checkSettingsInternal,
+                                             String domUrl) {
+        logger.verbose("enter");
+        AppOutputWithScreenshot appOutput = appOutputProvider.getAppOutput(region, lastScreenshot, checkSettingsInternal, domUrl);
         EyesScreenshot screenshot = appOutput.getScreenshot();
         ImageMatchSettings matchSettings = createImageMatchSettings(checkSettingsInternal, screenshot);
         matchResult = performMatch(userInputs, appOutput, tag, ignoreMismatch, matchSettings);
+        logger.verbose("exit");
         return screenshot;
     }
 

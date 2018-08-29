@@ -9,5 +9,5 @@ import com.applitools.eyes.fluent.ICheckSettingsInternal;
  */
 public interface AppOutputProvider {
     AppOutputWithScreenshot getAppOutput(RegionF region, EyesScreenshot lastScreenshot,
-                                         ICheckSettingsInternal checkSettingsInternal);
+                                         ICheckSettingsInternal checkSettingsInternal, String domUrl);
 }

@@ -63,7 +63,8 @@ public class ResponseTimeAlgorithm {
                 currentAppOutput.getTitle(),
                 currentAppOutput.getScreenshot64(),
                 currentAppOutput.getElapsed(),
-                updatePrimary);
+                updatePrimary,
+                null);
         MatchWindowData updatedMwd = new MatchWindowData(
                 currentMwd.getUserInputs(),
                 updatedAppOutput,
@@ -104,7 +105,7 @@ public class ResponseTimeAlgorithm {
 
         logger.verbose("Taking screenshot...");
         AppOutputWithScreenshot appOutputWithScreenshot =
-                appOutputProvider.getAppOutput(regionProvider.getRegion(), null, null);
+                appOutputProvider.getAppOutput(regionProvider.getRegion(), null, null, null);
         logger.verbose("Screenshot taken.");
         long elapsedTime =
                 GeneralUtils.getFullSecondsElapsedTimeMillis(startTime,
@@ -116,7 +117,8 @@ public class ResponseTimeAlgorithm {
                 appOutput.getTitle(),
                 appOutput.getScreenshot64(),
                 elapsedTime,
-                true
+                true,
+                null
         );
         String tag = appOutput.getTitle();
         Trigger[] noUserInputs = new Trigger[0];
@@ -233,7 +235,7 @@ public class ResponseTimeAlgorithm {
             // Get the screenshot and build the match data.
             AppOutputWithScreenshot appOutputWithScreenshot =
                     appOutputProvider.getAppOutput(regionProvider.getRegion(),
-                            matcherTask.getLastScreenshot(), null);
+                            matcherTask.getLastScreenshot(), null, null);
             elapsedTime =
                     GeneralUtils.getFullSecondsElapsedTimeMillis(startTime,
                             System.currentTimeMillis());
@@ -260,7 +262,8 @@ public class ResponseTimeAlgorithm {
                     appOutput.getTitle(),
                     appOutput.getScreenshot64(),
                     elapsedTime,
-                    isPrimary
+                    isPrimary,
+                    null
             );
             // So not all windows from now on will be primary.
             isPrimary = false;

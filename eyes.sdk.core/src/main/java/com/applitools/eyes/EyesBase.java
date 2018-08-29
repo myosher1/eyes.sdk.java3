@@ -82,7 +82,6 @@ public abstract class EyesBase {
 
     private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
     private int validationId;
-    private String domUrl;
 
     public EyesBase() {
 
@@ -1189,18 +1188,18 @@ public abstract class EyesBase {
         RegionF region = regionProvider.getRegion();
         logger.verbose("params: ([" + region + "], " + tag + ", " + retryTimeout + ")");
 
-        tryPostDomSnapshot(domJson);
+        String domUrl = tryPostDomSnapshot(domJson);
 
         result = matchWindowTask.matchWindow(
                 getUserInputs(), region, tag, shouldMatchWindowRunOnceOnTimeout, ignoreMismatch,
-                checkSettingsInternal, retryTimeout);
+                checkSettingsInternal, retryTimeout, domUrl);
 
         return result;
     }
 
-    private void tryPostDomSnapshot(String domJson) {
-        if (domJson == null) return;
-        this.domUrl = serverConnector.postDomSnapshot(domJson);
+    private String tryPostDomSnapshot(String domJson) {
+        if (domJson == null) return null;
+        return serverConnector.postDomSnapshot(domJson); // TODO - Enabling this line causes havoc when running tests in parallel.
     }
 
     private void validateResult(String tag, MatchResult result) {
@@ -1270,9 +1269,10 @@ public abstract class EyesBase {
             public AppOutputWithScreenshot getAppOutput(
                     RegionF region,
                     EyesScreenshot lastScreenshot,
-                    ICheckSettingsInternal checkSettingsInternal) {
+                    ICheckSettingsInternal checkSettingsInternal,
+                    String domUrl) {
                 // FIXME - If we use compression here it hurts us later (because of another screenshot order).
-                return getAppOutputWithScreenshot(region, null, null);
+                return getAppOutputWithScreenshot(region, null, null, domUrl);
             }
         };
 
@@ -1415,8 +1415,8 @@ public abstract class EyesBase {
                 new AppOutputProvider() {
                     @Override
                     public AppOutputWithScreenshot getAppOutput(RegionF region, EyesScreenshot lastScreenshot,
-                                                                ICheckSettingsInternal checkSettingsInternal) {
-                        return getAppOutputWithScreenshot(region, lastScreenshot, checkSettingsInternal);
+                                                                ICheckSettingsInternal checkSettingsInternal, String domUrl) {
+                        return getAppOutputWithScreenshot(region, lastScreenshot, checkSettingsInternal, domUrl);
                     }
                 }
         );
@@ -1713,7 +1713,7 @@ public abstract class EyesBase {
      * @return The updated app output and screenshot.
      */
     private AppOutputWithScreenshot getAppOutputWithScreenshot(
-            RegionF region, EyesScreenshot lastScreenshot, ICheckSettingsInternal checkSettingsInternal) {
+            RegionF region, EyesScreenshot lastScreenshot, ICheckSettingsInternal checkSettingsInternal, String domUrl) {
 
         logger.verbose("getting screenshot...");
         // Getting the screenshot (abstract function implemented by each SDK).
@@ -1731,7 +1731,7 @@ public abstract class EyesBase {
         logger.verbose("Done! Getting title...");
         String title = getTitle();
         logger.verbose("Done!");
-        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult), screenshot);
+        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domUrl), screenshot);
         logger.verbose("Done!");
         return result;
     }
