@@ -82,6 +82,7 @@ public abstract class EyesBase {
 
     private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
     private int validationId;
+    private boolean sendDom;
 
     public EyesBase() {
 
@@ -1128,7 +1129,10 @@ public abstract class EyesBase {
 
         beforeMatchWindow();
 
-        String domJson = tryCaptureDom();
+        String domJson = null;
+        if (getSendDom()){
+            domJson = tryCaptureDom();
+        }
 
         result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings, domJson);
 
@@ -1786,4 +1790,12 @@ public abstract class EyesBase {
     }
 
     protected abstract String getAUTSessionId();
+
+    public boolean getSendDom() {
+        return sendDom;
+    }
+
+    public void setSendDom(boolean sendDom) {
+        this.sendDom = sendDom;
+    }
 }

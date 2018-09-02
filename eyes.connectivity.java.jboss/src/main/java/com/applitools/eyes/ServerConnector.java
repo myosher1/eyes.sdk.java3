@@ -30,7 +30,7 @@ public class ServerConnector extends RestClient
         implements IServerConnector {
 
     private static final int TIMEOUT = 1000 * 60 * 5; // 5 Minutes
-    private static final String API_PATH = "/api/sessions/running";
+    private static final String API_PATH = "/api/sessions";
     private static final String DEFAULT_CHARSET_NAME = "UTF-8";
 
     private String apiKey = null;
@@ -162,7 +162,7 @@ public class ServerConnector extends RestClient
         }
 
         try {
-            response = endPoint.queryParam("apiKey", getApiKey()).
+            response = endPoint.path("running").queryParam("apiKey", getApiKey()).
                     request(MediaType.APPLICATION_JSON).
                     post(Entity.json(postData));
         } catch (RuntimeException e) {
@@ -212,7 +212,7 @@ public class ServerConnector extends RestClient
                         Calendar.getInstance(TimeZone.getTimeZone("UTC")));
 
                 // Building the request
-                Invocation.Builder invocationBuilder = endPoint.path(sessionId)
+                Invocation.Builder invocationBuilder = endPoint.path("running").path(sessionId)
                         .queryParam("apiKey", getApiKey())
                         .queryParam("aborted", String.valueOf(isAborted))
                         .queryParam("updateBaseline", String.valueOf(save))
@@ -276,7 +276,7 @@ public class ServerConnector extends RestClient
 
         // since we rather not add an empty "tag" param
         WebTarget runningSessionsEndpoint =
-                endPoint.path(runningSession.getId());
+                endPoint.path("running").path(runningSession.getId());
 
         // Serializing data into JSON (we'll treat it as binary later).
         // IMPORTANT This serializes everything EXCEPT for the screenshot (which
