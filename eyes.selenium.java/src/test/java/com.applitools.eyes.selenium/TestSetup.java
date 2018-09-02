@@ -54,13 +54,13 @@ public abstract class TestSetup implements ITest {
         // Initialize the eyes SDK and set your private API key.
         eyes = new Eyes();
         //eyes.setServerConnector(new ServerConnector());
-
+        //eyes.setProxy(new ProxySettings("http://localhost:8888"));
         RemoteSessionEventHandler remoteSessionEventHandler = new RemoteSessionEventHandler(
                 eyes.getLogger(), URI.create("http://localhost:3000/"), "MyAccessKey");
         remoteSessionEventHandler.setThrowExceptions(false);
-        eyes.addSessionEventHandler(remoteSessionEventHandler);
+        //eyes.addSessionEventHandler(remoteSessionEventHandler);
 
-        LogHandler logHandler = new StdoutLogHandler(false);
+        LogHandler logHandler = new StdoutLogHandler(true);
 
         eyes.setLogHandler(logHandler);
         eyes.setStitchMode(StitchMode.CSS);
@@ -112,20 +112,51 @@ public abstract class TestSetup implements ITest {
 
         caps.merge(desiredCaps);
 
-        this.testName = testName + " " + caps.getBrowserName() + " " + platform;
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
-
-        String extendedTestName =
-                testName + "_" +
-                caps.getBrowserName() + "_" +
-                platform + "_" +
-                dateFormat.format(Calendar.getInstance().getTime());
+        String browserName = caps.getBrowserName();
+        this.testName = testName + " " + browserName + " " + platform;
 
         try {
             webDriver = new RemoteWebDriver(new URL(seleniumServerUrl), caps);
         } catch (MalformedURLException ignored) {
         }
+
+        //updateLogHandler(testName, browserName);
+
+        eyes.clearProperties();
+        eyes.addProperty("Selenium Session ID", webDriver.getSessionId().toString());
+        eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
+        eyes.addProperty("ScaleRatio", "" + eyes.getScaleRatio());
+        eyes.addProperty("Agent ID", eyes.getFullAgentId());
+        try {
+            driver = eyes.open(webDriver, testSuitName, testName, testedPageSize);
+
+            if (testedPageUrl != null) {
+                driver.get(testedPageUrl);
+            }
+
+            eyes.setForceFullPageScreenshot(forceFPS);
+
+            clearExpectedRegions();
+        } catch (Exception ex) {
+            eyes.abortIfNotClosed();
+            webDriver.quit();
+        }
+    }
+
+    private void clearExpectedRegions() {
+        this.expectedIgnoreRegions.clear();
+        this.expectedLayoutRegions.clear();
+        this.expectedStrictRegions.clear();
+        this.expectedContentRegions.clear();
+        this.expectedFloatingRegions.clear();
+    }
+
+    private void updateLogHandler(String testName, String browserName) {
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
+
+        String extendedTestName = String.format("%s_%s_%s_%s",
+                testName, browserName, platform, dateFormat.format(Calendar.getInstance().getTime()));
 
         LogHandler logHandler;
 
@@ -140,33 +171,6 @@ public abstract class TestSetup implements ITest {
         }
 
         eyes.setLogHandler(logHandler);
-        eyes.clearProperties();
-        eyes.addProperty("Selenium Session ID", webDriver.getSessionId().toString());
-        eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
-        eyes.addProperty("ScaleRatio", "" + eyes.getScaleRatio());
-        eyes.addProperty("Agent ID", eyes.getFullAgentId());
-        try {
-            driver = eyes.open(webDriver,
-                    testSuitName,
-                    testName,
-                    testedPageSize
-            );
-
-            if (testedPageUrl != null) {
-                driver.get(testedPageUrl);
-            }
-
-            eyes.setForceFullPageScreenshot(forceFPS);
-
-            this.expectedIgnoreRegions.clear();
-            this.expectedLayoutRegions.clear();
-            this.expectedStrictRegions.clear();
-            this.expectedContentRegions.clear();
-            this.expectedFloatingRegions.clear();
-        } catch (Exception ex) {
-            eyes.abortIfNotClosed();
-            webDriver.quit();
-        }
     }
 
     @SuppressWarnings("SpellCheckingInspection")
