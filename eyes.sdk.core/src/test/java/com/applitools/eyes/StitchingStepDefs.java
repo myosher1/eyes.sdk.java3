@@ -11,6 +11,7 @@ import java.util.List;
 /**
  * Step definitions for the Stitching feature.
  */
+@SuppressWarnings({"unused", "SpellCheckingInspection"})
 public class StitchingStepDefs {
 
     private RegionF regionToDivide = null;
@@ -19,12 +20,11 @@ public class StitchingStepDefs {
 
     @Given("^I have a region with left (\\d+) and top (\\d+) and width (\\d+) and height (\\d+)$")
     public void I_have_a_region_with_width_and_height(int left, int top,
-                                                      int width, int height)
-            throws Throwable {
+                                                      int width, int height) {
         regionToDivide = new RegionF(left, top, width, height);
     }
 
-    private void divideIntoSubRegions(int width, int height, boolean isFixedSize) throws Throwable {
+    private void divideIntoSubRegions(int width, int height, boolean isFixedSize) {
         try {
             subRegions = regionToDivide.getSubRegions(
                     new RectangleSizeF(width, height), isFixedSize);
@@ -34,23 +34,22 @@ public class StitchingStepDefs {
     }
 
     @When("^I divide the region into fixed-size sub regions with width (\\d+) and height (\\d+)$")
-    public void I_divide_the_region_into_fixed_size_sub_regions_with_width_and_height(int width, int height) throws Throwable {
+    public void I_divide_the_region_into_fixed_size_sub_regions_with_width_and_height(int width, int height) {
         divideIntoSubRegions(width, height, true);
     }
 
     @When("^I divide the region into varying-size sub regions with width (\\d+) and height (\\d+)$")
-    public void I_divide_the_region_into_varying_size_sub_regions_with_width_and_height(int width, int height) throws Throwable {
+    public void I_divide_the_region_into_varying_size_sub_regions_with_width_and_height(int width, int height) {
         divideIntoSubRegions(width, height, false);
     }
 
     @When("^I divide the region into sub regions with width (\\d+) and height (\\d+) without specifying sub-region type$")
-    public void I_divide_the_region_into_sub_regions_with_width_and_height_without_specifying_sub_region_type(int width, int height) throws Throwable {
+    public void I_divide_the_region_into_sub_regions_with_width_and_height_without_specifying_sub_region_type(int width, int height) {
         subRegions = regionToDivide.getSubRegions(new RectangleSizeF(width, height));
     }
 
     @Then("^I get the following sub-regions:$")
-    public void I_get_the_following_sub_regions(DataTable validSubRegionsDT)
-            throws Throwable {
+    public void I_get_the_following_sub_regions(DataTable validSubRegionsDT) {
         List<RegionF> validSubRegions = validSubRegionsDT.asList(RegionF.class);
 
         int subRegionsSize = 0;
@@ -63,7 +62,7 @@ public class StitchingStepDefs {
     }
 
     @Then("^An exception should be thrown.$")
-    public void An_exception_should_be_thrown() throws Throwable {
+    public void An_exception_should_be_thrown() {
         Assert.assertTrue(illegalArgumentExceptionThrown);
     }
 }

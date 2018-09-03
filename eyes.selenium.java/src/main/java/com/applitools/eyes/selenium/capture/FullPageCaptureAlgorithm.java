@@ -163,7 +163,11 @@ public class FullPageCaptureAlgorithm {
         lastSuccessfulLocation = new Location(0, 0);
         lastSuccessfulPartSize = new RectangleSizeF(initialPart.getWidth(), initialPart.getHeight());
 
-        stitchedImage = stitchParts(fullArea, positionProvider, originalStitchedState, originalPosition, pixelRatio, scaledCutProvider, regionInScreenshot, lastSuccessfulLocation, lastSuccessfulPartSize, imageParts, stitchedImage);
+        stitchedImage = stitchParts(fullArea, positionProvider, originalStitchedState, originalPosition, pixelRatio,
+                scaledCutProvider,
+                regionInScreenshot,
+                lastSuccessfulLocation,
+                lastSuccessfulPartSize, imageParts, stitchedImage);
 
         return stitchedImage;
     }
@@ -214,7 +218,10 @@ public class FullPageCaptureAlgorithm {
 
             // Stitching the current part.
             logger.verbose("Stitching part into the image container...");
-            stitchedImage.getRaster().setRect(Math.round(targetPosition.getX()), Math.round(targetPosition.getY()), partImage.getData());
+            stitchedImage.getRaster().setRect(
+                    Math.round(targetPosition.getX()),
+                    Math.round(targetPosition.getY()),
+                    partImage.getData());
             logger.verbose("Done!");
 
             lastSuccessfulLocation = originPosition;

@@ -94,7 +94,7 @@ public class RegionF {
 
     @Override
     public int hashCode() {
-        return (int)(left + top + width + height);
+        return (int) (left + top + width + height);
     }
 
     public RegionF(Location location, RectangleSizeF size) {

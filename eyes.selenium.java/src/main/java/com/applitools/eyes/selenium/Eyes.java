@@ -1938,7 +1938,7 @@ public class Eyes extends EyesBase {
 
             RegionF bounds = boundsAndBorders.getBounds();
             float elementWidth = bounds.getWidth();
-            float elementHeight =  bounds.getHeight();
+            float elementHeight = bounds.getHeight();
 
             if (!displayStyle.equals("inline") &&
                     elementHeight <= effectiveViewport.getHeight() &&
@@ -1952,7 +1952,7 @@ public class Eyes extends EyesBase {
 
             final RegionF elementRegion = new RegionF(
                     bounds.getLeft() + borders.getLeft(), bounds.getTop() + borders.getTop(),
-                    elementWidth - borders.getHorizontal(), elementHeight-borders.getVertical(),
+                    elementWidth - borders.getHorizontal(), elementHeight - borders.getVertical(),
                     CoordinatesType.SCREENSHOT_AS_IS);
 
             logger.verbose("Element region: " + elementRegion);

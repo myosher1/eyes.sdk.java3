@@ -10,7 +10,6 @@ import org.openqa.selenium.WebDriverException;
 
 public class ScrollPositionProvider implements PositionProvider {
 
-
     protected final Logger logger;
     protected final IEyesJsExecutor executor;
 

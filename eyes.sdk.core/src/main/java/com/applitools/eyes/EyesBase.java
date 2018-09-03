@@ -513,7 +513,7 @@ public abstract class EyesBase {
      * The test-wide match level to use when checking application screenshot
      * with the expected output.
      * @param matchLevel The match level setting.
-     * @see com.applitools.eyes.MatchLevel
+     * @see MatchLevel
      */
     public void setMatchLevel(MatchLevel matchLevel) {
         this.defaultMatchSettings.setMatchLevel(matchLevel);
