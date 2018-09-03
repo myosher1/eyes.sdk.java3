@@ -83,8 +83,7 @@ public class ServerConnector extends RestClient
     @SuppressWarnings("UnusedDeclaration")
     public void setProxy(ProxySettings proxySettings) {
         setProxyBase(proxySettings);
-        // After the server is updated we must make sure the endpoint refers
-        // to the correct path.
+        // After the server is updated we must make sure the endpoint refers to the correct path.
         endPoint = endPoint.path(API_PATH);
     }
 
@@ -142,7 +141,6 @@ public class ServerConnector extends RestClient
         RunningSession runningSession;
 
         try {
-
             // since the web API requires a root property for this message
             jsonMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
             postData = jsonMapper.writeValueAsString(sessionStartInfo);
@@ -150,8 +148,7 @@ public class ServerConnector extends RestClient
             // returning the root property addition back to false (default)
             jsonMapper.configure(SerializationFeature.WRAP_ROOT_VALUE, false);
         } catch (IOException e) {
-            throw new EyesException("Failed to convert " +
-                    "sessionStartInfo into Json string!", e);
+            throw new EyesException("Failed to convert sessionStartInfo into Json string!", e);
         }
 
         try {
@@ -245,13 +242,11 @@ public class ServerConnector extends RestClient
     }
 
     /**
-     * Matches the current window (held by the WebDriver) to the expected
-     * window.
+     * Matches the current window (held by the WebDriver) to the expected window.
      * @param runningSession The current agent's running session.
      * @param matchData      Encapsulation of a capture taken from the application.
      * @return The results of the window matching.
-     * @throws EyesException For invalid status codes, or response parsing
-     *                       failed.
+     * @throws EyesException For invalid status codes, or response parsing failed.
      */
     public MatchResult matchWindow(RunningSession runningSession,
                                    MatchWindowData matchData)
@@ -275,8 +270,7 @@ public class ServerConnector extends RestClient
         try {
             jsonData = jsonMapper.writeValueAsString(matchData);
         } catch (IOException e) {
-            throw new EyesException("Failed to serialize data for matchWindow!",
-                    e);
+            throw new EyesException("Failed to serialize data for matchWindow!", e);
         }
 
         // Convert the JSON to binary.
@@ -330,24 +324,35 @@ public class ServerConnector extends RestClient
                 MatchResult.class);
 
         return result;
-
     }
 
     @Override
     public String postDomSnapshot(String domJson) {
         Response response;
         try {
-            response = endPoint.path("running/data").queryParam("apiKey", getApiKey())
-                    .request(MediaType.APPLICATION_JSON).
-                            post(Entity.json(domJson));
+            logger.verbose("Jersey 2");
+
+            Invocation.Builder builder =
+                    endPoint.path("running/data")
+                            .queryParam("apiKey", getApiKey())
+                            .request(MediaType.APPLICATION_JSON);
+
+            logger.verbose(builder.toString());
+
+            Entity<String> entity = Entity.json(domJson);
+            response = builder.post(entity);
+
+            logger.verbose("response: " + response.getStatusInfo());
         } catch (RuntimeException e) {
             logger.log("postDomSnapshot request failed: " + e.getMessage());
             throw e;
         }
 
         Response.StatusType status = response.getStatusInfo();
-        if (status == Response.Status.CREATED) {
-            return response.getHeaderString("Location");
+        if (status.getStatusCode() == Response.Status.CREATED.getStatusCode()) {
+            String location = response.getHeaderString("Location");
+            logger.verbose("success. Location: " + location);
+            return location;
         }
         logger.log("Error: postDomSnapshot response status: " + status);
         return null;
