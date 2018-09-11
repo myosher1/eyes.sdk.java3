@@ -816,6 +816,11 @@ public class Eyes extends EyesBase {
     }
 
     public void check(ICheckSettings checkSettings) {
+        if (getIsDisabled()) {
+            logger.log("Ignored (disabled)");
+            return;
+        }
+
         ArgumentGuard.notNull(checkSettings, "checkSettings");
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
@@ -2291,6 +2296,10 @@ public class Eyes extends EyesBase {
 
     @Override
     protected String getAUTSessionId() {
+        if (getIsDisabled()) {
+            return "";
+        }
+
         return driver.getRemoteWebDriver().getSessionId().toString();
     }
 }
