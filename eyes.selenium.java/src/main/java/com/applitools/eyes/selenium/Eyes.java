@@ -636,6 +636,11 @@ public class Eyes extends EyesBase {
     }
 
     public void check(ICheckSettings... checkSettings) {
+        if (getIsDisabled()) {
+            logger.log("Ignored (disabled)");
+            return;
+        }
+
         boolean originalForceFPS = forceFullPageScreenshot;
 
         if (checkSettings.length > 1) {
@@ -816,6 +821,11 @@ public class Eyes extends EyesBase {
     }
 
     public void check(ICheckSettings checkSettings) {
+        if (getIsDisabled()) {
+            logger.log("Ignored (disabled)");
+            return;
+        }
+
         ArgumentGuard.notNull(checkSettings, "checkSettings");
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
@@ -2293,6 +2303,16 @@ public class Eyes extends EyesBase {
 
     @Override
     protected String getAUTSessionId() {
-        return driver.getRemoteWebDriver().getSessionId().toString();
+        if (getIsDisabled()) {
+            return "";
+        }
+
+        try {
+            return driver.getRemoteWebDriver().getSessionId().toString();
+        } catch (Exception e) {
+            logger.log("WARNING: Failed to get AUT session ID! (maybe driver is not available?). Error: "
+                    + e.getMessage());
+            return "";
+        }
     }
 }
