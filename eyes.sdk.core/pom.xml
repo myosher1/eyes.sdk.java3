@@ -12,7 +12,7 @@
     <parent>
         <groupId>com.applitools</groupId>
         <artifactId>eyes-sdk-java3-parent-jersey1x</artifactId>
-        <version>3.35.2</version>
+        <version>3.35.3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -20,12 +20,12 @@
         <dependency>
             <groupId>com.applitools</groupId>
             <artifactId>eyes-common-java3-jersey1x</artifactId>
-            <version>3.35.2</version>
+            <version>3.35.3</version>
         </dependency>
         <dependency>
             <groupId>com.applitools</groupId>
             <artifactId>eyes-connectivity-java3-jersey1x</artifactId>
-            <version>3.35.2</version>
+            <version>3.35.3</version>
         </dependency>
     </dependencies>
 </project>
