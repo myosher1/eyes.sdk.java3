@@ -22,7 +22,7 @@ public class TimedAppOutput extends AppOutput {
      */
     public TimedAppOutput(String title, String screenshot64, long elapsed,
                           boolean isPrimary) {
-        super(title, screenshot64);
+        super(title, screenshot64, null);
         this.elapsed = elapsed;
         this.isPrimary = isPrimary;
     }

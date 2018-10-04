@@ -1,0 +1,278 @@
+{
+  "rect": {
+    "top": 0,
+    "left": 0,
+    "bottom": 600,
+    "width": 800,
+    "right": 800,
+    "height": 600
+  },
+  "css": [
+    ""
+  ],
+  "childNodes": [
+    {
+      "text": "\n  ",
+      "tagName": "#text"
+    },
+    {
+      "rect": {
+        "top": 8,
+        "left": 8,
+        "bottom": 592,
+        "width": 784,
+        "right": 792,
+        "height": 584
+      },
+      "childNodes": [
+        {
+          "text": "\n    ",
+          "tagName": "#text"
+        },
+        {
+          "rect": {
+            "top": 8,
+            "left": 8,
+            "bottom": 26,
+            "width": 784,
+            "right": 792,
+            "height": 18
+          },
+          "childNodes": [
+            {
+              "text": "hello",
+              "tagName": "#text"
+            }
+          ],
+          "style": {
+            "background-color": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "margin": "0px",
+            "background-size": "auto",
+            "color": "rgb(0, 0, 0)",
+            "border-color": "rgb(0, 0, 0)",
+            "border-width": "0px",
+            "background-image": "none",
+            "border-style": "none"
+          },
+          "tagName": "DIV"
+        },
+        {
+          "text": "\n    ",
+          "tagName": "#text"
+        },
+        {
+          "rect": {
+            "top": 26,
+            "left": 8,
+            "bottom": 180,
+            "width": 304,
+            "right": 312,
+            "height": 154
+          },
+          "childNodes": [
+            {
+              "rect": {
+                "top": 0,
+                "left": 0,
+                "bottom": 283,
+                "width": 285,
+                "right": 285,
+                "height": 283
+              },
+              "css": [
+                ".blue { color: blue }"
+              ],
+              "childNodes": [
+                {
+                  "text": "\n",
+                  "tagName": "#text"
+                },
+                {
+                  "rect": {
+                    "top": 8,
+                    "left": 8,
+                    "bottom": 275,
+                    "width": 269,
+                    "right": 277,
+                    "height": 267
+                  },
+                  "childNodes": [
+                    {
+                      "text": "\n  ",
+                      "tagName": "#text"
+                    },
+                    {
+                      "rect": {
+                        "top": 8,
+                        "left": 8,
+                        "bottom": 26,
+                        "width": 269,
+                        "right": 277,
+                        "height": 18
+                      },
+                      "childNodes": [
+                        {
+                          "text": "hi, I'm red",
+                          "tagName": "#text"
+                        }
+                      ],
+                      "style": {
+                        "background-color": "rgba(0, 0, 0, 0)",
+                        "padding": "0px",
+                        "margin": "0px",
+                        "background-size": "auto",
+                        "color": "rgb(255, 0, 0)",
+                        "border-color": "rgb(255, 0, 0)",
+                        "border-width": "0px",
+                        "background-image": "none",
+                        "border-style": "none"
+                      },
+                      "tagName": "DIV"
+                    },
+                    {
+                      "text": "\n  ",
+                      "tagName": "#text"
+                    },
+                    {
+                      "rect": {
+                        "top": 26,
+                        "left": 8,
+                        "bottom": 44,
+                        "width": 269,
+                        "right": 277,
+                        "height": 18
+                      },
+                      "childNodes": [
+                        {
+                          "text": "We've met already, I'm blue",
+                          "tagName": "#text"
+                        }
+                      ],
+                      "attributes": {
+                        "class": "blue"
+                      },
+                      "style": {
+                        "background-color": "rgba(0, 0, 0, 0)",
+                        "padding": "0px",
+                        "margin": "0px",
+                        "background-size": "auto",
+                        "color": "rgb(0, 0, 255)",
+                        "border-color": "rgb(0, 0, 255)",
+                        "border-width": "0px",
+                        "background-image": "none",
+                        "border-style": "none"
+                      },
+                      "tagName": "DIV"
+                    },
+                    {
+                      "text": "\n  ",
+                      "tagName": "#text"
+                    },
+                    {
+                      "rect": {
+                        "top": 44,
+                        "left": 8,
+                        "bottom": 271,
+                        "width": 151,
+                        "right": 159,
+                        "height": 227
+                      },
+                      "childNodes": [],
+                      "attributes": {
+                        "src": "smurfs.jpg"
+                      },
+                      "style": {
+                        "background-color": "rgba(0, 0, 0, 0)",
+                        "padding": "0px",
+                        "margin": "0px",
+                        "background-size": "auto",
+                        "color": "rgb(0, 0, 0)",
+                        "border-color": "rgb(0, 0, 0)",
+                        "border-width": "0px",
+                        "background-image": "none",
+                        "border-style": "none"
+                      },
+                      "tagName": "IMG"
+                    },
+                    {
+                      "text": "\n\n",
+                      "tagName": "#text"
+                    }
+                  ],
+                  "style": {
+                    "background-color": "rgba(0, 0, 0, 0)",
+                    "padding": "0px",
+                    "margin": "8px",
+                    "background-size": "auto",
+                    "color": "rgb(0, 0, 0)",
+                    "border-color": "rgb(0, 0, 0)",
+                    "border-width": "0px",
+                    "background-image": "none",
+                    "border-style": "none"
+                  },
+                  "tagName": "BODY"
+                }
+              ],
+              "style": {
+                "background-color": "rgba(0, 0, 0, 0)",
+                "padding": "0px",
+                "margin": "0px",
+                "background-size": "auto",
+                "color": "rgb(0, 0, 0)",
+                "border-color": "rgb(0, 0, 0)",
+                "border-width": "0px",
+                "background-image": "none",
+                "border-style": "none"
+              },
+              "tagName": "HTML"
+            }
+          ],
+          "attributes": {
+            "src": "test.html"
+          },
+          "style": {
+            "background-color": "rgba(0, 0, 0, 0)",
+            "padding": "0px",
+            "margin": "0px",
+            "background-size": "auto",
+            "color": "rgb(0, 0, 0)",
+            "border-color": "rgb(0, 0, 0)",
+            "border-width": "2px",
+            "background-image": "none",
+            "border-style": "inset"
+          },
+          "tagName": "IFRAME"
+        },
+        {
+          "text": "\n  \n",
+          "tagName": "#text"
+        }
+      ],
+      "style": {
+        "background-color": "rgba(0, 0, 0, 0)",
+        "padding": "0px",
+        "margin": "8px",
+        "background-size": "auto",
+        "color": "rgb(0, 0, 0)",
+        "border-color": "rgb(0, 0, 0)",
+        "border-width": "0px",
+        "background-image": "none",
+        "border-style": "none"
+      },
+      "tagName": "BODY"
+    }
+  ],
+  "style": {
+    "background-color": "rgba(0, 0, 0, 0)",
+    "padding": "0px",
+    "margin": "0px",
+    "background-size": "auto",
+    "color": "rgb(0, 0, 0)",
+    "border-color": "rgb(0, 0, 0)",
+    "border-width": "0px",
+    "background-image": "none",
+    "border-style": "none"
+  },
+  "tagName": "HTML"
+}

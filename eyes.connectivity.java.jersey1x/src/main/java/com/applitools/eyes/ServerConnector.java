@@ -10,6 +10,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -339,5 +340,26 @@ public class ServerConnector extends RestClient
 
         return result;
 
+    }
+
+    @Override
+    public String downloadString(URI uri) {
+
+        WebResource target = restClient.resource(uri);
+
+        WebResource.Builder request = target.accept(MediaType.WILDCARD);
+
+        ClientResponse response = request.get(ClientResponse.class);
+
+        return response.getEntity(String.class);
+    }
+
+    @Override
+    public String postDomSnapshot(String domJson) {
+        WebResource target = restClient.resource(serverUrl).path(("api/sessions/running/data")).queryParam("apiKey", getApiKey());
+        WebResource.Builder request = target.accept(MediaType.APPLICATION_JSON).entity(domJson.getBytes(), MediaType.APPLICATION_OCTET_STREAM_TYPE);
+        ClientResponse response = request.post(ClientResponse.class);
+        String entity = response.getEntity(String.class);
+        return entity;
     }
 }

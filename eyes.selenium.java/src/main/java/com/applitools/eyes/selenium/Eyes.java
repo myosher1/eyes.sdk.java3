@@ -39,10 +39,7 @@ import org.openqa.selenium.Point;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 /**
  * The main API gateway for the SDK.
@@ -758,7 +755,7 @@ public class Eyes extends EyesBase {
             debugScreenshotsProvider.save(subScreenshot.getImage(), String.format("subscreenshot_%s", name));
 
             ImageMatchSettings ims = mwt.createImageMatchSettings(checkSettingsInternal, subScreenshot);
-            AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()));
+            AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()),null);
             AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, subScreenshot);
             MatchResult matchResult = mwt.performMatch(
                     new Trigger[0], appOutputWithScreenshot, name, false, ims);
@@ -844,6 +841,13 @@ public class Eyes extends EyesBase {
         checkSettings = checkSettings.withName(name);
         this.check(checkSettings);
     }
+
+    @Override
+    public String tryCaptureDom() {
+        DomCapture domCapturer = new DomCapture(this);
+        return  domCapturer.getFullWindowDom(this.driver, logger);
+    }
+
 
     public void check(ICheckSettings checkSettings) {
         if (getIsDisabled()) {
@@ -2578,4 +2582,9 @@ public class Eyes extends EyesBase {
     protected Object getAgentSetup() {
         return new EyesSeleniumAgentSetup();
     }
+
+    public IServerConnector getServerConnector(){
+        return this.serverConnector;
+    }
+
 }

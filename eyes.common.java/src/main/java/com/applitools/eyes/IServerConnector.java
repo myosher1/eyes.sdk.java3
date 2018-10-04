@@ -66,4 +66,16 @@ public interface IServerConnector {
      */
     MatchResult matchWindow(RunningSession runningSession,
                             MatchWindowData matchData);
+
+    /**
+     * Downloads string from a given Url
+     *
+     * @param uri The URI from which the IServerConnector will download the string
+     * @return the string that was return from the request to the Url
+     */
+    String downloadString(URI uri);
+
+
+    String postDomSnapshot(String domJson);
+
 }

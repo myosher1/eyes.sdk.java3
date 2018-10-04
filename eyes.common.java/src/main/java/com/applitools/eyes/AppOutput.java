@@ -12,6 +12,7 @@ public class AppOutput {
      * The title of the screen of the application being captured.
      */
     private final String title;
+    private final String domUrl;
     private final String screenshot64;
 
     /**
@@ -20,9 +21,10 @@ public class AppOutput {
      *                     byte can be in either in compressed or
      *                     uncompressed form)
      */
-    public AppOutput(String title, String screenshot64) {
+    public AppOutput(String title, String screenshot64, String domUrl) {
         this.title = title;
         this.screenshot64 = screenshot64;
+        this.domUrl = domUrl;
     }
 
     public String getTitle() {
@@ -31,5 +33,9 @@ public class AppOutput {
 
     public String getScreenshot64() {
         return screenshot64;
+    }
+
+    public String getDomUrl() {
+        return domUrl;
     }
 }

@@ -81,6 +81,7 @@ public abstract class EyesBase {
 
     private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
     private int validationId;
+    private boolean mSendDom;
 
     public EyesBase() {
 
@@ -1128,7 +1129,13 @@ public abstract class EyesBase {
 
         beforeMatchWindow();
 
-        result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings);
+        String domJsonUrl = null;
+        if (mSendDom) {
+            domJsonUrl = tryCaptureDom();
+
+        }
+
+        result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings, domJsonUrl);
 
         afterMatchWindow();
 
@@ -1145,6 +1152,8 @@ public abstract class EyesBase {
         return result;
     }
 
+    public abstract String tryCaptureDom();
+
     protected ValidationInfo fireValidationWillStartEvent(String tag) {
         String autSessionId = getAUTSessionId();
 
@@ -1158,7 +1167,7 @@ public abstract class EyesBase {
     }
 
     private MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
-                                    ICheckSettings checkSettings) {
+                                    ICheckSettings checkSettings, String domJson) {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
@@ -1186,11 +1195,20 @@ public abstract class EyesBase {
         Region region = regionProvider.getRegion();
         logger.verbose("params: ([" + region + "], " + tag + ", " + retryTimeout + ")");
 
+        String domJsonUrl = tryPostDomSnapshot(domJson);
+
         result = matchWindowTask.matchWindow(
                 getUserInputs(), region, tag, shouldMatchWindowRunOnceOnTimeout, ignoreMismatch,
-                checkSettingsInternal, retryTimeout);
+                checkSettingsInternal, retryTimeout, domJsonUrl);
 
         return result;
+    }
+
+    private String tryPostDomSnapshot(String domJson) {
+        if (domJson != null) {
+            return serverConnector.postDomSnapshot(domJson);
+        }
+        return null;
     }
 
     private void validateResult(String tag, MatchResult result) {
@@ -1260,9 +1278,9 @@ public abstract class EyesBase {
             public AppOutputWithScreenshot getAppOutput(
                     Region region,
                     EyesScreenshot lastScreenshot,
-                    ICheckSettingsInternal checkSettingsInternal) {
+                    ICheckSettingsInternal checkSettingsInternal, String domJsonUrl) {
                 // FIXME - If we use compression here it hurts us later (because of another screenshot order).
-                return getAppOutputWithScreenshot(region, null, null);
+                return getAppOutputWithScreenshot(region, null, null, domJsonUrl);
             }
         };
 
@@ -1401,8 +1419,8 @@ public abstract class EyesBase {
                 new AppOutputProvider() {
                     @Override
                     public AppOutputWithScreenshot getAppOutput(Region region, EyesScreenshot lastScreenshot,
-                                                                ICheckSettingsInternal checkSettingsInternal) {
-                        return getAppOutputWithScreenshot(region, lastScreenshot, checkSettingsInternal);
+                                                                ICheckSettingsInternal checkSettingsInternal, String domJsonUrl) {
+                        return getAppOutputWithScreenshot(region, lastScreenshot, checkSettingsInternal, domJsonUrl);
                     }
                 }
         );
@@ -1694,10 +1712,11 @@ public abstract class EyesBase {
     /**
      * @param region         The region of the screenshot which will be set in the application output.
      * @param lastScreenshot Previous application screenshot (used for compression) or {@code null} if not available.
+     * @param domJsonUrl     DOM json location url to send to Eyes server
      * @return The updated app output and screenshot.
      */
     private AppOutputWithScreenshot getAppOutputWithScreenshot(
-            Region region, EyesScreenshot lastScreenshot, ICheckSettingsInternal checkSettingsInternal) {
+            Region region, EyesScreenshot lastScreenshot, ICheckSettingsInternal checkSettingsInternal, String domJsonUrl) {
 
         logger.verbose("getting screenshot...");
         // Getting the screenshot (abstract function implemented by each SDK).
@@ -1715,7 +1734,7 @@ public abstract class EyesBase {
         logger.verbose("Done! Getting title...");
         String title = getTitle();
         logger.verbose("Done!");
-        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult), screenshot);
+        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl), screenshot);
         logger.verbose("Done!");
         return result;
     }
@@ -1770,4 +1789,12 @@ public abstract class EyesBase {
     }
 
     protected abstract String getAUTSessionId();
+
+    public boolean ismSendDom() {
+        return mSendDom;
+    }
+
+    public void setSendDom(boolean mSendDom) {
+        this.mSendDom = mSendDom;
+    }
 }

@@ -340,4 +340,27 @@ public class ServerConnector extends RestClient
         return result;
 
     }
+
+    @Override
+    public String downloadString(URI uri) {
+
+        WebTarget target = restClient.target(uri);
+
+        Invocation.Builder request = target.request(MediaType.WILDCARD);
+
+        Response response = request.get();
+
+        return response.toString();
+    }
+
+    @Override
+    public String postDomSnapshot(String domJson) {
+        WebTarget target = restClient.target(serverUrl).path(("api/sessions/running/data")).queryParam("apiKey", getApiKey());
+
+        Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
+        Response response = request.post(Entity.entity(domJson.getBytes(),
+                MediaType.APPLICATION_OCTET_STREAM));
+        String entity = response.readEntity(String.class);
+        return entity;
+    }
 }

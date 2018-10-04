@@ -43,6 +43,11 @@
             <version>3.35</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>net.sourceforge.cssparser</groupId>
+            <artifactId>cssparser</artifactId>
+            <version>0.9.26</version>
+        </dependency>
     </dependencies>
 
     <build>

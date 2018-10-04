@@ -127,6 +127,7 @@ public class MatchWindowTask {
      * @param checkSettingsInternal     The settings to use.
      * @param retryTimeout           The amount of time to retry matching in milliseconds or a
      *                               negative value to use the default retry timeout.
+     * @param domJsonUrl             DOM json location url to send to eyes server with the request
      * @return Returns the results of the match
      */
     public MatchResult matchWindow(Trigger[] userInputs,
@@ -134,7 +135,7 @@ public class MatchWindowTask {
                                    boolean shouldRunOnceOnTimeout,
                                    boolean ignoreMismatch,
                                    ICheckSettingsInternal checkSettingsInternal,
-                                   int retryTimeout) {
+                                   int retryTimeout, String domJsonUrl) {
 
         if (retryTimeout < 0) {
             retryTimeout = defaultRetryTimeout;
@@ -143,7 +144,7 @@ public class MatchWindowTask {
         logger.verbose(String.format("retryTimeout = %d", retryTimeout));
 
         EyesScreenshot screenshot = takeScreenshot(userInputs, region, tag,
-                shouldRunOnceOnTimeout, ignoreMismatch, checkSettingsInternal, retryTimeout);
+                shouldRunOnceOnTimeout, ignoreMismatch, checkSettingsInternal, retryTimeout, domJsonUrl);
 
         if (ignoreMismatch) {
             return matchResult;
@@ -222,7 +223,7 @@ public class MatchWindowTask {
     private EyesScreenshot takeScreenshot(Trigger[] userInputs, Region region, String tag,
                                           boolean shouldMatchWindowRunOnceOnTimeout,
                                           boolean ignoreMismatch, ICheckSettingsInternal checkSettingsInternal,
-                                          int retryTimeout) {
+                                          int retryTimeout, String domJsonUrl) {
         long elapsedTimeStart = System.currentTimeMillis();
         EyesScreenshot screenshot;
 
@@ -233,10 +234,10 @@ public class MatchWindowTask {
             if (shouldMatchWindowRunOnceOnTimeout) {
                 GeneralUtils.sleep(retryTimeout);
             }
-            screenshot = tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal);
+            screenshot = tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal, domJsonUrl);
         } else {
             screenshot = retryTakingScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal,
-                    retryTimeout);
+                    retryTimeout, domJsonUrl);
         }
 
         double elapsedTime = (System.currentTimeMillis() - elapsedTimeStart) / 1000;
@@ -246,7 +247,7 @@ public class MatchWindowTask {
     }
 
     private EyesScreenshot retryTakingScreenshot(Trigger[] userInputs, Region region, String tag, boolean ignoreMismatch,
-                                                 ICheckSettingsInternal checkSettingsInternal, int retryTimeout) {
+                                                 ICheckSettingsInternal checkSettingsInternal, int retryTimeout, String domJsonUrl) {
         // Start the retry timer.
         long start = System.currentTimeMillis();
 
@@ -260,7 +261,7 @@ public class MatchWindowTask {
             // Wait before trying again.
             GeneralUtils.sleep(MATCH_INTERVAL);
 
-            screenshot = tryTakeScreenshot(userInputs, region, tag, true, checkSettingsInternal);
+            screenshot = tryTakeScreenshot(userInputs, region, tag, true, checkSettingsInternal, domJsonUrl);
 
             if (matchResult.getAsExpected()) {
                 break;
@@ -271,14 +272,14 @@ public class MatchWindowTask {
 
         // if we're here because we haven't found a match yet, try once more
         if (!matchResult.getAsExpected()) {
-            screenshot = tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal);
+            screenshot = tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal, domJsonUrl);
         }
         return screenshot;
     }
 
     private EyesScreenshot tryTakeScreenshot(Trigger[] userInputs, Region region, String tag,
-                                             boolean ignoreMismatch, ICheckSettingsInternal checkSettingsInternal) {
-        AppOutputWithScreenshot appOutput = appOutputProvider.getAppOutput(region, lastScreenshot, checkSettingsInternal);
+                                             boolean ignoreMismatch, ICheckSettingsInternal checkSettingsInternal, String domJsonUrl) {
+        AppOutputWithScreenshot appOutput = appOutputProvider.getAppOutput(region, lastScreenshot, checkSettingsInternal, domJsonUrl);
         EyesScreenshot screenshot = appOutput.getScreenshot();
         ImageMatchSettings matchSettings = createImageMatchSettings(checkSettingsInternal, screenshot);
         matchResult = performMatch(userInputs, appOutput, tag, ignoreMismatch, matchSettings);
