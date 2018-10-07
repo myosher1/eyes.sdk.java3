@@ -23,8 +23,6 @@ public final class TestDomCapture {
         eyes.setSendDom(true);
         try {
 
-            eyes.setApiKey("CrmrOdQsOVHKViE3xfvpUYzfnwQoaXet99JZQNuvnqUc110");
-
             eyes.open(driver, "DOM Capture Test", "This is a Smerf's test",
                     new RectangleSize(800, 600));
 
