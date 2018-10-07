@@ -185,7 +185,8 @@ public class DomCapture {
             childIndexTrail.push(0);
 
             Map<String, Object> dom = (Map<String, Object>) ((JavascriptExecutor) driver).executeScript(CAPTURE_FRAME_SCRIPT, argsObj);
-            domTree.put("childNodes", new Object[]{dom});
+            Map<String, Object> parsedDom = transformToMap(dom);
+            domTree.put("childNodes", new Object[]{parsedDom});
 
             boolean baseUrlAdded = false;
             Object attrsNodeObj = domTree.get("attributes");
@@ -201,7 +202,7 @@ public class DomCapture {
             if (!baseUrlAdded) {
                 logger.log("WARNING! IFRAME WITH NO SRC");
             }
-            traverseDomTree_(driver, argsObj, dom, childIndexTrail, baseUrls, logger);
+            traverseDomTree_(driver, argsObj, parsedDom, childIndexTrail, baseUrls, logger);
             baseUrls.pop();
             driver.switchTo().parentFrame();
         } else {
@@ -234,11 +235,15 @@ public class DomCapture {
             String kind = item.substring(0, 5);
             String value = item.substring(5);
             String css;
-            if (kind == "text:") {
+            if (kind.equalsIgnoreCase("text:")) {
                 css = value;
             } else {
                 css = downloadCss(baseUrl, value, logger);
 
+            }
+
+            if (css == null) {
+                continue;
             }
             CSSStyleSheet stylesheet;
 

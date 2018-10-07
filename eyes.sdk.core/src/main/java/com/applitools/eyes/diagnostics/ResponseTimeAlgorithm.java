@@ -104,7 +104,7 @@ public class ResponseTimeAlgorithm {
 
         logger.verbose("Taking screenshot...");
         AppOutputWithScreenshot appOutputWithScreenshot =
-                appOutputProvider.getAppOutput(regionProvider.getRegion(), null, null, null);
+                appOutputProvider.getAppOutput(regionProvider.getRegion(), null, null);
         logger.verbose("Screenshot taken.");
         long elapsedTime =
                 GeneralUtils.getFullSecondsElapsedTimeMillis(startTime,
@@ -233,7 +233,7 @@ public class ResponseTimeAlgorithm {
             // Get the screenshot and build the match data.
             AppOutputWithScreenshot appOutputWithScreenshot =
                     appOutputProvider.getAppOutput(regionProvider.getRegion(),
-                            matcherTask.getLastScreenshot(), null, null);
+                            matcherTask.getLastScreenshot(), null);
             elapsedTime =
                     GeneralUtils.getFullSecondsElapsedTimeMillis(startTime,
                             System.currentTimeMillis());

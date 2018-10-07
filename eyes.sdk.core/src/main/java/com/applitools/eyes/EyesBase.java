@@ -1129,13 +1129,7 @@ public abstract class EyesBase {
 
         beforeMatchWindow();
 
-        String domJsonUrl = null;
-        if (mSendDom) {
-            domJsonUrl = tryCaptureDom();
-
-        }
-
-        result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings, domJsonUrl);
+        result = matchWindow(regionProvider, tag, ignoreMismatch, checkSettings);
 
         afterMatchWindow();
 
@@ -1167,7 +1161,7 @@ public abstract class EyesBase {
     }
 
     private MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
-                                    ICheckSettings checkSettings, String domJson) {
+                                    ICheckSettings checkSettings) {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
@@ -1195,11 +1189,9 @@ public abstract class EyesBase {
         Region region = regionProvider.getRegion();
         logger.verbose("params: ([" + region + "], " + tag + ", " + retryTimeout + ")");
 
-        String domJsonUrl = tryPostDomSnapshot(domJson);
-
         result = matchWindowTask.matchWindow(
                 getUserInputs(), region, tag, shouldMatchWindowRunOnceOnTimeout, ignoreMismatch,
-                checkSettingsInternal, retryTimeout, domJsonUrl);
+                checkSettingsInternal, retryTimeout);
 
         return result;
     }
@@ -1278,9 +1270,9 @@ public abstract class EyesBase {
             public AppOutputWithScreenshot getAppOutput(
                     Region region,
                     EyesScreenshot lastScreenshot,
-                    ICheckSettingsInternal checkSettingsInternal, String domJsonUrl) {
+                    ICheckSettingsInternal checkSettingsInternal) {
                 // FIXME - If we use compression here it hurts us later (because of another screenshot order).
-                return getAppOutputWithScreenshot(region, null, null, domJsonUrl);
+                return getAppOutputWithScreenshot(region, null, null);
             }
         };
 
@@ -1419,8 +1411,8 @@ public abstract class EyesBase {
                 new AppOutputProvider() {
                     @Override
                     public AppOutputWithScreenshot getAppOutput(Region region, EyesScreenshot lastScreenshot,
-                                                                ICheckSettingsInternal checkSettingsInternal, String domJsonUrl) {
-                        return getAppOutputWithScreenshot(region, lastScreenshot, checkSettingsInternal, domJsonUrl);
+                                                                ICheckSettingsInternal checkSettingsInternal) {
+                        return getAppOutputWithScreenshot(region, lastScreenshot, checkSettingsInternal);
                     }
                 }
         );
@@ -1712,11 +1704,10 @@ public abstract class EyesBase {
     /**
      * @param region         The region of the screenshot which will be set in the application output.
      * @param lastScreenshot Previous application screenshot (used for compression) or {@code null} if not available.
-     * @param domJsonUrl     DOM json location url to send to Eyes server
      * @return The updated app output and screenshot.
      */
     private AppOutputWithScreenshot getAppOutputWithScreenshot(
-            Region region, EyesScreenshot lastScreenshot, ICheckSettingsInternal checkSettingsInternal, String domJsonUrl) {
+            Region region, EyesScreenshot lastScreenshot, ICheckSettingsInternal checkSettingsInternal) {
 
         logger.verbose("getting screenshot...");
         // Getting the screenshot (abstract function implemented by each SDK).
@@ -1734,6 +1725,18 @@ public abstract class EyesBase {
         logger.verbose("Done! Getting title...");
         String title = getTitle();
         logger.verbose("Done!");
+
+        //DOM SNAPSHOT
+        String domJson = null;
+        String domJsonUrl = null;
+        if (mSendDom) {
+            domJson = tryCaptureDom();
+
+            if (domJson != null) {
+                domJsonUrl = tryPostDomSnapshot(domJson);
+            }
+
+        }
         AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl), screenshot);
         logger.verbose("Done!");
         return result;
