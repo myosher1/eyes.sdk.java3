@@ -1729,13 +1729,19 @@ public abstract class EyesBase {
         //DOM SNAPSHOT
         String domJson = null;
         String domJsonUrl = null;
-        if (mSendDom) {
-            domJson = tryCaptureDom();
+        try {
+            if (mSendDom) {
+                domJson = tryCaptureDom();
 
-            if (domJson != null) {
-                domJsonUrl = tryPostDomSnapshot(domJson);
+                if (domJson != null) {
+                    long start = System.currentTimeMillis();
+                    domJsonUrl = tryPostDomSnapshot(domJson);
+                    System.out.println("Send JSON to SERVER in "+(System.currentTimeMillis() - start)/ 1000);
+                }
+
             }
-
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl), screenshot);
         logger.verbose("Done!");

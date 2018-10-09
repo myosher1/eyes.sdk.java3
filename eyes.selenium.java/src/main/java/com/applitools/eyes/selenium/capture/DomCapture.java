@@ -41,14 +41,16 @@ public class DomCapture {
 
 
     private static IServerConnector mServerConnector = null;
+    private final Logger mLogger;
 
     public DomCapture(Eyes eyes) {
         mServerConnector = eyes.getServerConnector();
+        mLogger = eyes.getLogger();
     }
 
-    public String getFullWindowDom(WebDriver driver, Logger logger) {
+    public String getFullWindowDom(WebDriver driver) {
 
-        Map dom = GetWindowDom(driver, logger);
+        Map dom = GetWindowDom(driver);
 
         try {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -61,11 +63,11 @@ public class DomCapture {
         return "";
     }
 
-    public Map<String, Object> GetWindowDom(WebDriver driver, Logger logger) {
+    public Map<String, Object> GetWindowDom(WebDriver driver) {
 
         Map argsObj = initMapDom();
 
-        Map<String, Object> result = getFrameDom_(driver, argsObj, logger);
+        Map<String, Object> result = getFrameDom_(driver, argsObj);
 
         return result;
     }
@@ -107,11 +109,19 @@ public class DomCapture {
         return argsObj;
     }
 
-    private Map<String, Object> getFrameDom_(WebDriver driver, Map<String, Object> argsObj, Logger logger) {
-        Map<String, Object> domTree = transformToMap((Map<String, Object>) ((JavascriptExecutor) driver).executeScript(CAPTURE_FRAME_SCRIPT, argsObj));
+    private Map<String, Object> getFrameDom_(WebDriver driver, Map<String, Object> argsObj) {
+        System.out.println("Trying to get DOM from driver");
+        long startingTime = System.currentTimeMillis();
+        Map<String, Object> executeScriptMap = (Map<String, Object>) ((JavascriptExecutor) driver).executeScript(CAPTURE_FRAME_SCRIPT, argsObj);
+        System.out.println("Finished capturing DOM in - " + (System.currentTimeMillis() - startingTime));
+        startingTime = System.currentTimeMillis();
+        Map<String, Object> domTree = transformToMap(executeScriptMap);
+        System.out.println("Finished converting DOM map in - " + (System.currentTimeMillis() - startingTime));
         Stack<String> baseUrls = new Stack<>();
         baseUrls.push(driver.getCurrentUrl());
-        traverseDomTree_(driver, argsObj, domTree, new Stack<Integer>(), baseUrls, logger);
+        startingTime = System.currentTimeMillis();
+        traverseDomTree_(driver, argsObj, domTree, -1, driver.getCurrentUrl());
+        System.out.println("Finished going over DOM CSS in - " + (System.currentTimeMillis() - startingTime));
         return domTree;
     }
 
@@ -127,25 +137,25 @@ public class DomCapture {
     }
 
     private Object parseValue(Object value) {
-        if(value instanceof Map){
+        if (value instanceof Map) {
             return transformToMap((Map<String, Object>) value);
         }
-        if(value instanceof List){
+        if (value instanceof List) {
             List valueAsList = (List) value;
             ArrayList<Object> newList = new ArrayList<>();
             for (Object o : valueAsList) {
                 newList.add(parseValue(o));
             }
             return newList;
-        }
-        else{
+        } else {
             return value;
         }
 
     }
 
 
-    private void traverseDomTree_(WebDriver driver, Map<String, Object> argsObj, Map<String, Object> domTree, Stack<Integer> indexTrail, Stack<String> baseUrls, Logger logger) {
+    private void traverseDomTree_(WebDriver driver, Map<String, Object> argsObj, Map<String, Object> domTree
+            , int frameIndex, String baseUrl) {
 
         Object childNodesObj = domTree.get("childNodes");
         if (null == childNodesObj) return;
@@ -153,81 +163,71 @@ public class DomCapture {
         Object tagNameObj = domTree.get("tagName");
         if (null == tagNameObj) return;
 
-
-        List<Object> childNodes = (List<Object>) childNodesObj;
-        String tagName = (String) tagNameObj;
-
-        boolean isHTML = tagName.equalsIgnoreCase("HTML");
-        boolean isIframe = tagName.equalsIgnoreCase("IFRAME");
-
-        if (isHTML) {
-            String baseUrl = baseUrls.peek();
-            URI baseURI = null;
-
-            try {
-
-                baseURI = new URI(baseUrl);
-                baseURI = new URI(baseURI.getScheme() + "://" + baseURI.getHost());
-
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-            }
-
-            String css = getFrameBundledCss(driver, baseURI, logger);
-            domTree.put("css", new Object[]{css});
-        }
-        if (isIframe && childNodes.size() == 0 && indexTrail.size() > 0) {
-            int index = indexTrail.peek();
-            driver.switchTo().frame(index);
-
-            Stack<Integer> childIndexTrail = new Stack<>();
-
-            childIndexTrail.push(0);
+        if (frameIndex > -1) {
+            driver.switchTo().frame(frameIndex);
 
             Map<String, Object> dom = (Map<String, Object>) ((JavascriptExecutor) driver).executeScript(CAPTURE_FRAME_SCRIPT, argsObj);
             Map<String, Object> parsedDom = transformToMap(dom);
             domTree.put("childNodes", new Object[]{parsedDom});
 
-            boolean baseUrlAdded = false;
+            String srcUrl = null;
             Object attrsNodeObj = domTree.get("attributes");
             if (null != attrsNodeObj) {
                 Map<String, Object> attrsNode = (Map<String, Object>) attrsNodeObj;
 
                 Object srcUrlObj = attrsNode.get("src");
                 if (null != srcUrlObj) {
-                    baseUrls.push((String) srcUrlObj);
-                    baseUrlAdded = true;
+                    srcUrl = (String) srcUrlObj;
                 }
             }
-            if (!baseUrlAdded) {
-                logger.log("WARNING! IFRAME WITH NO SRC");
+            if (srcUrl == null) {
+                mLogger.log("WARNING! IFRAME WITH NO SRC");
             }
-            traverseDomTree_(driver, argsObj, parsedDom, childIndexTrail, baseUrls, logger);
-            baseUrls.pop();
+            traverseDomTree_(driver, argsObj, dom, -1, srcUrl);
             driver.switchTo().parentFrame();
-        } else {
-            int index = 0;
-            for (Object node : childNodes) {
+        }
+        String tagName = (String) tagNameObj;
+        boolean isHTML = tagName.equalsIgnoreCase("HTML");
+        if (isHTML) {
+            URI baseUri = null;
+            try {
+                baseUri = new URI(baseUrl);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+            String css = getFrameBundledCss(driver, baseUri);
+            domTree.put("css", css);
+        }
 
-                if (node instanceof Map) {
-                    Map<String, Object> domSubTree = (Map<String, Object>) node;
-                    if (isIframe) {
-                        driver.switchTo().frame(index);
-                        Stack<Integer> childIndexTrail = indexTrail;
-                        childIndexTrail.push(index++);
-                        traverseDomTree_(driver, argsObj, domSubTree, childIndexTrail, baseUrls, logger);
-                        driver.switchTo().parentFrame();
-                    } else {
-                        traverseDomTree_(driver, argsObj, domSubTree, indexTrail, baseUrls, logger);
-                    }
+        loop(driver, argsObj, domTree, baseUrl);
+    }
+
+    private void loop(WebDriver driver, Map<String, Object> argsObj, Map<String, Object> domTree, String baseUrl) {
+        List childNodes = (List) domTree.get("childNodes");
+        if (childNodes == null) {
+            return;
+        }
+        int index = 0;
+        for (Object node : childNodes) {
+            if (node instanceof Map) {
+                Map<String, Object> domSubTree = (Map<String, Object>) node;
+                Object tagNameObj = domSubTree.get("tagName");
+
+                String tagName = (String) tagNameObj;
+                boolean isIframe = tagName.equalsIgnoreCase("IFRAME");
+
+                if (isIframe) {
+                    traverseDomTree_(driver, argsObj, domSubTree, index, baseUrl);
+                    index++;
                 }
             }
         }
     }
 
-    public String getFrameBundledCss(WebDriver driver, URI baseUrl, Logger logger) {
+
+    public String getFrameBundledCss(WebDriver driver, URI baseUrl) {
         if (!baseUrl.isAbsolute()) {
-            logger.log("WARNING! Base URL is not an absolute URL!");
+            mLogger.log("WARNING! Base URL is not an absolute URL!");
         }
         StringBuilder sb = new StringBuilder();
         List<String> result = (List<String>) ((JavascriptExecutor) driver).executeScript(CAPTURE_CSSOM_SCRIPT);
@@ -238,7 +238,7 @@ public class DomCapture {
             if (kind.equalsIgnoreCase("text:")) {
                 css = value;
             } else {
-                css = downloadCss(baseUrl, value, logger);
+                css = downloadCss(baseUrl, value);
 
             }
 
@@ -268,17 +268,17 @@ public class DomCapture {
     }
 
 
-    private String downloadCss(URI baseUrl, String value, Logger logger) {
+    private String downloadCss(URI baseUrl, String value) {
         String response = null;
         try {
-            logger.verbose("Given URL to download: " + value);
+            mLogger.verbose("Given URL to download: " + value);
             URI href = new URI(value);
             if (!href.isAbsolute()) {
                 href = new URI(baseUrl.getScheme(), baseUrl.getHost(), "/" + href.getPath(), href.getFragment());
             }
             response = mServerConnector.downloadString(href);
         } catch (Exception ex) {
-            logger.log(ex.getMessage());
+            mLogger.log(ex.getMessage());
         }
         return response;
     }
