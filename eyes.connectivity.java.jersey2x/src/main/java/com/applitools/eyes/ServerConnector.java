@@ -373,9 +373,9 @@ public class ServerConnector extends RestClient
         WebTarget target = restClient.target(serverUrl).path(("api/sessions/running/data")).queryParam("apiKey", getApiKey());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
 
-        ByteArrayOutputStream resultStream = GeneralUtils.getGzipByteArrayOutputStream(domJson);
+        byte[] resultStream = GeneralUtils.getGzipByteArrayOutputStream(domJson);
 
-        Response response = request.post(Entity.entity(resultStream.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
+        Response response = request.post(Entity.entity(resultStream, MediaType.APPLICATION_OCTET_STREAM));
         String entity = response.getHeaderString("Location");
         return entity;
     }

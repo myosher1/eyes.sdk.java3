@@ -240,7 +240,12 @@ public class GeneralUtils {
         }
     }
 
-    public static ByteArrayOutputStream getGzipByteArrayOutputStream(String domJson) {
+    /**
+     *
+     * @param domJson JSON as string to be gzipped
+     * @return byte[] of the gzipped string
+     */
+    public static byte[] getGzipByteArrayOutputStream(String domJson) {
         ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
 
         try {
@@ -250,6 +255,6 @@ public class GeneralUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return resultStream;
+        return resultStream.toByteArray();
     }
 }
