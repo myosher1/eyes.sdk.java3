@@ -1736,7 +1736,7 @@ public abstract class EyesBase {
                 if (domJson != null) {
                     long start = System.currentTimeMillis();
                     domJsonUrl = tryPostDomSnapshot(domJson);
-                    System.out.println("Send JSON to SERVER in "+(System.currentTimeMillis() - start)/ 1000);
+                    logger.verbose("Send JSON to SERVER in "+(System.currentTimeMillis() - start)/ 1000);
                 }
 
             }
