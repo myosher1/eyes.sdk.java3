@@ -7,9 +7,9 @@ import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
+import org.glassfish.jersey.message.GZipEncoder;
+
+import javax.ws.rs.client.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
@@ -17,6 +17,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Provides an API for communication with the Applitools agent
@@ -27,6 +29,7 @@ public class ServerConnector extends RestClient
     private static final int TIMEOUT = 1000 * 60 * 5; // 5 Minutes
     private static final String API_PATH = "/api/sessions/running";
     private static final String DEFAULT_CHARSET_NAME = "UTF-8";
+    public static final int DOWNLOAD_TASKS_CAPACITY = 10;
 
     private String apiKey = null;
 
@@ -53,8 +56,8 @@ public class ServerConnector extends RestClient
         this(null, serverUrl);
     }
 
-    public ServerConnector(){
-        this((Logger)null);
+    public ServerConnector() {
+        this((Logger) null);
     }
 
     /**
@@ -76,8 +79,9 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the proxy settings to be used by the rest client.
+     *
      * @param proxySettings The proxy settings to be used by the rest client.
-     * If {@code null} then no proxy is set.
+     *                      If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void setProxy(ProxySettings proxySettings) {
@@ -88,7 +92,6 @@ public class ServerConnector extends RestClient
     }
 
     /**
-     *
      * @return The current proxy settings used by the rest client,
      * or {@code null} if no proxy is set.
      */
@@ -99,6 +102,7 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the current server URL used by the rest client.
+     *
      * @param serverUrl The URI of the rest server.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -124,9 +128,9 @@ public class ServerConnector extends RestClient
      *
      * @param sessionStartInfo The start parameters for the session.
      * @return RunningSession object which represents the current running
-     *         session
+     * session
      * @throws EyesException For invalid status codes, or if response parsing
-     *          failed.
+     *                       failed.
      */
     public RunningSession startSession(SessionStartInfo sessionStartInfo)
             throws EyesException {
@@ -186,7 +190,7 @@ public class ServerConnector extends RestClient
      * @param runningSession The running session to be stopped.
      * @return TestResults object for the stopped running session
      * @throws EyesException For invalid status codes, or if response parsing
-     *          failed.
+     *                       failed.
      */
     public TestResults stopSession(final RunningSession runningSession,
                                    final boolean isAborted, final boolean save)
@@ -251,10 +255,10 @@ public class ServerConnector extends RestClient
      * window.
      *
      * @param runningSession The current agent's running session.
-     * @param matchData Encapsulation of a capture taken from the application.
+     * @param matchData      Encapsulation of a capture taken from the application.
      * @return The results of the window matching.
      * @throws EyesException For invalid status codes, or response parsing
-     * failed.
+     *                       failed.
      */
     public MatchResult matchWindow(RunningSession runningSession,
                                    MatchWindowData matchData)
@@ -279,7 +283,7 @@ public class ServerConnector extends RestClient
             jsonData = jsonMapper.writeValueAsString(matchData);
         } catch (IOException e) {
             throw new EyesException("Failed to serialize data for matchWindow!",
-                                    e);
+                    e);
         }
 
         // Convert the JSON to binary.
@@ -337,25 +341,41 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public String downloadString(URI uri) {
+    public void downloadString(URI uri, final IDownloadListener listener) {
 
-        WebTarget target = restClient.target(uri);
+        Client client = ClientBuilder.newBuilder().build();
+
+        WebTarget target = client.target(uri.toString());
 
         Invocation.Builder request = target.request(MediaType.WILDCARD);
 
-        String parsedString = request.get().readEntity(String.class);
+        request.async().get(new InvocationCallback<String>() {
+            @Override
+            public void completed(String response) {
+                // on complete
+                listener.onDownloadComplete(response);
+            }
 
-        return parsedString;
+            @Override
+            public void failed(Throwable throwable) {
+                // on fail
+                listener.onDownloadFailed();
+            }
+        });
+
     }
 
     @Override
     public String postDomSnapshot(String domJson) {
 
-        WebTarget target = restClient.target(serverUrl).path(("api/sessions/running/data")).queryParam("apiKey", getApiKey());
+        restClient.register(GZipEncoder.class);
 
+        WebTarget target = restClient.target(serverUrl).path(("api/sessions/running/data")).queryParam("apiKey", getApiKey());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
-        Response response = request.post(Entity.entity(domJson.getBytes(),
-                MediaType.APPLICATION_OCTET_STREAM));
+
+        ByteArrayOutputStream resultStream = GeneralUtils.getGzipByteArrayOutputStream(domJson);
+
+        Response response = request.post(Entity.entity(resultStream.toByteArray(), MediaType.APPLICATION_OCTET_STREAM));
         String entity = response.getHeaderString("Location");
         return entity;
     }

@@ -7,20 +7,19 @@ import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.client.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Provides an API for communication with the Applitools agent
@@ -342,25 +341,44 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public String downloadString(URI uri) {
+    public void downloadString(URI uri, final IDownloadListener listener) {
 
-        WebTarget target = restClient.target(uri);
+        Client client = ClientBuilder.newBuilder().build();
+
+        WebTarget target = client.target(uri.toString());
 
         Invocation.Builder request = target.request(MediaType.WILDCARD);
 
-        Response response = request.get();
+        request.async().get(new InvocationCallback<String>() {
+            @Override
+            public void completed(String response) {
+                listener.onDownloadComplete(response);
+            }
 
-        return response.toString();
+            @Override
+            public void failed(Throwable throwable) {
+                listener.onDownloadFailed();
+            }
+        });
+
+
     }
 
     @Override
     public String postDomSnapshot(String domJson) {
+
         WebTarget target = restClient.target(serverUrl).path(("api/sessions/running/data")).queryParam("apiKey", getApiKey());
 
+        ByteArrayOutputStream resultStream = GeneralUtils.getGzipByteArrayOutputStream(domJson);
+
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
-        Response response = request.post(Entity.entity(domJson.getBytes(),
+
+        Response response = request.post(Entity.entity(resultStream.toByteArray(),
+
                 MediaType.APPLICATION_OCTET_STREAM));
+
         String entity = response.readEntity(String.class);
+
         return entity;
     }
 }

@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * General purpose utilities.
@@ -237,5 +238,18 @@ public class GeneralUtils {
         } catch (URISyntaxException ex) {
             throw new EyesException(ex.getMessage(), ex);
         }
+    }
+
+    public static ByteArrayOutputStream getGzipByteArrayOutputStream(String domJson) {
+        ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
+
+        try {
+            GZIPOutputStream gzip = new GZIPOutputStream(resultStream);
+            gzip.write(domJson.getBytes());
+            gzip.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return resultStream;
     }
 }

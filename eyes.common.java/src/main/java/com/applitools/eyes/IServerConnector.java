@@ -73,9 +73,8 @@ public interface IServerConnector {
      * @param uri The URI from which the IServerConnector will download the string
      * @return the string that was return from the request to the Url
      */
-    String downloadString(URI uri);
+    void downloadString(URI uri, IDownloadListener listener);
 
 
     String postDomSnapshot(String domJson);
-
 }

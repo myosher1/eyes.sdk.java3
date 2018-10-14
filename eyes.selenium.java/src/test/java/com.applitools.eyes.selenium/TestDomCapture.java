@@ -1,6 +1,8 @@
 package com.applitools.eyes.selenium;
 
+import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,6 +21,12 @@ public final class TestDomCapture {
         // Initialize the eyes SDK and set your private API key.
         Eyes eyes = new Eyes();
 
+        eyes.setLogHandler(new StdoutLogHandler(true));
+        eyes.setServerUrl("https://test2eyes.applitools.com/");
+        eyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
+
+        eyes.setApiKey("OeBApoq9uPosO110ICV7AlL3ANe3bBAdYv5100MbHgpdAm8110");
+
         // Switch sendDom flag on
         eyes.setSendDom(true);
         try {
@@ -27,7 +35,8 @@ public final class TestDomCapture {
                     new RectangleSize(800, 600));
 
             // Navigate the browser to the "hello world!" web-site.
-            driver.get("https://applitools-dom-capture-origin-1.surge.sh/testWithIframe.html");
+            driver.get("http://applitools.github.io/demo/TestPages/DomTest/dom_capture.html");
+            eyes.checkWindow("Test DOM diffs");
 
             String domJson = eyes.tryCaptureDom();
 
