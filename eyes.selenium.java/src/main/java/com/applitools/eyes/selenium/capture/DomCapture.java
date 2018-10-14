@@ -1,26 +1,33 @@
 package com.applitools.eyes.selenium.capture;
 
+import com.applitools.eyes.IDownloadListener;
 import com.applitools.eyes.IServerConnector;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.steadystate.css.parser.CSSOMParser;
-import com.steadystate.css.parser.SACParserCSS3;
+import com.helger.commons.collection.impl.ICommonsList;
+import com.helger.css.ECSSVersion;
+import com.helger.css.decl.CSSImportRule;
+import com.helger.css.decl.CSSStyleRule;
+import com.helger.css.decl.CascadingStyleSheet;
+import com.helger.css.decl.ICSSTopLevelRule;
+import com.helger.css.reader.CSSReader;
+import com.helger.css.writer.CSSWriterSettings;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
-import org.w3c.css.sac.InputSource;
-import org.w3c.dom.css.CSSRule;
-import org.w3c.dom.css.CSSRuleList;
-import org.w3c.dom.css.CSSStyleSheet;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Phaser;
 
 public class DomCapture {
 
