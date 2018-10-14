@@ -334,28 +334,32 @@ public class DomCapture {
         }
 
         void downloadNodeCss() {
-            for (CSSImportRule importRule : allImportRules) {
-                final CssTreeNode cssTreeNode;
-                cssTreeNode = new CssTreeNode();
-                cssTreeNode.setBaseUri(this.baseUri);
-                String uri = importRule.getLocation().getURI();
-                cssTreeNode.setUrlPostfix(uri);
-                downloadCss(cssTreeNode, new IDownloadListener() {
-                    @Override
-                    public void onDownloadComplete(String downloadedString) {
-                        parseCSS(cssTreeNode, downloadedString);
-                        if (!cssTreeNode.allImportRules.isEmpty()) {
-                            cssTreeNode.downloadNodeCss();
+            if (allImportRules != null) {
 
+
+                for (CSSImportRule importRule : allImportRules) {
+                    final CssTreeNode cssTreeNode;
+                    cssTreeNode = new CssTreeNode();
+                    cssTreeNode.setBaseUri(this.baseUri);
+                    String uri = importRule.getLocation().getURI();
+                    cssTreeNode.setUrlPostfix(uri);
+                    downloadCss(cssTreeNode, new IDownloadListener() {
+                        @Override
+                        public void onDownloadComplete(String downloadedString) {
+                            parseCSS(cssTreeNode, downloadedString);
+                            if (!cssTreeNode.allImportRules.isEmpty()) {
+                                cssTreeNode.downloadNodeCss();
+
+                            }
                         }
-                    }
 
-                    @Override
-                    public void onDownloadFailed() {
-                        mLogger.verbose("Download Failed");
-                    }
-                });
-                decedents.add(cssTreeNode);
+                        @Override
+                        public void onDownloadFailed() {
+                            mLogger.verbose("Download Failed");
+                        }
+                    });
+                    decedents.add(cssTreeNode);
+                }
             }
         }
 

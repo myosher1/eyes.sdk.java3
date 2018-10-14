@@ -35,7 +35,7 @@ public final class TestDomCapture {
                     new RectangleSize(800, 600));
 
             // Navigate the browser to the "hello world!" web-site.
-            driver.get("http://applitools.github.io/demo/TestPages/DomTest/dom_capture.html");
+            driver.get("https://booking.kayak.com/flights/TLV-MIA/2018-09-25/2018-10-31?sort=bestflight_a");
             eyes.checkWindow("Test DOM diffs");
 
             String domJson = eyes.tryCaptureDom();
