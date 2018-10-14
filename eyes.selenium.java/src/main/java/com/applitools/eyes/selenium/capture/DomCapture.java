@@ -199,7 +199,7 @@ public class DomCapture {
                     @Override
                     public void onDownloadComplete(String downloadedString) {
                         domTree.put("css", downloadedString);
-                        mLogger.verbose("Putting css in "  + " - CSS = "+downloadedString);
+                        mLogger.verbose("Putting css in " + " - CSS = " + downloadedString);
                         mainPhaser.arriveAndDeregister();
                     }
 
@@ -228,7 +228,7 @@ public class DomCapture {
             if (node instanceof Map) {
                 final Map<String, Object> domSubTree = (Map<String, Object>) node;
 
-                mLogger.verbose("Current DOM subtree hash : "+domSubTree.hashCode());
+                mLogger.verbose("Current DOM subtree hash : " + domSubTree.hashCode());
 
                 Object tagNameObj = domSubTree.get("tagName");
 
@@ -336,7 +336,6 @@ public class DomCapture {
         void downloadNodeCss() {
             if (allImportRules != null) {
 
-
                 for (CSSImportRule importRule : allImportRules) {
                     final CssTreeNode cssTreeNode;
                     cssTreeNode = new CssTreeNode();
@@ -441,7 +440,6 @@ public class DomCapture {
         });
         return executeScriptMap;
     }
-
 
 
 }
