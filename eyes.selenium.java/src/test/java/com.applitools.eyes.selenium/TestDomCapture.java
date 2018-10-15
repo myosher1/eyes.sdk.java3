@@ -1,16 +1,9 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.utils.GeneralUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-
-import java.io.IOException;
 
 public final class TestDomCapture {
     public static void main(String[] args) throws Exception {
@@ -23,7 +16,7 @@ public final class TestDomCapture {
 
         eyes.setLogHandler(new StdoutLogHandler(true));
         eyes.setServerUrl("https://test2eyes.applitools.com/");
-        eyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
+//        eyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
 
         // Switch sendDom flag on
         eyes.setSendDom(true);

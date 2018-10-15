@@ -81,7 +81,7 @@ public abstract class EyesBase {
 
     private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
     private int validationId;
-    private boolean mSendDom;
+    private boolean isSendDom;
 
     public EyesBase() {
 
@@ -1730,7 +1730,7 @@ public abstract class EyesBase {
         String domJson = null;
         String domJsonUrl = null;
         try {
-            if (mSendDom) {
+            if (isSendDom) {
                 domJson = tryCaptureDom();
 
                 if (domJson != null) {
@@ -1799,11 +1799,11 @@ public abstract class EyesBase {
 
     protected abstract String getAUTSessionId();
 
-    public boolean ismSendDom() {
-        return mSendDom;
+    public boolean isSendDom() {
+        return isSendDom;
     }
 
-    public void setSendDom(boolean mSendDom) {
-        this.mSendDom = mSendDom;
+    public void setSendDom(boolean isSendDom) {
+        this.isSendDom = isSendDom;
     }
 }
