@@ -844,12 +844,9 @@ public class Eyes extends EyesBase {
 
     @Override
     public String tryCaptureDom() {
-        ElementPositionProvider postionProvider = new ElementPositionProvider(logger, driver, driver.findElement(new By.ByTagName("HTML")));
-        Location initialPosition = postionProvider.getCurrentPosition();
-        postionProvider.setPosition(Location.ZERO);
+        ElementPositionProvider positionProvider = new ElementPositionProvider(logger, driver, scrollRootElement);
         DomCapture domCapturer = new DomCapture(this);
-        String fullWindowDom = domCapturer.getFullWindowDom(this.driver);
-        postionProvider.setPosition(initialPosition);
+        String fullWindowDom = domCapturer.getFullWindowDom(this.driver, positionProvider);
         return fullWindowDom;
     }
 
