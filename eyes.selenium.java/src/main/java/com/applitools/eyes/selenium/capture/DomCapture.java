@@ -2,8 +2,10 @@ package com.applitools.eyes.selenium.capture;
 
 import com.applitools.eyes.IDownloadListener;
 import com.applitools.eyes.IServerConnector;
+import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.positioning.ElementPositionProvider;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -59,10 +61,12 @@ public class DomCapture {
         mLogger = eyes.getLogger();
     }
 
-    public String getFullWindowDom(WebDriver driver) {
+    public String getFullWindowDom(WebDriver driver, ElementPositionProvider positionProvider) {
         this.mDriver = driver;
+        Location initialPosition = positionProvider.getCurrentPosition();
+        positionProvider.setPosition(Location.ZERO);
         Map dom = GetWindowDom();
-
+        positionProvider.setPosition(initialPosition);
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
@@ -86,7 +90,17 @@ public class DomCapture {
     private Map initMapDom() {
 
         Map argsObj = new HashMap();
-        argsObj.put("styleProps", new String[0]);
+        argsObj.put("styleProps", new String[] {
+                "background-color",
+                "background-image",
+                "background-size",
+                "color",
+                "border-width",
+                "border-color",
+                "border-style",
+                "padding",
+                "margin"
+        });
 
         argsObj.put("attributeProps", null);
         argsObj.put("rectProps", new String[]{
