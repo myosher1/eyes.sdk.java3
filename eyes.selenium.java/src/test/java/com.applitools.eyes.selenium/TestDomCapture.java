@@ -25,52 +25,50 @@ public final class TestDomCapture {
         eyes.setServerUrl("https://test2eyes.applitools.com/");
         eyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
 
-        eyes.setApiKey("OeBApoq9uPosO110ICV7AlL3ANe3bBAdYv5100MbHgpdAm8110");
-
         // Switch sendDom flag on
         eyes.setSendDom(true);
-        try {
+//        try {
 
-            eyes.open(driver, "DOM Capture Test", "This is a Smerf's test",
-                    new RectangleSize(800, 600));
+        eyes.open(driver, "DOM Capture Test", "This is a Smerf's test",
+                new RectangleSize(800, 600));
 
-            // Navigate the browser to the "hello world!" web-site.
-            driver.get("https://booking.kayak.com/flights/TLV-MIA/2018-09-25/2018-10-31?sort=bestflight_a");
-            eyes.checkWindow("Test DOM diffs");
+        // Navigate the browser to the "hello world!" web-site.
+        driver.get("https://www.booking.com/searchresults.en-gb.html?label=gen173nr-1FCAEoggJCAlhYSDNYBGhqiAEBmAEuwgEKd2luZG93cyAxMMgBDNgBAegBAfgBC5ICAXmoAgM;sid=ce4701a88873eed9fbb22893b9c6eae4;city=-2600941;from_idr=1&;ilp=1;d_dcp=1");
+        eyes.checkWindow("Test DOM diffs");
 
-            String domJson = eyes.tryCaptureDom();
+//            String domJson = eyes.tryCaptureDom();
+//
+//            ObjectMapper mapper = new ObjectMapper();
+//            JsonNode targetJsonObj = mapper.readTree(domJson);
+//
+//            String sourceJsonAsString = GeneralUtils.readToEnd(TestDomCapture.class.getResourceAsStream("/domcapture.json"));
+//            JsonNode sourceJsonObj = mapper.readTree(sourceJsonAsString);
 
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode targetJsonObj = mapper.readTree(domJson);
+//            if(!sourceJsonObj.equals(targetJsonObj)){
+//                throw new Exception("Dom capture json was not equal to target json");
+//            }
 
-            String sourceJsonAsString = GeneralUtils.readToEnd(TestDomCapture.class.getResourceAsStream("/domcapture.json"));
-            JsonNode sourceJsonObj = mapper.readTree(sourceJsonAsString);
+        // End the test.
+        eyes.close();
 
-            if(!sourceJsonObj.equals(targetJsonObj)){
-                throw new Exception("Dom capture json was not equal to target json");
-            }
+//        } catch (JsonProcessingException e) {
+//
+//            eyes.abortIfNotClosed();
+//            eyes.getDriver().quit();
+//
+//        } catch (IOException e) {
+//            eyes.abortIfNotClosed();
+//            eyes.getDriver().quit();
+//        } finally {
 
-            // End the test.
-            eyes.close();
+        // Close the browser.
+//            driver.quit();
 
-        } catch (JsonProcessingException e) {
-
-            eyes.abortIfNotClosed();
-            eyes.getDriver().quit();
-
-        } catch (IOException e) {
-            eyes.abortIfNotClosed();
-            eyes.getDriver().quit();
-        } finally {
-
-            // Close the browser.
-            driver.quit();
-
-            // If the test was aborted before eyes.close was called, ends the test as aborted.
-            eyes.abortIfNotClosed();
-        }
+        // If the test was aborted before eyes.close was called, ends the test as aborted.
+//            eyes.abortIfNotClosed();
+//        }
+//
+//    }
 
     }
-
-
 }
