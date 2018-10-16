@@ -1058,7 +1058,7 @@ public abstract class EyesBase {
     /**
      * @param positionProvider The position provider to be used.
      */
-    protected void setPositionProvider(PositionProvider positionProvider) {
+    public void setPositionProvider(PositionProvider positionProvider) {
         this.positionProvider = positionProvider;
     }
 
