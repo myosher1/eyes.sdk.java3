@@ -6,45 +6,62 @@ package com.applitools.eyes;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
+import com.sun.jersey.api.client.*;
+import com.sun.jersey.api.client.async.ITypeListener;
+import com.sun.jersey.api.client.async.TypeListener;
+import com.sun.jersey.api.client.config.ClientConfig;
+import org.apache.commons.io.IOUtils;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.xml.bind.DatatypeConverter;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Provides an API for communication with the Applitools agent
  */
-public class Jersey1xServerConnector extends RestClient
-        implements ServerConnector {
+public class ServerConnector extends RestClient
+        implements IServerConnector {
 
     private static final int TIMEOUT = 1000 * 60 * 5; // 5 Minutes
     private static final String API_PATH = "/api/sessions/running";
     private static final String DEFAULT_CHARSET_NAME = "UTF-8";
 
-    protected String sdkName;
     private String apiKey = null;
 
     /***
      * @param logger A logger instance.
-     * @param sdkName An identifier for the current agent. Can be any string.
      * @param serverUrl The URI of the Eyes server.
      */
-    public Jersey1xServerConnector(Logger logger, String sdkName,
-                                   URI serverUrl) {
+    public ServerConnector(Logger logger, URI serverUrl) {
         super(logger, serverUrl, TIMEOUT);
-
-        this.sdkName = sdkName;
         endPoint = endPoint.path(API_PATH);
+    }
 
+    /***
+     * @param logger A logger instance.
+     */
+    @SuppressWarnings("WeakerAccess")
+    public ServerConnector(Logger logger) {
+        this(logger, GeneralUtils.getDefaultServerUrl());
+    }
+
+    /***
+     * @param serverUrl The URI of the Eyes server.
+     */
+    public ServerConnector(URI serverUrl) {
+        this(null, serverUrl);
+    }
+
+    public ServerConnector() {
+        this((Logger) null);
     }
 
     /**
@@ -66,8 +83,9 @@ public class Jersey1xServerConnector extends RestClient
 
     /**
      * Sets the proxy settings to be used by the rest client.
+     *
      * @param proxySettings The proxy settings to be used by the rest client.
-     * If {@code null} then no proxy is set.
+     *                      If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void setProxy(ProxySettings proxySettings) {
@@ -78,7 +96,6 @@ public class Jersey1xServerConnector extends RestClient
     }
 
     /**
-     *
      * @return The current proxy settings used by the rest client,
      * or {@code null} if no proxy is set.
      */
@@ -89,6 +106,7 @@ public class Jersey1xServerConnector extends RestClient
 
     /**
      * Sets the current server URL used by the rest client.
+     *
      * @param serverUrl The URI of the rest server.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -114,14 +132,16 @@ public class Jersey1xServerConnector extends RestClient
      *
      * @param sessionStartInfo The start parameters for the session.
      * @return RunningSession object which represents the current running
-     *         session
+     * session
      * @throws EyesException For invalid status codes, or if response parsing
-     *          failed.
+     *                       failed.
      */
     public RunningSession startSession(SessionStartInfo sessionStartInfo)
             throws EyesException {
 
         ArgumentGuard.notNull(sessionStartInfo, "sessionStartInfo");
+
+        logger.verbose("Using Jersey1 for REST API calls.");
 
         String postData;
         ClientResponse response;
@@ -175,7 +195,7 @@ public class Jersey1xServerConnector extends RestClient
      * @param runningSession The running session to be stopped.
      * @return TestResults object for the stopped running session
      * @throws EyesException For invalid status codes, or if response parsing
-     *          failed.
+     *                       failed.
      */
     public TestResults stopSession(final RunningSession runningSession,
                                    final boolean isAborted, final boolean save)
@@ -219,15 +239,32 @@ public class Jersey1xServerConnector extends RestClient
         return result;
     }
 
+    @Override
+    public void deleteSession(TestResults testResults) {
+        ArgumentGuard.notNull(testResults, "testResults");
+
+        WebResource sessionsResources = restClient.resource(serverUrl);
+        WebResource.Builder builder = sessionsResources
+                .path("/api/sessions/batches/")
+                .path(testResults.getBatchId())
+                .path("/")
+                .path(testResults.getId())
+                .queryParam("apiKey", getApiKey())
+                .queryParam("AccessToken", testResults.getSecretToken())
+                .accept(MediaType.APPLICATION_JSON);
+
+        builder.delete();
+    }
+
     /**
      * Matches the current window (held by the WebDriver) to the expected
      * window.
      *
      * @param runningSession The current agent's running session.
-     * @param matchData Encapsulation of a capture taken from the application.
+     * @param matchData      Encapsulation of a capture taken from the application.
      * @return The results of the window matching.
      * @throws EyesException For invalid status codes, or response parsing
-     * failed.
+     *                       failed.
      */
     public MatchResult matchWindow(RunningSession runningSession,
                                    MatchWindowData matchData)
@@ -308,4 +345,55 @@ public class Jersey1xServerConnector extends RestClient
         return result;
 
     }
-}
+
+    @Override
+    public void downloadString(URI uri, final IDownloadListener listener) {
+
+        AsyncWebResource target = Client.create().asyncResource(uri.toString());
+
+        AsyncWebResource.Builder request = target.accept(MediaType.WILDCARD);
+
+
+        request.get(new TypeListener<ClientResponse>(ClientResponse.class) {
+
+            public void onComplete(Future<ClientResponse> f)
+                    throws InterruptedException {
+                try {
+
+                    InputStream entityInputStream = f.get().getEntityInputStream();
+
+                    StringWriter writer = new StringWriter();
+
+                    IOUtils.copy(entityInputStream, writer, "UTF-8");
+
+                    String theString = writer.toString();
+
+                    listener.onDownloadComplete(theString);
+
+                } catch (ExecutionException e) {
+                    logger.verbose("Something went wrong!");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        });
+    }
+
+
+        @Override
+        public String postDomSnapshot (String domJson){
+
+            WebResource target = restClient.resource(serverUrl).path(("api/sessions/running/data")).queryParam("apiKey", getApiKey());
+
+            byte[] resultStream = GeneralUtils.getGzipByteArrayOutputStream(domJson);
+
+            WebResource.Builder request = target.accept(MediaType.APPLICATION_JSON).entity(resultStream, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+
+            ClientResponse response = request.post(ClientResponse.class);
+
+            String entity = response.getEntity(String.class);
+
+            return entity;
+        }
+    }

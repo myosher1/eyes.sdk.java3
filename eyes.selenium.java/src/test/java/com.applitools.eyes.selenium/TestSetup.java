@@ -37,6 +37,9 @@ public abstract class TestSetup implements ITest {
 
     protected HashSet<FloatingMatchSettings> expectedFloatingRegions = new HashSet<>();
     protected HashSet<Region> expectedIgnoreRegions = new HashSet<>();
+    protected HashSet<Region> expectedLayoutRegions = new HashSet<>();
+    protected HashSet<Region> expectedStrictRegions = new HashSet<>();
+    protected HashSet<Region> expectedContentRegions = new HashSet<>();
 
     protected boolean compareExpectedRegions = false;
 
@@ -50,6 +53,7 @@ public abstract class TestSetup implements ITest {
 
         // Initialize the eyes SDK and set your private API key.
         eyes = new Eyes();
+        //eyes.setServerConnector(new ServerConnector());
 
         RemoteSessionEventHandler remoteSessionEventHandler = new RemoteSessionEventHandler(
                 eyes.getLogger(), URI.create("http://localhost:3000/"), "MyAccessKey");
@@ -75,6 +79,18 @@ public abstract class TestSetup implements ITest {
         this.expectedIgnoreRegions = new HashSet<>(Arrays.asList(expectedIgnoreRegions));
     }
 
+    protected void setExpectedLayoutRegions(Region... expectedLayoutRegions) {
+        this.expectedLayoutRegions = new HashSet<>(Arrays.asList(expectedLayoutRegions));
+    }
+
+    protected void setExpectedStrictRegions(Region... expectedStrictRegions) {
+        this.expectedStrictRegions = new HashSet<>(Arrays.asList(expectedStrictRegions));
+    }
+
+    protected void setExpectedContentRegions(Region... expectedContentRegions) {
+        this.expectedContentRegions = new HashSet<>(Arrays.asList(expectedContentRegions));
+    }
+
     protected void setExpectedFloatingsRegions(FloatingMatchSettings... expectedFloatingsRegions) {
         this.expectedFloatingRegions = new HashSet<>(Arrays.asList(expectedFloatingsRegions));
     }
@@ -95,7 +111,7 @@ public abstract class TestSetup implements ITest {
         if (seleniumServerUrl.equalsIgnoreCase("http://ondemand.saucelabs.com/wd/hub")) {
             desiredCaps.setCapability("username", System.getenv("SAUCE_USERNAME"));
             desiredCaps.setCapability("accesskey", System.getenv("SAUCE_ACCESS_KEY"));
-            desiredCaps.setCapability("seleniumVersion", "3.11.0");
+            //desiredCaps.setCapability("seleniumVersion", "3.11.0");
 
             if (caps.getBrowserName().equals("chrome")) {
                 desiredCaps.setCapability("chromedriverVersion", "2.37");
@@ -104,12 +120,13 @@ public abstract class TestSetup implements ITest {
             desiredCaps.setCapability("platform", platform);
             desiredCaps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
 
-            caps.merge(desiredCaps);
         } else if (seleniumServerUrl.equalsIgnoreCase("http://hub-cloud.browserstack.com/wd/hub")) {
             seleniumServerUrl = "http://" + System.getenv("BROWSERSTACK_USERNAME") + ":" + System.getenv("BROWSERSTACK_ACCESS_KEY") + "@hub-cloud.browserstack.com/wd/hub";
             desiredCaps.setCapability("platform", platform);
             desiredCaps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
         }
+
+        caps.merge(desiredCaps);
 
         this.testName = testName + " " + caps.getBrowserName() + " " + platform;
 
@@ -139,23 +156,33 @@ public abstract class TestSetup implements ITest {
         }
 
         eyes.setLogHandler(logHandler);
+        eyes.clearProperties();
         eyes.addProperty("Selenium Session ID", webDriver.getSessionId().toString());
         eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
         eyes.addProperty("ScaleRatio", "" + eyes.getScaleRatio());
         eyes.addProperty("Agent ID", eyes.getFullAgentId());
+        try {
+            driver = eyes.open(webDriver,
+                    testSuitName,
+                    testName,
+                    testedPageSize
+            );
 
-        driver = eyes.open(webDriver,
-                testSuitName,
-                testName,
-                testedPageSize
-        );
+            if (testedPageUrl != null) {
+                driver.get(testedPageUrl);
+            }
 
-        driver.get(testedPageUrl);
+            eyes.setForceFullPageScreenshot(forceFPS);
 
-        eyes.setForceFullPageScreenshot(forceFPS);
-
-        this.expectedIgnoreRegions.clear();
-        this.expectedFloatingRegions.clear();
+            this.expectedIgnoreRegions.clear();
+            this.expectedLayoutRegions.clear();
+            this.expectedStrictRegions.clear();
+            this.expectedContentRegions.clear();
+            this.expectedFloatingRegions.clear();
+        } catch (Exception ex) {
+            eyes.abortIfNotClosed();
+            webDriver.quit();
+        }
     }
 
     @Override

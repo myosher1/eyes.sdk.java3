@@ -7,6 +7,7 @@ import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 
 import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
 
@@ -20,6 +21,8 @@ public class FileLogger implements LogHandler {
     private final String filename;
     private final boolean append;
     private BufferedWriter fileWriter;
+
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     /**
      * Creates a new FileHandler instance.
@@ -81,11 +84,8 @@ public class FileLogger implements LogHandler {
     public void onMessage(boolean verbose, String logString) {
         if (fileWriter != null && (!verbose || this.isVerbose)) {
 
-            String currentTime = GeneralUtils.toISO8601DateTime(
-                    Calendar.getInstance(TimeZone.getTimeZone("UTC")));
-
             try {
-                fileWriter.write(currentTime + " Eyes: " + logString);
+                fileWriter.write(getFormattedTimeStamp() + " Eyes: " + logString);
                 fileWriter.newLine();
                 fileWriter.flush();
             } catch (IOException e) {
@@ -106,4 +106,9 @@ public class FileLogger implements LogHandler {
         } catch (IOException e) {}
         fileWriter = null;
     }
+
+    private String getFormattedTimeStamp(){
+        return dateFormat.format(Calendar.getInstance().getTime());
+    }
+
 }

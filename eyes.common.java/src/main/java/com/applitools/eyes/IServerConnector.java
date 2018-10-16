@@ -5,12 +5,16 @@ import java.net.URI;
 /**
  * Defines the interface which should be implemented by a ServerConnector.
  */
-public interface ServerConnector {
+public interface IServerConnector {
     void setApiKey(String apiKey);
     String getApiKey();
 
     void setServerUrl(URI serverUrl);
     URI getServerUrl();
+
+    void setLogger(Logger logger);
+    Logger getLogger();
+
 
     void setProxy(ProxySettings proxySettings);
     ProxySettings getProxy();
@@ -62,4 +66,15 @@ public interface ServerConnector {
      */
     MatchResult matchWindow(RunningSession runningSession,
                             MatchWindowData matchData);
+
+    /**
+     * Downloads string from a given Url
+     *
+     * @param uri The URI from which the IServerConnector will download the string
+     * @return the string that was return from the request to the Url
+     */
+    void downloadString(URI uri, IDownloadListener listener);
+
+
+    String postDomSnapshot(String domJson);
 }

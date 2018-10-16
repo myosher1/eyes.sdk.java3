@@ -17,7 +17,7 @@ public class IgnoreRegionByElement implements GetRegion {
     }
 
     @Override
-    public List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot) {
+    public List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot, boolean adjustLocation) {
         Point locationAsPoint = element.getLocation();
         Dimension size = element.getSize();
 

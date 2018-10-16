@@ -6,9 +6,10 @@ package com.applitools.eyes.selenium.frames;
 import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import com.applitools.utils.ArgumentGuard;
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 /**
@@ -21,47 +22,46 @@ public final class Frame {
     // index or by passing the relevant web element.
     private final WebElement reference;
     private final Location location;
-    private final RectangleSize size;
+    private final RectangleSize outerSize;
     private final RectangleSize innerSize;
     private final Location originalLocation;
-    private final String originalOverflow;
     private final JavascriptExecutor jsExecutor;
-    private final String rootElementForHidingScrollbars;
+    private final Logger logger;
+
+    private WebElement scrollRootElement;
+    private String originalOverflow;
 
     /**
      * @param logger           A Logger instance.
      * @param reference        The web element for the frame, used as a reference to switch into the frame.
      * @param location         The location of the frame within the current frame.
-     * @param size             The frame element size (i.e., the size of the frame on the screen, not the internal document size).
-     * @param innerSize        The frame element inner size (i.e., the size of the frame actual size, without borders).
+     * @param outerSize        The frame element outerSize (i.e., the outerSize of the frame on the screen, not the internal document outerSize).
+     * @param innerSize        The frame element inner outerSize (i.e., the outerSize of the frame actual outerSize, without borders).
      * @param originalLocation The scroll location of the frame.
      * @param jsExecutor       The Javascript Executor to use. Usually that will be the WebDriver.
      */
     public Frame(Logger logger, WebElement reference,
-                 Location location, RectangleSize size, RectangleSize innerSize,
-                 Location originalLocation, String originalOverflow,
-                 JavascriptExecutor jsExecutor) {
+                 Location location, RectangleSize outerSize, RectangleSize innerSize,
+                 Location originalLocation, JavascriptExecutor jsExecutor) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(reference, "reference");
         ArgumentGuard.notNull(location, "location");
-        ArgumentGuard.notNull(size, "size");
+        ArgumentGuard.notNull(outerSize, "outerSize");
         ArgumentGuard.notNull(innerSize, "innerSize");
         ArgumentGuard.notNull(originalLocation, "originalLocation");
-        ArgumentGuard.notNull(originalOverflow, "originalOverflow");
         ArgumentGuard.notNull(jsExecutor, "jsExecutor");
 
         logger.verbose(String.format(
                 "Frame(logger, reference, %s, %s, %s, %s)",
-                location, size, innerSize, originalLocation));
+                location, outerSize, innerSize, originalLocation));
 
+        this.logger = logger;
         this.reference = reference;
         this.location = location;
-        this.size = size;
+        this.outerSize = outerSize;
         this.innerSize = innerSize;
         this.originalLocation = originalLocation;
-        this.originalOverflow = originalOverflow;
         this.jsExecutor = jsExecutor;
-        this.rootElementForHidingScrollbars = EyesSeleniumUtils.selectRootElement(jsExecutor);
     }
 
     public WebElement getReference() {
@@ -72,8 +72,8 @@ public final class Frame {
         return location;
     }
 
-    public RectangleSize getSize() {
-        return size;
+    public RectangleSize getOuterSize() {
+        return outerSize;
     }
 
     public RectangleSize getInnerSize() {
@@ -84,15 +84,26 @@ public final class Frame {
         return originalLocation;
     }
 
-    public String getOriginalOverflow() {
-        return originalOverflow;
+    public WebElement getScrollRootElement() {
+        return scrollRootElement;
     }
 
-    public void returnToOriginalOverflow() {
-        EyesSeleniumUtils.setOverflow(this.jsExecutor, originalOverflow, rootElementForHidingScrollbars);
+    public void hideScrollbars(WebDriver driver) {
+        if (scrollRootElement == null) {
+            logger.verbose("no scroll root element. selecting default.");
+            scrollRootElement = driver.findElement(By.tagName("html"));
+        }
+        logger.verbose("hiding scrollbars of element: " + scrollRootElement);
+        originalOverflow = (String) jsExecutor.executeScript("var origOF = arguments[0].style.overflow; arguments[0].style.overflow='hidden'; return origOF;", scrollRootElement);
     }
 
-    public void hideScrollbars() {
-        EyesSeleniumUtils.hideScrollbars(this.jsExecutor, 200, rootElementForHidingScrollbars);
+    public void returnToOriginalOverflow(WebDriver driver) {
+        if (scrollRootElement == null) {
+            logger.verbose("no scroll root element. selecting default.");
+            scrollRootElement = driver.findElement(By.tagName("html"));
+        }
+        logger.verbose("returning overflow of element to its original value: " + scrollRootElement);
+        jsExecutor.executeScript("arguments[0].style.overflow='" + originalOverflow + "';", scrollRootElement);
     }
+
 }

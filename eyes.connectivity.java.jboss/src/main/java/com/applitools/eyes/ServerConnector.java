@@ -7,47 +7,58 @@ import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.client.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * Provides an API for communication with the Applitools agent
  */
-public class JBossServerConnector extends RestClient
-        implements ServerConnector {
+public class ServerConnector extends RestClient
+        implements IServerConnector {
 
     private static final int TIMEOUT = 1000 * 60 * 5; // 5 Minutes
     private static final String API_PATH = "/api/sessions/running";
     private static final String DEFAULT_CHARSET_NAME = "UTF-8";
 
-    protected String sdkName;
     private String apiKey = null;
 
     /***
-     *
      * @param logger A logger instance.
-     * @param sdkName An identifier for the current agent. Can be any string.
      * @param serverUrl The URI of the Eyes server.
      */
-    public JBossServerConnector(Logger logger, String sdkName,
-                                URI serverUrl) {
+    public ServerConnector(Logger logger, URI serverUrl) {
         super(logger, serverUrl, TIMEOUT);
 
-        this.sdkName = sdkName;
         endPoint = endPoint.path(API_PATH);
+    }
 
+    /***
+     * @param logger A logger instance.
+     */
+    public ServerConnector(Logger logger) {
+        this(logger, GeneralUtils.getDefaultServerUrl());
+    }
+
+    /***
+     * @param serverUrl The URI of the Eyes server.
+     */
+    public ServerConnector(URI serverUrl) {
+        this(null, serverUrl);
+    }
+
+    public ServerConnector(){
+        this((Logger)null);
     }
 
     /**
@@ -125,6 +136,8 @@ public class JBossServerConnector extends RestClient
             throws EyesException {
 
         ArgumentGuard.notNull(sessionStartInfo, "sessionStartInfo");
+
+        logger.verbose("Using JBoss for REST API calls.");
 
         String postData;
         Response response;
@@ -221,6 +234,22 @@ public class JBossServerConnector extends RestClient
         return result;
     }
 
+    @Override
+    public void deleteSession(TestResults testResults) {
+        ArgumentGuard.notNull(testResults, "testResults");
+
+        Invocation.Builder invocationBuilder = restClient.target(serverUrl)
+                .path("/api/sessions/batches/")
+                .path(testResults.getBatchId())
+                .path("/")
+                .path(testResults.getId())
+                .queryParam("apiKey", getApiKey())
+                .queryParam("AccessToken", testResults.getSecretToken())
+                .request(MediaType.APPLICATION_JSON);
+
+        Response response = invocationBuilder.delete();
+    }
+
     /**
      * Matches the current window (held by the WebDriver) to the expected
      * window.
@@ -309,5 +338,47 @@ public class JBossServerConnector extends RestClient
 
         return result;
 
+    }
+
+    @Override
+    public void downloadString(URI uri, final IDownloadListener listener) {
+
+        Client client = ClientBuilder.newBuilder().build();
+
+        WebTarget target = client.target(uri.toString());
+
+        Invocation.Builder request = target.request(MediaType.WILDCARD);
+
+        request.async().get(new InvocationCallback<String>() {
+            @Override
+            public void completed(String response) {
+                listener.onDownloadComplete(response);
+            }
+
+            @Override
+            public void failed(Throwable throwable) {
+                listener.onDownloadFailed();
+            }
+        });
+
+
+    }
+
+    @Override
+    public String postDomSnapshot(String domJson) {
+
+        WebTarget target = restClient.target(serverUrl).path(("api/sessions/running/data")).queryParam("apiKey", getApiKey());
+
+        byte[] resultStream = GeneralUtils.getGzipByteArrayOutputStream(domJson);
+
+        Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
+
+        Response response = request.post(Entity.entity(resultStream,
+
+                MediaType.APPLICATION_OCTET_STREAM));
+
+        String entity = response.readEntity(String.class);
+
+        return entity;
     }
 }

@@ -4,10 +4,11 @@
 package com.applitools.eyes.images;
 
 import com.applitools.eyes.*;
+import com.applitools.eyes.events.ValidationInfo;
+import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.CheckSettings;
 import com.applitools.eyes.fluent.ICheckSettings;
-import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.positioning.NullRegionProvider;
 import com.applitools.eyes.positioning.RegionProvider;
 import com.applitools.eyes.triggers.MouseAction;
@@ -15,30 +16,12 @@ import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
-import java.net.URI;
 
 public class Eyes extends EyesBase {
 
     private String title;
     private EyesImagesScreenshot screenshot;
     private String inferred;
-
-    /**
-     * Creates a new (possibly disabled) Eyes instance that interacts
-     * with the Eyes Server at the specified url.
-     * @param serverUrl The Eyes server URL.
-     */
-    public Eyes(URI serverUrl) {
-        super(serverUrl);
-    }
-
-    /**
-     * Creates a new Eyes instance that interacts with the Eyes Server at the
-     * specified url.
-     */
-    public Eyes() {
-        this(getDefaultServerUrl());
-    }
 
     /**
      * Get the base agent id.
@@ -82,27 +65,26 @@ public class Eyes extends EyesBase {
         return checkImage_(NullRegionProvider.INSTANCE, image, name, false, checkSettings);
     }
 
-    @Deprecated
     /**
      * Superseded by {@link #checkImage(java.awt.image.BufferedImage)}.
      */
+    @Deprecated
     public boolean checkWindow(BufferedImage image) {
         return checkImage(image);
     }
 
-    @Deprecated
-    /**
-     * Superseded by {@link #checkImage(java.awt.image.BufferedImage, String)}.
+    /** Superseded by {@link #checkImage(java.awt.image.BufferedImage, String)}.
      */
+    @Deprecated
     public boolean checkWindow(BufferedImage image, String tag) {
         return checkImage(image, tag);
     }
 
-    @Deprecated
     /**
      * Superseded by {@link #checkImage(java.awt.image.BufferedImage, String,
      * boolean)}.
      */
+    @Deprecated
     public boolean checkWindow(BufferedImage image, String tag,
                                boolean ignoreMismatch) {
         return checkImage(image, tag, ignoreMismatch);
@@ -371,7 +353,7 @@ public class Eyes extends EyesBase {
         }
 
         // Set the screenshot to be verified.
-        screenshot = new EyesImagesScreenshot(image);
+        screenshot = new EyesImagesScreenshot(logger, image);
 
         return checkImage_(regionProvider, tag, ignoreMismatch, checkSettings);
     }
@@ -392,8 +374,15 @@ public class Eyes extends EyesBase {
         // Set the title to be linked to the screenshot.
         title = (tag != null) ? tag : "";
 
-        MatchResult mr = checkWindowBase(regionProvider, tag, ignoreMismatch, checkSettings);
+        ValidationInfo validationInfo = this.fireValidationWillStartEvent(tag);
 
-        return mr.getAsExpected();
+        MatchResult result = checkWindowBase(regionProvider, tag, ignoreMismatch, checkSettings);
+
+        ValidationResult validationResult = new ValidationResult();
+        validationResult.setAsExpected(result.getAsExpected());
+
+        getSessionEventHandlers().validationEnded(getAUTSessionId(), validationInfo.getValidationId(), validationResult);
+
+        return result.getAsExpected();
     }
 }

@@ -32,7 +32,7 @@ public class RestClient {
     private ProxySettings proxySettings;
     private int timeout; // seconds
 
-    protected final Logger logger;
+    protected Logger logger;
     protected Client restClient;
     protected URI serverUrl;
     protected WebTarget endPoint;
@@ -95,6 +95,15 @@ public class RestClient {
 
         restClient = buildRestClient(timeout, proxySettings);
         endPoint = restClient.target(serverUrl);
+    }
+
+    public void setLogger(Logger logger){
+        ArgumentGuard.notNull(logger, "logger");
+        this.logger = logger;
+    }
+
+    public Logger getLogger() {
+        return this.logger;
     }
 
     /**

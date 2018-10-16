@@ -123,10 +123,17 @@ public class Region {
     }
 
     /**
-     * @return The (top,left) position of the current region.
+     * @return The (left, top) position of the current region.
      */
     public Location getLocation() {
         return new Location(left, top);
+    }
+
+    /**
+     * @return The (-left, -top) position of the current region.
+     */
+    public Location getNegativeLocation() {
+        return new Location(-left, -top);
     }
 
     /**
@@ -136,7 +143,7 @@ public class Region {
      * @return A region with an offset location.
      */
     public Region offset(int dx, int dy) {
-        return new Region(getLocation().offset(dx, dy), getSize());
+        return new Region(getLocation().offset(dx, dy), getSize(), getCoordinatesType());
     }
 
     /**
@@ -146,7 +153,7 @@ public class Region {
      * @return A new region which is a scaled version of the current region.
      */
     public Region scale(double scaleRatio) {
-        return new Region(getLocation().scale(scaleRatio), getSize().scale(scaleRatio));
+        return new Region(getLocation().scale(scaleRatio), getSize().scale(scaleRatio), getCoordinatesType());
     }
 
     /**
@@ -225,6 +232,8 @@ public class Region {
         int bottom = containerRegion.top + containerRegion.height - 1;
         int right = containerRegion.left + containerRegion.width - 1;
 
+        CoordinatesType currentType = containerRegion.getCoordinatesType();
+
         while (currentTop <= bottom) {
 
             if (currentTop + subRegionHeight > bottom) {
@@ -238,7 +247,7 @@ public class Region {
                 }
 
                 subRegions.add(new Region(currentLeft, currentTop,
-                        subRegionWidth, subRegionHeight));
+                        subRegionWidth, subRegionHeight, currentType));
 
                 currentLeft += subRegionWidth;
             }
@@ -270,6 +279,8 @@ public class Region {
         int bottom = containerRegion.top + containerRegion.height;
         int right = containerRegion.left + containerRegion.width;
 
+        CoordinatesType currentType = containerRegion.getCoordinatesType();
+
         while (currentTop < bottom) {
 
             int currentBottom = currentTop + maxSubRegionSize.getHeight();
@@ -288,7 +299,7 @@ public class Region {
                 int currentWidth = currentRight - currentLeft;
 
                 subRegions.add(new Region(currentLeft, currentTop,
-                        currentWidth, currentHeight));
+                        currentWidth, currentHeight, currentType));
 
                 currentLeft += maxSubRegionSize.getWidth();
             }

@@ -4,6 +4,8 @@ import com.applitools.eyes.EyesException;
 import com.applitools.eyes.Logger;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,6 +13,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * General purpose utilities.
@@ -227,5 +230,31 @@ public class GeneralUtils {
 
     public static void initLogger(Logger logger) {
         GeneralUtils.logger = logger;
+    }
+
+    public static URI getDefaultServerUrl() {
+        try {
+            return new URI("https://eyesapi.applitools.com");
+        } catch (URISyntaxException ex) {
+            throw new EyesException(ex.getMessage(), ex);
+        }
+    }
+
+    /**
+     *
+     * @param domJson JSON as string to be gzipped
+     * @return byte[] of the gzipped string
+     */
+    public static byte[] getGzipByteArrayOutputStream(String domJson) {
+        ByteArrayOutputStream resultStream = new ByteArrayOutputStream();
+
+        try {
+            GZIPOutputStream gzip = new GZIPOutputStream(resultStream);
+            gzip.write(domJson.getBytes());
+            gzip.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return resultStream.toByteArray();
     }
 }

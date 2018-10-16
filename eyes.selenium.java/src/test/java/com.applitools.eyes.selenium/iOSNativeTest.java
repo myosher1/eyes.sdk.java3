@@ -1,6 +1,7 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.LogHandler;
+import com.applitools.eyes.ServerConnector;
 import com.applitools.eyes.StdoutLogHandler;
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.ios.IOSDriver;
@@ -32,6 +33,7 @@ public class iOSNativeTest {
 
         // Initialize the eyes SDK and set your private API key.
         Eyes eyes = new Eyes();
+        eyes.setServerConnector(new ServerConnector());
         LogHandler logHandler = new StdoutLogHandler(true);
         eyes.setLogHandler(logHandler);
         eyes.setSaveDebugScreenshots(true);

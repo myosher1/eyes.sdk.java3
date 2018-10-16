@@ -5,6 +5,7 @@ package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
+import com.applitools.eyes.selenium.wrappers.EyesRemoteWebElement;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
@@ -23,30 +24,31 @@ import java.util.Map;
  * We named this class EyesSeleniumUtils because there's a SeleniumUtils
  * class, and it caused collision.
  */
+@SuppressWarnings("WeakerAccess")
 public class EyesSeleniumUtils {
 
     private static final String NATIVE_APP = "NATIVE_APP";
 
     // See Applitools WiKi for explanation.
     private static final String JS_GET_VIEWPORT_SIZE =
-                  "var height = undefined;"
-                + "var width = undefined;"
-                + "  if (window.innerHeight) {height = window.innerHeight;}"
-                + "  else if (document.documentElement "
-                + "&& document.documentElement.clientHeight) "
-                + "{height = document.documentElement.clientHeight;}"
-                + "  else { var b = document.getElementsByTagName('body')[0]; "
-                + "if (b.clientHeight) {height = b.clientHeight;}"
-                + "};"
-                + " if (window.innerWidth) {width = window.innerWidth;}"
-                + " else if (document.documentElement "
-                + "&& document.documentElement.clientWidth) "
-                + "{width = document.documentElement.clientWidth;}"
-                +" else { var b = document.getElementsByTagName('body')[0]; "
-                + "if (b.clientWidth) {"
-                + "width = b.clientWidth;}"
-                + "};"
-                + "return [width, height];";
+            "var height = undefined;"
+                    + "var width = undefined;"
+                    + "  if (window.innerHeight) {height = window.innerHeight;}"
+                    + "  else if (document.documentElement "
+                    + "&& document.documentElement.clientHeight) "
+                    + "{height = document.documentElement.clientHeight;}"
+                    + "  else { var b = document.getElementsByTagName('body')[0]; "
+                    + "if (b.clientHeight) {height = b.clientHeight;}"
+                    + "};"
+                    + " if (window.innerWidth) {width = window.innerWidth;}"
+                    + " else if (document.documentElement "
+                    + "&& document.documentElement.clientWidth) "
+                    + "{width = document.documentElement.clientWidth;}"
+                    + " else { var b = document.getElementsByTagName('body')[0]; "
+                    + "if (b.clientWidth) {"
+                    + "width = b.clientWidth;}"
+                    + "};"
+                    + "return [width, height];";
 
     private static final String JS_GET_CURRENT_SCROLL_POSITION =
             "var doc = document.documentElement; " +
@@ -75,9 +77,15 @@ public class EyesSeleniumUtils {
                     "var totalHeight = Math.max(maxDocElementHeight, maxBodyHeight); " +
                     "return [totalWidth, totalHeight];";
 
-    private static final String[] JS_TRANSFORM_KEYS = { "transform",
+    private static final String[] JS_TRANSFORM_KEYS = {"transform",
             "-webkit-transform"
     };
+
+
+    private static final String JS_GET_ENTIRE_PAGE_SIZE =
+            "var width = Math.max(arguments[0].clientWidth, arguments[0].scrollWidth);" +
+                    "var height = Math.max(arguments[0].clientHeight, arguments[0].scrollHeight);" +
+                    "return [width, height];";
 
     /**
      * Extracts the location relative to the entire page from the coordinates
@@ -112,7 +120,6 @@ public class EyesSeleniumUtils {
     /**
      * For EyesWebDriver instances, returns the underlying WebDriver. For all other types - return the driver received
      * as parameter.
-     *
      * @param driver The driver instance for which to get the underlying WebDriver.
      * @return The underlying WebDriver
      */
@@ -125,7 +132,6 @@ public class EyesSeleniumUtils {
     }
 
     /**
-     *
      * @param driver The driver for which to check if it represents a mobile
      *               device.
      * @return {@code true} if the platform running the test is a mobile
@@ -162,8 +168,7 @@ public class EyesSeleniumUtils {
             } catch (Exception e) {
                 throw new EyesDriverOperationException(
                         "Failed to get orientation!", e);
-            }
-            finally {
+            } finally {
                 if (originalContext != null) {
                     appiumDriver.context(originalContext);
                 }
@@ -173,7 +178,8 @@ public class EyesSeleniumUtils {
         return false;
     }
 
-    public static String selectRootElement(JavascriptExecutor executor){
+    @SuppressWarnings("unused")
+    public static String selectRootElement(JavascriptExecutor executor) {
         // FIXME: 16/06/2018 HOTFIX for returning using documentElement as default for "hideScrollbars"
         //  (selection logic does not work).
 
@@ -183,11 +189,11 @@ public class EyesSeleniumUtils {
 //                "document.body.style.overflow = 'hidden'; " +
 //                "var docElemScrollHeightAfter = document.documentElement.scrollHeight; " +
 //                "if (docElemScrollHeightBefore != docElemScrollHeightAfter) " +
-//                "var retval = 'documentElement'; " +
+//                "var retVal = 'documentElement'; " +
 //                "else " +
-//                "var retval = 'body'; " +
+//                "var retVal = 'body'; " +
 //                "document.body.style.overflow = originalBodyOverflow; " +
-//                "return retval;";
+//                "return retVal;";
 //
 //        return (String)executor.executeScript(script);
         return "documentElement";
@@ -196,64 +202,39 @@ public class EyesSeleniumUtils {
     /**
      * Sets the overflow of the current context's body.
      * @param executor The executor to use for setting the overflow.
-     * @param value The overflow value to set.
+     * @param value    The overflow value to set.
      * @return The previous overflow value (could be {@code null} if undefined).
      */
     public static String setOverflow(JavascriptExecutor executor,
                                      String value,
-                                     String rootElement) {
-        if (rootElement == null) {
-            rootElement = "body";
-        }
+                                     WebElement rootElement) {
+        ArgumentGuard.notNull(executor, "executor");
+        ArgumentGuard.notNull(rootElement, "rootElement");
+
         String script = String.format(
-                "var origOverflow = document.%s.style.overflow; " +
-                        "document.%s.style.overflow = '%s'; " +
-                        "return origOverflow;",
-                rootElement, rootElement, value == null ? "" : value);
+                "var origOF = arguments[0].style.overflow; " +
+                        "arguments[0].style.overflow = '%s'; " +
+                        "return origOF;", value);
 
         try {
-            return (String) executor.executeScript(script);
+            String result = (String) executor.executeScript(script, rootElement);
+            GeneralUtils.sleep(200);
+            return result;
         } catch (WebDriverException e) {
             throw new EyesDriverOperationException("Failed to set overflow", e);
         }
     }
 
     /**
-     * Hides the scrollbars of the current context's document element.
-     *
-     * @param executor The executor to use for hiding the scrollbars.
-     * @param stabilizationTimeout The amount of time to wait for the "hide
-     *                             scrollbars" action to take effect
-     *                             (Milliseconds). Zero/negative values are ignored.
-     * @param rootElement The root element to change ('documentElement' or 'body').
-     * @return The previous value of the overflow property (could be
-     *          {@code null}).
-     */
-    public static String hideScrollbars(JavascriptExecutor executor,
-                                        int stabilizationTimeout,
-                                        String rootElement) {
-        String originalOverflow = setOverflow(executor, "hidden", rootElement);
-        if (stabilizationTimeout > 0) {
-            try {
-                Thread.sleep(stabilizationTimeout);
-            } catch (InterruptedException e) {
-                // Nothing to do.
-            }
-        }
-        return originalOverflow;
-    }
-
-    /**
-     *
      * @param executor The executor to use.
      * @return The current scroll position of the current frame.
      */
     public static Location getCurrentScrollPosition(
             IEyesJsExecutor executor) {
         //noinspection unchecked
-        List<Number> positionAsList = (List<Number>)executor.executeScript(JS_GET_CURRENT_SCROLL_POSITION);
-        return new Location((int)Math.ceil(positionAsList.get(0).doubleValue()),
-                (int)Math.ceil(positionAsList.get(1).doubleValue()));
+        List<Number> positionAsList = (List<Number>) executor.executeScript(JS_GET_CURRENT_SCROLL_POSITION);
+        return new Location((int) Math.ceil(positionAsList.get(0).doubleValue()),
+                (int) Math.ceil(positionAsList.get(1).doubleValue()));
     }
 
     /**
@@ -268,17 +249,17 @@ public class EyesSeleniumUtils {
     }
 
     /**
-     *
      * @param executor The executor to use.
      * @return The size of the entire content.
      */
+    @SuppressWarnings("unchecked")
     public static RectangleSize getCurrentFrameContentEntireSize(
             IEyesJsExecutor executor) {
         RectangleSize result;
         try {
             //noinspection unchecked
             Object retVal = executor.executeScript(JS_GET_CONTENT_ENTIRE_SIZE);
-            List<Long> esAsList = (List<Long>)retVal;
+            List<Long> esAsList = (List<Long>) retVal;
             result = new RectangleSize(esAsList.get(0).intValue(),
                     esAsList.get(1).intValue());
         } catch (WebDriverException e) {
@@ -288,8 +269,25 @@ public class EyesSeleniumUtils {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
+    public static RectangleSize getEntireElementSize(IEyesJsExecutor executor, WebElement element) {
+        RectangleSize result;
+        try {
+            //noinspection unchecked
+            Object retVal = executor.executeScript(JS_GET_ENTIRE_PAGE_SIZE, element);
+            List<Long> esAsList = (List<Long>) retVal;
+            result = new RectangleSize(esAsList.get(0).intValue(),
+                    esAsList.get(1).intValue());
+        } catch (WebDriverException e) {
+            GeneralUtils.logExceptionStackTrace(e);
+            throw new EyesDriverOperationException(
+                    "Failed to extract entire size!");
+        }
+        return result;
+
+    }
+
     /**
-     *
      * @param executor The executor to use.
      * @return The viewport size.
      */
@@ -303,11 +301,10 @@ public class EyesSeleniumUtils {
     }
 
     /**
-     *
      * @param logger The logger to use.
      * @param driver The web driver to use.
      * @return The viewport size of the current context, or the display size
-     *          if the viewport size cannot be retrieved.
+     * if the viewport size cannot be retrieved.
      */
     public static RectangleSize getViewportSizeOrDisplaySize(Logger logger, WebDriver driver) {
         logger.verbose("getViewportSizeOrDisplaySize()");
@@ -344,9 +341,7 @@ public class EyesSeleniumUtils {
     public static boolean setBrowserSize(Logger logger, WebDriver driver,
                                          RectangleSize requiredSize) {
         final int SLEEP = 1000;
-        final int RETRIES = 3;
-
-        int retriesLeft = RETRIES;
+        int retriesLeft = 3;
         Dimension dRequiredSize = new Dimension(requiredSize.getWidth(), requiredSize.getHeight());
         Dimension dCurrentSize;
         RectangleSize currentSize;
@@ -363,9 +358,10 @@ public class EyesSeleniumUtils {
         return currentSize == requiredSize;
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     public static boolean setBrowserSizeByViewportSize(Logger logger, WebDriver driver,
-                                                    RectangleSize actualViewportSize,
-                                                    RectangleSize requiredViewportSize) {
+                                                       RectangleSize actualViewportSize,
+                                                       RectangleSize requiredViewportSize) {
         Dimension browserSize = driver.manage().window().getSize();
         logger.verbose("Current browser size: " + browserSize);
         RectangleSize requiredBrowserSize = new RectangleSize(
@@ -378,10 +374,9 @@ public class EyesSeleniumUtils {
     }
 
     /**
-     *
      * @param logger The logger to use.
      * @param driver The web driver to use.
-     * @param size The size to set as the viewport size.
+     * @param size   The size to set as the viewport size.
      */
     public static void setViewportSize(Logger logger, WebDriver driver, RectangleSize size) {
 
@@ -459,7 +454,7 @@ public class EyesSeleniumUtils {
                     currHeightChange += heightStep;
                 }
 
-                RectangleSize requiredBrowserSize = new RectangleSize(browserSize.getWidth()+ currWidthChange,
+                RectangleSize requiredBrowserSize = new RectangleSize(browserSize.getWidth() + currWidthChange,
                         browserSize.getHeight() + currHeightChange);
                 if (requiredBrowserSize.equals(lastRequiredBrowserSize)) {
                     logger.verbose("Browser size is as required but viewport size does not match!");
@@ -488,7 +483,6 @@ public class EyesSeleniumUtils {
     }
 
     /**
-     *
      * @param driver The driver to test.
      * @return {@code true} if the driver is an Android driver.
      * {@code false} otherwise.
@@ -499,7 +493,6 @@ public class EyesSeleniumUtils {
     }
 
     /**
-     *
      * @param driver The driver to test.
      * @return {@code true} if the driver is an iOS driver.
      * {@code false} otherwise.
@@ -510,7 +503,6 @@ public class EyesSeleniumUtils {
     }
 
     /**
-     *
      * @param driver The driver to get the platform version from.
      * @return The platform version or {@code null} if it is undefined.
      */
@@ -535,62 +527,56 @@ public class EyesSeleniumUtils {
     }
 
     /**
-     *
      * @param executor The executor to use.
      * @return The current documentElement transform values, according to
      * {@link #JS_TRANSFORM_KEYS}.
      */
     public static Map<String, String> getCurrentTransform(IEyesJsExecutor executor) {
 
-        String script = "return { ";
+        StringBuilder script = new StringBuilder("return { ");
 
-        for (String key: JS_TRANSFORM_KEYS) {
-            script += "'" + key + "'" +
-                    ": document.documentElement.style['" + key + "'],";
+        for (String key : JS_TRANSFORM_KEYS) {
+            script.append("'").append(key).append("'").append(": document.documentElement.style['").append(key).append("'],");
         }
 
         // Ending the list
-        script += " }";
+        script.append(" }");
 
         //noinspection unchecked
-        return (Map<String, String>) executor.executeScript(script);
+        return (Map<String, String>) executor.executeScript(script.toString());
 
     }
 
     /**
      * Sets transforms for document.documentElement according to the given
      * map of style keys and values.
-     *
-     * @param executor The executor to use.
+     * @param executor   The executor to use.
      * @param transforms The transforms to set. Keys are used as style keys,
      *                   and values are the values for those styles.
      */
     public static void setTransforms(IEyesJsExecutor executor,
-                                    Map<String, String> transforms) {
+                                     Map<String, String> transforms) {
 
-        String script = "";
+        StringBuilder script = new StringBuilder();
 
         for (Map.Entry<String, String> entry : transforms.entrySet()) {
-            script += "document.documentElement.style['" + entry.getKey() +
-                    "'] = '" + entry.getValue() + "';";
+            script.append("document.documentElement.style['").append(entry.getKey()).append("'] = '").append(entry.getValue()).append("';");
         }
 
-        executor.executeScript(script);
+        executor.executeScript(script.toString());
     }
 
     /**
      * Set the given transform to document.documentElement for all style keys
      * defined in {@link #JS_TRANSFORM_KEYS} .
-     *
-     * @param executor The executor to use.
+     * @param executor  The executor to use.
      * @param transform The transform value to set.
      */
     public static void setTransform(IEyesJsExecutor executor,
-                                      String transform) {
-        Map<String, String> transforms =
-                new HashMap<String, String>(JS_TRANSFORM_KEYS.length);
+                                    String transform) {
+        Map<String, String> transforms = new HashMap<>(JS_TRANSFORM_KEYS.length);
 
-        for (String key: JS_TRANSFORM_KEYS) {
+        for (String key : JS_TRANSFORM_KEYS) {
             transforms.put(key, transform);
         }
 
@@ -603,7 +589,7 @@ public class EyesSeleniumUtils {
      * @param position The position to translate to.
      */
     public static void translateTo(IEyesJsExecutor executor,
-                                     Location position) {
+                                   Location position) {
         setTransform(executor, String.format("translate(-%spx, -%spx)",
                 position.getX(), position.getY()));
     }
@@ -619,8 +605,11 @@ public class EyesSeleniumUtils {
         Region region = new Region(location.getX(), location.getY(), size.getWidth(), size.getHeight());
         WebElement parent;
 
-        try { parent = element.findElement(By.xpath("..")); }
-        catch (Exception e) { parent = null; }
+        try {
+            parent = element.findElement(By.xpath(".."));
+        } catch (Exception e) {
+            parent = null;
+        }
 
         try {
             while (parent != null && !region.isSizeEmpty()) {

@@ -69,12 +69,13 @@
 
     <modules>
         <module>eyes.common.java</module>
-        <!--<module>eyes.connectivity.java.jersey1x</module>-->
+        <module>eyes.connectivity.java.jersey1x</module>
         <module>eyes.connectivity.java.jersey2x</module>
-        <!--<module>eyes.connectivity.java.jboss</module>-->
+        <module>eyes.connectivity.java.jboss</module>
         <module>eyes.sdk.core</module>
         <module>eyes.images.java</module>
         <module>eyes.selenium.java</module>
+        <module>eyes.sdk.distribution</module>
     </modules>
 
     <distributionManagement>
@@ -95,26 +96,26 @@
             </activation>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts-on-verify</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                                <configuration>
-                                    <gpgArguments>
-                                        <arg>--pinentry-mode</arg>
-                                        <arg>loopback</arg>
-                                    </gpgArguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
+                    <!--<plugin>-->
+                        <!--<groupId>org.apache.maven.plugins</groupId>-->
+                        <!--<artifactId>maven-gpg-plugin</artifactId>-->
+                        <!--<version>1.6</version>-->
+                        <!--<executions>-->
+                            <!--<execution>-->
+                                <!--<id>sign-artifacts-on-verify</id>-->
+                                <!--<phase>verify</phase>-->
+                                <!--<goals>-->
+                                    <!--<goal>sign</goal>-->
+                                <!--</goals>-->
+                                <!--<configuration>-->
+                                    <!--<gpgArguments>-->
+                                        <!--<arg>&#45;&#45;pinentry-mode</arg>-->
+                                        <!--<arg>loopback</arg>-->
+                                    <!--</gpgArguments>-->
+                                <!--</configuration>-->
+                            <!--</execution>-->
+                        <!--</executions>-->
+                    <!--</plugin>-->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
@@ -164,6 +165,16 @@
                             <serverId>ossrh</serverId>
                             <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                             <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/assembly/bin.xml</descriptor>
+                            </descriptors>
                         </configuration>
                     </plugin>
                 </plugins>

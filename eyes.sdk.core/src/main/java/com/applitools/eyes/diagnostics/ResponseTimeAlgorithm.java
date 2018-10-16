@@ -69,7 +69,8 @@ public class ResponseTimeAlgorithm {
                 updatedAppOutput,
                 currentMwd.getTag(),
                 currentMwd.getIgnoreMismatch(),
-                currentMwd.getOptions());
+                currentMwd.getOptions(),
+                null);
 
         return new MatchWindowDataWithScreenshot(updatedMwd,
                 currentMwdws.getScreenshot());
@@ -88,7 +89,7 @@ public class ResponseTimeAlgorithm {
      * @param deadline The expected time by which the application should have been loaded. (Seconds)
      */
     public static void runNewProgressionSession(Logger logger,
-                                                ServerConnector serverConnector, RunningSession runningSession,
+                                                IServerConnector serverConnector, RunningSession runningSession,
                                                 AppOutputProvider appOutputProvider, RegionProvider regionProvider,
                                                 long startTime, int deadline) {
         logger.verbose("New progression session detected.");
@@ -125,7 +126,8 @@ public class ResponseTimeAlgorithm {
                 tag,
                 true,
                 new MatchWindowData.Options(tag, noUserInputs, false,
-                        false, false, false, null)
+                        false, false, false, null),
+                null
         );
         serverConnector.matchWindow(runningSession, mwd);
         logger.verbose("Finished saving.");
@@ -152,7 +154,7 @@ public class ResponseTimeAlgorithm {
      * @return The result of the initial search.
      */
     private static ResponseTimeInitialMatchSearchResult
-    responseTimeInitialMatchSearch (Logger logger, ServerConnector
+    responseTimeInitialMatchSearch (Logger logger, IServerConnector
             serverConnector, RunningSession runningSession, AppOutputProvider
             appOutputProvider, RegionProvider regionProvider, long startTime,
             int deadline, int timeout, long matchInterval,
@@ -188,8 +190,7 @@ public class ResponseTimeAlgorithm {
 
         // The shared object to pass the capture data between threads.
         BlockingInstanceContainer<MatchWindowDataWithScreenshot>
-                matchDataContainer =
-                new BlockingInstanceContainer<MatchWindowDataWithScreenshot>();
+                matchDataContainer = new BlockingInstanceContainer<>();
 
         logger.verbose("Starting matcher thread.");
         ResponseTimeMatchFinderTask matcherTask =
@@ -273,7 +274,8 @@ public class ResponseTimeAlgorithm {
                     tag,
                     true,
                     new MatchWindowData.Options(tag, noUserInputs, true,
-                            true, false, false, null)
+                            true, false, false, null),
+                    null
             );
             currentWindowDataWithScreenshot =
                     new MatchWindowDataWithScreenshot(currentWindowData,
@@ -367,7 +369,7 @@ public class ResponseTimeAlgorithm {
      * @return The index of earliest match found.
      */
     private static int binarySearchEarliestMatch(Logger logger,
-            ServerConnector serverConnector, RunningSession runningSession,
+            IServerConnector serverConnector, RunningSession runningSession,
             List<MatchWindowDataWithScreenshot> dataToSearch, int fromIndex,
             int toIndex, int earliestMatchIndex) {
 
@@ -438,7 +440,7 @@ public class ResponseTimeAlgorithm {
      * @return The index of earliest match found.
      */
     private static int findEarliestMatchIndex(Logger logger,
-            ServerConnector serverConnector, RunningSession runningSession,
+            IServerConnector serverConnector, RunningSession runningSession,
             List<MatchWindowDataWithScreenshot> collectedData,
             MatchWindowDataWithScreenshot theMatch,
             MatchWindowDataWithScreenshot lastNonMatch) {
@@ -554,7 +556,7 @@ public class ResponseTimeAlgorithm {
      * @param theMatchIndex The index of the match within {@code collectedData},
      *                      or {@code -1} if no match was found.
      */
-    private static void setProgressionImages(Logger logger, ServerConnector
+    private static void setProgressionImages(Logger logger, IServerConnector
         serverConnector, RunningSession runningSession,
         List<MatchWindowDataWithScreenshot> collectedData, int theMatchIndex) {
 
@@ -608,7 +610,8 @@ public class ResponseTimeAlgorithm {
                             true,
                             false,
                             null
-                    )
+                    ),
+                    null
             );
             serverConnector.matchWindow(runningSession, mwdToSend);
         }
@@ -633,7 +636,8 @@ public class ResponseTimeAlgorithm {
                         !forceMatch,
                         forceMatch,
                         null
-                )
+                ),
+                null
         );
         serverConnector.matchWindow(runningSession, mwdToSend);
         logger.verbose("Done setting images!");
@@ -659,7 +663,7 @@ public class ResponseTimeAlgorithm {
      * @return The earliest match found, or {@code null} if no match is found.
      */
     public static MatchWindowDataWithScreenshot
-    runProgressionSessionForExistingBaseline(Logger logger, ServerConnector
+    runProgressionSessionForExistingBaseline(Logger logger, IServerConnector
             serverConnector, RunningSession runningSession, AppOutputProvider
              appOutputProvider, RegionProvider regionProvider, long
             startTime, int deadline, int timeout, long matchInterval) {
@@ -675,8 +679,7 @@ public class ResponseTimeAlgorithm {
 
         logger.verbose("runProgressionSessionForExistingBaseline()");
 
-        List<MatchWindowDataWithScreenshot> collectedData =
-                new LinkedList<MatchWindowDataWithScreenshot>();
+        List<MatchWindowDataWithScreenshot> collectedData = new LinkedList<>();
 
         // Run initial progression search for a match.
         ResponseTimeInitialMatchSearchResult initialSearchResult =

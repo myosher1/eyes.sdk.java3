@@ -8,6 +8,8 @@ public class FrameLocator implements ISeleniumFrameCheckTarget{
     private String frameNameOrId;
     private Integer frameIndex;
     private WebElement frameReference;
+    private By scrollRootSelector;
+    private WebElement scrollRootElement;
 
     @Override
     public Integer getFrameIndex() {
@@ -43,5 +45,23 @@ public class FrameLocator implements ISeleniumFrameCheckTarget{
 
     public void setFrameReference(WebElement frameReference){
         this.frameReference = frameReference;
+    }
+
+    public void setScrollRootElement(WebElement scrollRootElement) {
+        this.scrollRootElement = scrollRootElement;
+    }
+
+    public void setScrollRootSelector(By scrollRootSelector) {
+        this.scrollRootSelector = scrollRootSelector;
+    }
+
+    @Override
+    public WebElement getScrollRootElement() {
+        return scrollRootElement;
+    }
+
+    @Override
+    public By getScrollRootSelector() {
+        return scrollRootSelector;
     }
 }

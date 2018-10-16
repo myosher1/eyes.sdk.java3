@@ -44,7 +44,7 @@ public class TestResults {
     private SessionUrls appUrls;
     private SessionUrls apiUrls;
     private StepInfo[] stepsInfo;
-    private ServerConnector serverConnector;
+    private IServerConnector serverConnector;
 
     public StepInfo[] getStepsInfo() {
         return stepsInfo;
@@ -401,7 +401,7 @@ public class TestResults {
         this.status = status;
     }
 
-    void setServerConnector(ServerConnector serverConnector)
+    void setServerConnector(IServerConnector serverConnector)
     {
         this.serverConnector = serverConnector;
     }

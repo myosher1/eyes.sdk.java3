@@ -56,37 +56,30 @@ public class MatchWindowData {
             this.imageMatchSettings = imageMatchSettings;
         }
 
-        @SuppressWarnings("unused")
         public String getName() {
             return name;
         }
 
-        @SuppressWarnings("unused")
         public Trigger[] getUserInputs() {
             return userInputs;
         }
 
-        @SuppressWarnings("unused")
         public boolean getIgnoreMismatch() {
             return ignoreMismatch;
         }
 
-        @SuppressWarnings("unused")
         public boolean getIgnoreMatch() {
             return ignoreMatch;
         }
 
-        @SuppressWarnings("unused")
         public boolean getForceMismatch() {
             return forceMismatch;
         }
 
-        @SuppressWarnings("unused")
         public boolean getForceMatch() {
             return forceMatch;
         }
 
-        @SuppressWarnings("unused")
         public ImageMatchSettings getImageMatchSettings() { return imageMatchSettings; }
     }
 
@@ -97,6 +90,7 @@ public class MatchWindowData {
     private String tag;
     private boolean ignoreMismatch;
     private Options options;
+    private final Object agentSetup;
 
     /**
      * @param userInputs     A list of triggers between the previous matchWindow
@@ -107,7 +101,7 @@ public class MatchWindowData {
      */
     public MatchWindowData(Trigger[] userInputs, AppOutput appOutput,
                            String tag, boolean ignoreMismatch,
-                           Options options) {
+                           Options options, Object agentSetup) {
 
         ArgumentGuard.notNull(userInputs, "userInputs");
 
@@ -116,29 +110,30 @@ public class MatchWindowData {
         this.tag = tag;
         this.ignoreMismatch = ignoreMismatch;
         this.options = options;
+        this.agentSetup = agentSetup;
     }
 
     public AppOutput getAppOutput() {
         return appOutput;
     }
 
-    @SuppressWarnings("unused")
     public Trigger[] getUserInputs() {
         return userInputs;
     }
 
-    @SuppressWarnings("unused")
     public String getTag() {
         return tag;
     }
 
-    @SuppressWarnings("unused")
     public Options getOptions() {
         return options;
     }
 
-    @SuppressWarnings("unused")
     public boolean getIgnoreMismatch() {
         return ignoreMismatch;
+    }
+
+    public Object getAgentSetup() {
+        return agentSetup;
     }
 }

@@ -1,6 +1,8 @@
 package com.applitools.eyes.selenium.wrappers;
 
 import com.applitools.eyes.*;
+import com.applitools.eyes.positioning.PositionProvider;
+import com.applitools.eyes.selenium.SizeAndBorders;
 import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.utils.ArgumentGuard;
 import com.google.common.collect.ImmutableMap;
@@ -13,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class EyesRemoteWebElement extends RemoteWebElement {
     private final Logger logger;
     private final EyesWebDriver eyesDriver;
@@ -21,15 +24,15 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     private final String JS_GET_COMPUTED_STYLE_FORMATTED_STR =
             "var elem = arguments[0]; " +
-            "var styleProp = '%s'; " +
-            "if (window.getComputedStyle) { " +
-                "return window.getComputedStyle(elem, null)" +
-                ".getPropertyValue(styleProp);" +
-            "} else if (elem.currentStyle) { " +
-                "return elem.currentStyle[styleProp];" +
-            "} else { " +
-                "return null;" +
-            "}";
+                    "var styleProp = '%s'; " +
+                    "if (window.getComputedStyle) { " +
+                    "return window.getComputedStyle(elem, null)" +
+                    ".getPropertyValue(styleProp);" +
+                    "} else if (elem.currentStyle) { " +
+                    "return elem.currentStyle[styleProp];" +
+                    "} else { " +
+                    "return null;" +
+                    "}";
 
     private final String JS_GET_SCROLL_LEFT =
             "return arguments[0].scrollLeft;";
@@ -45,7 +48,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     private final String JS_SCROLL_TO_FORMATTED_STR =
             "arguments[0].scrollLeft = %d;" +
-            "arguments[0].scrollTop = %d;";
+                    "arguments[0].scrollTop = %d;";
 
     private final String JS_GET_OVERFLOW =
             "return arguments[0].style.overflow;";
@@ -55,6 +58,37 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     private final String JS_GET_CLIENT_WIDTH = "return arguments[0].clientWidth;";
     private final String JS_GET_CLIENT_HEIGHT = "return arguments[0].clientHeight;";
+
+    private final String JS_GET_CLIENT_SIZE = "return [arguments[0].clientWidth, arguments[0].clientHeight];";
+
+    private final String JS_GET_BORDER_WIDTHS_ARR =
+            "var retVal = retVal || [];" +
+                    "if (window.getComputedStyle) { " +
+                    "var computedStyle = window.getComputedStyle(elem, null);" +
+                    "retVal.push(computedStyle.getPropertyValue('border-left-width'));" +
+                    "retVal.push(computedStyle.getPropertyValue('border-top-width'));" +
+                    "retVal.push(computedStyle.getPropertyValue('border-right-width')); " +
+                    "retVal.push(computedStyle.getPropertyValue('border-bottom-width'));" +
+                    "} else if (elem.currentStyle) { " +
+                    "retVal.push(elem.currentStyle['border-left-width']);" +
+                    "retVal.push(elem.currentStyle['border-top-width']);" +
+                    "retVal.push(elem.currentStyle['border-right-width']);" +
+                    "retVal.push(elem.currentStyle['border-bottom-width']);" +
+                    "} else { " +
+                    "retVal.push(0,0,0,0);" +
+                    "}";
+
+    @SuppressWarnings("unused")
+    private final String JS_GET_BORDER_WIDTHS =
+            JS_GET_BORDER_WIDTHS_ARR + "return retVal;";
+
+    private final String JS_GET_SIZE_AND_BORDER_WIDTHS =
+            "var elem = arguments[0]; " +
+                    "var retVal = [arguments[0].clientWidth, arguments[0].clientHeight]; " +
+                    JS_GET_BORDER_WIDTHS_ARR +
+                    "return retVal;";
+
+    private PositionProvider positionProvider;
 
     public EyesRemoteWebElement(Logger logger, EyesWebDriver eyesDriver, WebElement webElement) {
         super();
@@ -67,7 +101,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
         this.eyesDriver = eyesDriver;
 
         if (webElement instanceof RemoteWebElement) {
-            this.webElement = (RemoteWebElement)webElement;
+            this.webElement = (RemoteWebElement) webElement;
         } else {
             throw new EyesException("The input web element is not a RemoteWebElement.");
         }
@@ -283,7 +317,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     @Override
     public void sendKeys(CharSequence... keysToSend) {
-        for(CharSequence keys : keysToSend) {
+        for (CharSequence keys : keysToSend) {
             String text = String.valueOf(keys);
             eyesDriver.getEyes().addTextTrigger(this, text);
         }
@@ -334,8 +368,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     private WebElement wrapElement(WebElement elementToWrap) {
         WebElement resultElement = elementToWrap;
         if (elementToWrap instanceof RemoteWebElement) {
-            resultElement = new EyesRemoteWebElement(logger, eyesDriver,
-                    (RemoteWebElement) elementToWrap);
+            resultElement = new EyesRemoteWebElement(logger, eyesDriver, elementToWrap);
         }
         return resultElement;
     }
@@ -349,12 +382,12 @@ public class EyesRemoteWebElement extends RemoteWebElement {
                                                   elementsToWrap) {
         // This list will contain the found elements wrapped with our class.
         List<WebElement> wrappedElementsList =
-                new ArrayList<WebElement>(elementsToWrap.size());
+                new ArrayList<>(elementsToWrap.size());
 
         for (WebElement currentElement : elementsToWrap) {
             if (currentElement instanceof RemoteWebElement) {
                 wrappedElementsList.add(new EyesRemoteWebElement(logger,
-                        eyesDriver, (RemoteWebElement) currentElement));
+                        eyesDriver, currentElement));
             } else {
                 wrappedElementsList.add(currentElement);
             }
@@ -455,7 +488,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof  RemoteWebElement) && webElement.equals(obj);
+        return (obj instanceof RemoteWebElement) && webElement.equals(obj);
     }
 
     @Override
@@ -509,7 +542,15 @@ public class EyesRemoteWebElement extends RemoteWebElement {
         return new Dimension(width, height);
 
         // TODO: Use the command delegation instead. (once the bug is fixed).
-//        return webElement.getSize();
+//        return webElement.getOuterSize();
+    }
+
+    public RectangleSize getClientSize() {
+        Object retVal = eyesDriver.executeScript(JS_GET_CLIENT_SIZE, this);
+        @SuppressWarnings("unchecked") List<Float> esAsList = (List<Float>) retVal;
+        return new RectangleSize(
+                (int) Math.round(esAsList.get(0).doubleValue()),
+                (int) Math.round(esAsList.get(1).doubleValue()));
     }
 
     @Override
@@ -520,5 +561,25 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     @Override
     public String toString() {
         return "EyesRemoteWebElement:" + webElement.toString();
+    }
+
+    public PositionProvider getPositionProvider() {
+        return positionProvider;
+    }
+
+    public void setPositionProvider(PositionProvider positionProvider) {
+        this.positionProvider = positionProvider;
+    }
+
+    public SizeAndBorders getSizeAndBorders() {
+        Object retVal = eyesDriver.executeScript(JS_GET_SIZE_AND_BORDER_WIDTHS, this);
+        @SuppressWarnings("unchecked") List<Object> esAsList = (List<Object>) retVal;
+        return new SizeAndBorders(
+                ((Long) esAsList.get(0)).intValue(),
+                ((Long) esAsList.get(1)).intValue(),
+                Integer.parseInt(((String) esAsList.get(2)).replace("px", "")),
+                Integer.parseInt(((String) esAsList.get(3)).replace("px", "")),
+                Integer.parseInt(((String) esAsList.get(4)).replace("px", "")),
+                Integer.parseInt(((String) esAsList.get(5)).replace("px", "")));
     }
 }

@@ -26,7 +26,6 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
     private enum ScreenshotType {VIEWPORT, ENTIRE_FRAME}
 
-    private final Logger logger;
     private final EyesWebDriver driver;
     private final FrameChain frameChain;
     private final Location currentFrameScrollPosition;
@@ -40,7 +39,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     // The part of the frame window which is visible in the screenshot
     private final Region frameWindow;
 
-    // FIXME: 18/03/2018 Workaround specifcally for regions
+    // FIXME: 18/03/2018 Workaround specifically for regions
     private final Region regionWindow;
 
     private static Location getDefaultContentScrollPosition(Logger logger, FrameChain currentFrames, EyesWebDriver driver) {
@@ -104,15 +103,24 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
      */
     public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver, BufferedImage image,
                                    ScreenshotType screenshotType, Location frameLocationInScreenshot) {
-        super(image);
+        super(logger, image);
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(driver, "driver");
-        this.logger = logger;
         this.driver = driver;
 
         this.screenshotType = updateScreenshotType(screenshotType, image);
 
-        PositionProvider positionProvider = driver.getEyes().getPositionProvider();
+        PositionProvider positionProvider;
+        Eyes eyes = driver.getEyes();
+        PositionProvider currentFramePositionProvider =eyes.getCurrentFramePositionProvider();
+        if (currentFramePositionProvider  != null)
+        {
+            positionProvider = currentFramePositionProvider;
+        }
+        else
+        {
+            positionProvider = eyes.getPositionProvider();
+        }
 
         frameChain = driver.getFrameChain();
         RectangleSize frameSize = getFrameSize(positionProvider);
@@ -215,12 +223,10 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
      */
     public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver,
                                    BufferedImage image, Region screenshotRegion) {
-        super(image);
-        ArgumentGuard.notNull(driver, "logger");
+        super(logger, image);
         ArgumentGuard.notNull(driver, "driver");
         ArgumentGuard.notNull(screenshotRegion, "screenshotRegion");
 
-        this.logger = logger;
         this.driver = driver;
         frameChain = driver.getFrameChain();
         // The frame comprises the entire screenshot.
@@ -244,11 +250,9 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver,
                                    BufferedImage image,
                                    RectangleSize entireFrameSize) {
-        super(image);
-        ArgumentGuard.notNull(driver, "logger");
+        super(logger, image);
         ArgumentGuard.notNull(driver, "driver");
         ArgumentGuard.notNull(entireFrameSize, "entireFrameSize");
-        this.logger = logger;
         this.driver = driver;
         frameChain = driver.getFrameChain();
         // The frame comprises the entire screenshot.
@@ -474,8 +478,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
                 originalCoordinatesType, CoordinatesType.SCREENSHOT_AS_IS);
 
         switch (originalCoordinatesType) {
-            // If the request was context based, we intersect with the frame
-            // window.
+            // If the request was context based, we intersect with the frame window.
             case CONTEXT_AS_IS:
             case CONTEXT_RELATIVE:
                 intersectedRegion.intersect(frameWindow);

@@ -1,13 +1,14 @@
 package com.applitools.eyes;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
-
 /**
  * Encapsulates step information data received by the tests results.
  */
 public class StepInfo {
-    public static class AppUrls {
+
+    public class AppUrls {
+        private String step;
+        private String stepEditor;
+
         public String getStep() {
             return step;
         }
@@ -16,13 +17,21 @@ public class StepInfo {
             this.step = step;
         }
 
-        private String step;
+        public String getStepEditor() {
+            return stepEditor;
+        }
+
+        public void setStepEditor(String stepEditor) {
+            this.stepEditor = stepEditor;
+        }
     }
 
-    public static class ApiUrls {
+    public class ApiUrls {
         private String baselineImage;
         private String currentImage;
         private String diffImage;
+        private String checkpointImage;
+        private String checkpointImageThumbnail;
 
         public String getBaselineImage() {
             return baselineImage;
@@ -47,12 +56,31 @@ public class StepInfo {
         public void setDiffImage(String diffImage) {
             this.diffImage = diffImage;
         }
+
+        public String getCheckpointImage() {
+            return checkpointImage;
+        }
+
+        public void setCheckpointImage(String checkpointImage) {
+            this.checkpointImage = checkpointImage;
+        }
+
+        public String getCheckpointImageThumbnail() {
+            return checkpointImageThumbnail;
+        }
+
+        public void setCheckpointImageThumbnail(String checkpointImageThumbnail) {
+            this.checkpointImageThumbnail = checkpointImageThumbnail;
+        }
     }
 
     private String name;
     private boolean isDifferent;
     private boolean hasBaselineImage;
     private boolean hasCurrentImage;
+    private boolean hasCheckpointImage;
+    private ApiUrls apiUrls;
+    private AppUrls appUrls;
 
     public String getName() {
         return name;
@@ -62,17 +90,15 @@ public class StepInfo {
         this.name = name;
     }
 
-    @JsonGetter("different")
-    public boolean isDifferent() {
+    public boolean getIsDifferent() {
         return isDifferent;
     }
 
-    @JsonSetter("different")
-    public void setDifferent(boolean different) {
+    public void setIsDifferent(boolean different) {
         isDifferent = different;
     }
 
-    public boolean HasBaselineImage() {
+    public boolean getHasBaselineImage() {
         return hasBaselineImage;
     }
 
@@ -80,11 +106,35 @@ public class StepInfo {
         this.hasBaselineImage = hasBaselineImage;
     }
 
-    public boolean HasCurrentImage() {
+    public boolean getHasCurrentImage() {
         return hasCurrentImage;
     }
 
     public void setHasCurrentImage(boolean hasCurrentImage) {
         this.hasCurrentImage = hasCurrentImage;
+    }
+
+    public boolean isHasCheckpointImage() {
+        return hasCheckpointImage;
+    }
+
+    public void setHasCheckpointImage(boolean hasCheckpointImage) {
+        this.hasCheckpointImage = hasCheckpointImage;
+    }
+
+    public ApiUrls getApiUrls() {
+        return apiUrls;
+    }
+
+    public void setApiUrls(ApiUrls apiUrls) {
+        this.apiUrls = apiUrls;
+    }
+
+    public AppUrls getAppUrls() {
+        return appUrls;
+    }
+
+    public void setAppUrls(AppUrls appUrls) {
+        this.appUrls = appUrls;
     }
 }

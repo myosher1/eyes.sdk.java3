@@ -29,7 +29,7 @@ public class RestClient {
     private ProxySettings proxySettings;
     private int timeout; // seconds
 
-    protected final Logger logger;
+    protected Logger logger;
     protected Client restClient;
     protected URI serverUrl;
     protected WebResource endPoint;
@@ -38,8 +38,7 @@ public class RestClient {
     protected ObjectMapper jsonMapper;
 
     /**
-     *
-     * @param timeout Connect/Read timeout in milliseconds. 0 equals infinity.
+     * @param timeout       Connect/Read timeout in milliseconds. 0 equals infinity.
      * @param proxySettings (optional) Setting for communicating via proxy.
      */
     private static Client buildRestClient(int timeout,
@@ -75,6 +74,15 @@ public class RestClient {
         endPoint = restClient.resource(serverUrl);
     }
 
+    public void setLogger(Logger logger) {
+        ArgumentGuard.notNull(logger, "logger");
+        this.logger = logger;
+    }
+
+    public Logger getLogger() {
+        return this.logger;
+    }
+
     /**
      * Creates a rest client instance with timeout default of 5 minutes and
      * no proxy settings.
@@ -82,14 +90,14 @@ public class RestClient {
      * @param serverUrl The URI of the rest server.
      */
     public RestClient(Logger logger, URI serverUrl) {
-        this(logger, serverUrl, 1000*60*5);
+        this(logger, serverUrl, 1000 * 60 * 5);
     }
 
 
     /**
      * Sets the proxy settings to be used by the rest client.
      * @param proxySettings The proxy settings to be used by the rest client.
-     * If {@code null} then no proxy is set.
+     *                      If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void setProxyBase(ProxySettings proxySettings) {
@@ -102,7 +110,6 @@ public class RestClient {
     }
 
     /**
-     *
      * @return The current proxy settings used by the rest client,
      * or {@code null} if no proxy is set.
      */
@@ -113,7 +120,6 @@ public class RestClient {
 
     /**
      * Sets the connect and read timeouts for web requests.
-     *
      * @param timeout Connect/Read timeout in milliseconds. 0 equals infinity.
      */
     public void setTimeout(int timeout) {
@@ -125,7 +131,6 @@ public class RestClient {
     }
 
     /**
-     *
      * @return The timeout for web requests (in seconds).
      */
     public int getTimeout() {
@@ -146,7 +151,6 @@ public class RestClient {
     }
 
     /**
-     *
      * @return The URI of the eyes server.
      */
     protected URI getServerUrlBase() {
@@ -188,9 +192,8 @@ public class RestClient {
 
     /**
      * Builds an error message which includes the response data.
-     *
-     * @param errMsg The error message.
-     * @param statusCode The response status code.
+     * @param errMsg       The error message.
+     * @param statusCode   The response status code.
      * @param statusPhrase The response status phrase.
      * @param responseBody The response body.
      * @return An error message which includes the response data.
@@ -218,18 +221,17 @@ public class RestClient {
      * 1. Verify that we are able to read response data.
      * 2. verify that the status code is valid
      * 3. Parse the response data from JSON to the relevant type.
-     *
-     * @param response The response to parse.
+     * @param response             The response to parse.
      * @param validHttpStatusCodes The list of acceptable status codes.
-     * @param resultType The class object of the type of result this response
-     *                   should be parsed to.
-     * @param <T> The return value type.
+     * @param resultType           The class object of the type of result this response
+     *                             should be parsed to.
+     * @param <T>                  The return value type.
      * @return The parse response of the type given in {@code resultType}.
      * @throws EyesException For invalid status codes or if the response
-     * parsing failed.
+     *                       parsing failed.
      */
     protected <T> T parseResponseWithJsonData(ClientResponse response,
-        List<Integer> validHttpStatusCodes, Class<T> resultType)
+                                              List<Integer> validHttpStatusCodes, Class<T> resultType)
             throws EyesException {
         ArgumentGuard.notNull(response, "response");
         ArgumentGuard.notNull(validHttpStatusCodes, "validHttpStatusCodes");
@@ -237,8 +239,7 @@ public class RestClient {
 
         T resultObject;
         int statusCode = response.getStatus();
-        String statusPhrase =
-                response.getClientResponseStatus().getReasonPhrase();
+        String statusPhrase =  ClientResponse.Status.fromStatusCode(statusCode).getReasonPhrase();
         String data = response.getEntity(String.class);
         response.close();
         // Validate the status code.

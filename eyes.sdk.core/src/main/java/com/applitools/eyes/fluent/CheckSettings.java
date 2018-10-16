@@ -103,9 +103,33 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      * {@inheritDoc}
      */
     @Override
+    public ICheckSettings ignore(Region[] regions) {
+        CheckSettings clone = clone();
+        for (Region r : regions) {
+            clone.ignore_(r);
+        }
+        return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ICheckSettings layout(Region region, Region... regions) {
         CheckSettings clone = clone();
         clone.layout_(region);
+        for (Region r : regions) {
+            clone.layout_(r);
+        }
+        return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ICheckSettings layout(Region[] regions) {
+        CheckSettings clone = clone();
         for (Region r : regions) {
             clone.layout_(r);
         }
@@ -129,9 +153,33 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
      * {@inheritDoc}
      */
     @Override
+    public ICheckSettings strict(Region[] regions) {
+        CheckSettings clone = clone();
+        for (Region r : regions) {
+            clone.strict_(r);
+        }
+        return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public ICheckSettings content(Region region, Region... regions) {
         CheckSettings clone = clone();
         clone.content_(region);
+        for (Region r : regions) {
+            clone.content_(r);
+        }
+        return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ICheckSettings content(Region[] regions) {
+        CheckSettings clone = clone();
         for (Region r : regions) {
             clone.content_(r);
         }
