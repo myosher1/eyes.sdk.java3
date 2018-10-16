@@ -55,10 +55,10 @@ public abstract class TestSetup implements ITest {
         eyes = new Eyes();
         //eyes.setServerConnector(new ServerConnector());
 
-        RemoteSessionEventHandler remoteSessionEventHandler = new RemoteSessionEventHandler(
-                eyes.getLogger(), URI.create("http://localhost:3000/"), "MyAccessKey");
-        remoteSessionEventHandler.setThrowExceptions(false);
-        eyes.addSessionEventHandler(remoteSessionEventHandler);
+//        RemoteSessionEventHandler remoteSessionEventHandler = new RemoteSessionEventHandler(
+//                eyes.getLogger(), URI.create("http://localhost:3000/"), "MyAccessKey");
+//        remoteSessionEventHandler.setThrowExceptions(false);
+//        eyes.addSessionEventHandler(remoteSessionEventHandler);
 
         LogHandler logHandler = new StdoutLogHandler(false);
 
