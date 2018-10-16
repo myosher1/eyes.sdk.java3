@@ -147,7 +147,7 @@ public class EyesSeleniumUtils {
      * @return {@code true} if this is a mobile device and is in landscape
      * orientation. {@code false} otherwise.
      */
-    public static boolean isLandscapeOrientation(WebDriver driver) {
+    public static boolean isLandscapeOrientation(Logger logger, WebDriver driver) {
         // We can only find orientation for mobile devices.
         if (isMobileDevice(driver)) {
             AppiumDriver<?> appiumDriver = (AppiumDriver<?>) getUnderlyingDriver(driver);
@@ -163,12 +163,17 @@ public class EyesSeleniumUtils {
                 } else {
                     originalContext = null;
                 }
+            } catch (WebDriverException e) {
+                originalContext = null;
+            }
+            try {
                 ScreenOrientation orientation = appiumDriver.getOrientation();
                 return orientation == ScreenOrientation.LANDSCAPE;
             } catch (Exception e) {
-                throw new EyesDriverOperationException(
-                        "Failed to get orientation!", e);
-            } finally {
+                logger.log("WARNING: Couldn't get device orientation. Assuming Portrait.");
+                return false;
+            }
+            finally {
                 if (originalContext != null) {
                     appiumDriver.context(originalContext);
                 }
@@ -177,6 +182,7 @@ public class EyesSeleniumUtils {
 
         return false;
     }
+
 
     @SuppressWarnings("unused")
     public static String selectRootElement(JavascriptExecutor executor) {
@@ -323,7 +329,7 @@ public class EyesSeleniumUtils {
         int width = windowSize.getWidth();
         int height = windowSize.getHeight();
         try {
-            if (EyesSeleniumUtils.isLandscapeOrientation(driver) &&
+            if (EyesSeleniumUtils.isLandscapeOrientation(logger, driver) &&
                     height > width) {
                 //noinspection SuspiciousNameCombination
                 int height2 = width;
