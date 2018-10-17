@@ -32,6 +32,11 @@ public class Eyes extends EyesBase {
         return "eyes.images.java/3.36";
     }
 
+    @Override
+    public String tryCaptureDom() {
+        return null;
+    }
+
     /**
      * Starts a test.
      * @param appName    The name of the application under test.
