@@ -163,7 +163,14 @@ public class DomCapture {
 
             level++;
 
-            mDriver.switchTo().frame(frameIndex);
+            //Try switching - if frame index is valid
+            try {
+                mDriver.switchTo().frame(frameIndex);
+            } catch (Exception e) {
+                GeneralUtils.logExceptionStackTrace(e);
+                mDriver.switchTo().parentFrame();
+                return;
+            }
 
             String json = (String) ((JavascriptExecutor) mDriver).executeScript(CAPTURE_FRAME_SCRIPT, argsObj);
 
