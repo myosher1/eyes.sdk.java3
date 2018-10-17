@@ -13,9 +13,10 @@ import org.openqa.selenium.WebElement;
  */
 public class CssTranslatePositionProvider implements PositionProvider {
 
-    private final Logger logger;
-    private final IEyesJsExecutor executor;
+    protected final Logger logger;
+    protected final IEyesJsExecutor executor;
     private final WebElement scrollRootElement;
+
 
     private Location lastSetPosition; // cache.
 

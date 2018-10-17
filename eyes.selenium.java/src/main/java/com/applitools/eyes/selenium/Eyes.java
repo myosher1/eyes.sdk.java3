@@ -692,7 +692,6 @@ public class Eyes extends EyesBase {
 
         this.scrollRootElement = driver.findElement(By.tagName("html"));
         this.currentFramePositionProvider = null;
-        this.positionProvider = createPositionProvider();
 
         matchRegions(getRegions, checkSettingsInternalDictionary, checkSettings);
         getConfig().setForceFullPageScreenshot(originalForceFPS);
@@ -717,7 +716,7 @@ public class Eyes extends EyesBase {
 
         BufferedImage screenshotImage = algo.getStitchedRegion(
                 Region.EMPTY,
-                bBox, positionProvider);
+                bBox, positionProviderHandler.get());
 
         debugScreenshotsProvider.save(screenshotImage, "original");
         EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage, null, bBox.getNegativeLocation());
@@ -942,7 +941,7 @@ public class Eyes extends EyesBase {
         }
 
         if (this.positionMemento != null) {
-            this.positionProvider.restoreState(this.positionMemento);
+            this.positionProviderHandler.get().restoreState(this.positionMemento);
             this.positionMemento = null;
         }
 
@@ -1079,8 +1078,8 @@ public class Eyes extends EyesBase {
             Frame frame = fc.peek();
             WebElement scrollRootElement = null;
             if (fc.size() == this.originalFC.size()) {
-                logger.verbose("PositionProvider: " + positionProvider);
-                positionMemento = positionProvider.getState();
+                logger.verbose("PositionProvider: " + positionProviderHandler.get());
+                positionMemento = positionProviderHandler.get().getState();
                 scrollRootElement = this.scrollRootElement;
             } else {
                 if (frame != null) {
@@ -1930,11 +1929,10 @@ public class Eyes extends EyesBase {
                 (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
 
         this.regionToCheck = null;
-        PositionMemento originalPositionMemento = positionProvider.getState();
+        PositionMemento originalPositionMemento = positionProviderHandler.get().getState();
 
         ensureElementVisible(targetElement);
 
-        PositionProvider originalPositionProvider = positionProvider;
         PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
         Location originalScrollPosition = scrollPositionProvider.getCurrentPosition();
 
@@ -1987,9 +1985,8 @@ public class Eyes extends EyesBase {
 
             checkFrameOrElement = false;
 
-            originalPositionProvider.restoreState(originalPositionMemento);
+            positionProviderHandler.get().restoreState(originalPositionMemento);
             scrollPositionProvider.setPosition(originalScrollPosition);
-            positionProvider = originalPositionProvider;
             regionToCheck = null;
             elementPositionProvider = null;
         }
@@ -2368,7 +2365,7 @@ public class Eyes extends EyesBase {
 
             switchTo.defaultContent();
 
-            BufferedImage fullPageImage = algo.getStitchedRegion(Region.EMPTY, null, positionProvider);
+            BufferedImage fullPageImage = algo.getStitchedRegion(Region.EMPTY, null, positionProviderHandler.get());
 
             switchTo.frames(originalFrameChain);
             result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);
@@ -2521,7 +2518,7 @@ public class Eyes extends EyesBase {
      * @return The currently set position provider.
      */
     private PositionProvider getElementPositionProvider() {
-        return elementPositionProvider == null ? positionProvider : elementPositionProvider;
+        return elementPositionProvider == null ? positionProviderHandler.get() : elementPositionProvider;
     }
 
     @Override
