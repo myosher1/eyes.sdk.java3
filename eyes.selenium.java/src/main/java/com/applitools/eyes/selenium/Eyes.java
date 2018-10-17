@@ -2523,7 +2523,13 @@ public class Eyes extends EyesBase {
 
     @Override
     protected String getAUTSessionId() {
-        return driver.getRemoteWebDriver().getSessionId().toString();
+        try {
+            return driver.getRemoteWebDriver().getSessionId().toString();
+        } catch (Exception e) {
+            logger.log("WARNING: Failed to get AUT session ID! (maybe driver is not available?). Error: "
+                    + e.getMessage());
+            return "";
+        }
     }
 
     @SuppressWarnings("UnusedDeclaration")
