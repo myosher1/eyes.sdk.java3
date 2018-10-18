@@ -15,20 +15,22 @@ public class ImageMatchSettings {
     private Region strictRegions[];
     private Region contentRegions[];
     private FloatingMatchSettings floatingMatchSettings[];
+    private boolean useDom;
 
-    public ImageMatchSettings(MatchLevel matchLevel, ExactMatchSettings exact) {
+    public ImageMatchSettings(MatchLevel matchLevel, ExactMatchSettings exact, boolean useDom) {
         this.matchLevel = matchLevel;
         this.exact = exact;
         this.ignoreCaret = null;
+        this.useDom = useDom;
     }
 
     /**
-     * See {@link #ImageMatchSettings(MatchLevel, ExactMatchSettings)}.
+     * See {@link #ImageMatchSettings(MatchLevel, ExactMatchSettings, boolean)}.
      * {@code matchLevel} defaults to {@code STRICT},
      * {@code exact} defaults to {@code null}.
      */
     public ImageMatchSettings() {
-        this(MatchLevel.STRICT, null);
+        this(MatchLevel.STRICT, null, false);
     }
 
     /**
@@ -69,6 +71,14 @@ public class ImageMatchSettings {
      */
     public Boolean getIgnoreCaret() {
         return ignoreCaret;
+    }
+
+    public boolean isUseDom() {
+        return useDom;
+    }
+
+    public void setUseDom(boolean useDom) {
+        this.useDom = useDom;
     }
 
     /**

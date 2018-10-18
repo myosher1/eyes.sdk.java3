@@ -204,7 +204,7 @@ public class MatchWindowTask {
                 matchLevel = eyes.getDefaultMatchSettings().getMatchLevel();
             }
 
-            imageMatchSettings = new ImageMatchSettings(matchLevel, null);
+            imageMatchSettings = new ImageMatchSettings(matchLevel, null, false);
 
             Boolean ignoreCaret = checkSettingsInternal.getIgnoreCaret();
             if (ignoreCaret == null) {

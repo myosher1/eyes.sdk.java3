@@ -71,9 +71,10 @@ public interface IServerConnector {
      * Downloads string from a given Url
      *
      * @param uri The URI from which the IServerConnector will download the string
+     * @param isSecondRetry Indicates if a retry is mandatory onFailed - 2 retries per request
      * @return the string that was return from the request to the Url
      */
-    void downloadString(URI uri, IDownloadListener listener);
+    void downloadString(URI uri, boolean isSecondRetry, IDownloadListener listener);
 
 
     String postDomSnapshot(String domJson);

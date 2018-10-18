@@ -347,7 +347,7 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public void downloadString(URI uri, final IDownloadListener listener) {
+    public void downloadString(URI uri, boolean isSecondRetry,final IDownloadListener listener) {
 
         AsyncWebResource target = Client.create().asyncResource(uri.toString());
 
@@ -370,10 +370,8 @@ public class ServerConnector extends RestClient
 
                     listener.onDownloadComplete(theString);
 
-                } catch (ExecutionException e) {
-                    logger.verbose("Something went wrong!");
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (ExecutionException | IOException e) {
+                    GeneralUtils.logExceptionStackTrace(e);
                 }
             }
 
