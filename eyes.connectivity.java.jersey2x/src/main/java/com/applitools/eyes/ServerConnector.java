@@ -16,9 +16,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.zip.GZIPOutputStream;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Provides an API for communication with the Applitools agent
@@ -29,7 +31,8 @@ public class ServerConnector extends RestClient
     private static final int TIMEOUT = 1000 * 60 * 5; // 5 Minutes
     private static final String API_PATH = "/api/sessions/running";
     private static final String DEFAULT_CHARSET_NAME = "UTF-8";
-    public static final int DOWNLOAD_TASKS_CAPACITY = 10;
+    private static final int NUM_OF_RETRIES = 3;
+    public static final int THREAD_SLEEP_MILLIS = 100;
 
     private String apiKey = null;
 
@@ -145,7 +148,6 @@ public class ServerConnector extends RestClient
         List<Integer> validStatusCodes;
         boolean isNewSession;
         RunningSession runningSession;
-
         try {
 
             // since the web API requires a root property for this message
@@ -160,9 +162,9 @@ public class ServerConnector extends RestClient
         }
 
         try {
-            response = endPoint.queryParam("apiKey", getApiKey()).
-                    request(MediaType.APPLICATION_JSON).
-                    post(Entity.json(postData));
+            Invocation.Builder request = endPoint.queryParam("apiKey", getApiKey()).
+                    request(MediaType.APPLICATION_JSON);
+            response = postWithRetry(request, Entity.json(postData), null);
         } catch (RuntimeException e) {
             logger.log("Server request failed: " + e.getMessage());
             throw e;
@@ -324,10 +326,10 @@ public class ServerConnector extends RestClient
         }
 
         // Sending the request
-        response = runningSessionsEndpoint.queryParam("apiKey", getApiKey()).
-                request(MediaType.APPLICATION_JSON).
-                post(Entity.entity(requestData,
-                        MediaType.APPLICATION_OCTET_STREAM));
+        Invocation.Builder request = runningSessionsEndpoint.queryParam("apiKey", getApiKey()).
+                request(MediaType.APPLICATION_JSON);
+        response = postWithRetry(request, Entity.entity(requestData,
+                MediaType.APPLICATION_OCTET_STREAM), null);
 
         // Ok, let's create the running session from the response
         validStatusCodes = new ArrayList<>(1);
@@ -341,13 +343,15 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public void downloadString(URI uri, final IDownloadListener listener) {
+    public void downloadString(final URI uri, final boolean isSecondRetry, final IDownloadListener listener) {
 
         Client client = ClientBuilder.newBuilder().build();
 
         WebTarget target = client.target(uri.toString());
 
         Invocation.Builder request = target.request(MediaType.WILDCARD);
+
+        logger.verbose("Firing async GET");
 
         request.async().get(new InvocationCallback<String>() {
             @Override
@@ -359,7 +363,13 @@ public class ServerConnector extends RestClient
             @Override
             public void failed(Throwable throwable) {
                 // on fail
-                listener.onDownloadFailed();
+                if(!isSecondRetry){
+                    logger.verbose("Async GET failed - entering retry");
+                    downloadString(uri, true, listener);
+                }
+                else{
+                    listener.onDownloadFailed();
+                }
             }
         });
 
@@ -375,8 +385,42 @@ public class ServerConnector extends RestClient
 
         byte[] resultStream = GeneralUtils.getGzipByteArrayOutputStream(domJson);
 
-        Response response = request.post(Entity.entity(resultStream, MediaType.APPLICATION_OCTET_STREAM));
+        Response response = postWithRetry(request, Entity.entity(resultStream,
+                MediaType.APPLICATION_OCTET_STREAM), null );
         String entity = response.getHeaderString("Location");
         return entity;
     }
+
+    private Response postWithRetry(Invocation.Builder request, Entity entity, AtomicInteger retiresCounter) {
+
+        if (retiresCounter == null) {
+
+            retiresCounter = new AtomicInteger(0);
+
+        }
+        try {
+            return request.
+                    post(entity);
+        } catch (Exception e) {
+
+            GeneralUtils.logExceptionStackTrace(e);
+            try {
+
+                Thread.sleep(THREAD_SLEEP_MILLIS);
+
+            } catch (InterruptedException e1) {
+                GeneralUtils.logExceptionStackTrace(e);
+            }
+
+            if(retiresCounter.incrementAndGet() < NUM_OF_RETRIES){
+
+                return postWithRetry(request, entity, retiresCounter);
+            }
+            else{
+                throw e;
+            }
+        }
+
+    }
+
 }
