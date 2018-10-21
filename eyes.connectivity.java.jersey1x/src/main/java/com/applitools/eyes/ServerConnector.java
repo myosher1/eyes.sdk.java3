@@ -6,22 +6,23 @@ package com.applitools.eyes;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.sun.jersey.api.client.*;
-import com.sun.jersey.api.client.async.ITypeListener;
+import com.sun.jersey.api.client.AsyncWebResource;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.async.TypeListener;
-import com.sun.jersey.api.client.config.ClientConfig;
 import org.apache.commons.io.IOUtils;
 
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.xml.bind.DatatypeConverter;
 import java.io.*;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 /**
@@ -347,7 +348,7 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public void downloadString(URI uri, boolean isSecondRetry,final IDownloadListener listener) {
+    public void downloadString(URL uri, boolean isSecondRetry, final IDownloadListener listener) {
 
         AsyncWebResource target = Client.create().asyncResource(uri.toString());
 
@@ -356,11 +357,18 @@ public class ServerConnector extends RestClient
 
         request.get(new TypeListener<ClientResponse>(ClientResponse.class) {
 
-            public void onComplete(Future<ClientResponse> f)
-                    throws InterruptedException {
+            public void onComplete(Future<ClientResponse> f) {
+                int status = 0;
+                ClientResponse clientResponse = null;
                 try {
-
-                    InputStream entityInputStream = f.get().getEntityInputStream();
+                    clientResponse = f.get();
+                    status = clientResponse.getStatus();
+                    if (status > 300) {
+                        logger.verbose("Got response status code - " + status);
+                        listener.onDownloadFailed();
+                        return;
+                    }
+                    InputStream entityInputStream = clientResponse.getEntityInputStream();
 
                     StringWriter writer = new StringWriter();
 
@@ -370,8 +378,11 @@ public class ServerConnector extends RestClient
 
                     listener.onDownloadComplete(theString);
 
-                } catch (ExecutionException | IOException e) {
+                } catch (Exception e) {
                     GeneralUtils.logExceptionStackTrace(e);
+                    logger.verbose("Failed to parse request(status= " + status + ") = "+ clientResponse.getEntity(String.class));
+                    listener.onDownloadFailed();
+
                 }
             }
 
@@ -390,7 +401,13 @@ public class ServerConnector extends RestClient
 
             ClientResponse response = request.post(ClientResponse.class);
 
-            String entity = response.getEntity(String.class);
+            MultivaluedMap<String, String> headers = response.getHeaders();
+
+            List<String> location = headers.get("Location");
+            String entity = null;
+            if (!location.isEmpty()) {
+                entity = location.get(0);
+            }
 
             return entity;
         }
