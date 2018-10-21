@@ -23,10 +23,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
@@ -139,7 +136,11 @@ public class DomCapture {
         mLogger.verbose("Finished converting DOM map in - " + (System.currentTimeMillis() - startingTime));
         startingTime = System.currentTimeMillis();
 
-        traverseDomTree(mDriver, argsObj, executeScriptMap, -1, mDriver.getCurrentUrl());
+        try {
+            traverseDomTree(mDriver, argsObj, executeScriptMap, -1, new URL(mDriver.getCurrentUrl()));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
 
         mainPhaser.arriveAndAwaitAdvance();
 
@@ -153,7 +154,7 @@ public class DomCapture {
 
 
     private void traverseDomTree(WebDriver mDriver, Map<String, Object> argsObj, final Map<String, Object> domTree
-            , int frameIndex, String baseUrl) {
+            , int frameIndex, URL baseUrl) {
 
         mLogger.verbose("DomCapture.traverseDomTree  baseUrl - " + baseUrl);
 
@@ -184,7 +185,14 @@ public class DomCapture {
 
             String srcUrl = null;
 
-            if (domTree.containsKey("childNodes")) {
+            Object childNodes = domTree.get("childNodes");
+            List childNodesAsMap = null;
+            if (childNodes != null) {
+                childNodesAsMap = (List) childNodes;
+            }
+
+            if (childNodesAsMap == null || childNodesAsMap.isEmpty()) {
+
                 String json = (String) ((JavascriptExecutor) mDriver).executeScript(CAPTURE_FRAME_SCRIPT, argsObj);
 
                 try {
@@ -210,24 +218,15 @@ public class DomCapture {
                 if (srcUrl == null) {
                     mLogger.log("WARNING! IFRAME WITH NO SRC");
                 }
-                URI href = null;
-                if (srcUrl != null) {
-                    try {
-                        href = new URI(URLEncoder.encode(srcUrl, "UTF-8"));
-                        if (!href.isAbsolute()) {
-                            String baseUrlTmp = baseUrl.substring(0, baseUrl.lastIndexOf("/"));
-                            String slash = baseUrlTmp.endsWith("/") ? "" : "/";
-                            srcUrl = baseUrlTmp + slash + srcUrl;
-                            traverseDomTree(mDriver, argsObj, dom, -1, srcUrl);
-                        }
-                    } catch (URISyntaxException | UnsupportedEncodingException e) {
-                        e.printStackTrace();
+                try {
+                    if (srcUrl.contains("img.bbystatic.com/BestBuy_US/js/tracking/ens-index.html")) {
+                        mLogger.verbose("sgfwgsdgsdfg");
                     }
+                    URL urlHref = new URL(baseUrl, srcUrl);
+                    traverseDomTree(mDriver, argsObj, dom, -1, urlHref);
 
-                }
-                else{
-
-                    traverseDomTree(mDriver, argsObj, dom, -1, baseUrl);
+                } catch (MalformedURLException e) {
+                    GeneralUtils.logExceptionStackTrace(e);
                 }
             }
             frameIndices.pop();
@@ -240,28 +239,22 @@ public class DomCapture {
 
             if (isHTML) {
                 mainPhaser.register();
-                URI url = null;
-                try {
-                    url = URI.create(URLEncoder.encode(baseUrl, "UTF-8"));
-                    getFrameBundledCss(url, new IDownloadListener() {
-                        @Override
-                        public void onDownloadComplete(String downloadedString) {
-                            domTree.put("css", downloadedString);
-                            mLogger.verbose("Putting css in " + " - CSS = " + downloadedString);
-                            mainPhaser.arriveAndDeregister();
-                        }
+                getFrameBundledCss(baseUrl, new IDownloadListener() {
+                    @Override
+                    public void onDownloadComplete(String downloadedString) {
+                        domTree.put("css", downloadedString);
+                        mLogger.verbose("Putting css in " + " - CSS = " + downloadedString);
+                        mainPhaser.arriveAndDeregister();
+                    }
 
-                        @Override
-                        public void onDownloadFailed() {
-                            mLogger.verbose("mainPhaser.arriveAndDeregister()");
-                            mainPhaser.arriveAndDeregister();
+                    @Override
+                    public void onDownloadFailed() {
+                        mLogger.verbose("mainPhaser.arriveAndDeregister()");
+                        mainPhaser.arriveAndDeregister();
 
-                        }
-                    });
-                    mLogger.verbose("Finish getFrameBundledCss(baseUri)");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+                    }
+                });
+                mLogger.verbose("Finish getFrameBundledCss(baseUrl)");
             }
 
             loop(mDriver, argsObj, domTree, baseUrl);
@@ -269,7 +262,7 @@ public class DomCapture {
 
     }
 
-    private void loop(WebDriver mDriver, Map<String, Object> argsObj, Map<String, Object> domTree, String baseUrl) {
+    private void loop(WebDriver mDriver, Map<String, Object> argsObj, Map<String, Object> domTree, URL baseUrl) {
         mLogger.verbose("DomCapture.loop");
         Object childNodesObj = domTree.get("childNodes");
         int index = 0;
@@ -303,7 +296,7 @@ public class DomCapture {
                     index++;
                 } else {
                     Object childSubNodesObj = domSubTree.get("childNodes");
-                    if (childSubNodesObj == null || !(childSubNodesObj instanceof List) || ((List) childSubNodesObj).isEmpty()) {
+                    if (childSubNodesObj == null || (childSubNodesObj instanceof List) && ((List) childSubNodesObj).isEmpty()) {
                         continue;
                     }
                     traverseDomTree(mDriver, argsObj, domSubTree, -1, baseUrl);
@@ -314,12 +307,13 @@ public class DomCapture {
     }
 
 
-    private void getFrameBundledCss(final URI baseUrl, IDownloadListener listener) {
-        if (!baseUrl.isAbsolute()) {
+    private void getFrameBundledCss(final URL baseUrl, IDownloadListener listener) {
+        URI uri = URI.create(baseUrl.toString());
+        if (!uri.isAbsolute()) {
             mLogger.log("WARNING! Base URL is not an absolute URL!");
         }
         CssTreeNode root = new CssTreeNode();
-        root.setBaseUri(baseUrl);
+        root.setBaseUrl(baseUrl);
 
         int rootRegister = treePhaser.register();
 
@@ -334,7 +328,7 @@ public class DomCapture {
                 root.downloadNodeCss();
             } else {
                 final CssTreeNode cssTreeNode = new CssTreeNode();
-                cssTreeNode.setBaseUri(root.baseUri);
+                cssTreeNode.setBaseUrl(root.baseUrl);
                 cssTreeNode.setUrlPostfix(value);
                 downloadCss(cssTreeNode, new IDownloadListener() {
                     @Override
@@ -360,7 +354,7 @@ public class DomCapture {
 
         root.setDecedents(nodes);
         try {
-            treePhaser.awaitAdvanceInterruptibly(rootRegister, 5000, TimeUnit.MILLISECONDS);
+            treePhaser.awaitAdvanceInterruptibly(rootRegister, 15000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | TimeoutException e) {
             GeneralUtils.logExceptionStackTrace(e);
         }
@@ -369,9 +363,9 @@ public class DomCapture {
 
     class CssTreeNode {
 
-        URI baseUri;
+        URL baseUrl;
 
-        String urlPostfix;
+        URL urlPostfix;
 
         StringBuilder sb = new StringBuilder();
         List<CssTreeNode> decedents = new ArrayList<>();
@@ -383,8 +377,8 @@ public class DomCapture {
         }
 
 
-        public void setBaseUri(URI baseUri) {
-            this.baseUri = baseUri;
+        public void setBaseUrl(URL baseUri) {
+            this.baseUrl = baseUri;
         }
 
         String calcCss() {
@@ -409,7 +403,7 @@ public class DomCapture {
                 for (CSSImportRule importRule : allImportRules) {
                     final CssTreeNode cssTreeNode;
                     cssTreeNode = new CssTreeNode();
-                    cssTreeNode.setBaseUri(this.baseUri);
+                    cssTreeNode.setBaseUrl(this.baseUrl);
                     String uri = importRule.getLocation().getURI();
                     cssTreeNode.setUrlPostfix(uri);
                     downloadCss(cssTreeNode, new IDownloadListener() {
@@ -433,7 +427,15 @@ public class DomCapture {
         }
 
         public void setUrlPostfix(String urlPostfix) {
-            this.urlPostfix = urlPostfix;
+
+            boolean absolute = false;
+            try {
+                absolute = new URI(urlPostfix).isAbsolute();
+                this.urlPostfix = absolute ? new URL(urlPostfix) : new URL(baseUrl, urlPostfix);
+            } catch (URISyntaxException | MalformedURLException e) {
+                GeneralUtils.logExceptionStackTrace(e);
+            }
+
         }
 
 
@@ -448,26 +450,17 @@ public class DomCapture {
 
     }
 
-    private void downloadCss(CssTreeNode node, final IDownloadListener listener) {
+    private void downloadCss(final CssTreeNode node, final IDownloadListener listener) {
         try {
             treePhaser.register();
             mLogger.verbose("Given URL to download: " + node.urlPostfix);
-            URI href = new URI(node.urlPostfix);
-            if (!href.isAbsolute()) {
-                String path = node.baseUri.getPath();
-                //Remove postfix“
-                path = path.substring(0, path.lastIndexOf("/"));
-                href = new URI(node.baseUri.getScheme(), node.baseUri.getHost(), path + "/" + node.urlPostfix, null);
-            }
-            mLogger.verbose("treePhaser.register(); " + href);
-            final URI finalHref = href;
-            mServerConnector.downloadString(href, false, new IDownloadListener() {
+            mServerConnector.downloadString(node.urlPostfix, false, new IDownloadListener() {
                 @Override
                 public void onDownloadComplete(String downloadedString) {
                     mLogger.verbose("Download Complete");
                     listener.onDownloadComplete(downloadedString);
                     treePhaser.arriveAndDeregister();
-                    mLogger.verbose("treePhaser.arriveAndDeregister(); " + finalHref);
+                    mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
                     mLogger.verbose("current unarrived  - " + treePhaser.getUnarrivedParties());
                 }
 
@@ -475,7 +468,7 @@ public class DomCapture {
                 public void onDownloadFailed() {
                     mLogger.verbose("Download Faild");
                     treePhaser.arriveAndDeregister();
-                    mLogger.verbose("treePhaser.arriveAndDeregister(); " + finalHref);
+                    mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
                     mLogger.verbose("current unarrived  - " + treePhaser.getUnarrivedParties());
                 }
             });
