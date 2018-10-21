@@ -1,6 +1,7 @@
 package com.applitools.eyes;
 
 import java.net.URI;
+import java.net.URL;
 
 /**
  * Defines the interface which should be implemented by a ServerConnector.
@@ -74,7 +75,7 @@ public interface IServerConnector {
      * @param isSecondRetry Indicates if a retry is mandatory onFailed - 2 retries per request
      * @return the string that was return from the request to the Url
      */
-    void downloadString(URI uri, boolean isSecondRetry, IDownloadListener listener);
+    void downloadString(URL uri, boolean isSecondRetry, IDownloadListener listener);
 
 
     String postDomSnapshot(String domJson);
