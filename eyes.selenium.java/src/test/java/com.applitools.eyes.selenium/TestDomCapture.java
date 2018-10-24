@@ -1,5 +1,6 @@
 package com.applitools.eyes.selenium;
 
+import com.applitools.IDomCaptureListener;
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.utils.GeneralUtils;
@@ -9,6 +10,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 public final class TestDomCapture {
+    private static String domJson;
     public static void main(String[] args) throws Exception {
 
         // Open a Chrome browser.
@@ -30,9 +32,16 @@ public final class TestDomCapture {
 
         // Navigate the browser to the "hello world!" web-site.
         driver.get("https://nikita-andreev.github.io/applitools/dom_capture.html?aaa");
+
+        eyes.setOnDomCapture(new IDomCaptureListener() {
+            @Override
+            public void onDomCaptureComplete(String dom) {
+                domJson = dom;
+            }
+        });
+
         eyes.checkWindow("Test DOM diffs");
 
-        String domJson = eyes.tryCaptureDom();
 
         ObjectMapper mapper = new ObjectMapper();
         JsonNode targetJsonObj = mapper.readTree(domJson);
@@ -45,8 +54,6 @@ public final class TestDomCapture {
         if(!sourceJsonObj.equals(targetJsonObj)){
             throw new Exception("Dom capture json was not equal to target json");
         }
-
-
 
     }
 }

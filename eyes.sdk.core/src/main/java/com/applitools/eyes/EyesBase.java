@@ -1,5 +1,6 @@
 package com.applitools.eyes;
 
+import com.applitools.IDomCaptureListener;
 import com.applitools.eyes.capture.AppOutputProvider;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.config.Configuration;
@@ -82,6 +83,7 @@ public abstract class EyesBase {
     private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
     private int validationId;
     private boolean isSendDom;
+    protected IDomCaptureListener domCaptureListener;
 
     public EyesBase() {
 
@@ -1810,6 +1812,10 @@ public abstract class EyesBase {
 
     public boolean isSendDom() {
         return isSendDom;
+    }
+
+    public void setOnDomCapture(IDomCaptureListener listener){
+        this.domCaptureListener = listener;
     }
 
     public void setSendDom(boolean isSendDom) {

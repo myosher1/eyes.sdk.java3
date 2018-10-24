@@ -23,11 +23,12 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Phaser;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class DomCapture {
 
@@ -149,7 +150,6 @@ public class DomCapture {
         return executeScriptMap;
     }
 
-    private int level = 0;
     private Stack<Integer> frameIndices = new Stack<>();
 
 
@@ -168,8 +168,6 @@ public class DomCapture {
         if (null == tagNameObj) return;
 
         if (frameIndex > -1) {
-
-            level++;
 
             //Try switching - if frame index is valid
             try {
@@ -231,7 +229,6 @@ public class DomCapture {
             }
             frameIndices.pop();
             mDriver.switchTo().parentFrame();
-            level--;
         }
         if (frameHasContent) {
             String tagName = (String) tagNameObj;
@@ -270,7 +267,7 @@ public class DomCapture {
         if (frameIndices.size() > 0) {
             index = frameIndices.peek();
         }
-        if (childNodesObj == null || !(childNodesObj instanceof List)) {
+        if (!(childNodesObj instanceof List)) {
             return;
         }
         List childNodes = (List) childNodesObj;
@@ -315,8 +312,6 @@ public class DomCapture {
         CssTreeNode root = new CssTreeNode();
         root.setBaseUrl(baseUrl);
 
-        int rootRegister = treePhaser.register();
-
         List<String> result = (List<String>) ((JavascriptExecutor) mDriver).executeScript(CAPTURE_CSSOM_SCRIPT);
         final List<CssTreeNode> nodes = new ArrayList<>();
         for (String item : result) {
@@ -351,13 +346,8 @@ public class DomCapture {
                 nodes.add(cssTreeNode);
             }
         }
-
         root.setDecedents(nodes);
-        try {
-            treePhaser.awaitAdvanceInterruptibly(rootRegister, 15000, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | TimeoutException e) {
-            GeneralUtils.logExceptionStackTrace(e);
-        }
+        treePhaser.arriveAndAwaitAdvance();
         listener.onDownloadComplete(root.calcCss());
     }
 
@@ -451,31 +441,26 @@ public class DomCapture {
     }
 
     private void downloadCss(final CssTreeNode node, final IDownloadListener listener) {
-        try {
-            treePhaser.register();
-            mLogger.verbose("Given URL to download: " + node.urlPostfix);
-            mServerConnector.downloadString(node.urlPostfix, false, new IDownloadListener() {
-                @Override
-                public void onDownloadComplete(String downloadedString) {
-                    mLogger.verbose("Download Complete");
-                    listener.onDownloadComplete(downloadedString);
-                    treePhaser.arriveAndDeregister();
-                    mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
-                    mLogger.verbose("current unarrived  - " + treePhaser.getUnarrivedParties());
-                }
+        treePhaser.register();
+        mLogger.verbose("Given URL to download: " + node.urlPostfix);
+        mServerConnector.downloadString(node.urlPostfix, false, new IDownloadListener() {
+            @Override
+            public void onDownloadComplete(String downloadedString) {
+                mLogger.verbose("Download Complete");
+                listener.onDownloadComplete(downloadedString);
+                treePhaser.arriveAndDeregister();
+                mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
+                mLogger.verbose("current unarrived  - " + treePhaser.getUnarrivedParties());
+            }
 
-                @Override
-                public void onDownloadFailed() {
-                    mLogger.verbose("Download Faild");
-                    treePhaser.arriveAndDeregister();
-                    mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
-                    mLogger.verbose("current unarrived  - " + treePhaser.getUnarrivedParties());
-                }
-            });
-        } catch (Exception ex) {
-            mLogger.verbose("DomCapture.downloadCss  catch clauses");
-            GeneralUtils.logExceptionStackTrace(ex);
-        }
+            @Override
+            public void onDownloadFailed() {
+                treePhaser.arriveAndDeregister();
+                mLogger.verbose("Download Faild");
+                mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
+                mLogger.verbose("current unarrived  - " + treePhaser.getUnarrivedParties());
+            }
+        });
     }
 
     private void parseCSS(CssTreeNode node, String css) {
