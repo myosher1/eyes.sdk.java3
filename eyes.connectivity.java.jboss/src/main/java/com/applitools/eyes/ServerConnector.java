@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -343,7 +344,7 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public void downloadString(final URI uri, final boolean isSecondRetry, final IDownloadListener listener) {
+    public void downloadString(final URL uri, final boolean isSecondRetry, final IDownloadListener listener) {
 
         Client client = ClientBuilder.newBuilder().build();
 
