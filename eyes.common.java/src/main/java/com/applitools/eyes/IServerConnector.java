@@ -34,7 +34,7 @@ public interface IServerConnector {
      * @param sessionStartInfo The start parameters for the session.
      * @return RunningSession object which represents the current running
      *         session
-     * @throws EyesException
+     * @throws EyesException the exception is being thrown when start session failed
      */
     RunningSession startSession(SessionStartInfo sessionStartInfo);
 
@@ -42,8 +42,10 @@ public interface IServerConnector {
      * Stops the running session.
      *
      * @param runningSession The running session to be stopped.
+     * @param isAborted Indicates that the session is being aborted
+     * @param save Indicates whether the server should update the baseline.
      * @return TestResults object for the stopped running session
-     * @throws EyesException
+     * @throws EyesException the exception is being thrown when stopSession failed
      */
     TestResults stopSession(final RunningSession runningSession,
                                    final boolean isAborted, final boolean save);
@@ -52,7 +54,7 @@ public interface IServerConnector {
      * Deletes the given test result
      *
      * @param testResults The session to delete by test results.
-     * @throws EyesException
+     * @throws EyesException the exception is being thrown when deleteSession failed
      */
     void deleteSession(TestResults testResults);
 
@@ -63,7 +65,7 @@ public interface IServerConnector {
      * @param runningSession The current agent's running session.
      * @param matchData Encapsulation of a capture taken from the application.
      * @return The results of the window matching.
-     * @throws EyesException
+     * @throws EyesException the exception is being thrown when deleteSession matchWindow
      */
     MatchResult matchWindow(RunningSession runningSession,
                             MatchWindowData matchData);
@@ -73,7 +75,7 @@ public interface IServerConnector {
      *
      * @param uri The URI from which the IServerConnector will download the string
      * @param isSecondRetry Indicates if a retry is mandatory onFailed - 2 retries per request
-     * @return the string that was return from the request to the Url
+     * @param listener the listener will be called when the request will be resolved.
      */
     void downloadString(URL uri, boolean isSecondRetry, IDownloadListener listener);
 
