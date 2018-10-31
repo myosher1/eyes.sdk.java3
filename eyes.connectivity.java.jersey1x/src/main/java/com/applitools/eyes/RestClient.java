@@ -8,7 +8,13 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.api.client.filter.ClientFilter;
+import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
+import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
+import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 
+import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -44,20 +50,44 @@ public class RestClient {
     private static Client buildRestClient(int timeout,
                                           ProxySettings proxySettings) {
         // Creating the client configuration
-        ClientConfig cc = new DefaultClientConfig();
-        cc.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, timeout);
-        cc.getProperties().put(ClientConfig.PROPERTY_READ_TIMEOUT, timeout);
+        ApacheHttpClient4Config cc = new DefaultApacheHttpClient4Config() ;
+        cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_CONNECT_TIMEOUT, timeout);
+        cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_READ_TIMEOUT, timeout);
 
-        // We ignore the proxy settings
 
-        return Client.create(cc);
+        if (proxySettings != null) {
+            URI uri = URI.create(proxySettings.getUri());
+            UriBuilder uriBuilder = UriBuilder.fromUri(uri);
+            boolean changed = false;
+            if (uri.getScheme() == null && uri.getHost() == null && uri.getPath() != null) {
+                uriBuilder.scheme("http");
+                uriBuilder.host(uri.getPath());
+                uriBuilder.replacePath(null);
+                changed = true;
+            }
+            if (uri.getPort() != proxySettings.getPort()) {
+                uriBuilder.port(proxySettings.getPort());
+                changed = true;
+            }
+            if (changed) {
+                uri = uriBuilder.build();
+            }
+            cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_URI, uri);
+            cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_USERNAME, proxySettings.getUsername());
+            cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_PASSWORD, proxySettings.getPassword());
+
+            ApacheHttpClient4 client = ApacheHttpClient4.create(cc);
+            return client;
+        } else {
+            // We ignore the proxy settings
+            return Client.create(cc);
+        }
     }
 
     /***
      * @param logger    Logger instance.
      * @param serverUrl The URI of the rest server.
      * @param timeout Connect/Read timeout in milliseconds. 0 equals infinity.
-
      */
     public RestClient(Logger logger, URI serverUrl, int timeout) {
         ArgumentGuard.notNull(serverUrl, "serverUrl");
@@ -86,6 +116,7 @@ public class RestClient {
     /**
      * Creates a rest client instance with timeout default of 5 minutes and
      * no proxy settings.
+     *
      * @param logger    A logger instance.
      * @param serverUrl The URI of the rest server.
      */
@@ -96,17 +127,16 @@ public class RestClient {
 
     /**
      * Sets the proxy settings to be used by the rest client.
+     *
      * @param proxySettings The proxy settings to be used by the rest client.
      *                      If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void setProxyBase(ProxySettings proxySettings) {
-        throw new EyesException(
-                "Proxy not implemented in this version!");
-//        this.proxySettings = proxySettings;
-//
-//        restClient = buildRestClient(timeout, proxySettings);
-//        endPoint = restClient.resource(serverUrl);
+
+        this.proxySettings = proxySettings;
+        restClient = buildRestClient(timeout, proxySettings);
+        endPoint = restClient.resource(serverUrl);
     }
 
     /**
@@ -120,6 +150,7 @@ public class RestClient {
 
     /**
      * Sets the connect and read timeouts for web requests.
+     *
      * @param timeout Connect/Read timeout in milliseconds. 0 equals infinity.
      */
     public void setTimeout(int timeout) {
@@ -140,6 +171,7 @@ public class RestClient {
 
     /**
      * Sets the current server URL used by the rest client.
+     *
      * @param serverUrl The URI of the rest server.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -192,6 +224,7 @@ public class RestClient {
 
     /**
      * Builds an error message which includes the response data.
+     *
      * @param errMsg       The error message.
      * @param statusCode   The response status code.
      * @param statusPhrase The response status phrase.
@@ -221,6 +254,7 @@ public class RestClient {
      * 1. Verify that we are able to read response data.
      * 2. verify that the status code is valid
      * 3. Parse the response data from JSON to the relevant type.
+     *
      * @param response             The response to parse.
      * @param validHttpStatusCodes The list of acceptable status codes.
      * @param resultType           The class object of the type of result this response
@@ -239,7 +273,7 @@ public class RestClient {
 
         T resultObject;
         int statusCode = response.getStatus();
-        String statusPhrase =  ClientResponse.Status.fromStatusCode(statusCode).getReasonPhrase();
+        String statusPhrase = ClientResponse.Status.fromStatusCode(response.getStatus()).getReasonPhrase();
         String data = response.getEntity(String.class);
         response.close();
         // Validate the status code.
