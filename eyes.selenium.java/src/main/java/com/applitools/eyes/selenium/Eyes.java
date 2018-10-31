@@ -3,6 +3,7 @@
  */
 package com.applitools.eyes.selenium;
 
+import com.applitools.RenderingInfo;
 import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.capture.EyesScreenshotFactory;
@@ -2530,6 +2531,13 @@ public class Eyes extends EyesBase {
                     + e.getMessage());
             return "";
         }
+    }
+
+    @Override
+    public void initRenderingInfo() {
+        this.serverConnector.getRenderInfo();
+
+
     }
 
     @SuppressWarnings("UnusedDeclaration")

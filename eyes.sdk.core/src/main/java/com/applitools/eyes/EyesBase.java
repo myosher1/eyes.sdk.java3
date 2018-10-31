@@ -1815,4 +1815,8 @@ public abstract class EyesBase {
     public void setSendDom(boolean isSendDom) {
         this.isSendDom = isSendDom;
     }
+
+    public abstract void initRenderingInfo();
+
+
 }
