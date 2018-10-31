@@ -213,9 +213,6 @@ public class Eyes extends EyesBase {
     public void setStitchMode(StitchMode mode) {
         logger.verbose("setting stitch mode to " + mode);
         getConfig().setStitchMode(mode);
-        if (driver != null) {
-            setPositionProvider(createPositionProvider());
-        }
     }
 
     /**
