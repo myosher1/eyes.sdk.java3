@@ -117,6 +117,7 @@ public abstract class EyesBase {
         agentId = null;
         lastScreenshot = null;
         debugScreenshotsProvider = new NullDebugScreenshotProvider();
+        isSendDom = true;
     }
 
     protected void ensureConfiguration() {
