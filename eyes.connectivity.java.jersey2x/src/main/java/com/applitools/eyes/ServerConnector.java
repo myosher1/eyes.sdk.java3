@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Provides an API for communication with the Applitools agent
  */
+@SuppressWarnings("WeakerAccess")
 public class ServerConnector extends RestClient
         implements IServerConnector {
 
@@ -33,7 +34,7 @@ public class ServerConnector extends RestClient
     private static final String API_PATH = "/api/sessions/running";
     private static final String DEFAULT_CHARSET_NAME = "UTF-8";
     private static final int NUM_OF_RETRIES = 3;
-    public static final int THREAD_SLEEP_MILLIS = 100;
+    private static final int THREAD_SLEEP_MILLIS = 100;
 
     private String apiKey = null;
 
@@ -250,6 +251,7 @@ public class ServerConnector extends RestClient
                 .queryParam("AccessToken", testResults.getSecretToken())
                 .request(MediaType.APPLICATION_JSON);
 
+        @SuppressWarnings("unused")
         Response response = invocationBuilder.delete();
     }
 
@@ -388,6 +390,7 @@ public class ServerConnector extends RestClient
 
         Response response = postWithRetry(request, Entity.entity(resultStream,
                 MediaType.APPLICATION_OCTET_STREAM), null );
+        @SuppressWarnings("UnnecessaryLocalVariable")
         String entity = response.getHeaderString("Location");
         return entity;
     }
