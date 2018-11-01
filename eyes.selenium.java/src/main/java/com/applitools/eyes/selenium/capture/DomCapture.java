@@ -331,7 +331,7 @@ public class DomCapture {
                         mLogger.verbose("DomCapture.onDownloadComplete");
 
                         parseCSS(cssTreeNode, downloadedString);
-                        if (!cssTreeNode.allImportRules.isEmpty()) {
+                        if (cssTreeNode.allImportRules != null && !cssTreeNode.allImportRules.isEmpty()) {
 
                             cssTreeNode.downloadNodeCss();
                         }
@@ -446,11 +446,18 @@ public class DomCapture {
         mServerConnector.downloadString(node.urlPostfix, false, new IDownloadListener() {
             @Override
             public void onDownloadComplete(String downloadedString) {
-                mLogger.verbose("Download Complete");
-                listener.onDownloadComplete(downloadedString);
-                treePhaser.arriveAndDeregister();
-                mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
-                mLogger.verbose("current unarrived  - " + treePhaser.getUnarrivedParties());
+                try {
+                    mLogger.verbose("Download Complete");
+                    listener.onDownloadComplete(downloadedString);
+
+                } catch (Exception e) {
+                    GeneralUtils.logExceptionStackTrace(e);
+                }
+                finally {
+                    treePhaser.arriveAndDeregister();
+                    mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
+                    mLogger.verbose("current unarrived  - " + treePhaser.getUnarrivedParties());
+                }
             }
 
             @Override
