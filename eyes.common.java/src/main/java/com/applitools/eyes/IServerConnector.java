@@ -17,8 +17,8 @@ public interface IServerConnector {
     Logger getLogger();
 
 
-    void setProxy(ProxySettings proxySettings);
-    ProxySettings getProxy();
+    void setProxy(AbstractProxySettings abstractProxySettings);
+    AbstractProxySettings getProxy();
 
     /**
      *

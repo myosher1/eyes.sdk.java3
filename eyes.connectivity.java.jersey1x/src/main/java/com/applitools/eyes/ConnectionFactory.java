@@ -11,14 +11,14 @@ import com.sun.jersey.client.urlconnection.HttpURLConnectionFactory;
 public class ConnectionFactory implements HttpURLConnectionFactory {
 
     private Proxy proxy;
-    private ProxySettings proxySettings;
+    private AbstractProxySettings abstractProxySettings;
 
-    public ConnectionFactory(ProxySettings proxySettings) {
-        this.proxySettings = proxySettings;
+    public ConnectionFactory(AbstractProxySettings abstractProxySettings) {
+        this.abstractProxySettings = abstractProxySettings;
     }
 
     private void initializeProxy() {
-        proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxySettings.getUri(), proxySettings.getPort()));
+        proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(abstractProxySettings.getUri(), abstractProxySettings.getPort()));
     }
 
     public HttpURLConnection getHttpURLConnection(URL url) throws IOException {
