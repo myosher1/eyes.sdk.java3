@@ -327,6 +327,8 @@ public class Eyes extends EyesBase {
 
         screenshotFactory = new EyesWebDriverScreenshotFactory(logger, this.driver);
 
+        ensureViewportSize();
+
         openBase();
 
         String uaString = sessionStartInfo.getEnvironment().getInferred();
@@ -347,6 +349,12 @@ public class Eyes extends EyesBase {
 
         this.driver.setRotation(rotation);
         return this.driver;
+    }
+
+    private void ensureViewportSize() {
+        if (this.config.getViewportSize() == null) {
+            this.config.setViewportSize(driver.getDefaultContentViewportSize());
+        }
     }
 
     private void initDriver(WebDriver driver) {
