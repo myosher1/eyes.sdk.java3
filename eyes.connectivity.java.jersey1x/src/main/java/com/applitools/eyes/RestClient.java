@@ -6,13 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.config.ClientConfig;
-import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.api.client.filter.ClientFilter;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
 import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
 import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
-import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
 
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
@@ -32,7 +28,7 @@ public class RestClient {
         ClientResponse call();
     }
 
-    private ProxySettings proxySettings;
+    private AbstractProxySettings abstractProxySettings;
     private int timeout; // seconds
 
     protected Logger logger;
@@ -45,18 +41,18 @@ public class RestClient {
 
     /**
      * @param timeout       Connect/Read timeout in milliseconds. 0 equals infinity.
-     * @param proxySettings (optional) Setting for communicating via proxy.
+     * @param abstractProxySettings (optional) Setting for communicating via proxy.
      */
     private static Client buildRestClient(int timeout,
-                                          ProxySettings proxySettings) {
+                                          AbstractProxySettings abstractProxySettings) {
         // Creating the client configuration
         ApacheHttpClient4Config cc = new DefaultApacheHttpClient4Config() ;
         cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_CONNECT_TIMEOUT, timeout);
         cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_READ_TIMEOUT, timeout);
 
 
-        if (proxySettings != null) {
-            URI uri = URI.create(proxySettings.getUri());
+        if (abstractProxySettings != null) {
+            URI uri = URI.create(abstractProxySettings.getUri());
             UriBuilder uriBuilder = UriBuilder.fromUri(uri);
             boolean changed = false;
             if (uri.getScheme() == null && uri.getHost() == null && uri.getPath() != null) {
@@ -65,16 +61,16 @@ public class RestClient {
                 uriBuilder.replacePath(null);
                 changed = true;
             }
-            if (uri.getPort() != proxySettings.getPort()) {
-                uriBuilder.port(proxySettings.getPort());
+            if (uri.getPort() != abstractProxySettings.getPort()) {
+                uriBuilder.port(abstractProxySettings.getPort());
                 changed = true;
             }
             if (changed) {
                 uri = uriBuilder.build();
             }
             cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_URI, uri);
-            cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_USERNAME, proxySettings.getUsername());
-            cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_PASSWORD, proxySettings.getPassword());
+            cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_USERNAME, abstractProxySettings.getUsername());
+            cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_PASSWORD, abstractProxySettings.getPassword());
 
             ApacheHttpClient4 client = ApacheHttpClient4.create(cc);
             return client;
@@ -100,7 +96,7 @@ public class RestClient {
         this.timeout = timeout;
         this.serverUrl = serverUrl;
 
-        restClient = buildRestClient(timeout, proxySettings);
+        restClient = buildRestClient(timeout, abstractProxySettings);
         endPoint = restClient.resource(serverUrl);
     }
 
@@ -128,14 +124,14 @@ public class RestClient {
     /**
      * Sets the proxy settings to be used by the rest client.
      *
-     * @param proxySettings The proxy settings to be used by the rest client.
+     * @param abstractProxySettings The proxy settings to be used by the rest client.
      *                      If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public void setProxyBase(ProxySettings proxySettings) {
+    public void setProxyBase(AbstractProxySettings abstractProxySettings) {
 
-        this.proxySettings = proxySettings;
-        restClient = buildRestClient(timeout, proxySettings);
+        this.abstractProxySettings = abstractProxySettings;
+        restClient = buildRestClient(timeout, abstractProxySettings);
         endPoint = restClient.resource(serverUrl);
     }
 
@@ -144,8 +140,8 @@ public class RestClient {
      * or {@code null} if no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public ProxySettings getProxyBase() {
-        return proxySettings;
+    public AbstractProxySettings getProxyBase() {
+        return abstractProxySettings;
     }
 
     /**
@@ -157,7 +153,7 @@ public class RestClient {
         ArgumentGuard.greaterThanOrEqualToZero(timeout, "timeout");
         this.timeout = timeout;
 
-        restClient = buildRestClient(timeout, proxySettings);
+        restClient = buildRestClient(timeout, abstractProxySettings);
         endPoint = restClient.resource(serverUrl);
     }
 

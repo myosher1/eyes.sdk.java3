@@ -8,11 +8,11 @@ import com.applitools.utils.ArgumentGuard;
 /***
  * Encapsulates settings for sending Eyes communication via proxy.
  */
-public class ProxySettings {
-    private String uri;
-    private String username;
-    private String password;
-    private int port;
+public abstract class AbstractProxySettings {
+    protected String uri;
+    protected String username;
+    protected String password;
+    protected int port;
 
     /**
      * @param uri      The proxy's URI.
@@ -20,7 +20,7 @@ public class ProxySettings {
      * @param username The username to be sent to the proxy.
      * @param password The password to be sent to the proxy.
      */
-    public ProxySettings(String uri, int port, String username, String password) {
+    public AbstractProxySettings(String uri, int port, String username, String password) {
         ArgumentGuard.notNull(uri, "uri");
         this.uri = uri;
         this.port = port;
@@ -32,7 +32,7 @@ public class ProxySettings {
      * @param uri      The proxy's URI.
      * @param port     The proxy's port
      */
-    public ProxySettings(String uri, int port) {
+    public AbstractProxySettings(String uri, int port) {
         this(uri, port, null, null);
     }
 
@@ -41,7 +41,7 @@ public class ProxySettings {
      * @param username The username to be sent to the proxy.
      * @param password The password to be sent to the proxy.
      */
-    public ProxySettings(String uri, String username, String password) {
+    public AbstractProxySettings(String uri, String username, String password) {
         this(uri, 8888, username, password);
     }
 
@@ -50,7 +50,7 @@ public class ProxySettings {
      * @param uri The proxy's URI.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public ProxySettings(String uri) {
+    public AbstractProxySettings(String uri) {
         this(uri, 8888, null, null);
     }
 
