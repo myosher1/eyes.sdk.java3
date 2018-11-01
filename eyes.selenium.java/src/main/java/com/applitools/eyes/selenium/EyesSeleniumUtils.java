@@ -14,7 +14,7 @@ import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.ios.IOSDriver;
 import io.appium.java_client.remote.MobileCapabilityType;
 import org.openqa.selenium.*;
-import org.openqa.selenium.interactions.Coordinates;
+import org.openqa.selenium.interactions.internal.Coordinates;
 
 import java.util.HashMap;
 import java.util.List;
