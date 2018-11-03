@@ -39,8 +39,8 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
         this(new Logger(), serverUrl, accessKey);
     }
 
-    public void setProxy(ProxySettings proxySettings){
-        setProxyBase(proxySettings);
+    public void setProxy(AbstractProxySettings abstractProxySettings){
+        setProxyBase(abstractProxySettings);
         this.defaultEndPoint = endPoint.queryParam("accessKey", accessKey).path(SERVER_SUFFIX);
     }
 
