@@ -177,14 +177,12 @@ public class FullPageCaptureAlgorithm {
 //                continue;
 //            }
             logger.verbose(String.format("Taking screenshot for %s", partRegion));
-            // Set the position to the part's top/left.
-            positionProvider.setPosition(partRegion.getLocation());
-            // Giving it time to stabilize.
-            GeneralUtils.sleep(waitBeforeScreenshots);
-            // Screen size may cause the scroll to only reach part of the way.
-            Location originPosition = positionProvider.getCurrentPosition();
+
+            // Scroll to the part's top/left
+            Location originPosition = positionProvider.setPosition(partRegion.getLocation());
             Location targetPosition = originPosition.offset(-fullArea.getLeft(), -fullArea.getTop());
             logger.verbose(String.format("Origin Position is set to %s", originPosition));
+            logger.verbose(String.format("Target Position is %s", targetPosition));
 
             // Actually taking the screenshot.
             logger.verbose("Getting image...");
@@ -237,8 +235,10 @@ public class FullPageCaptureAlgorithm {
         logger.verbose("Extracted entire size: " + fullArea.getSize());
         logger.verbose("Actual stitched size: " + actualImageWidth + "x" + actualImageHeight);
 
+        debugScreenshotsProvider.save(stitchedImage,"_stitched_before_trim");
+
         if (actualImageWidth < stitchedImage.getWidth() || actualImageHeight < stitchedImage.getHeight()) {
-            logger.verbose("Trimming unnecessary margins..");
+            logger.verbose("Trimming unnecessary margins...");
             stitchedImage = ImageUtils.getImagePart(stitchedImage,
                     new Region(0, 0,
                             Math.min(actualImageWidth, stitchedImage.getWidth()),

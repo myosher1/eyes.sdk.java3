@@ -38,14 +38,8 @@ public class ScrollPositionProvider implements PositionProvider {
      */
     public Location getCurrentPosition() {
         logger.verbose("ScrollPositionProvider - getCurrentPosition()");
-        Location result;
-        try {
-            result = EyesSeleniumUtils.getCurrentScrollPosition(executor);
-        } catch (WebDriverException e) {
-            throw new EyesDriverOperationException("Failed to extract current scroll position!", e);
-        }
-        logger.verbose("Current position: " + result);
-        return result;
+        Object position = executor.executeScript("return arguments[0].scrollLeft+';'+arguments[0].scrollTop;", scrollRootElement);
+        return parseLocationString(position);
     }
 
     /**
@@ -57,6 +51,10 @@ public class ScrollPositionProvider implements PositionProvider {
         Object position = executor.executeScript(String.format("arguments[0].scrollTo(%d,%d); return (arguments[0].scrollLeft+';'+arguments[0].scrollTop);",
                 location.getX(), location.getY()),
                 scrollRootElement);
+        return parseLocationString(position);
+    }
+
+    private Location parseLocationString(Object position) {
         String[] xy = position.toString().split(";");
         if (xy.length != 2)
         {

@@ -113,7 +113,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
         PositionProvider positionProvider;
         Eyes eyes = driver.getEyes();
-        PositionProvider currentFramePositionProvider =eyes.getCurrentFramePositionProvider();
+        PositionProvider currentFramePositionProvider = eyes.getCurrentFramePositionProvider();
         if (currentFramePositionProvider  != null)
         {
             positionProvider = currentFramePositionProvider;
