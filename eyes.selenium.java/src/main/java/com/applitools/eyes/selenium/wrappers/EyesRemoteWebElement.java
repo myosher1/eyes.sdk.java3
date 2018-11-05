@@ -50,6 +50,9 @@ public class EyesRemoteWebElement extends RemoteWebElement {
             "arguments[0].scrollLeft = %d;" +
                     "arguments[0].scrollTop = %d;";
 
+    private final String JS_GET_SCROLL_POSITION =
+            "return arguments[0].scrollLeft + ',' + arguments[0].scrollTop;";
+
     private final String JS_GET_OVERFLOW =
             "return arguments[0].style.overflow;";
 
@@ -242,9 +245,17 @@ public class EyesRemoteWebElement extends RemoteWebElement {
      * Scrolls to the specified location inside the element.
      * @param location The location to scroll to.
      */
-    public void scrollTo(Location location) {
-        eyesDriver.executeScript(String.format(JS_SCROLL_TO_FORMATTED_STR,
-                location.getX(), location.getY()), this);
+    public Location scrollTo(Location location) {
+        Object position = eyesDriver.executeScript(String.format(JS_SCROLL_TO_FORMATTED_STR,
+                location.getX(), location.getY()) + JS_GET_SCROLL_POSITION, this);
+        String[] xy = position.toString().split(";");
+        if (xy.length != 2)
+        {
+            throw new EyesException("Could not get scroll position!");
+        }
+        float x = Float.parseFloat(xy[0]);
+        float y = Float.parseFloat(xy[1]);
+        return new Location((int)Math.ceil(x), (int)Math.ceil(y));
     }
 
     /**

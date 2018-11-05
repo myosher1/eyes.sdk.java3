@@ -15,6 +15,7 @@ import com.applitools.eyes.selenium.wrappers.EyesTargetLocator;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.ImageUtils;
+import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
@@ -44,7 +45,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
     private static Location getDefaultContentScrollPosition(Logger logger, FrameChain currentFrames, EyesWebDriver driver) {
         IEyesJsExecutor jsExecutor = new SeleniumJavaScriptExecutor(driver);
-        PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor);
+        PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, driver.findElement(By.tagName("html")));
         if (currentFrames.size() == 0) {
             return positionProvider.getCurrentPosition();
         }

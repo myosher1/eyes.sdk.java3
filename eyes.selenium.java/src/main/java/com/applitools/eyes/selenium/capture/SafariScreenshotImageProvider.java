@@ -9,6 +9,7 @@ import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ImageUtils;
+import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.TakesScreenshot;
@@ -82,7 +83,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
             FrameChain currentFrameChain = ((EyesWebDriver) eyes.getDriver()).getFrameChain();
 
             if (currentFrameChain.size() == 0) {
-                PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor);
+                PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, eyes.getDriver().findElement(By.tagName("html")));
                 loc = positionProvider.getCurrentPosition();
             } else {
                 loc = currentFrameChain.getDefaultContentScrollPosition();

@@ -7,19 +7,28 @@ import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.WebDriverException;
+import org.openqa.selenium.WebElement;
 
 public class ScrollPositionProvider implements PositionProvider {
 
 
     protected final Logger logger;
     protected final IEyesJsExecutor executor;
+    protected final WebElement scrollRootElement;
 
-    public ScrollPositionProvider(Logger logger, IEyesJsExecutor executor) {
+    private final String JS_GET_ENTIRE_PAGE_SIZE =
+            "var width = Math.max(arguments[0].clientWidth, arguments[0].scrollWidth);" +
+                    "var height = Math.max(arguments[0].clientHeight, arguments[0].scrollHeight);" +
+                    "return (width + ',' + height);";
+
+    public ScrollPositionProvider(Logger logger, IEyesJsExecutor executor, WebElement scrollRootElement) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(executor, "executor");
+        ArgumentGuard.notNull(scrollRootElement, "scrollRootElement");
 
         this.logger = logger;
         this.executor = executor;
+        this.scrollRootElement = scrollRootElement;
 
         logger.verbose("creating ScrollPositionProvider");
     }
@@ -43,10 +52,19 @@ public class ScrollPositionProvider implements PositionProvider {
      * Go to the specified location.
      * @param location The position to scroll to.
      */
-    public void setPosition(Location location) {
-        logger.verbose("ScrollPositionProvider - Scrolling to " + location);
-        EyesSeleniumUtils.setCurrentScrollPosition(executor, location);
-        logger.verbose("ScrollPositionProvider - Done scrolling!");
+    public Location setPosition(Location location) {
+        logger.verbose(String.format("setting position of %s to %s", scrollRootElement, location));
+        Object position = executor.executeScript(String.format("arguments[0].scrollTo(%d,%d); return (arguments[0].scrollLeft+';'+arguments[0].scrollTop);",
+                location.getX(), location.getY()),
+                scrollRootElement);
+        String[] xy = position.toString().split(";");
+        if (xy.length != 2)
+        {
+            throw new EyesException("Could not get scroll position!");
+        }
+        float x = Float.parseFloat(xy[0]);
+        float y = Float.parseFloat(xy[1]);
+        return new Location((int)Math.ceil(x), (int)Math.ceil(y));
     }
 
     /**
@@ -55,7 +73,17 @@ public class ScrollPositionProvider implements PositionProvider {
      * to.
      */
     public RectangleSize getEntireSize() {
-        RectangleSize result = EyesSeleniumUtils.getCurrentFrameContentEntireSize(executor);
+
+        logger.verbose(String.format("enter (scrollRootElement: %s)", scrollRootElement));
+        String entireSizeStr = (String)executor.executeScript(JS_GET_ENTIRE_PAGE_SIZE, scrollRootElement);
+        String[] wh = entireSizeStr.split(",");
+        if (wh.length != 2)
+        {
+            throw new EyesException("Could not get entire size!");
+        }
+        float w = Float.parseFloat(wh[0]);
+        float h = Float.parseFloat(wh[1]);
+        RectangleSize result = new RectangleSize((int)Math.ceil(w), (int)Math.ceil(h));
         logger.verbose("ScrollPositionProvider - Entire size: " + result);
         return result;
     }

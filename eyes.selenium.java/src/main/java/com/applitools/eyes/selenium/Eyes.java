@@ -370,6 +370,13 @@ public class Eyes extends EyesBase {
         }
     }
 
+    public WebElement getScrollRootElement(){
+        if (scrollRootElement == null) {
+            scrollRootElement = driver.findElement(By.tagName("html"));
+        }
+        return scrollRootElement;
+    }
+
     private PositionProvider createPositionProvider() {
         return createPositionProvider(scrollRootElement);
     }
@@ -382,7 +389,7 @@ public class Eyes extends EyesBase {
             case CSS:
                 return new CssTranslatePositionProvider(logger, this.jsExecutor, scrollRootElement);
             default:
-                return new ScrollPositionProvider(logger, this.jsExecutor);
+                return new ScrollPositionProvider(logger, this.jsExecutor, scrollRootElement);
         }
     }
 
@@ -1163,7 +1170,7 @@ public class Eyes extends EyesBase {
         FrameChain originalFrameChain = driver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
         switchTo.defaultContent();
-        ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor);
+        ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
         Location location;
         try {
             location = spp.getCurrentPosition();
@@ -1941,7 +1948,12 @@ public class Eyes extends EyesBase {
 
         ensureElementVisible(targetElement);
 
-        PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor);
+        //
+        FrameChain fc = driver.getFrameChain().clone();
+        Frame currentFrame = fc.peek();
+        WebElement scrollRootElement = currentFrame == null ? this.scrollRootElement : currentFrame.getScrollRootElement();
+        PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
+
         Location originalScrollPosition = scrollPositionProvider.getCurrentPosition();
 
         String originalOverflow = null;
@@ -2415,9 +2427,14 @@ public class Eyes extends EyesBase {
     }
 
     private FullPageCaptureAlgorithm createFullPageCaptureAlgorithm(ScaleProviderFactory scaleProviderFactory) {
+        FrameChain fc = driver.getFrameChain().clone();
+        Frame currentFrame = fc.peek();
+        PositionProvider originProvider = new ScrollPositionProvider(logger, jsExecutor,
+                currentFrame == null ? scrollRootElement : currentFrame.getScrollRootElement());
+
         return new FullPageCaptureAlgorithm(logger, regionPositionCompensation,
                 getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
-                new ScrollPositionProvider(logger, this.jsExecutor),
+                originProvider,
                 scaleProviderFactory,
                 cutProviderHandler.get(),
                 getStitchOverlap(),
