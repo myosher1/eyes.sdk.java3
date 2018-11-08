@@ -3,9 +3,14 @@
  */
 package com.applitools.eyes.selenium.frames;
 
+import com.applitools.eyes.IEyesJsExecutor;
 import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.positioning.PositionMemento;
+import com.applitools.eyes.positioning.PositionProvider;
+import com.applitools.eyes.selenium.positioning.ScrollPositionMemento;
+import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -25,8 +30,9 @@ public final class Frame {
     private final RectangleSize outerSize;
     private final RectangleSize innerSize;
     private final Location originalLocation;
-    private final JavascriptExecutor jsExecutor;
+    private final IEyesJsExecutor jsExecutor;
     private final Logger logger;
+    private PositionMemento positionMemento;
 
     private WebElement scrollRootElement;
     private String originalOverflow;
@@ -42,7 +48,7 @@ public final class Frame {
      */
     public Frame(Logger logger, WebElement reference,
                  Location location, RectangleSize outerSize, RectangleSize innerSize,
-                 Location originalLocation, JavascriptExecutor jsExecutor) {
+                 Location originalLocation, IEyesJsExecutor jsExecutor) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(reference, "reference");
         ArgumentGuard.notNull(location, "location");
@@ -61,6 +67,7 @@ public final class Frame {
         this.outerSize = outerSize;
         this.innerSize = innerSize;
         this.originalLocation = originalLocation;
+        this.positionMemento = new ScrollPositionMemento(originalLocation);
         this.jsExecutor = jsExecutor;
     }
 
@@ -89,21 +96,37 @@ public final class Frame {
     }
 
     public void hideScrollbars(WebDriver driver) {
-        if (scrollRootElement == null) {
-            logger.verbose("no scroll root element. selecting default.");
-            scrollRootElement = driver.findElement(By.tagName("html"));
-        }
+        WebElement scrollRootElement = getScrollRootElement(driver);
         logger.verbose("hiding scrollbars of element: " + scrollRootElement);
         originalOverflow = (String) jsExecutor.executeScript("var origOF = arguments[0].style.overflow; arguments[0].style.overflow='hidden'; return origOF;", scrollRootElement);
     }
 
     public void returnToOriginalOverflow(WebDriver driver) {
-        if (scrollRootElement == null) {
-            logger.verbose("no scroll root element. selecting default.");
-            scrollRootElement = driver.findElement(By.tagName("html"));
-        }
+        WebElement scrollRootElement = getScrollRootElement(driver);
         logger.verbose("returning overflow of element to its original value: " + scrollRootElement);
         jsExecutor.executeScript("arguments[0].style.overflow='" + originalOverflow + "';", scrollRootElement);
     }
 
+
+    public void returnToOriginalPosition(WebDriver driver)
+    {
+        WebElement scrollRootElement = getScrollRootElement(driver);
+        PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
+        positionProvider.restoreState(positionMemento);
+    }
+
+
+    private WebElement getScrollRootElement(WebDriver driver)
+    {
+        WebElement scrollRootElement = getScrollRootElement();
+        if (scrollRootElement == null)
+        {
+            logger.verbose("no scroll root element. selecting default.");
+            scrollRootElement = driver.findElement(By.tagName("html"));
+        }
+        logger.verbose("returning overflow of element to its original value: " + scrollRootElement);
+        jsExecutor.executeScript("arguments[0].style.overflow='"+scrollRootElement+"';");
+
+        return scrollRootElement;
+    }
 }

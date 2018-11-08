@@ -370,7 +370,7 @@ public class Eyes extends EyesBase {
         }
     }
 
-    public WebElement getScrollRootElement(){
+    public WebElement getScrollRootElement() {
         if (scrollRootElement == null) {
             scrollRootElement = driver.findElement(By.tagName("html"));
         }
@@ -766,7 +766,7 @@ public class Eyes extends EyesBase {
             debugScreenshotsProvider.save(subScreenshot.getImage(), String.format("subscreenshot_%s", name));
 
             ImageMatchSettings ims = mwt.createImageMatchSettings(checkSettingsInternal, subScreenshot);
-            AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()),null);
+            AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()), null);
             AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, subScreenshot);
             MatchResult matchResult = mwt.performMatch(
                     new Trigger[0], appOutputWithScreenshot, name, false, ims);
@@ -1147,13 +1147,10 @@ public class Eyes extends EyesBase {
             Location elementLocation = new Location(p.getX(), p.getY());
 
             WebElement scrollRootElement;
-            if (originalFC.size() > 0 && !element.equals(originalFC.peek().getReference()))
-            {
+            if (originalFC.size() > 0 && !element.equals(originalFC.peek().getReference())) {
                 switchTo.frames(originalFC);
                 scrollRootElement = driver.findElement(By.tagName("html"));
-            }
-            else
-            {
+            } else {
                 scrollRootElement = this.scrollRootElement;
             }
 
@@ -1704,6 +1701,22 @@ public class Eyes extends EyesBase {
                 scaleProviderHandler);
     }
 
+    public WebElement getCurrentFrameScrollRootElement() {
+        FrameChain fc = driver.getFrameChain().clone();
+        Frame currentFrame = fc.peek();
+        WebElement scrollRootElement = null;
+        if (currentFrame != null) {
+            scrollRootElement = currentFrame.getScrollRootElement();
+        }
+        if (scrollRootElement == null) {
+            scrollRootElement = this.scrollRootElement;
+        }
+        if (scrollRootElement == null) {
+            scrollRootElement = driver.findElement(By.tagName("html"));
+        }
+        return scrollRootElement;
+    }
+
     /**
      * Verifies the current frame.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
@@ -1948,10 +1961,7 @@ public class Eyes extends EyesBase {
 
         ensureElementVisible(targetElement);
 
-        //
-        FrameChain fc = driver.getFrameChain().clone();
-        Frame currentFrame = fc.peek();
-        WebElement scrollRootElement = currentFrame == null ? this.scrollRootElement : currentFrame.getScrollRootElement();
+        WebElement scrollRootElement = getCurrentFrameScrollRootElement();
         PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
 
         Location originalScrollPosition = scrollPositionProvider.getCurrentPosition();
@@ -1965,28 +1975,26 @@ public class Eyes extends EyesBase {
 
             String displayStyle = eyesElement.getComputedStyle("display");
 
-            if (getConfig().getHideScrollbars()) {
-                originalOverflow = eyesElement.getOverflow();
-                eyesElement.setOverflow("hidden");
-            }
-
-            int elementWidth = eyesElement.getClientWidth();
-            int elementHeight = eyesElement.getClientHeight();
+            SizeAndBorders sizeAndBorders = eyesElement.getSizeAndBorders();
+            Borders borderWidths = sizeAndBorders.getBorders();
+            RectangleSize elementSize = sizeAndBorders.getSize();
 
             if (!displayStyle.equals("inline") &&
-                    elementHeight <= effectiveViewport.getHeight() &&
-                    elementWidth <= effectiveViewport.getWidth()) {
+                    elementSize.getHeight() <= effectiveViewport.getHeight() &&
+                    elementSize.getWidth() <= effectiveViewport.getWidth()) {
                 elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
             } else {
                 elementPositionProvider = null;
             }
 
-            int borderLeftWidth = eyesElement.getComputedStyleInteger("border-left-width");
-            int borderTopWidth = eyesElement.getComputedStyleInteger("border-top-width");
+            if (getConfig().getHideScrollbars()) {
+                originalOverflow = eyesElement.getOverflow();
+                eyesElement.setOverflow("hidden");
+            }
 
             final Region elementRegion = new Region(
-                    pl.getX() + borderLeftWidth, pl.getY() + borderTopWidth,
-                    elementWidth, elementHeight, CoordinatesType.SCREENSHOT_AS_IS);
+                    pl.getX() + borderWidths.getLeft(), pl.getY() + borderWidths.getTop(),
+                    elementSize.getWidth(), elementSize.getHeight(), CoordinatesType.SCREENSHOT_AS_IS);
 
             logger.verbose("Element region: " + elementRegion);
 
@@ -2306,7 +2314,7 @@ public class Eyes extends EyesBase {
             }
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
             logger.verbose("done restoring scrollbars.");
-        } else{
+        } else {
             logger.verbose("no need to restore scrollbars.");
         }
         driver.getFrameChain().clear();
@@ -2385,7 +2393,24 @@ public class Eyes extends EyesBase {
 
             switchTo.defaultContent();
 
-            BufferedImage fullPageImage = algo.getStitchedRegion(Region.EMPTY, null, positionProviderHandler.get());
+            ////////////
+            EyesRemoteWebElement eyesScrollRootElement;
+            if (scrollRootElement instanceof EyesRemoteWebElement) {
+                eyesScrollRootElement = (EyesRemoteWebElement) scrollRootElement;
+            } else {
+                eyesScrollRootElement = new EyesRemoteWebElement(logger, driver, scrollRootElement);
+            }
+            Point location = eyesScrollRootElement.getLocation();
+            SizeAndBorders sizeAndBorders = eyesScrollRootElement.getSizeAndBorders();
+
+            Region region = new Region(
+                    location.getX() + sizeAndBorders.getBorders().getLeft(),
+                    location.getY() + sizeAndBorders.getBorders().getTop(),
+                    sizeAndBorders.getSize().getWidth(),
+                    sizeAndBorders.getSize().getHeight());
+            ////////////
+
+            BufferedImage fullPageImage = algo.getStitchedRegion(region, null, positionProviderHandler.get());
 
             switchTo.frames(originalFrameChain);
             result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);
@@ -2427,10 +2452,8 @@ public class Eyes extends EyesBase {
     }
 
     private FullPageCaptureAlgorithm createFullPageCaptureAlgorithm(ScaleProviderFactory scaleProviderFactory) {
-        FrameChain fc = driver.getFrameChain().clone();
-        Frame currentFrame = fc.peek();
-        PositionProvider originProvider = new ScrollPositionProvider(logger, jsExecutor,
-                currentFrame == null ? scrollRootElement : currentFrame.getScrollRootElement());
+        WebElement scrollRootElement = getCurrentFrameScrollRootElement();
+        PositionProvider originProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
 
         return new FullPageCaptureAlgorithm(logger, regionPositionCompensation,
                 getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
@@ -2613,7 +2636,7 @@ public class Eyes extends EyesBase {
         return new EyesSeleniumAgentSetup();
     }
 
-    public IServerConnector getServerConnector(){
+    public IServerConnector getServerConnector() {
         return this.serverConnector;
     }
 

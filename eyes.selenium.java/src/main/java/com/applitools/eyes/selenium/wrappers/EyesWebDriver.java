@@ -28,7 +28,7 @@ import java.util.*;
 public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         FindsByClassName, FindsByCssSelector, FindsById, FindsByLinkText,
         FindsByName, FindsByTagName, FindsByXPath, JavascriptExecutor,
-        SearchContext, TakesScreenshot, WebDriver, HasTouchScreen {
+        SearchContext, TakesScreenshot, WebDriver, HasTouchScreen, IEyesJsExecutor {
 
     private final Logger logger;
     private final Eyes eyes;

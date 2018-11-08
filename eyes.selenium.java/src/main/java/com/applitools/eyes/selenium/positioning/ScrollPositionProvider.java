@@ -4,6 +4,7 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.selenium.EyesSeleniumUtils;
+import com.applitools.eyes.selenium.SeleniumJavaScriptExecutor;
 import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.WebDriverException;
@@ -33,13 +34,16 @@ public class ScrollPositionProvider implements PositionProvider {
         logger.verbose("creating ScrollPositionProvider");
     }
 
+    public static Location getCurrentPosition(IEyesJsExecutor executor, WebElement scrollRootElement) {
+        Object position = executor.executeScript("return arguments[0].scrollLeft+';'+arguments[0].scrollTop;", scrollRootElement);
+        return parseLocationString(position);
+    }
+
     /**
      * @return The scroll position of the current frame.
      */
     public Location getCurrentPosition() {
-        logger.verbose("ScrollPositionProvider - getCurrentPosition()");
-        Object position = executor.executeScript("return arguments[0].scrollLeft+';'+arguments[0].scrollTop;", scrollRootElement);
-        return parseLocationString(position);
+        return getCurrentPosition(executor, scrollRootElement);
     }
 
     /**
@@ -48,13 +52,13 @@ public class ScrollPositionProvider implements PositionProvider {
      */
     public Location setPosition(Location location) {
         logger.verbose(String.format("setting position of %s to %s", scrollRootElement, location));
-        Object position = executor.executeScript(String.format("arguments[0].scrollTo(%d,%d); return (arguments[0].scrollLeft+';'+arguments[0].scrollTop);",
+        Object position = executor.executeScript(String.format("arguments[0].scrollLeft=%d; arguments[0].scrollTop=%d; return (arguments[0].scrollLeft+';'+arguments[0].scrollTop);",
                 location.getX(), location.getY()),
                 scrollRootElement);
         return parseLocationString(position);
     }
 
-    private Location parseLocationString(Object position) {
+    private static Location parseLocationString(Object position) {
         String[] xy = position.toString().split(";");
         if (xy.length != 2)
         {
