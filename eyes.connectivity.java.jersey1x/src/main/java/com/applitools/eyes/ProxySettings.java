@@ -31,6 +31,6 @@ public class ProxySettings extends AbstractProxySettings {
      * @param uri Uri should start without the scheme
      */
     public ProxySettings(String uri) {
-        super(uri);
+        super(uri,"","");
     }
 }
