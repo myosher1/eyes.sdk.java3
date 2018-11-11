@@ -1,5 +1,6 @@
 package com.applitools.eyes.selenium.config;
 
+import com.applitools.eyes.selenium.rendering.RenderingConfiguration;
 import com.applitools.eyes.selenium.StitchMode;
 
 public class Configuration extends com.applitools.eyes.config.Configuration {
@@ -10,6 +11,7 @@ public class Configuration extends com.applitools.eyes.config.Configuration {
     private StitchMode stitchMode = StitchMode.SCROLL;
     private boolean hideScrollbars = true;
     private boolean hideCaret = true;
+    private RenderingConfiguration renderingConfiguration;
 
     public boolean getForceFullPageScreenshot() {
         return forceFullPageScreenshot;
@@ -53,5 +55,13 @@ public class Configuration extends com.applitools.eyes.config.Configuration {
 
     public void setHideCaret(boolean hideCaret) {
         this.hideCaret = hideCaret;
+    }
+
+    public void setRenderingConfiguration(RenderingConfiguration renderingConfiguration) {
+        this.renderingConfiguration = renderingConfiguration;
+    }
+
+    public RenderingConfiguration getRenderingConfiguration() {
+        return renderingConfiguration;
     }
 }

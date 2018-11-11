@@ -2533,13 +2533,6 @@ public class Eyes extends EyesBase {
         }
     }
 
-    @Override
-    public void initRenderingInfo() {
-        this.serverConnector.getRenderInfo();
-
-
-    }
-
     @SuppressWarnings("UnusedDeclaration")
     class EyesSeleniumAgentSetup {
         class WebDriverInfo {

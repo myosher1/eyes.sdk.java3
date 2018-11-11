@@ -1816,7 +1816,4 @@ public abstract class EyesBase {
         this.isSendDom = isSendDom;
     }
 
-    public abstract void initRenderingInfo();
-
-
 }

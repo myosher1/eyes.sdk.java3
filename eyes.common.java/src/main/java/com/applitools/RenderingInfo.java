@@ -19,23 +19,14 @@ public class RenderingInfo {
         return serviceUrl;
     }
 
-    public void setServiceUrl(String serviceUrl) {
-        this.serviceUrl = serviceUrl;
-    }
 
     public String getAccessToken() {
         return accessToken;
     }
 
-    public void setAccessToken(String accessToken) {
-        this.accessToken = accessToken;
-    }
 
     public String getResultsUrl() {
         return resultsUrl;
     }
 
-    public void setResultsUrl(String resultsUrl) {
-        this.resultsUrl = resultsUrl;
-    }
 }

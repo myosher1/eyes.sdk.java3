@@ -433,7 +433,7 @@ public class ServerConnector extends RestClient
 
 
     @Override
-    public void getRenderInfo() {
+    public RenderingInfo getRenderInfo() {
 
         WebTarget target = restClient.target(serverUrl).path((RENDER_INFO_PATH)).queryParam("apiKey", getApiKey());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
@@ -444,6 +444,7 @@ public class ServerConnector extends RestClient
 
         Response response = request.get();
         renderingInfo = parseResponseWithJsonData(response, validStatusCodes, RenderingInfo.class);
+        return renderingInfo;
     }
 
     @Override
@@ -569,5 +570,4 @@ public class ServerConnector extends RestClient
         }
         throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
     }
-
 }

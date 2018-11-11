@@ -1,6 +1,7 @@
 package com.applitools.eyes;
 
 import com.applitools.IResourceUploadListener;
+import com.applitools.RenderingInfo;
 import com.applitools.renderingGrid.*;
 
 import java.net.URI;
@@ -112,7 +113,7 @@ public interface IServerConnector {
     /**
      * Gets the render info from the server to be used later on.
      */
-    void getRenderInfo();
+    RenderingInfo getRenderInfo();
 
     /**
      * Initiate a rendering using RenderingGrid API
