@@ -45,19 +45,25 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
     private static Location getDefaultContentScrollPosition(Logger logger, FrameChain currentFrames, EyesWebDriver driver) {
         IEyesJsExecutor jsExecutor = new SeleniumJavaScriptExecutor(driver);
-        PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, driver.findElement(By.tagName("html")));
+        Location defaultContentScrollPosition;
         if (currentFrames.size() == 0) {
-            return positionProvider.getCurrentPosition();
+            defaultContentScrollPosition = getDefaultContentScrollPosition(logger, driver, jsExecutor);
+        } else {
+            FrameChain originalFC = new FrameChain(logger, currentFrames);
+
+            EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
+            switchTo.defaultContent();
+            defaultContentScrollPosition = getDefaultContentScrollPosition(logger, driver, jsExecutor);
+            switchTo.frames(originalFC);
         }
-
-        FrameChain originalFC = new FrameChain(logger, currentFrames);
-
-        EyesTargetLocator switchTo = (EyesTargetLocator)driver.switchTo();
-        switchTo.defaultContent();
-        Location defaultContentScrollPosition = positionProvider.getCurrentPosition();
-        switchTo.frames(originalFC);
-
         return defaultContentScrollPosition;
+    }
+
+    private static Location getDefaultContentScrollPosition(Logger logger, EyesWebDriver driver, IEyesJsExecutor jsExecutor)
+    {
+        WebElement scrollRootElement = driver.getEyes().getCurrentFrameScrollRootElement();
+        PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
+        return positionProvider.getCurrentPosition();
     }
 
     public static Location calcFrameLocationInScreenshot(Logger logger, EyesWebDriver driver,
@@ -114,12 +120,9 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         PositionProvider positionProvider;
         Eyes eyes = driver.getEyes();
         PositionProvider currentFramePositionProvider = eyes.getCurrentFramePositionProvider();
-        if (currentFramePositionProvider  != null)
-        {
+        if (currentFramePositionProvider != null) {
             positionProvider = currentFramePositionProvider;
-        }
-        else
-        {
+        } else {
             positionProvider = eyes.getPositionProvider();
         }
 
@@ -137,7 +140,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             throw new EyesException("Got empty frame window for screenshot!");
         }
 
-        regionWindow = new Region(0,0,0,0); // FIXME: 18/03/2018 Region workaround
+        regionWindow = new Region(0, 0, 0, 0); // FIXME: 18/03/2018 Region workaround
 
         logger.verbose("Done!");
     }
@@ -157,7 +160,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         try {
             sp = positionProvider.getCurrentPosition();
             if (sp == null) {
-                sp = new Location(0,0);
+                sp = new Location(0, 0);
             }
         } catch (EyesDriverOperationException e) {
             sp = new Location(0, 0);
@@ -215,12 +218,13 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
     }
 
     // FIXME: 18/03/2018 This is a workaround done for handling checkRegion.
+
     /**
      * Creates a frame-like window screenshot, to be used for checkRegion screenshots.
-     * @param logger          A Logger instance.
-     * @param driver          The web driver used to get the screenshot.
-     * @param image           The actual screenshot image.
-     * @param screenshotRegion    The region of the screenshot.
+     * @param logger           A Logger instance.
+     * @param driver           The web driver used to get the screenshot.
+     * @param image            The actual screenshot image.
+     * @param screenshotRegion The region of the screenshot.
      */
     public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver,
                                    BufferedImage image, Region screenshotRegion) {
@@ -262,7 +266,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         currentFrameScrollPosition = new Location(0, 0);
         frameLocationInScreenshot = new Location(0, 0);
         frameWindow = new Region(new Location(0, 0), entireFrameSize);
-        regionWindow = new Region(0,0,0,0); // FIXME: 18/03/2018 Region workaround
+        regionWindow = new Region(0, 0, 0, 0); // FIXME: 18/03/2018 Region workaround
     }
 
     /**

@@ -855,7 +855,17 @@ public class Eyes extends EyesBase {
 
     @Override
     public String tryCaptureDom() {
-        ElementPositionProvider positionProvider = new ElementPositionProvider(logger, driver, scrollRootElement);
+        FrameChain fc = driver.getFrameChain().clone();
+        Frame frame = fc.peek();
+        WebElement scrollRootElement = null;
+        if (frame != null) {
+            scrollRootElement = frame.getScrollRootElement();
+        }
+        if (scrollRootElement == null) {
+            scrollRootElement = driver.findElement(By.tagName("html"));
+        }
+        PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
+
         DomCapture domCapture = new DomCapture(this);
         String fullWindowDom = domCapture.getFullWindowDom(this.driver, positionProvider);
         if (this.domCaptureListener != null) {
@@ -2346,12 +2356,12 @@ public class Eyes extends EyesBase {
     @Override
     protected EyesScreenshot getScreenshot() {
 
-        logger.verbose("getScreenshot()");
+        logger.verbose("enter()");
+        ScaleProviderFactory scaleProviderFactory = updateScalingParams();
 
         FrameChain originalFrameChain = driver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
 
-        ScaleProviderFactory scaleProviderFactory = updateScalingParams();
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
 
         EyesWebDriverScreenshot result;

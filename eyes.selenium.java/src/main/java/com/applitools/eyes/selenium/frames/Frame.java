@@ -108,24 +108,21 @@ public final class Frame {
     }
 
 
-    public void returnToOriginalPosition(WebDriver driver)
-    {
+    public void returnToOriginalPosition(WebDriver driver) {
         WebElement scrollRootElement = getScrollRootElement(driver);
         PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
         positionProvider.restoreState(positionMemento);
     }
 
 
-    private WebElement getScrollRootElement(WebDriver driver)
-    {
+    private WebElement getScrollRootElement(WebDriver driver) {
         WebElement scrollRootElement = getScrollRootElement();
-        if (scrollRootElement == null)
-        {
+        if (scrollRootElement == null) {
             logger.verbose("no scroll root element. selecting default.");
             scrollRootElement = driver.findElement(By.tagName("html"));
         }
         logger.verbose("returning overflow of element to its original value: " + scrollRootElement);
-        jsExecutor.executeScript("arguments[0].style.overflow='"+scrollRootElement+"';");
+        jsExecutor.executeScript("arguments[0].style.overflow='" + originalOverflow + "';", scrollRootElement);
 
         return scrollRootElement;
     }

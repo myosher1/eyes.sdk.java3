@@ -123,7 +123,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         }
         logger.verbose("Done! Making preparations...");
         willSwitchToFrame(frames.get(0));
-        logger.verbose("Done! Switching to frame...");
+        logger.verbose("Done! Switching to frame " + nameOrId + "...");
         targetLocator.frame(nameOrId);
         logger.verbose("Done!");
         return driver;

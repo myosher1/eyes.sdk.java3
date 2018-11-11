@@ -1,5 +1,6 @@
 package com.applitools.eyes.selenium;
 
+import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.selenium.fluent.Target;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
@@ -14,7 +15,7 @@ public class TestWix extends TestSetup {
         super.caps = caps;
         super.platform = platform;
         super.forceFPS = false;
-
+        super.testedPageSize = new RectangleSize(1400, 800);
         testSuitName = "Eyes Selenium SDK - Test Wix";
         testedPageUrl = "https://eventstest.wixsite.com/events-page-e2e/events/ba837913-7dad-41b9-b530-6c2cbfc4c265";
     }
