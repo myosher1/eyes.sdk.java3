@@ -70,6 +70,18 @@ public class BatchInfo {
     }
 
     /**
+     * Sets a unique identifier for the batch and allows chaining of the id
+     * with the instance then returns that instance. Sessions with batch
+     * info which includes the same ID will be grouped together.
+     * @param id The batch's ID
+     */
+    public BatchInfo withBatchId(String id) {
+        ArgumentGuard.notNullOrEmpty(id, "id");
+        this.id = id;
+        return this;
+    }
+
+    /**
      * @return The batch start date and time in ISO 8601 format.
      */
     @SuppressWarnings("UnusedDeclaration")

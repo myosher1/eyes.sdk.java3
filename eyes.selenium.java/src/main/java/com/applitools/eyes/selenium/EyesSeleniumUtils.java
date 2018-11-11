@@ -14,7 +14,7 @@ import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.ios.IOSDriver;
 import io.appium.java_client.remote.MobileCapabilityType;
 import org.openqa.selenium.*;
-import org.openqa.selenium.interactions.internal.Coordinates;
+import org.openqa.selenium.interactions.Coordinates;
 
 import java.util.HashMap;
 import java.util.List;
@@ -90,6 +90,7 @@ public class EyesSeleniumUtils {
     /**
      * Extracts the location relative to the entire page from the coordinates
      * (e.g. as opposed to viewport)
+     *
      * @param coordinates The coordinates from which location is extracted.
      * @return The location relative to the entire page
      */
@@ -105,6 +106,7 @@ public class EyesSeleniumUtils {
     /**
      * Extracts the location relative to the <b>viewport</b> from the
      * coordinates (e.g. as opposed to the entire page).
+     *
      * @param coordinates The coordinates from which location is extracted.
      * @return The location relative to the viewport.
      */
@@ -120,6 +122,7 @@ public class EyesSeleniumUtils {
     /**
      * For EyesWebDriver instances, returns the underlying WebDriver. For all other types - return the driver received
      * as parameter.
+     *
      * @param driver The driver instance for which to get the underlying WebDriver.
      * @return The underlying WebDriver
      */
@@ -167,13 +170,16 @@ public class EyesSeleniumUtils {
                 originalContext = null;
             }
             try {
+            } catch (WebDriverException e) {
+                originalContext = null;
+            }
+            try {
                 ScreenOrientation orientation = appiumDriver.getOrientation();
                 return orientation == ScreenOrientation.LANDSCAPE;
             } catch (Exception e) {
                 logger.log("WARNING: Couldn't get device orientation. Assuming Portrait.");
                 return false;
-            }
-            finally {
+            } finally {
                 if (originalContext != null) {
                     appiumDriver.context(originalContext);
                 }
@@ -207,6 +213,7 @@ public class EyesSeleniumUtils {
 
     /**
      * Sets the overflow of the current context's body.
+     *
      * @param executor The executor to use for setting the overflow.
      * @param value    The overflow value to set.
      * @return The previous overflow value (could be {@code null} if undefined).
@@ -245,6 +252,7 @@ public class EyesSeleniumUtils {
 
     /**
      * Sets the scroll position of the current frame.
+     *
      * @param executor The executor to use.
      * @param location The position to be set.
      */
@@ -556,6 +564,7 @@ public class EyesSeleniumUtils {
     /**
      * Sets transforms for document.documentElement according to the given
      * map of style keys and values.
+     *
      * @param executor   The executor to use.
      * @param transforms The transforms to set. Keys are used as style keys,
      *                   and values are the values for those styles.
@@ -575,6 +584,7 @@ public class EyesSeleniumUtils {
     /**
      * Set the given transform to document.documentElement for all style keys
      * defined in {@link #JS_TRANSFORM_KEYS} .
+     *
      * @param executor  The executor to use.
      * @param transform The transform value to set.
      */
@@ -591,6 +601,7 @@ public class EyesSeleniumUtils {
 
     /**
      * Translates the current documentElement to the given position.
+     *
      * @param executor The executor to use.
      * @param position The position to translate to.
      */
@@ -602,6 +613,7 @@ public class EyesSeleniumUtils {
 
     /**
      * Returns given element visible portion size.
+     *
      * @param element The element for which to return the size.
      * @return The given element's visible portion size.
      */

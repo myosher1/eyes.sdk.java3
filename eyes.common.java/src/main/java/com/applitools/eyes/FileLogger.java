@@ -64,7 +64,7 @@ public class FileLogger implements LogHandler {
             }
             File file = new File(filename);
             File path = file.getParentFile();
-            if (!path.exists()) {
+            if (path != null && !path.exists()) {
                 System.out.println("No Folder");
                 boolean success = path.mkdirs();
                 System.out.println("Folder created");

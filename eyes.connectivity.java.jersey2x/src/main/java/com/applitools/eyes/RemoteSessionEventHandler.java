@@ -3,7 +3,6 @@ package com.applitools.eyes;
 import com.applitools.eyes.events.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
@@ -40,8 +39,8 @@ public class RemoteSessionEventHandler extends RestClient implements ISessionEve
         this(new Logger(), serverUrl, accessKey);
     }
 
-    public void setProxy(ProxySettings proxySettings){
-        setProxyBase(proxySettings);
+    public void setProxy(AbstractProxySettings abstractProxySettings){
+        setProxyBase(abstractProxySettings);
         this.defaultEndPoint = endPoint.queryParam("accessKey", accessKey).path(SERVER_SUFFIX);
     }
 

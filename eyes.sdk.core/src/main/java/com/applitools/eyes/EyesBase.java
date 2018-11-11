@@ -1,5 +1,6 @@
 package com.applitools.eyes;
 
+import com.applitools.IDomCaptureListener;
 import com.applitools.eyes.capture.AppOutputProvider;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.config.Configuration;
@@ -82,6 +83,7 @@ public abstract class EyesBase {
     private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
     private int validationId;
     private boolean isSendDom;
+    protected IDomCaptureListener domCaptureListener;
 
     public EyesBase() {
 
@@ -115,6 +117,7 @@ public abstract class EyesBase {
         agentId = null;
         lastScreenshot = null;
         debugScreenshotsProvider = new NullDebugScreenshotProvider();
+        isSendDom = true;
     }
 
     protected void ensureConfiguration() {
@@ -256,21 +259,21 @@ public abstract class EyesBase {
 
     /**
      * Sets the proxy settings to be used by the rest client.
-     * @param proxySettings The proxy settings to be used by the rest client.
+     * @param abstractProxySettings The proxy settings to be used by the rest client.
      *                      If {@code null} then no proxy is set.
      */
-    public void setProxy(ProxySettings proxySettings) {
+    public void setProxy(AbstractProxySettings abstractProxySettings) {
         if (serverConnector == null) {
             throw new EyesException("server connector not set.");
         }
-        serverConnector.setProxy(proxySettings);
+        serverConnector.setProxy(abstractProxySettings);
     }
 
     /**
      * @return The current proxy settings used by the server connector,
      * or {@code null} if no proxy is set.
      */
-    public ProxySettings getProxy() {
+    public AbstractProxySettings getProxy() {
         if (serverConnector == null) {
             throw new EyesException("server connector not set.");
         }
@@ -1810,6 +1813,10 @@ public abstract class EyesBase {
 
     public boolean isSendDom() {
         return isSendDom;
+    }
+
+    public void setOnDomCapture(IDomCaptureListener listener){
+        this.domCaptureListener = listener;
     }
 
     public void setSendDom(boolean isSendDom) {

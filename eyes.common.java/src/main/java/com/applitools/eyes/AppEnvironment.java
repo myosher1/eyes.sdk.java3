@@ -17,6 +17,8 @@ public class AppEnvironment {
 
     /**
      * Creates a new AppEnvironment instance.
+     *
+     * @param inferred the inferred environment information.
      */
     public AppEnvironment(String inferred) {
         this.inferred = inferred;
@@ -25,6 +27,12 @@ public class AppEnvironment {
 
     /**
      * Creates a new AppEnvironment instance.
+     *
+     * @param displaySize the display size of the application or {@code null} if unknown.
+     * @param os          the OS hosting the application under test or {@code null} if
+     *                    unknown.
+     * @param hostingApp  the application hosting the application under test or {@code null}
+     *                    * if unknown.
      */
     public AppEnvironment(String os, String hostingApp,
                           RectangleSize displaySize) {
@@ -34,7 +42,7 @@ public class AppEnvironment {
     }
 
     /**
-     * Gets the information inferred from the execution environment or {@code null} if no
+     * @return the information inferred from the execution environment or {@code null} if no
      * information could be inferred.
      */
     public String getInferred() {
@@ -42,14 +50,14 @@ public class AppEnvironment {
     }
 
     /**
-     * Sets the inferred environment information.
+     * @param inferred -  the inferred environment information.
      */
     public void setInferred(String inferred) {
         this.inferred = inferred;
     }
 
     /**
-     * Gets the OS hosting the application under test or {@code null} if
+     * @return the OS hosting the application under test or {@code null} if
      * unknown.
      */
     public String getOs() {
@@ -57,15 +65,15 @@ public class AppEnvironment {
     }
 
     /**
-     * Sets the OS hosting the application under test or {@code null} if
-     * unknown.
+     * @param os -  the OS hosting the application under test or {@code null} if
+     *           unknown.
      */
     public void setOs(String os) {
         this.os = os;
     }
 
     /**
-     * Gets the application hosting the application under test or {@code null}
+     * @return the application hosting the application under test or {@code null}
      * if unknown.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -74,22 +82,22 @@ public class AppEnvironment {
     }
 
     /**
-     * Sets the application hosting the application under test or {@code null}
-     * if unknown.
+     * @param hostingApp -  the application hosting the application under test or {@code null}
+     *                   if unknown.
      */
     public void setHostingApp(String hostingApp) {
         this.hostingApp = hostingApp;
     }
 
     /**
-     * Gets the display size of the application or {@code null} if unknown.
+     * @return the display size of the application or {@code null} if unknown.
      */
     public RectangleSize getDisplaySize() {
         return displaySize;
     }
 
     /**
-     * Sets the display size of the application or {@code null} if unknown.
+     * @param size -  the display size of the application or {@code null} if unknown.
      */
     public void setDisplaySize(RectangleSize size) {
         this.displaySize = size;

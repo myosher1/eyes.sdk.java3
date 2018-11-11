@@ -21,6 +21,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -79,12 +83,12 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the proxy settings to be used by the rest client.
-     * @param proxySettings The proxy settings to be used by the rest client.
+     * @param abstractProxySettings The proxy settings to be used by the rest client.
      * If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public void setProxy(ProxySettings proxySettings) {
-        setProxyBase(proxySettings);
+    public void setProxy(AbstractProxySettings abstractProxySettings) {
+        setProxyBase(abstractProxySettings);
         // After the server is updated we must make sure the endpoint refers
         // to the correct path.
         endPoint = endPoint.path(API_PATH);
@@ -96,7 +100,7 @@ public class ServerConnector extends RestClient
      * or {@code null} if no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public ProxySettings getProxy() {
+    public AbstractProxySettings getProxy() {
         return getProxyBase();
     }
 
@@ -431,7 +435,7 @@ public class ServerConnector extends RestClient
 
 
     @Override
-    public void getRenderInfo() {
+    public RenderingInfo getRenderInfo() {
         WebTarget target = restClient.target(serverUrl).path((RENDER_INFO_PATH)).queryParam("apiKey", getApiKey());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
 
@@ -442,6 +446,7 @@ public class ServerConnector extends RestClient
 
         Response response = request.get();
         renderingInfo = parseResponseWithJsonData(response, validStatusCodes, RenderingInfo.class);
+        return renderingInfo;
     }
 
     @Override

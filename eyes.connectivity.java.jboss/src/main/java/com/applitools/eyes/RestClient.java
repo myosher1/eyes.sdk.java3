@@ -39,7 +39,7 @@ public class RestClient {
         Response call();
     }
 
-    private ProxySettings proxySettings;
+    private AbstractProxySettings abstractProxySettings;
     private int timeout; // seconds
 
     protected Logger logger;
@@ -53,21 +53,21 @@ public class RestClient {
     /**
      *
      * @param timeout Connect/Read timeout in milliseconds. 0 equals infinity.
-     * @param proxySettings (optional) Setting for communicating via proxy.
+     * @param abstractProxySettings (optional) Setting for communicating via proxy.
      */
     private static Client buildRestClient(int timeout,
-                                      ProxySettings proxySettings) {
+                                      AbstractProxySettings abstractProxySettings) {
         ResteasyClientBuilder builder = new ResteasyClientBuilder();
 
         builder = builder.establishConnectionTimeout(timeout, TimeUnit.MILLISECONDS)
                 .socketTimeout(timeout, TimeUnit.MILLISECONDS);
 
-        if (proxySettings == null) {
+        if (abstractProxySettings == null) {
             return builder.build();
         }
 
         // Setting the proxy configuration
-        String uri = proxySettings.getUri();
+        String uri = abstractProxySettings.getUri();
         String[] uriParts = uri.split(":",3);
 
         // There must be at least http':'//...
@@ -94,9 +94,9 @@ public class RestClient {
 
         ResteasyClient client = builder.defaultProxy(hostName, port, scheme).build();
 
-        if (proxySettings.getUsername() != null) {
-            Credentials credentials = new UsernamePasswordCredentials(proxySettings.getUsername(),
-                    proxySettings.getPassword());
+        if (abstractProxySettings.getUsername() != null) {
+            Credentials credentials = new UsernamePasswordCredentials(abstractProxySettings.getUsername(),
+                    abstractProxySettings.getPassword());
 
             ApacheHttpClient4Engine engine = (ApacheHttpClient4Engine) client.httpEngine();
             HttpContext context = new BasicHttpContext();
@@ -127,7 +127,7 @@ public class RestClient {
         this.timeout = timeout;
         this.serverUrl = serverUrl;
 
-        restClient = buildRestClient(timeout, proxySettings);
+        restClient = buildRestClient(timeout, abstractProxySettings);
         endPoint = restClient.target(serverUrl);
     }
 
@@ -153,14 +153,14 @@ public class RestClient {
 
     /**
      * Sets the proxy settings to be used by the rest client.
-     * @param proxySettings The proxy settings to be used by the rest client.
+     * @param abstractProxySettings The proxy settings to be used by the rest client.
      * If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public void setProxyBase(ProxySettings proxySettings) {
-        this.proxySettings = proxySettings;
+    public void setProxyBase(AbstractProxySettings abstractProxySettings) {
+        this.abstractProxySettings = abstractProxySettings;
 
-        restClient = buildRestClient(timeout, proxySettings);
+        restClient = buildRestClient(timeout, abstractProxySettings);
         endPoint = restClient.target(serverUrl);
     }
 
@@ -170,8 +170,8 @@ public class RestClient {
      * or {@code null} if no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public ProxySettings getProxyBase() {
-        return proxySettings;
+    public AbstractProxySettings getProxyBase() {
+        return abstractProxySettings;
     }
 
     /**
@@ -183,7 +183,7 @@ public class RestClient {
         ArgumentGuard.greaterThanOrEqualToZero(timeout, "timeout");
         this.timeout = timeout;
 
-        restClient = buildRestClient(timeout, proxySettings);
+        restClient = buildRestClient(timeout, abstractProxySettings);
         endPoint = restClient.target(serverUrl);
     }
 

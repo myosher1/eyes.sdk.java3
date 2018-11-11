@@ -143,7 +143,7 @@ public class Eyes extends EyesBase {
 
     @Override
     public String getBaseAgentId() {
-        return "eyes.selenium.java/3.36";
+        return "eyes.selenium.java/3.141.2";
     }
 
     public WebDriver getDriver() {
@@ -328,6 +328,8 @@ public class Eyes extends EyesBase {
 
         screenshotFactory = new EyesWebDriverScreenshotFactory(logger, this.driver);
 
+        ensureViewportSize();
+
         openBase();
 
         String uaString = sessionStartInfo.getEnvironment().getInferred();
@@ -348,6 +350,12 @@ public class Eyes extends EyesBase {
 
         this.driver.setRotation(rotation);
         return this.driver;
+    }
+
+    private void ensureViewportSize() {
+        if (this.config.getViewportSize() == null) {
+            this.config.setViewportSize(driver.getDefaultContentViewportSize());
+        }
     }
 
     private void initDriver(WebDriver driver) {
@@ -845,8 +853,11 @@ public class Eyes extends EyesBase {
     @Override
     public String tryCaptureDom() {
         ElementPositionProvider positionProvider = new ElementPositionProvider(logger, driver, scrollRootElement);
-        DomCapture domCapturer = new DomCapture(this);
-        String fullWindowDom = domCapturer.getFullWindowDom(this.driver, positionProvider);
+        DomCapture domCapture = new DomCapture(this);
+        String fullWindowDom = domCapture.getFullWindowDom(this.driver, positionProvider);
+        if (this.domCaptureListener != null) {
+            this.domCaptureListener.onDomCaptureComplete(fullWindowDom);
+        }
         return fullWindowDom;
     }
 
