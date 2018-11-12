@@ -362,7 +362,7 @@ public class ServerConnector extends RestClient
 
             @Override
             public void failed(Throwable throwable) {
-                GeneralUtils.logExceptionStackTrace(new Exception(throwable));
+                GeneralUtils.logExceptionStackTrace(logger, throwable);
                 if (!isSecondRetry) {
                     logger.verbose("Entering retry");
                     downloadString(uri, true, listener);

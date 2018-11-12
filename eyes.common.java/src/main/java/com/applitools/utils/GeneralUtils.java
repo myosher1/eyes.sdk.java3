@@ -210,11 +210,11 @@ public class GeneralUtils {
         return sb.toString();
     }
 
-    public static void logExceptionStackTrace(Exception ex) {
+    public static void logExceptionStackTrace(Throwable ex) {
         logExceptionStackTrace(logger, ex);
     }
 
-    public static void logExceptionStackTrace(Logger logger, Exception ex) {
+    public static void logExceptionStackTrace(Logger logger, Throwable ex) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(2048);
         PrintWriter writer = new PrintWriter(stream, true);
         ex.printStackTrace(writer);
