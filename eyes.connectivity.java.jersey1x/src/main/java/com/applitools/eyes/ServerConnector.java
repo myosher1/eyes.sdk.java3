@@ -379,7 +379,7 @@ public class ServerConnector extends RestClient
                     listener.onDownloadComplete(theString);
 
                 } catch (Exception e) {
-                    GeneralUtils.logExceptionStackTrace(e);
+                    GeneralUtils.logExceptionStackTrace(logger, e);
                     logger.verbose("Failed to parse request(status= " + status + ") = "+ (clientResponse != null ? clientResponse.getEntity(String.class) : null));
                     listener.onDownloadFailed();
 

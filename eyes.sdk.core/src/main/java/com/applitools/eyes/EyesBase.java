@@ -1753,7 +1753,7 @@ public abstract class EyesBase {
 
             }
         } catch (Exception e) {
-            GeneralUtils.logExceptionStackTrace(e);
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
         AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl), screenshot);
         logger.verbose("Done!");

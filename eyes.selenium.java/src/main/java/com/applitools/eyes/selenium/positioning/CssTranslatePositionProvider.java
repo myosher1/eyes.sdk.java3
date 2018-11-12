@@ -49,7 +49,7 @@ public class CssTranslatePositionProvider implements PositionProvider {
     public RectangleSize getEntireSize() {
         RectangleSize entireSize =
         //        EyesSeleniumUtils.getCurrentFrameContentEntireSize(executor);
-                EyesSeleniumUtils.getEntireElementSize(executor, scrollRootElement);
+                EyesSeleniumUtils.getEntireElementSize(logger, executor, scrollRootElement);
         logger.verbose("CssTranslatePositionProvider - Entire size: " + entireSize);
         return entireSize;
     }

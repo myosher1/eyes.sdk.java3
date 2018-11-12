@@ -1711,7 +1711,7 @@ public class Eyes extends EyesBase {
 
     private ScaleProviderFactory getScaleProviderFactory() {
         WebElement element = driver.findElement(By.tagName("html"));
-        RectangleSize entireSize = EyesSeleniumUtils.getEntireElementSize(jsExecutor, element);
+        RectangleSize entireSize = EyesSeleniumUtils.getEntireElementSize(logger, jsExecutor, element);
         return new ContextBasedScaleProviderFactory(logger, entireSize,
                 viewportSizeHandler.get(), devicePixelRatio, false,
                 scaleProviderHandler);
@@ -2023,7 +2023,7 @@ public class Eyes extends EyesBase {
 
             result = checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
         } catch (Exception ex) {
-            GeneralUtils.logExceptionStackTrace(ex);
+            GeneralUtils.logExceptionStackTrace(logger, ex);
             throw ex;
         } finally {
             if (originalOverflow != null) {

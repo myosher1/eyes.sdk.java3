@@ -405,13 +405,13 @@ public class ServerConnector extends RestClient
                     post(entity);
         } catch (Exception e) {
 
-            GeneralUtils.logExceptionStackTrace(e);
+            GeneralUtils.logExceptionStackTrace(logger, e);
             try {
 
                 Thread.sleep(THREAD_SLEEP_MILLIS);
 
             } catch (InterruptedException e1) {
-                GeneralUtils.logExceptionStackTrace(e);
+                GeneralUtils.logExceptionStackTrace(logger, e);
             }
 
             if(retiresCounter.incrementAndGet() < NUM_OF_RETRIES){

@@ -174,7 +174,7 @@ public class DomCapture {
                 frameIndices.push(0);
 
             } catch (Exception e) {
-                GeneralUtils.logExceptionStackTrace(e);
+                GeneralUtils.logExceptionStackTrace(mLogger, e);
                 mDriver.switchTo().parentFrame();
                 return;
             }
@@ -222,7 +222,7 @@ public class DomCapture {
                     traverseDomTree(mDriver, argsObj, dom, -1, urlHref);
 
                 } catch (MalformedURLException e) {
-                    GeneralUtils.logExceptionStackTrace(e);
+                    GeneralUtils.logExceptionStackTrace(mLogger, e);
                 }
             }
             frameIndices.pop();
@@ -422,7 +422,7 @@ public class DomCapture {
                 absolute = new URI(urlPostfix).isAbsolute();
                 this.urlPostfix = absolute ? new URL(urlPostfix) : new URL(baseUrl, urlPostfix);
             } catch (UnsupportedEncodingException | URISyntaxException | MalformedURLException e) {
-                GeneralUtils.logExceptionStackTrace(e);
+                GeneralUtils.logExceptionStackTrace(mLogger, e);
             }
         }
 
@@ -449,7 +449,7 @@ public class DomCapture {
                     listener.onDownloadComplete(downloadedString);
 
                 } catch (Exception e) {
-                    GeneralUtils.logExceptionStackTrace(e);
+                    GeneralUtils.logExceptionStackTrace(mLogger, e);
                 } finally {
                     treePhaser.arriveAndDeregister();
                     mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
