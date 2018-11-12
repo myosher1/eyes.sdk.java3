@@ -6,6 +6,7 @@ import com.applitools.eyes.TestResults;
 import com.applitools.eyes.metadata.ActualAppOutput;
 import com.applitools.eyes.metadata.ImageMatchSettings;
 import com.applitools.eyes.metadata.SessionResults;
+import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.testng.Assert;
@@ -49,7 +50,9 @@ public class TestListener implements ITestListener {
         //System.out.println("onTestFailure");
         Object instance = result.getInstance();
         if (instance instanceof TestSetup) {
-            afterMethod((TestSetup) instance);
+            TestSetup testSetup = (TestSetup)instance;
+            GeneralUtils.logExceptionStackTrace(testSetup.eyes.getLogger(), result.getThrowable());
+            afterMethod(testSetup);
         }
     }
 
