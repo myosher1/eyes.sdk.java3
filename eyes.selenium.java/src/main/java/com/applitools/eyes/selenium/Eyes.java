@@ -700,6 +700,7 @@ public class Eyes extends EyesBase {
 
         this.scrollRootElement = driver.findElement(By.tagName("html"));
         this.currentFramePositionProvider = null;
+        setPositionProvider(createPositionProvider());
 
         matchRegions(getRegions, checkSettingsInternalDictionary, checkSettings);
         getConfig().setForceFullPageScreenshot(originalForceFPS);
