@@ -156,7 +156,6 @@ public abstract class EyesBase {
             positionProviderHandler.set(new InvalidPositionProvider());
         }
 
-
         if (viewportSizeHandler == null) {
             viewportSizeHandler = new SimplePropertyHandler<>();
             viewportSizeHandler.set(null);
