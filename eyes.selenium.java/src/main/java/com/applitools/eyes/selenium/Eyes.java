@@ -70,9 +70,6 @@ public class Eyes extends EyesBase {
     // Seconds
     private static final int RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE = 20;
 
-    // Milliseconds
-    private static final int DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100;
-
     private EyesWebDriver driver;
     private boolean doNotGetTitle;
 
@@ -137,7 +134,6 @@ public class Eyes extends EyesBase {
         devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
         regionVisibilityStrategyHandler = new SimplePropertyHandler<>();
         regionVisibilityStrategyHandler.set(new MoveToRegionVisibilityStrategy(logger));
-        EyesTargetLocator.initLogger(logger);
     }
 
     @Override
@@ -1021,11 +1017,13 @@ public class Eyes extends EyesBase {
 
         if (frameTarget.getFrameIndex() != null) {
             switchTo.frame(frameTarget.getFrameIndex());
+            updateFrameScrollRoot(frameTarget);
             return true;
         }
 
         if (frameTarget.getFrameNameOrId() != null) {
             switchTo.frame(frameTarget.getFrameNameOrId());
+            updateFrameScrollRoot(frameTarget);
             return true;
         }
 
@@ -1033,6 +1031,7 @@ public class Eyes extends EyesBase {
             WebElement frameElement = frameTarget.getFrameReference();
             if (frameElement != null) {
                 switchTo.frame(frameElement);
+                updateFrameScrollRoot(frameTarget);
                 return true;
             }
         }
@@ -1041,11 +1040,18 @@ public class Eyes extends EyesBase {
             WebElement frameElement = this.driver.findElement(frameTarget.getFrameSelector());
             if (frameElement != null) {
                 switchTo.frame(frameElement);
+                updateFrameScrollRoot(frameTarget);
                 return true;
             }
         }
 
         return false;
+    }
+
+    private void updateFrameScrollRoot(IScrollRootElementContainer frameTarget) {
+        WebElement rootElement = getScrollRootElement(frameTarget);
+        Frame frame = driver.getFrameChain().peek();
+        frame.setScrollRootElement(rootElement);
     }
 
     private MatchResult checkFullFrameOrElement(String name, ICheckSettings checkSettings) {
@@ -1098,7 +1104,7 @@ public class Eyes extends EyesBase {
         while (fc.size() > 0) {
             logger.verbose("fc.Count: " + fc.size());
             //driver.getRemoteWebDriver().switchTo().parentFrame();
-            EyesTargetLocator.parentFrame(driver.getRemoteWebDriver().switchTo(), fc);
+            EyesTargetLocator.parentFrame(logger, driver.getRemoteWebDriver().switchTo(), fc);
             Frame prevFrame = fc.pop();
             Frame frame = fc.peek();
             WebElement scrollRootElement = null;
@@ -2016,6 +2022,9 @@ public class Eyes extends EyesBase {
             }
 
             result = checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
+        } catch (Exception ex) {
+            GeneralUtils.logExceptionStackTrace(ex);
+            throw ex;
         } finally {
             if (originalOverflow != null) {
                 eyesElement.setOverflow(originalOverflow);
@@ -2316,7 +2325,7 @@ public class Eyes extends EyesBase {
                 while (fc.size() > 0) {
                     Frame frame = fc.pop();
                     frame.returnToOriginalOverflow(driver);
-                    EyesTargetLocator.parentFrame(driver.getRemoteWebDriver().switchTo(), fc);
+                    EyesTargetLocator.parentFrame(logger, driver.getRemoteWebDriver().switchTo(), fc);
                 }
             } else {
                 logger.verbose("returning overflow of element to its original value: " + scrollRootElement);

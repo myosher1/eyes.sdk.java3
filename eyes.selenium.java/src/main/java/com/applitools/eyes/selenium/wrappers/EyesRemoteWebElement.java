@@ -51,7 +51,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
                     "arguments[0].scrollTop = %d;";
 
     private final String JS_GET_SCROLL_POSITION =
-            "return arguments[0].scrollLeft + ',' + arguments[0].scrollTop;";
+            "return arguments[0].scrollLeft + ';' + arguments[0].scrollTop;";
 
     private final String JS_GET_OVERFLOW =
             "return arguments[0].style.overflow;";

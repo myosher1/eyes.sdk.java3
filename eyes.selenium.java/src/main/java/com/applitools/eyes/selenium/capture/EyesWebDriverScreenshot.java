@@ -214,7 +214,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
      * @param image  The actual screenshot image.
      */
     public EyesWebDriverScreenshot(Logger logger, EyesWebDriver driver, BufferedImage image) {
-        this(logger, driver, image, null, null);
+        this(logger, driver, image, ScreenshotType.VIEWPORT, Location.ZERO);
     }
 
     // FIXME: 18/03/2018 This is a workaround done for handling checkRegion.

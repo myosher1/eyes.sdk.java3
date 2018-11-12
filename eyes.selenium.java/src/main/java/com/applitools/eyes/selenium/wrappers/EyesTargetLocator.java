@@ -27,18 +27,13 @@ import java.util.List;
  */
 public class EyesTargetLocator implements WebDriver.TargetLocator {
 
-    private static Logger logger = null;
+    private final Logger logger;
     private final EyesWebDriver driver;
     private final ScrollPositionProvider scrollPosition;
     private final WebDriver.TargetLocator targetLocator;
     private final SeleniumJavaScriptExecutor jsExecutor;
 
     private PositionMemento defaultContentPositionMemento;
-
-    public static void initLogger(Logger logger) {
-        ArgumentGuard.notNull(logger, "logger");
-        EyesTargetLocator.logger = logger;
-    }
 
     /**
      * Initialized a new EyesTargetLocator object.
@@ -50,6 +45,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         ArgumentGuard.notNull(driver, "driver");
         ArgumentGuard.notNull(targetLocator, "targetLocator");
         this.driver = driver;
+        this.logger = driver.getEyes().getLogger();
         this.targetLocator = targetLocator;
         this.jsExecutor = new SeleniumJavaScriptExecutor(driver);
         this.scrollPosition = new ScrollPositionProvider(logger, jsExecutor, driver.getEyes().getCurrentFrameScrollRootElement());
@@ -145,13 +141,13 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
             Frame frame = driver.getFrameChain().pop();
             frame.returnToOriginalPosition(driver);
             logger.verbose("Done! Switching to parent frame...");
-            parentFrame(targetLocator, driver.getFrameChain());
+            parentFrame(logger, targetLocator, driver.getFrameChain());
         }
         logger.verbose("Done!");
         return driver;
     }
 
-    public static void parentFrame(WebDriver.TargetLocator targetLocator, FrameChain frameChainToParent) {
+    public static void parentFrame(Logger logger, WebDriver.TargetLocator targetLocator, FrameChain frameChainToParent) {
         logger.verbose("enter (static)");
         try {
             targetLocator.parentFrame();
@@ -173,7 +169,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     @SuppressWarnings("UnusedReturnValue")
     public WebDriver framesDoScroll(FrameChain frameChain) {
         logger.verbose("enter");
-        driver.switchTo().defaultContent();
+        targetLocator.defaultContent();
         PositionProvider scrollProvider = new ScrollPositionProvider(logger, jsExecutor, driver.getEyes().getCurrentFrameScrollRootElement());
         defaultContentPositionMemento = scrollProvider.getState();
         for (Frame frame : frameChain) {
@@ -181,7 +177,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
             Location frameLocation = frame.getLocation();
             scrollProvider.setPosition(frameLocation);
             logger.verbose("Done! Switching to frame...");
-            driver.switchTo().frame(frame.getReference());
+            targetLocator.frame(frame.getReference());
             logger.verbose("Done!");
         }
 
@@ -198,9 +194,13 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     @SuppressWarnings("UnusedReturnValue")
     public WebDriver frames(FrameChain frameChain) {
         logger.verbose("enter");
-        driver.switchTo().defaultContent();
+        WebDriver.TargetLocator switchTo = driver.switchTo();
+        switchTo.defaultContent();
         for (Frame frame : frameChain) {
-            driver.switchTo().frame(frame.getReference());
+            switchTo.frame(frame.getReference());
+            logger.verbose(String.format("frame.Reference: %s ; frame.ScrollRootElement: %s", frame.getReference(), frame.getScrollRootElement()));
+            Frame newFrame = driver.getFrameChain().peek();
+            newFrame.setScrollRootElement(frame.getScrollRootElement());
         }
         logger.verbose("Done switching into nested frames!");
         return driver;
@@ -218,7 +218,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
         logger.verbose("enter");
         for (String frameNameOrId : framesPath) {
             logger.verbose("Switching to frame...");
-            driver.switchTo().frame(frameNameOrId);
+            targetLocator.frame(frameNameOrId);
             logger.verbose("Done!");
         }
         logger.verbose("Done switching into nested frames!");

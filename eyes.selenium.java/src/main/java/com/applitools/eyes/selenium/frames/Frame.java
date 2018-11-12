@@ -95,6 +95,10 @@ public final class Frame {
         return scrollRootElement;
     }
 
+    public void setScrollRootElement(WebElement scrollRootElement) {
+        this.scrollRootElement = scrollRootElement;
+    }
+
     public void hideScrollbars(WebDriver driver) {
         WebElement scrollRootElement = getScrollRootElement(driver);
         logger.verbose("hiding scrollbars of element: " + scrollRootElement);
@@ -107,13 +111,11 @@ public final class Frame {
         jsExecutor.executeScript("arguments[0].style.overflow='" + originalOverflow + "';", scrollRootElement);
     }
 
-
     public void returnToOriginalPosition(WebDriver driver) {
         WebElement scrollRootElement = getScrollRootElement(driver);
         PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
         positionProvider.restoreState(positionMemento);
     }
-
 
     private WebElement getScrollRootElement(WebDriver driver) {
         WebElement scrollRootElement = getScrollRootElement();
@@ -121,9 +123,8 @@ public final class Frame {
             logger.verbose("no scroll root element. selecting default.");
             scrollRootElement = driver.findElement(By.tagName("html"));
         }
-        logger.verbose("returning overflow of element to its original value: " + scrollRootElement);
-        jsExecutor.executeScript("arguments[0].style.overflow='" + originalOverflow + "';", scrollRootElement);
 
         return scrollRootElement;
     }
+
 }
