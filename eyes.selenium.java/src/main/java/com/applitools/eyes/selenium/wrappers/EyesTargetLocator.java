@@ -169,8 +169,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     @SuppressWarnings("UnusedReturnValue")
     public WebDriver framesDoScroll(FrameChain frameChain) {
         logger.verbose("enter");
-        WebDriver.TargetLocator switchTo = driver.switchTo();
-        switchTo.defaultContent();
+        this.defaultContent();
         PositionProvider scrollProvider = new ScrollPositionProvider(logger, jsExecutor, driver.getEyes().getCurrentFrameScrollRootElement());
         defaultContentPositionMemento = scrollProvider.getState();
         for (Frame frame : frameChain) {
@@ -178,7 +177,7 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
             Location frameLocation = frame.getLocation();
             scrollProvider.setPosition(frameLocation);
             logger.verbose("Done! Switching to frame...");
-            switchTo.frame(frame.getReference());
+            this.frame(frame.getReference());
             Frame newFrame = driver.getFrameChain().peek();
             newFrame.setScrollRootElement(frame.getScrollRootElement());
             logger.verbose("Done!");
@@ -197,10 +196,9 @@ public class EyesTargetLocator implements WebDriver.TargetLocator {
     @SuppressWarnings("UnusedReturnValue")
     public WebDriver frames(FrameChain frameChain) {
         logger.verbose("enter");
-        WebDriver.TargetLocator switchTo = driver.switchTo();
-        switchTo.defaultContent();
+        this.defaultContent();
         for (Frame frame : frameChain) {
-            switchTo.frame(frame.getReference());
+            this.frame(frame.getReference());
             logger.verbose(String.format("frame.Reference: %s ; frame.ScrollRootElement: %s", frame.getReference(), frame.getScrollRootElement()));
             Frame newFrame = driver.getFrameChain().peek();
             newFrame.setScrollRootElement(frame.getScrollRootElement());

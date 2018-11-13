@@ -1992,6 +1992,11 @@ public class Eyes extends EyesBase {
 
             String displayStyle = eyesElement.getComputedStyle("display");
 
+            if (getConfig().getHideScrollbars()) {
+                originalOverflow = eyesElement.getOverflow();
+                eyesElement.setOverflow("hidden");
+            }
+
             SizeAndBorders sizeAndBorders = eyesElement.getSizeAndBorders();
             Borders borderWidths = sizeAndBorders.getBorders();
             RectangleSize elementSize = sizeAndBorders.getSize();
@@ -2002,11 +2007,6 @@ public class Eyes extends EyesBase {
                 elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
             } else {
                 elementPositionProvider = null;
-            }
-
-            if (getConfig().getHideScrollbars()) {
-                originalOverflow = eyesElement.getOverflow();
-                eyesElement.setOverflow("hidden");
             }
 
             final Region elementRegion = new Region(
