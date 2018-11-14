@@ -9,4 +9,6 @@ public interface ScaleProvider {
      * @return The ratio by which an image will be scaled.
      */
     double getScaleRatio();
+
+    void setLogger(Logger logger);
 }

@@ -97,7 +97,6 @@ public abstract class EyesBase {
         logger = new Logger();
 
         Region.initLogger(logger);
-        ImageUtils.initLogger(logger);
         GeneralUtils.initLogger(logger);
 
         initProviders();
@@ -588,6 +587,7 @@ public abstract class EyesBase {
      */
     public void setImageCut(CutProvider cutProvider) {
         if (cutProvider != null) {
+            cutProvider.setLogger(logger);
             cutProviderHandler = new ReadOnlyPropertyHandler<>(logger,
                     cutProvider);
         } else {
@@ -607,8 +607,10 @@ public abstract class EyesBase {
      */
     public void setScaleRatio(Double scaleRatio) {
         if (scaleRatio != null) {
+            FixedScaleProvider scaleProvider = new FixedScaleProvider(scaleRatio);
+            scaleProvider.setLogger(logger);
             scaleProviderHandler = new ReadOnlyPropertyHandler<ScaleProvider>(
-                    logger, new FixedScaleProvider(scaleRatio));
+                    logger, scaleProvider);
         } else {
             scaleProviderHandler = new SimplePropertyHandler<>();
             scaleProviderHandler.set(new NullScaleProvider());
@@ -645,7 +647,7 @@ public abstract class EyesBase {
     public void setSaveDebugScreenshots(boolean saveDebugScreenshots) {
         DebugScreenshotsProvider prev = debugScreenshotsProvider;
         if (saveDebugScreenshots) {
-            debugScreenshotsProvider = new FileDebugScreenshotsProvider();
+            debugScreenshotsProvider = new FileDebugScreenshotsProvider(logger);
         } else {
             debugScreenshotsProvider = new NullDebugScreenshotProvider();
         }

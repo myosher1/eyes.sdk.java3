@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
  * Cut provider based on fixed cut values, run BEFORE scaling.
  */
 public class UnscaledFixedCutProvider implements CutProvider {
+    private Logger logger;
     private final int header;
     private final int footer;
     private final int left;
@@ -27,6 +28,9 @@ public class UnscaledFixedCutProvider implements CutProvider {
         this.right = right;
     }
 
+    public void setLogger(Logger logger){
+        this.logger = logger;
+    }
 
     public BufferedImage cut(BufferedImage image) {
         if (header == 0 && footer == 0 && left == 0 && right == 0) return image;
@@ -41,6 +45,8 @@ public class UnscaledFixedCutProvider implements CutProvider {
         if (this instanceof NullCutProvider) {
             return this;
         }
-        return new UnscaledFixedCutProvider(header, footer, left, right);
+        UnscaledFixedCutProvider cutProvider = new UnscaledFixedCutProvider(header, footer, left, right);
+        cutProvider.logger = logger;
+        return cutProvider;
     }
 }

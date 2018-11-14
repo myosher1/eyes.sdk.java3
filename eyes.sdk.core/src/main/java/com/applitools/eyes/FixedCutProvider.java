@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 @SuppressWarnings("WeakerAccess")
 public class FixedCutProvider implements CutProvider {
 
+    private Logger logger;
     private final int header;
     private final int footer;
     private final int left;
@@ -43,6 +44,12 @@ public class FixedCutProvider implements CutProvider {
         int scaledLeft = (int) Math.ceil(left * scaleRatio);
         int scaledRight = (int) Math.ceil(right * scaleRatio);
 
-        return new FixedCutProvider(scaledHeader, scaledFooter, scaledLeft, scaledRight);
+        FixedCutProvider cutProvider = new FixedCutProvider(scaledHeader, scaledFooter, scaledLeft, scaledRight);
+        cutProvider.setLogger(logger);
+        return cutProvider;
+    }
+
+    public void setLogger(Logger logger) {
+        this.logger = logger;
     }
 }

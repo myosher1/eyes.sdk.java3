@@ -32,7 +32,7 @@ public class ContextBasedScaleProviderFactory extends ScaleProviderFactory {
     public ContextBasedScaleProviderFactory(Logger logger, RectangleSize topLevelContextEntireSize,
                                             RectangleSize viewportSize, double devicePixelRatio, boolean isMobileDevice,
                                             PropertyHandler<ScaleProvider> scaleProviderHandler) {
-        super(scaleProviderHandler);
+        super(logger, scaleProviderHandler);
         this.logger = logger;
         this.topLevelContextEntireSize = topLevelContextEntireSize;
         this.viewportSize = viewportSize;
@@ -42,8 +42,9 @@ public class ContextBasedScaleProviderFactory extends ScaleProviderFactory {
 
     @Override
     protected ScaleProvider getScaleProviderImpl(int imageToScaleWidth) {
-        ContextBasedScaleProvider scaleProvider = new ContextBasedScaleProvider(logger, topLevelContextEntireSize,
+        ContextBasedScaleProvider scaleProvider = new ContextBasedScaleProvider(topLevelContextEntireSize,
                 viewportSize, devicePixelRatio, isMobileDevice);
+        scaleProvider.setLogger(logger);
         scaleProvider.updateScaleRatio(imageToScaleWidth);
         return scaleProvider;
     }

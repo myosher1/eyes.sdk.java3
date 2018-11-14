@@ -1,5 +1,6 @@
 package com.applitools.eyes.scaling;
 
+import com.applitools.eyes.Logger;
 import com.applitools.eyes.ScaleProvider;
 import com.applitools.utils.ArgumentGuard;
 
@@ -9,6 +10,7 @@ import com.applitools.utils.ArgumentGuard;
 public class FixedScaleProvider implements ScaleProvider {
 
     private final double scaleRatio;
+    private Logger logger;
 
     /**
      *
@@ -25,5 +27,10 @@ public class FixedScaleProvider implements ScaleProvider {
      */
     public double getScaleRatio() {
         return scaleRatio;
+    }
+
+    @Override
+    public void setLogger(Logger logger) {
+        this.logger = logger;
     }
 }

@@ -1,5 +1,6 @@
 package com.applitools.eyes.scaling;
 
+import com.applitools.eyes.Logger;
 import com.applitools.eyes.ScaleProvider;
 import com.applitools.eyes.ScaleProviderFactory;
 import com.applitools.utils.PropertyHandler;
@@ -15,9 +16,9 @@ public class FixedScaleProviderFactory extends ScaleProviderFactory {
      *
      * @param scaleRatio The ratio to scale by.
      */
-    public FixedScaleProviderFactory(double scaleRatio,
+    public FixedScaleProviderFactory(Logger logger, double scaleRatio,
                                      PropertyHandler<ScaleProvider> scaleProviderHandler) {
-        super(scaleProviderHandler);
+        super(logger, scaleProviderHandler);
         this.fixedScaleProvider = new FixedScaleProvider(scaleRatio);
     }
 

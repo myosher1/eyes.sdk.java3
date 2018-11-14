@@ -23,16 +23,6 @@ public class ImageUtils {
 
     @SuppressWarnings("WeakerAccess")
     public static final int REQUIRED_IMAGE_TYPE = BufferedImage.TYPE_4BYTE_ABGR;
-    private static Logger logger = new Logger();
-
-    public static void setLogHandler(LogHandler logHandler){
-        ArgumentGuard.notNull(logHandler, "logHandler");
-        logger.setLogHandler(logHandler);
-    }
-
-    public static void initLogger(Logger logger) {
-        ImageUtils.logger = logger;
-    }
 
     public static BufferedImage normalizeImageType(BufferedImage image) {
         if (image.getType() == REQUIRED_IMAGE_TYPE) {
@@ -510,7 +500,7 @@ public class ImageUtils {
      * @param regionToCrop The region to crop from the image.
      * @return A new image without the cropped region.
      */
-    public static BufferedImage cropImage(BufferedImage image,
+    public static BufferedImage cropImage(Logger logger, BufferedImage image,
                                           Region regionToCrop) {
         Region imageRegion = new Region(0,0, image.getWidth(), image.getHeight());
         imageRegion.intersect(regionToCrop);
@@ -535,7 +525,7 @@ public class ImageUtils {
      * @param image The image to save.
      * @param filename The path to save image
      */
-    public static void saveImage(BufferedImage image, String filename) {
+    public static void saveImage(Logger logger, BufferedImage image, String filename) {
         try {
             logger.verbose("Saving file: " + filename);
             File file = new File(filename);

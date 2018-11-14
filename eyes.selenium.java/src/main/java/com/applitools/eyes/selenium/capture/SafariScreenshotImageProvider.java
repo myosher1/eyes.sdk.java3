@@ -73,7 +73,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
             if (devicesRegions.containsKey(deviceData)) {
                 logger.verbose("device data found in hash table");
                 Region crop = devicesRegions.get(deviceData);
-                image = ImageUtils.cropImage(image, crop);
+                image = ImageUtils.cropImage(logger, image, crop);
             } else {
                 logger.verbose("device not found in list. returning original image.");
             }
@@ -91,7 +91,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
 
             loc = loc.scale(scaleRatio);
 
-            image = ImageUtils.cropImage(image, new Region(loc, viewportSize));
+            image = ImageUtils.cropImage(logger, image, new Region(loc, viewportSize));
         }
 
         return image;

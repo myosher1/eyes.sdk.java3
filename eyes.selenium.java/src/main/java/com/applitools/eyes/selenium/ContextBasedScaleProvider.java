@@ -16,7 +16,7 @@ public class ContextBasedScaleProvider implements ScaleProvider {
     private static final int ALLOWED_DCES_DEVIATION = 10;
     private static final int UNKNOWN_SCALE_RATIO = 0;
 
-    private final Logger logger;
+    private Logger logger;
     private final double devicePixelRatio;
     private final RectangleSize topLevelContextEntireSize;
     private final RectangleSize viewportSize;
@@ -41,11 +41,10 @@ public class ContextBasedScaleProvider implements ScaleProvider {
      *                                  running.
      */
     @SuppressWarnings("WeakerAccess")
-    public ContextBasedScaleProvider(Logger logger,
+    public ContextBasedScaleProvider(
             RectangleSize topLevelContextEntireSize, RectangleSize viewportSize,
             double devicePixelRatio, boolean isMobileDevice) {
 
-        this.logger = logger;
         this.topLevelContextEntireSize = topLevelContextEntireSize;
         this.viewportSize = viewportSize;
         this.devicePixelRatio = devicePixelRatio;
@@ -63,6 +62,11 @@ public class ContextBasedScaleProvider implements ScaleProvider {
         ArgumentGuard.isValidState(scaleRatio != UNKNOWN_SCALE_RATIO,
                 "scaleRatio not defined yet");
         return scaleRatio;
+    }
+
+    @Override
+    public void setLogger(Logger logger) {
+        this.logger = logger;
     }
 
     /**

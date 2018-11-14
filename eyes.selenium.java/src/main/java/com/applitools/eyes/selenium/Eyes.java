@@ -1706,14 +1706,14 @@ public class Eyes extends EyesBase {
                 // This can happen in Appium for example.
                 logger.verbose("Failed to set ContextBasedScaleProvider.");
                 logger.verbose("Using FixedScaleProvider instead...");
-                factory = new FixedScaleProviderFactory(1 / devicePixelRatio, scaleProviderHandler);
+                factory = new FixedScaleProviderFactory(logger,1 / devicePixelRatio, scaleProviderHandler);
             }
             logger.verbose("Done!");
             return factory;
         }
         // If we already have a scale provider set, we'll just use it, and pass a mock as provider handler.
         PropertyHandler<ScaleProvider> nullProvider = new SimplePropertyHandler<>();
-        return new ScaleProviderIdentityFactory(scaleProviderHandler.get(), nullProvider);
+        return new ScaleProviderIdentityFactory(logger, scaleProviderHandler.get(), nullProvider);
     }
 
     private ScaleProviderFactory getScaleProviderFactory() {
