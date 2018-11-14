@@ -309,7 +309,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
                 ImageUtils.getImagePart(image, asIsSubScreenshotRegion);
 
         EyesWebDriverScreenshot result = new EyesWebDriverScreenshot(logger, driver, subScreenshotImage,
-                new RectangleSize(subScreenshotImage.getWidth(), subScreenshotImage.getHeight()));
+                new Region(region.getLeft(), region.getTop(), subScreenshotImage.getWidth(), subScreenshotImage.getHeight()));
 
         logger.verbose("Done!");
         return result;

@@ -14,11 +14,10 @@ public class UnscaledFixedCutProvider implements CutProvider {
     private final int right;
 
     /**
-     *
      * @param header The header to cut in pixels.
      * @param footer The footer to cut in pixels.
-     * @param left The left to cut in pixels.
-     * @param right The right to cut in pixels.
+     * @param left   The left to cut in pixels.
+     * @param right  The right to cut in pixels.
      */
     @SuppressWarnings("WeakerAccess")
     public UnscaledFixedCutProvider(int header, int footer, int left, int right) {
@@ -28,32 +27,14 @@ public class UnscaledFixedCutProvider implements CutProvider {
         this.right = right;
     }
 
+
     public BufferedImage cut(BufferedImage image) {
-        if (header > 0) {
-            image = ImageUtils.cropImage(image,
-                    new Region(0, header, image.getWidth(),
-                            image.getHeight() - header));
-        }
+        if (header == 0 && footer == 0 && left == 0 && right == 0) return image;
+        Region targetRegion = new Region(left, header,
+                image.getWidth() - left - right,
+                image.getHeight() - header - footer);
 
-        if (footer > 0) {
-            image = ImageUtils.cropImage(image,
-                    new Region(0, 0,
-                            image.getWidth(), image.getHeight() - footer));
-        }
-
-        if (left > 0) {
-            image = ImageUtils.cropImage(image,
-                    new Region(left, 0, image.getWidth() - left,
-                            image.getHeight()));
-        }
-
-        if (right > 0) {
-            image = ImageUtils.cropImage(image,
-                    new Region(0, 0, image.getWidth() - right,
-                            image.getHeight()));
-        }
-
-        return image;
+        return ImageUtils.cropImage(logger, image, targetRegion);
     }
 
     public CutProvider scale(double scaleRatio) {
