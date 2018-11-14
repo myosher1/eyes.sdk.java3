@@ -47,6 +47,10 @@ import java.util.*;
 @SuppressWarnings("WeakerAccess")
 public class Eyes extends EyesBase {
 
+    public FrameChain getOriginalFC() {
+        return originalFC;
+    }
+
     private FrameChain originalFC;
     private WebElement scrollRootElement;
     private PositionProvider currentFramePositionProvider;
@@ -1102,10 +1106,12 @@ public class Eyes extends EyesBase {
         logger.verbose("scrollRootElement_: " + scrollRootElement);
         FrameChain originalFC = driver.getFrameChain().clone();
         FrameChain fc = driver.getFrameChain().clone();
+        driver.executeScript("window.scrollTo(0,0);");
         while (fc.size() > 0) {
             logger.verbose("fc.Count: " + fc.size());
             //driver.getRemoteWebDriver().switchTo().parentFrame();
             EyesTargetLocator.parentFrame(logger, driver.getRemoteWebDriver().switchTo(), fc);
+            driver.executeScript("window.scrollTo(0,0);");
             Frame prevFrame = fc.pop();
             Frame frame = fc.peek();
             WebElement scrollRootElement = null;
@@ -1183,7 +1189,7 @@ public class Eyes extends EyesBase {
         }
         FrameChain originalFrameChain = driver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
-        switchTo.defaultContent();
+        switchTo.frames(this.originalFC);
         ScrollPositionProvider spp = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
         Location location;
         try {

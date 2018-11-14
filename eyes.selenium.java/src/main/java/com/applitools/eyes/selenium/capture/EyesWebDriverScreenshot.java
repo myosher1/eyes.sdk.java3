@@ -52,7 +52,8 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             FrameChain originalFC = new FrameChain(logger, currentFrames);
 
             EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
-            switchTo.defaultContent();
+            FrameChain currentFC = driver.getEyes().getOriginalFC();
+            switchTo.frames(currentFC);
             defaultContentScrollPosition = getDefaultContentScrollPosition(logger, driver, jsExecutor);
             switchTo.frames(originalFC);
         }

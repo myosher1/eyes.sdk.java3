@@ -1,7 +1,9 @@
 package com.applitools.eyes.selenium;
 
+import com.applitools.eyes.IEyesJsExecutor;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.WebElement;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
@@ -45,9 +47,16 @@ public class TestClassicApi extends TestSetup {
     }
 
     @Test
-    public void TestCheckInnerFrame(){
+    public void TestCheckInnerFrame() {
+        eyes.setHideScrollbars(false);
         driver.switchTo().defaultContent();
         driver.switchTo().frame(webDriver.findElement(By.name("frame1")));
         eyes.checkFrame("frame1-1", "inner-frame");
+        eyes.getLogger().log("Validating (1) ...");
+        eyes.checkWindow("window after check frame");
+        eyes.getLogger().log("Validating (2) ...");
+        WebElement innerFrameBody = driver.findElement(By.tagName("body"));
+        ((IEyesJsExecutor) driver).executeScript("arguments[0].style.background='red';", innerFrameBody);
+        eyes.checkWindow("window after change background color of inner frame");
     }
 }
