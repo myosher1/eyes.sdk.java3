@@ -2473,6 +2473,13 @@ public class Eyes extends EyesBase {
             }
         }
 
+        switchTo.frames(this.originalFC);
+        PositionProvider positionProvider = getPositionProvider();
+        if (positionProvider != null) {
+            positionProvider.setPosition(Location.ZERO);
+        }
+        switchTo.frames(originalFrameChain);
+
         logger.verbose("Done!");
         return result;
     }
