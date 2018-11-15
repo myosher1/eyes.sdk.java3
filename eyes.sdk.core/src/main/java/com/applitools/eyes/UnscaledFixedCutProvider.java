@@ -1,5 +1,6 @@
 package com.applitools.eyes;
 
+import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
@@ -8,7 +9,7 @@ import java.awt.image.BufferedImage;
  * Cut provider based on fixed cut values, run BEFORE scaling.
  */
 public class UnscaledFixedCutProvider implements CutProvider {
-    private Logger logger;
+    private Logger logger = new Logger();
     private final int header;
     private final int footer;
     private final int left;
@@ -29,6 +30,7 @@ public class UnscaledFixedCutProvider implements CutProvider {
     }
 
     public void setLogger(Logger logger){
+        ArgumentGuard.notNull(logger, "logger");
         this.logger = logger;
     }
 

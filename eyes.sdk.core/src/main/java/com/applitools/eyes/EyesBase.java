@@ -126,7 +126,7 @@ public abstract class EyesBase {
     private void initProviders(boolean hardReset) {
         if (hardReset) {
             scaleProviderHandler = new SimplePropertyHandler<>();
-            scaleProviderHandler.set(new NullScaleProvider());
+            scaleProviderHandler.set(new NullScaleProvider(logger));
             cutProviderHandler = new SimplePropertyHandler<>();
             cutProviderHandler.set(new NullCutProvider());
             positionProviderHandler = new SimplePropertyHandler<>();
@@ -139,7 +139,7 @@ public abstract class EyesBase {
 
         if (scaleProviderHandler == null) {
             scaleProviderHandler = new SimplePropertyHandler<>();
-            scaleProviderHandler.set(new NullScaleProvider());
+            scaleProviderHandler.set(new NullScaleProvider(logger));
         }
 
         if (cutProviderHandler == null) {
@@ -604,13 +604,12 @@ public abstract class EyesBase {
      */
     public void setScaleRatio(Double scaleRatio) {
         if (scaleRatio != null) {
-            FixedScaleProvider scaleProvider = new FixedScaleProvider(scaleRatio);
-            scaleProvider.setLogger(logger);
+            FixedScaleProvider scaleProvider = new FixedScaleProvider(logger, scaleRatio);
             scaleProviderHandler = new ReadOnlyPropertyHandler<ScaleProvider>(
                     logger, scaleProvider);
         } else {
             scaleProviderHandler = new SimplePropertyHandler<>();
-            scaleProviderHandler.set(new NullScaleProvider());
+            scaleProviderHandler.set(new NullScaleProvider(logger));
         }
     }
 

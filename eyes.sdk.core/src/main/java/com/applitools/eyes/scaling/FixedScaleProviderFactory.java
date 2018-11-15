@@ -19,7 +19,7 @@ public class FixedScaleProviderFactory extends ScaleProviderFactory {
     public FixedScaleProviderFactory(Logger logger, double scaleRatio,
                                      PropertyHandler<ScaleProvider> scaleProviderHandler) {
         super(logger, scaleProviderHandler);
-        this.fixedScaleProvider = new FixedScaleProvider(scaleRatio);
+        this.fixedScaleProvider = new FixedScaleProvider(logger, scaleRatio);
     }
 
     @Override

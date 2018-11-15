@@ -11,15 +11,12 @@ import com.applitools.utils.PropertyHandler;
  */
 public class ContextBasedScaleProviderFactory extends ScaleProviderFactory {
 
-    private final Logger logger;
     private final RectangleSize topLevelContextEntireSize;
     private final RectangleSize viewportSize;
     private final double devicePixelRatio;
     private final boolean isMobileDevice;
 
     /**
-     *
-     *
      * @param topLevelContextEntireSize The total size of the top level
      *                                  context. E.g., for selenium this
      *                                  would be the document size of the top
@@ -33,7 +30,6 @@ public class ContextBasedScaleProviderFactory extends ScaleProviderFactory {
                                             RectangleSize viewportSize, double devicePixelRatio, boolean isMobileDevice,
                                             PropertyHandler<ScaleProvider> scaleProviderHandler) {
         super(logger, scaleProviderHandler);
-        this.logger = logger;
         this.topLevelContextEntireSize = topLevelContextEntireSize;
         this.viewportSize = viewportSize;
         this.devicePixelRatio = devicePixelRatio;
@@ -42,9 +38,8 @@ public class ContextBasedScaleProviderFactory extends ScaleProviderFactory {
 
     @Override
     protected ScaleProvider getScaleProviderImpl(int imageToScaleWidth) {
-        ContextBasedScaleProvider scaleProvider = new ContextBasedScaleProvider(topLevelContextEntireSize,
+        ContextBasedScaleProvider scaleProvider = new ContextBasedScaleProvider(logger, topLevelContextEntireSize,
                 viewportSize, devicePixelRatio, isMobileDevice);
-        scaleProvider.setLogger(logger);
         scaleProvider.updateScaleRatio(imageToScaleWidth);
         return scaleProvider;
     }

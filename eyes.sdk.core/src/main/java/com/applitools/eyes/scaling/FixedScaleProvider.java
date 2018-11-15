@@ -13,24 +13,19 @@ public class FixedScaleProvider implements ScaleProvider {
     private Logger logger;
 
     /**
-     *
      * @param scaleRatio The scale ratio to use.
      */
-    public FixedScaleProvider(double scaleRatio) {
+    public FixedScaleProvider(Logger logger, double scaleRatio) {
+        ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.greaterThanZero(scaleRatio, "scaleRatio");
         this.scaleRatio = scaleRatio;
+        this.logger = logger;
     }
 
     /**
-     *
      * {@inheritDoc}
      */
     public double getScaleRatio() {
         return scaleRatio;
-    }
-
-    @Override
-    public void setLogger(Logger logger) {
-        this.logger = logger;
     }
 }

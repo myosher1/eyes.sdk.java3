@@ -2,14 +2,12 @@ package com.applitools.eyes;
 
 import com.applitools.utils.PropertyHandler;
 
-import java.awt.image.BufferedImage;
-
 /**
  * Abstraction for instantiating scale providers.
  */
 public abstract class ScaleProviderFactory {
 
-    private Logger logger;
+    protected Logger logger;
     private final PropertyHandler<ScaleProvider> scaleProviderHandler;
 
     /**
@@ -31,7 +29,6 @@ public abstract class ScaleProviderFactory {
     public ScaleProvider getScaleProvider(int imageToScaleWidth) {
         ScaleProvider scaleProvider = getScaleProviderImpl(imageToScaleWidth);
         scaleProviderHandler.set(scaleProvider);
-        scaleProvider.setLogger(logger);
         return scaleProvider;
     }
 

@@ -1,5 +1,6 @@
 package com.applitools.eyes;
 
+import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
@@ -10,7 +11,7 @@ import java.awt.image.BufferedImage;
 @SuppressWarnings("WeakerAccess")
 public class FixedCutProvider implements CutProvider {
 
-    private Logger logger;
+    private Logger logger = new Logger();
     private final int header;
     private final int footer;
     private final int left;
@@ -50,6 +51,7 @@ public class FixedCutProvider implements CutProvider {
     }
 
     public void setLogger(Logger logger) {
+        ArgumentGuard.notNull(logger, "logger");
         this.logger = logger;
     }
 }
