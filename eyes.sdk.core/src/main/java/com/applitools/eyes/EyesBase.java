@@ -96,9 +96,6 @@ public abstract class EyesBase {
 
         logger = new Logger();
 
-        Region.initLogger(logger);
-        GeneralUtils.initLogger(logger);
-
         initProviders();
 
         setServerConnector(new ServerConnector());

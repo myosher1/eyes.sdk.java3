@@ -13,7 +13,6 @@ import java.util.List;
  */
 @JsonIgnoreProperties({"location", "empty", "middleOffset", "size", "sizeEmpty", "subRegions"})
 public class Region {
-    private static Logger logger = new Logger();
     @JsonProperty("left")
     private int left;
     @JsonProperty("top")
@@ -26,10 +25,6 @@ public class Region {
     private CoordinatesType coordinatesType;
 
     public static final Region EMPTY = new Region(0, 0, 0, 0, CoordinatesType.SCREENSHOT_AS_IS);
-
-    public static void initLogger(Logger logger) {
-        Region.logger = logger;
-    }
 
     protected void makeEmpty() {
         left = EMPTY.getLeft();
@@ -375,6 +370,7 @@ public class Region {
      * @param other The region to check intersection with.
      * @return True if the regions are intersected, false otherwise.
      */
+    @SuppressWarnings("WeakerAccess")
     public boolean isIntersected(Region other) {
         int right = left + width;
         int bottom = top + height;
@@ -395,8 +391,6 @@ public class Region {
      * @param other The region with which to intersect.
      */
     public void intersect(Region other) {
-
-        logger.verbose(String.format("intersecting this region (%s) with %s ...", this, other));
 
         // If there's no intersection set this as the Empty region.
         if (!isIntersected(other)) {
@@ -426,9 +420,7 @@ public class Region {
         top = intersectionTop;
         width = intersectionWidth;
         height = intersectionHeight;
-
     }
-
 
     public int getLeft() {
         return left;
