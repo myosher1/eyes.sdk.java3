@@ -1,5 +1,6 @@
 package com.applitools.eyes;
 
+import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
@@ -10,6 +11,7 @@ import java.awt.image.BufferedImage;
 @SuppressWarnings("WeakerAccess")
 public class FixedCutProvider implements CutProvider {
 
+    private Logger logger = new Logger();
     private final int header;
     private final int footer;
     private final int left;
@@ -30,31 +32,11 @@ public class FixedCutProvider implements CutProvider {
     }
 
     public BufferedImage cut(BufferedImage image) {
-        if (header > 0) {
-            image = ImageUtils.cropImage(image,
-                    new Region(0, header, image.getWidth(),
-                            image.getHeight() - header));
-        }
-
-        if (footer > 0) {
-            image = ImageUtils.cropImage(image,
-                    new Region(0, 0,
-                            image.getWidth(), image.getHeight() - footer));
-        }
-
-        if (left > 0) {
-            image = ImageUtils.cropImage(image,
-                    new Region(left, 0, image.getWidth() - left,
-                            image.getHeight()));
-        }
-
-        if (right > 0) {
-            image = ImageUtils.cropImage(image,
-                    new Region(0, 0, image.getWidth() - right,
-                            image.getHeight()));
-        }
-
-        return image;
+        if (header == 0 && footer == 0 && left == 0 && right == 0) return image;
+        Region targetRegion = new Region(left, header,
+                image.getWidth() - left - right,
+                image.getHeight() - header - footer);
+        return ImageUtils.cropImage(logger, image, targetRegion);
     }
 
     public CutProvider scale(double scaleRatio) {
@@ -63,6 +45,13 @@ public class FixedCutProvider implements CutProvider {
         int scaledLeft = (int) Math.ceil(left * scaleRatio);
         int scaledRight = (int) Math.ceil(right * scaleRatio);
 
-        return new FixedCutProvider(scaledHeader, scaledFooter, scaledLeft, scaledRight);
+        FixedCutProvider cutProvider = new FixedCutProvider(scaledHeader, scaledFooter, scaledLeft, scaledRight);
+        cutProvider.setLogger(logger);
+        return cutProvider;
+    }
+
+    public void setLogger(Logger logger) {
+        ArgumentGuard.notNull(logger, "logger");
+        this.logger = logger;
     }
 }

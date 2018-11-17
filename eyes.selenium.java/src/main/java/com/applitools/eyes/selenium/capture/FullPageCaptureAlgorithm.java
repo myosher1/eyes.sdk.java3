@@ -78,11 +78,11 @@ public class FullPageCaptureAlgorithm {
 
         logger.verbose(String.format("positionProvider: %s ; Region: %s", positionProvider.getClass(), region));
 
-        // Saving the original position (in case we were already in the outermost frame).
-        PositionMemento originalStitchedState = positionProvider.getState();
-
         PositionMemento originalPosition = originProvider.getState();
         originProvider.setPosition(Location.ZERO); // first scroll to 0,0 so CSS stitching works.
+
+        // Saving the original position (in case we were already in the outermost frame).
+        PositionMemento originalStitchedState = positionProvider.getState();
 
         logger.verbose("Getting top/left image...");
         BufferedImage image = imageProvider.getImage();
@@ -177,14 +177,12 @@ public class FullPageCaptureAlgorithm {
 //                continue;
 //            }
             logger.verbose(String.format("Taking screenshot for %s", partRegion));
-            // Set the position to the part's top/left.
-            positionProvider.setPosition(partRegion.getLocation());
-            // Giving it time to stabilize.
-            GeneralUtils.sleep(waitBeforeScreenshots);
-            // Screen size may cause the scroll to only reach part of the way.
-            Location originPosition = positionProvider.getCurrentPosition();
+
+            // Scroll to the part's top/left
+            Location originPosition = positionProvider.setPosition(partRegion.getLocation());
             Location targetPosition = originPosition.offset(-fullArea.getLeft(), -fullArea.getTop());
             logger.verbose(String.format("Origin Position is set to %s", originPosition));
+            logger.verbose(String.format("Target Position is %s", targetPosition));
 
             // Actually taking the screenshot.
             logger.verbose("Getting image...");
@@ -237,8 +235,10 @@ public class FullPageCaptureAlgorithm {
         logger.verbose("Extracted entire size: " + fullArea.getSize());
         logger.verbose("Actual stitched size: " + actualImageWidth + "x" + actualImageHeight);
 
+        debugScreenshotsProvider.save(stitchedImage,"_stitched_before_trim");
+
         if (actualImageWidth < stitchedImage.getWidth() || actualImageHeight < stitchedImage.getHeight()) {
-            logger.verbose("Trimming unnecessary margins..");
+            logger.verbose("Trimming unnecessary margins...");
             stitchedImage = ImageUtils.getImagePart(stitchedImage,
                     new Region(0, 0,
                             Math.min(actualImageWidth, stitchedImage.getWidth()),
@@ -251,6 +251,11 @@ public class FullPageCaptureAlgorithm {
     }
 
     private Region getRegionInScreenshot(Region region, BufferedImage image, double pixelRatio) {
+        if (region.isSizeEmpty())
+        {
+            return region;
+        }
+
         logger.verbose("Creating screenshot object...");
         // We need the screenshot to be able to convert the region to screenshot coordinates.
         EyesScreenshot screenshot = screenshotFactory.makeScreenshot(image);

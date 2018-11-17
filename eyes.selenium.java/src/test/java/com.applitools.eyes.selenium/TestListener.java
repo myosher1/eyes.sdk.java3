@@ -6,6 +6,7 @@ import com.applitools.eyes.TestResults;
 import com.applitools.eyes.metadata.ActualAppOutput;
 import com.applitools.eyes.metadata.ImageMatchSettings;
 import com.applitools.eyes.metadata.SessionResults;
+import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.testng.Assert;
@@ -40,7 +41,9 @@ public class TestListener implements ITestListener {
         //System.out.println("onTestSuccess");
         Object instance = result.getInstance();
         if (instance instanceof TestSetup) {
-            afterMethod((TestSetup) instance);
+            if (!afterMethodSuccess((TestSetup) instance)){
+                result.setStatus(ITestResult.FAILURE);
+            }
         }
     }
 
@@ -49,7 +52,9 @@ public class TestListener implements ITestListener {
         //System.out.println("onTestFailure");
         Object instance = result.getInstance();
         if (instance instanceof TestSetup) {
-            afterMethod((TestSetup) instance);
+            TestSetup testSetup = (TestSetup)instance;
+            GeneralUtils.logExceptionStackTrace(testSetup.eyes.getLogger(), result.getThrowable());
+            afterMethodFailure(testSetup);
         }
     }
 
@@ -63,21 +68,37 @@ public class TestListener implements ITestListener {
         //System.out.println("onTestFailedButWithinSuccessPercentage");
         Object instance = result.getInstance();
         if (instance instanceof TestSetup) {
-            afterMethod((TestSetup) instance);
+            afterMethodFailure((TestSetup) instance);
         }
     }
 
-    private void afterMethod(TestSetup testSetup) {
+    private void afterMethodFailure(TestSetup testSetup) {
+        Eyes eyes = testSetup.eyes;
+        try {
+            if (eyes.getIsOpen()) {
+                eyes.close(false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            eyes.abortIfNotClosed();
+            if (testSetup.driver != null) {
+                testSetup.driver.quit();
+            }
+        }
+    }
+
+    private boolean afterMethodSuccess(TestSetup testSetup) {
         Eyes eyes = testSetup.eyes;
         try {
             if (eyes.getIsOpen()) {
                 TestResults results = eyes.close();
                 if (eyes.getIsDisabled()){
                     eyes.getLogger().log("eyes is disabled.");
-                    return;
+                    return true;
                 } else if (results == null) {
                     eyes.getLogger().verbose("no results returned from eyes.close()");
-                    return;
+                    return true;
                 }
                 String apiSessionUrl = results.getApiUrls().getSession();
                 URI apiSessionUri = UriBuilder.fromUri(apiSessionUrl)
@@ -134,8 +155,10 @@ public class TestListener implements ITestListener {
                     }
                 }
             }
-        } catch (Exception e) {
+            return true;
+        } catch (Throwable e) {
             e.printStackTrace();
+            return false;
         } finally {
             eyes.abortIfNotClosed();
             if (testSetup.driver != null) {

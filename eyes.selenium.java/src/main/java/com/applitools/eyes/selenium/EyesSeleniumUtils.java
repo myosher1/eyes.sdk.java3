@@ -284,7 +284,7 @@ public class EyesSeleniumUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static RectangleSize getEntireElementSize(IEyesJsExecutor executor, WebElement element) {
+    public static RectangleSize getEntireElementSize(Logger logger, IEyesJsExecutor executor, WebElement element) {
         RectangleSize result;
         try {
             //noinspection unchecked
@@ -293,7 +293,7 @@ public class EyesSeleniumUtils {
             result = new RectangleSize(esAsList.get(0).intValue(),
                     esAsList.get(1).intValue());
         } catch (WebDriverException e) {
-            GeneralUtils.logExceptionStackTrace(e);
+            GeneralUtils.logExceptionStackTrace(logger, e);
             throw new EyesDriverOperationException(
                     "Failed to extract entire size!");
         }
@@ -617,7 +617,7 @@ public class EyesSeleniumUtils {
      * @param element The element for which to return the size.
      * @return The given element's visible portion size.
      */
-    public static RectangleSize getElementVisibleSize(WebElement element) {
+    public static RectangleSize getElementVisibleSize(Logger logger, WebElement element) {
         Point location = element.getLocation();
         Dimension size = element.getSize();
         Region region = new Region(location.getX(), location.getY(), size.getWidth(), size.getHeight());
@@ -644,7 +644,7 @@ public class EyesSeleniumUtils {
                 }
             }
         } catch (Exception ex) {
-            GeneralUtils.logExceptionStackTrace(ex);
+            GeneralUtils.logExceptionStackTrace(logger, ex);
         }
 
         return region.getSize();

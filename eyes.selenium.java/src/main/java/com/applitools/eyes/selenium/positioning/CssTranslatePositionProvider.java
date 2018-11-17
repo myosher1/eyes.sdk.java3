@@ -37,18 +37,19 @@ public class CssTranslatePositionProvider implements PositionProvider {
         return lastSetPosition;
     }
 
-    public void setPosition(Location location) {
+    public Location setPosition(Location location) {
         ArgumentGuard.notNull(location, "location");
         logger.verbose("CssTranslatePositionProvider - Setting position to: " + location);
         EyesSeleniumUtils.translateTo(executor, location);
         logger.verbose("Done!");
         lastSetPosition = location;
+        return lastSetPosition;
     }
 
     public RectangleSize getEntireSize() {
         RectangleSize entireSize =
         //        EyesSeleniumUtils.getCurrentFrameContentEntireSize(executor);
-                EyesSeleniumUtils.getEntireElementSize(executor, scrollRootElement);
+                EyesSeleniumUtils.getEntireElementSize(logger, executor, scrollRootElement);
         logger.verbose("CssTranslatePositionProvider - Entire size: " + entireSize);
         return entireSize;
     }

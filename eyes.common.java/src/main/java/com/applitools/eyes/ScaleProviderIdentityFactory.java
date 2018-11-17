@@ -15,9 +15,9 @@ public class ScaleProviderIdentityFactory extends ScaleProviderFactory {
      *
      * @param scaleProvider The {@link ScaleProvider}
      */
-    public ScaleProviderIdentityFactory(ScaleProvider scaleProvider,
+    public ScaleProviderIdentityFactory(Logger logger, ScaleProvider scaleProvider,
                                         PropertyHandler<ScaleProvider> scaleProviderHandler) {
-        super(scaleProviderHandler);
+        super(logger, scaleProviderHandler);
         this.scaleProvider = scaleProvider;
     }
 

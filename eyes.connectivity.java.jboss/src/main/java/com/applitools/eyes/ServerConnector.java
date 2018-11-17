@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Provides an API for communication with the Applitools agent
  */
+@SuppressWarnings({"unused", "WeakerAccess"})
 public class ServerConnector extends RestClient
         implements IServerConnector {
 
@@ -361,9 +362,9 @@ public class ServerConnector extends RestClient
 
             @Override
             public void failed(Throwable throwable) {
-                GeneralUtils.logExceptionStackTrace(new Exception(throwable));
+                GeneralUtils.logExceptionStackTrace(logger, throwable);
                 if (!isSecondRetry) {
-                    logger.verbose("Entring retry");
+                    logger.verbose("Entering retry");
                     downloadString(uri, true, listener);
                 }
                 else {
@@ -387,8 +388,8 @@ public class ServerConnector extends RestClient
         Response response = postWithRetry(request, Entity.entity(resultStream,
                 MediaType.APPLICATION_OCTET_STREAM), null);
 
+        @SuppressWarnings("UnnecessaryLocalVariable")
         String entity = response.getHeaderString("Location");
-
         return entity;
     }
 
@@ -404,13 +405,13 @@ public class ServerConnector extends RestClient
                     post(entity);
         } catch (Exception e) {
 
-            GeneralUtils.logExceptionStackTrace(e);
+            GeneralUtils.logExceptionStackTrace(logger, e);
             try {
 
                 Thread.sleep(THREAD_SLEEP_MILLIS);
 
             } catch (InterruptedException e1) {
-                GeneralUtils.logExceptionStackTrace(e);
+                GeneralUtils.logExceptionStackTrace(logger, e);
             }
 
             if(retiresCounter.incrementAndGet() < NUM_OF_RETRIES){

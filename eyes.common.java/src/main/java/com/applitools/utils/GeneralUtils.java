@@ -20,7 +20,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class GeneralUtils {
 
-    @SuppressWarnings("SpellCheckingInspection")
+    @SuppressWarnings({"SpellCheckingInspection", "unused"})
     private static final String DATE_FORMAT_ISO8601_FOR_OUTPUT =
             "yyyy-MM-dd'T'HH:mm:ss'Z'";
 
@@ -30,8 +30,6 @@ public class GeneralUtils {
     @SuppressWarnings("SpellCheckingInspection")
     private static final String DATE_FORMAT_RFC1123 =
             "E, dd MMM yyyy HH:mm:ss 'GMT'";
-
-    private static Logger logger;
 
     private GeneralUtils() {}
 
@@ -172,7 +170,6 @@ public class GeneralUtils {
         return ((long) Math.ceil((end - start) / 1000.0)) * 1000;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * Creates a {@link String} from a file specified by {@code resource}.
      *
@@ -180,6 +177,7 @@ public class GeneralUtils {
      * @return The resource's text.
      * @throws EyesException If there was a problem reading the resource.
      */
+    @SuppressWarnings("UnusedDeclaration")
     public static String readTextFromResource(String resource) {
         InputStream is = GeneralUtils.class.getClassLoader()
                 .getResourceAsStream(resource);
@@ -210,11 +208,7 @@ public class GeneralUtils {
         return sb.toString();
     }
 
-    public static void logExceptionStackTrace(Exception ex) {
-        logExceptionStackTrace(logger, ex);
-    }
-
-    public static void logExceptionStackTrace(Logger logger, Exception ex) {
+    public static void logExceptionStackTrace(Logger logger, Throwable ex) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(2048);
         PrintWriter writer = new PrintWriter(stream, true);
         ex.printStackTrace(writer);
@@ -226,10 +220,6 @@ public class GeneralUtils {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    public static void initLogger(Logger logger) {
-        GeneralUtils.logger = logger;
     }
 
     public static URI getDefaultServerUrl() {
