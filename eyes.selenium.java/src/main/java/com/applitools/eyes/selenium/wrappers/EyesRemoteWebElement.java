@@ -87,7 +87,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     private final String JS_GET_SIZE_AND_BORDER_WIDTHS =
             "var elem = arguments[0]; " +
-                    "var retVal = [arguments[0].clientWidth, arguments[0].clientHeight]; " +
+                    "var retVal = [elem.clientWidth, elem.clientHeight]; " +
                     JS_GET_BORDER_WIDTHS_ARR +
                     "return retVal;";
 
