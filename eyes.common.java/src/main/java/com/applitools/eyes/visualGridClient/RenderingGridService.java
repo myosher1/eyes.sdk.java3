@@ -1,8 +1,6 @@
 package com.applitools.eyes.visualGridClient;
 
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.TestResults;
-import com.applitools.eyes.visualGridClient.data.RenderRequest;
 import com.applitools.eyes.visualGridClient.data.RenderStatusResults;
 import com.applitools.utils.GeneralUtils;
 
@@ -58,7 +56,7 @@ public class RenderingGridService extends Thread{
         return null;
     }
 
-    private RGThread runNextTask() {
+    private FutureTask<RenderStatusResults> runNextTask() {
         logger.verbose("EyesOpenerService.runNextTask");
         FutureTask<RenderStatusResults> task = this.listener.getNextTask();
         if (task != null) {

@@ -332,11 +332,6 @@ public class Eyes extends EyesBase {
         return "";
     }
 
-    @Override
-    public void initRenderingInfo() {
-
-    }
-
     /**
      * See {@link #checkImage_(RegionProvider, String, boolean, ICheckSettings)}.
      * @param regionProvider The region for which verification will be

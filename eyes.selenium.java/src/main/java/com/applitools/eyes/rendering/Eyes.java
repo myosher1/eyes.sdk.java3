@@ -212,8 +212,8 @@ public class Eyes implements IRenderingEyes {
     public void check(CheckRGSettings settings) {
         String script = (String) this.jsExecutor.executeAsyncScript("var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})");
 
+        //TODO create RenderingTask
 
-        this.renderingGridManager.render(testToRenderRequestMapping);
 
     }
 

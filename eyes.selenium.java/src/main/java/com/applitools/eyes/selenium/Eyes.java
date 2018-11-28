@@ -3,7 +3,6 @@
  */
 package com.applitools.eyes.selenium;
 
-import com.applitools.RenderingInfo;
 import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.capture.EyesScreenshotFactory;

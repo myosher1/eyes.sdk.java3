@@ -1,11 +1,24 @@
 package com.applitools.eyes.visualGridClient.data;
 
+import com.applitools.eyes.Region;
 import com.applitools.eyes.config.Configuration;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RenderingConfiguration extends Configuration {
+
+    public Object getScriptHooks() {
+        return null;
+    }
+
+    public boolean isSendDom() {
+        return false;
+    }
+
+    public Region getRegion() {
+        return null;
+    }
 
     public enum BrowserType{CHROME, FIREFOX}
 

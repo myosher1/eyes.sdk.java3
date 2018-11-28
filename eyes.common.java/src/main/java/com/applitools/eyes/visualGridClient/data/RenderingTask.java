@@ -48,7 +48,7 @@ public class RenderingTask implements Callable<TestResults> {
             //Parse to JSON
             result = GeneralUtils.parseJsonToObject(script);
             //Build RenderRequests
-            requests = prepareDataForRG(result, settings);
+            requests = prepareDataForRG(result, renderingConfiguration);
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -2,10 +2,7 @@ package com.applitools.eyes.visualGridClient;
 
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.visualGridClient.data.RenderRequest;
-import com.applitools.eyes.visualGridClient.data.RunningTest;
-import com.applitools.eyes.visualGridClient.data.Task;
-import com.applitools.eyes.visualGridClient.data.TestResultSummery;
+import com.applitools.eyes.visualGridClient.data.*;
 import com.applitools.eyes.visualGridClient.services.EyesBaseService;
 import com.applitools.eyes.visualGridClient.services.EyesCheckerService;
 import com.applitools.eyes.visualGridClient.services.EyesCloserService;
@@ -81,20 +78,20 @@ public class RenderingGridManager {
 
         });
         this.renderingGridService = new RenderingGridService("RenderGridService", logger, servicesGroup,
-                this.concurrentOpenSessions, new EyesBaseService.EyesServiceListener() {
+                this.concurrentOpenSessions, new RenderingGridService.RenderGridServiceListener() {
             @Override
-            public FutureTask<TestResults> getNextTask() {
-                return getNextRenderTask();
+            public FutureTask<RenderStatusResults> getNextTask() {
+                return RenderingGridManager.this.getNextRenderingTask();
             }
-
         });
         this.executor = Executors.newFixedThreadPool(4);
 
     }
 
-    private FutureTask<TestResults> getNextRenderTask() {
-        return
+    private FutureTask<RenderStatusResults> getNextRenderingTask() {
+        return null;
     }
+
 
     private FutureTask<TestResults> getNextTestToClose() {
         RunningTest runningTest = null;
