@@ -24,7 +24,7 @@ public interface IEyesConnector {
 
     void abortIfNotClosed();
 
-    void getResource(URL url, IDownloadListener<Byte[]> iDownloadListener);
+    IResourceFuture getResource(URL url, IDownloadListener<Byte[]> iDownloadListener);
 
     RenderingInfo getRenderingInfo();
 }

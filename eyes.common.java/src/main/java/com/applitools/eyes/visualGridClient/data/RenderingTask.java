@@ -1,8 +1,8 @@
 package com.applitools.eyes.visualGridClient.data;
 
 import com.applitools.eyes.IDownloadListener;
-import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
+import com.applitools.eyes.visualGridClient.IResourceFuture;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -15,38 +15,47 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class RenderingTask implements Callable<TestResults> {
+public class RenderingTask implements Callable<RenderStatusResults> {
 
 
     private static AtomicBoolean isThrown = new AtomicBoolean(false);
 
     private IEyesConnector eyesConnector;
     private String script;
-    private RenderingConfiguration renderingConfiguration;
+    private RenderingConfiguration.checkRGSettings renderingConfiguration;
     private List<RunningTest> testList;
-    private RenderingInfo rendringInfo;
+    private RenderingInfo renderingInfo;
     private RenderingTaskListener runningTestListener;
+    private Map<String, IResourceFuture> cacheMap;
 
     interface RenderingTaskListener {
-
         void onTaskComplete(RenderingTask task);
-
     }
 
-
-
+    public RenderingTask(IEyesConnector eyesConnector, String script, RenderingConfiguration.checkRGSettings renderingConfiguration, List<RunningTest> testList, RenderingInfo renderingInfo, RenderingTaskListener runningTestListener, Map<String, IResourceFuture> cacheMap) {
+        this.eyesConnector = eyesConnector;
+        this.script = script;
+        this.renderingConfiguration = renderingConfiguration;
+        this.testList = testList;
+        this.renderingInfo = renderingInfo;
+        this.runningTestListener = runningTestListener;
+        this.cacheMap = cacheMap;
+    }
 
     @Override
-    public TestResults call(){
+    public RenderStatusResults call(){
         HashMap<String, Object> result;
         List<RenderRequest> requests = null;
         Map<RunningTest, RenderRequest> testToRenderRequestMapping = new HashMap<>();
         try {
+
             //Parse to JSON
             result = GeneralUtils.parseJsonToObject(script);
+
             //Build RenderRequests
             requests = prepareDataForRG(result, renderingConfiguration);
 
@@ -85,7 +94,7 @@ public class RenderingTask implements Callable<TestResults> {
         return RenderingTask.isThrown.get();
     }
 
-    private List<RenderRequest> prepareDataForRG(HashMap<String, Object> result, RenderingConfiguration settings) {
+    private List<RenderRequest> prepareDataForRG(HashMap<String, Object> result, RenderingConfiguration.checkRGSettings settings) {
 
         final List<RGridResource> allBlobs = Collections.synchronizedList(new ArrayList<RGridResource>());
         List<String> resourceUrls = null;
@@ -124,7 +133,7 @@ public class RenderingTask implements Callable<TestResults> {
         return allRequestsForRG;
     }
 
-    private List<RenderRequest> buildRenderRequests(HashMap<String, Object> result, RenderingConfiguration settings, List<RGridResource> allBlobs) {
+    private List<RenderRequest> buildRenderRequests(HashMap<String, Object> result, RenderingConfiguration.checkRGSettings settings, List<RGridResource> allBlobs) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
         String cdt;
@@ -146,11 +155,12 @@ public class RenderingTask implements Callable<TestResults> {
 
         double randomRequestId = Math.random();
 
-        for (RenderingConfiguration.RenderBrowserInfo browserInfo : renderingConfiguration.getBrowsersInfo()) {
+        for (RunningTest runningTest : this.testList) {
 
+            RenderingConfiguration.RenderBrowserInfo browserInfo = runningTest.getBrowserInfo();
             RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), browserInfo.getSizeMode(), settings.getRegion(), browserInfo.getEmulationInfo());
 
-            RenderRequest request = new RenderRequest(randomRequestId, this.rendringInfo.getResultsUrl(), (String)result.get("url") ,dom ,
+            RenderRequest request = new RenderRequest(randomRequestId, this.renderingInfo.getResultsUrl(), (String)result.get("url") ,dom ,
                     resourceMapping , renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), settings.getScriptHooks(), null, settings.isSendDom());
 
             try {
@@ -165,8 +175,19 @@ public class RenderingTask implements Callable<TestResults> {
     }
 
     private void fetchAllResources(final List<RGridResource> allBlobs, List<String> resourceUrls) {
-        final Phaser phaser = new Phaser(1);
 
+        //Filter out the urls found in cacheMap
+        List<String> urlsFoundInCache = new ArrayList<>();
+        Iterator<String> iterator = resourceUrls.iterator();
+        while (iterator.hasNext()) {
+            String next =  iterator.next();
+            if(cacheMap.containsKey(next)){
+                urlsFoundInCache.add(next);
+                iterator.remove();
+            }
+        }
+
+        final Phaser phaser = new Phaser(1);
         for (String link : resourceUrls) {
             IEyesConnector eyesConnector = this.testList.get(0).getEyes();
             URL url = null;
@@ -174,7 +195,7 @@ public class RenderingTask implements Callable<TestResults> {
                 url = new URL(link);
                 final URL finalUrl = url;
                 phaser.register();
-                eyesConnector.getResource(url, new IDownloadListener<Byte[]>() {
+                IResourceFuture future = eyesConnector.getResource(url, new IDownloadListener<Byte[]>() {
                     @Override
                     public void onDownloadComplete(Byte[] downloadedString, String contentType) {
                         RGridResource gridResource = new RGridResource(finalUrl.toString(), contentType, downloadedString);
@@ -186,6 +207,7 @@ public class RenderingTask implements Callable<TestResults> {
                     public void onDownloadFailed() {
                     }
                 });
+                this.cacheMap.put(url.toString(), future);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             }
@@ -194,7 +216,16 @@ public class RenderingTask implements Callable<TestResults> {
         //Wait for all results
         phaser.arriveAndAwaitAdvance();
 
-
+        for (String url : urlsFoundInCache) {
+            IResourceFuture future = cacheMap.get(url);
+            RGridResource resource = null;
+            try {
+                resource = future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                GeneralUtils.logExceptionStackTrace(e);
+            }
+            allBlobs.add(resource);
+        }
     }
 
 }

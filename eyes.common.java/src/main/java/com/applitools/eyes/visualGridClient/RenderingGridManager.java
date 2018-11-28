@@ -29,6 +29,8 @@ public class RenderingGridManager {
     private final ArrayList<IRenderingEyes> eyesToCloseList = new ArrayList<>(200);
     private ArrayList<IRenderingEyes> allEyes = new ArrayList<>(200);
     private Set<Map.Entry<RunningTest, RenderRequest>> renderRequestsAsList;
+    private Map<String, IResourceFuture> cachedResources = Collections.synchronizedMap(new HashMap<String, IResourceFuture>());
+
     private IRenderingEyes.EyesListener eyesListener = new IRenderingEyes.EyesListener() {
         @Override
         public void onTaskComplete(Task task, IRenderingEyes eyes) {
@@ -58,6 +60,8 @@ public class RenderingGridManager {
             }
         }
     };
+    private List<RenderingTask> renderingTaskList = new ArrayList<>();
+    private RenderingInfo renderingInfo;
 
     public RenderingGridManager(int concurrentOpenSessions, Logger logger) {
         this.concurrentOpenSessions = concurrentOpenSessions;
@@ -106,8 +110,11 @@ public class RenderingGridManager {
         return null;
     }
 
-    public void open(IRenderingEyes eyes) {
+    public void open(IRenderingEyes eyes, RenderingInfo rendringInfo) {
         logger.verbose("RenderingGridManager.open()");
+        if (this.renderingInfo == null) {
+            this.renderingInfo = rendringInfo;
+        }
         synchronized (eyesToOpenList) {
             eyesToOpenList.add(eyes);
             allEyes.add(eyes);
@@ -179,5 +186,9 @@ public class RenderingGridManager {
 
     public void render(Map<RunningTest, RenderRequest> testToRenderRequestMapping) {
         this.renderRequestsAsList = testToRenderRequestMapping.entrySet();
+    }
+
+    public void check(RenderingConfiguration.checkRGSettings settings, String script, List<RenderingConfiguration.RenderBrowserInfo> browsersInfo, IEyesConnector connector, List<RunningTest> testList) {
+        this.renderingTaskList.add(new RenderingTask(connector, script, settings, testList, this.renderingInfo, null, this.cachedResources));
     }
 }

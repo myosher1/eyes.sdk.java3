@@ -1,12 +1,12 @@
 package com.applitools.eyes;
 
 import com.applitools.IResourceUploadListener;
+import com.applitools.eyes.visualGridClient.IResourceFuture;
 import com.applitools.eyes.visualGridClient.data.*;
 
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.Future;
 
 /**
  * Defines the interface which should be implemented by a ServerConnector.
@@ -104,12 +104,11 @@ public interface IServerConnector {
 
     /**
      * Downloads string from a given Url
-     *
-     * @param uri The URI from which the IServerConnector will download the string
+     *  @param uri The URI from which the IServerConnector will download the string
      * @param isSecondRetry Indicates if a retry is mandatory onFailed - 2 retries per request
      * @param listener the listener will be called when the request will be resolved.
      */
-    void downloadResource(URL uri, boolean isSecondRetry, IDownloadListener<Byte[]> listener);
+    IResourceFuture downloadResource(URL uri, boolean isSecondRetry, IDownloadListener<Byte[]> listener);
 
 
     /**

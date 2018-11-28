@@ -4,24 +4,20 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IRenderingEyes;
 import com.applitools.eyes.visualGridClient.RenderingGridManager;
-import com.applitools.eyes.visualGridClient.data.*;
+import com.applitools.eyes.visualGridClient.data.RenderingConfiguration;
+import com.applitools.eyes.visualGridClient.data.RenderingInfo;
+import com.applitools.eyes.visualGridClient.data.RunningTest;
+import com.applitools.eyes.visualGridClient.data.Task;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.ArrayUtils;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
-import java.util.concurrent.Phaser;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Eyes implements IRenderingEyes {
@@ -122,7 +118,7 @@ public class Eyes implements IRenderingEyes {
         for (RunningTest runningTest : testList) {
             runningTest.open();
         }
-        this.renderingGridManager.open(this);
+        this.renderingGridManager.open(this, rendringInfo);
 
     }
 
@@ -209,10 +205,10 @@ public class Eyes implements IRenderingEyes {
         return this.testList.size();
     }
 
-    public void check(CheckRGSettings settings) {
+    public void check(RenderingConfiguration.checkRGSettings settings) {
         String script = (String) this.jsExecutor.executeAsyncScript("var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})");
 
-        //TODO create RenderingTask
+        this.renderingGridManager.check(settings, script, this.renderingConfiguration.getBrowsersInfo(), this.eyesConnector, testList);
 
 
     }

@@ -2,42 +2,36 @@ package com.applitools.eyes.visualGridClient.data;
 
 import com.applitools.eyes.Region;
 import com.applitools.eyes.config.Configuration;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RenderingConfiguration extends Configuration {
 
-    public Object getScriptHooks() {
-        return null;
+    public static final String BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot";
+
+    public RenderingConfiguration() {
+
     }
 
-    public boolean isSendDom() {
-        return false;
-    }
+    public enum SizeMode{FULL_PAGE, VIEWPORT, SELECTOR, REGION}
 
-    public Region getRegion() {
-        return null;
-    }
 
     public enum BrowserType{CHROME, FIREFOX}
-
     private List<RenderBrowserInfo> browsersInfo = new ArrayList<>();
 
     private int concurrentSessions = 3;
+    private boolean isThrowExceptionOn = false;
 
     private String testName = null;
 
-
-
-    private boolean isThrowExceptionOn = false;
-
-    public int getConcurrentSessions() {
-        return concurrentSessions;
-    }
-
-    public void setConcurrentSessions(int concurrentSessions) {
+    public RenderingConfiguration(int concurrentSessions, boolean isThrowExceptionOn, String testName) {
         this.concurrentSessions = concurrentSessions;
+        this.isThrowExceptionOn = isThrowExceptionOn;
+        this.testName = testName;
     }
 
     public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType){
@@ -46,15 +40,19 @@ public class RenderingConfiguration extends Configuration {
         return this;
     }
 
+    public int getConcurrentSessions() {
+        return concurrentSessions;
+    }
 
     public class RenderBrowserInfo{
+
         private int width;
+
         private int height;
         private BrowserType browserType;
         private String platform = "linux";
         private EmulationInfo emulationInfo = null;
         private String sizeMode;
-
         public RenderBrowserInfo(int width, int height, BrowserType browserType, EmulationInfo emulationInfo) {
             this.width = width;
             this.height = height;
@@ -112,6 +110,63 @@ public class RenderingConfiguration extends Configuration {
 
         public String getSizeMode() {
             return this.sizeMode;
+        }
+
+    }
+    public class checkRGSettings{
+
+        private SizeMode sizeMode = SizeMode.FULL_PAGE;
+        private String selector;
+        private Region region;
+        private Map<String, List<String>> scriptHooks = new HashMap<>();
+        private boolean isSendDom;
+
+        public checkRGSettings(SizeMode sizeMode, String selector, Region region, boolean isSendDom) {
+            this.sizeMode = sizeMode;
+            this.selector = selector;
+            this.region = region;
+            this.isSendDom = isSendDom;
+        }
+
+        public void addScriptHook(String script){
+
+            List<String> scripts = this.scriptHooks.get(BEFORE_CAPTURE_SCREENSHOT);
+            if (scripts == null) {
+                scripts = new ArrayList<>();
+                this.scriptHooks.put(BEFORE_CAPTURE_SCREENSHOT, scripts);
+            }
+            scripts.add(script);
+        }
+
+        @JsonProperty("sizeMode")
+        public String getSizeMode() {
+            switch (this.sizeMode){
+                case REGION:
+                    return "region";
+                case SELECTOR:
+                    return "selector";
+                case VIEWPORT:
+                    return "viewport";
+                case FULL_PAGE:
+                    return "full-page";
+            }
+            return null;
+        }
+
+        public String getSelector() {
+            return selector;
+        }
+
+        public Region getRegion() {
+            return region;
+        }
+
+        public Map<String, List<String>> getScriptHooks() {
+            return scriptHooks;
+        }
+
+        public boolean isSendDom() {
+            return isSendDom;
         }
     }
 

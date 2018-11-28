@@ -4,6 +4,7 @@
 package com.applitools.eyes;
 
 import com.applitools.IResourceUploadListener;
+import com.applitools.eyes.visualGridClient.IResourceFuture;
 import com.applitools.eyes.visualGridClient.data.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
@@ -20,7 +21,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -372,7 +372,8 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public void downloadResource(final URL uri, final boolean isSecondRetry, final IDownloadListener<Byte[]> listener) {
+    public IResourceFuture downloadResource(final URL uri, final boolean isSecondRetry, final IDownloadListener<Byte[]> listener) {
+
         Client client = ClientBuilder.newBuilder().build();
 
         WebTarget target = client.target(uri.toString());
@@ -398,6 +399,7 @@ public class ServerConnector extends RestClient
             }
         });
 
+        return null;
     }
 
     @Override

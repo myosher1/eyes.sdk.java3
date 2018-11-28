@@ -2,6 +2,7 @@ package com.applitools.eyes.rendering;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
+import com.applitools.eyes.visualGridClient.IResourceFuture;
 
 import java.net.URL;
 
@@ -19,8 +20,8 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public void getResource(URL url, IDownloadListener<Byte[]> iDownloadListener) {
-        this.serverConnector.downloadResource(url, false, iDownloadListener);
+    public IResourceFuture getResource(URL url, IDownloadListener<Byte[]> iDownloadListener) {
+        return this.serverConnector.downloadResource(url, false, iDownloadListener);
     }
 
     /**
