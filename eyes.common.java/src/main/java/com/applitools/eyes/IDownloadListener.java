@@ -1,6 +1,6 @@
 package com.applitools.eyes;
 
-public interface IDownloadListener {
-        void onDownloadComplete(String downloadedString);
+public interface IDownloadListener <T>{
+        void onDownloadComplete(T downloadedString, String contentType);
         void onDownloadFailed();
 }

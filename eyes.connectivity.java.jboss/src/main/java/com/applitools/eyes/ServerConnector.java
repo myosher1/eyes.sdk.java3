@@ -4,8 +4,7 @@
 package com.applitools.eyes;
 
 import com.applitools.IResourceUploadListener;
-import com.applitools.RenderingInfo;
-import com.applitools.renderingGrid.*;
+import com.applitools.eyes.visualGridClient.data.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -21,10 +20,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -344,7 +340,7 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public void downloadString(final URL uri, final boolean isSecondRetry, final IDownloadListener listener) {
+    public void downloadString(final URL uri, final boolean isSecondRetry, final IDownloadListener<String> listener) {
 
         Client client = ClientBuilder.newBuilder().build();
 
@@ -356,7 +352,7 @@ public class ServerConnector extends RestClient
             @Override
             public void completed(String response) {
                 logger.verbose(uri + " - completed");
-                listener.onDownloadComplete(response);
+                listener.onDownloadComplete(response, null);
             }
 
             @Override
@@ -372,6 +368,35 @@ public class ServerConnector extends RestClient
             }
         });
 
+
+    }
+
+    @Override
+    public void downloadResource(final URL uri, final boolean isSecondRetry, final IDownloadListener<Byte[]> listener) {
+        Client client = ClientBuilder.newBuilder().build();
+
+        WebTarget target = client.target(uri.toString());
+
+        Invocation.Builder request = target.request(MediaType.WILDCARD);
+
+        request.async().get(new InvocationCallback<Response>() {
+            @Override
+            public void completed(Response response) {
+                logger.verbose(uri + " - completed");
+                listener.onDownloadComplete((Byte[]) response.getEntity(), null);
+            }
+
+            @Override
+            public void failed(Throwable throwable) {
+                GeneralUtils.logExceptionStackTrace(new Exception(throwable));
+                if (!isSecondRetry) {
+                    logger.verbose("Entring retry");
+                    downloadResource(uri, true, listener);
+                } else {
+                    listener.onDownloadFailed();
+                }
+            }
+        });
 
     }
 

@@ -8,7 +8,6 @@ import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.positioning.ElementPositionProvider;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helger.commons.collection.impl.ICommonsList;
@@ -72,7 +71,7 @@ public class DomCapture {
             String json = objectMapper.writeValueAsString(dom);
             return json;
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            GeneralUtils.logExceptionStackTrace(e);
         }
         return "";
     }
@@ -126,7 +125,7 @@ public class DomCapture {
 
         final Map<String, Object> executeScriptMap;
         try {
-            executeScriptMap = parseStringToMap(executeScripString);
+            executeScriptMap = GeneralUtils.parseJsonToObject(executeScripString);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -194,7 +193,7 @@ public class DomCapture {
                 String json = (String) ((JavascriptExecutor) mDriver).executeScript(CAPTURE_FRAME_SCRIPT, argsObj);
 
                 try {
-                    dom = parseStringToMap(json);
+                    dom = GeneralUtils.parseJsonToObject(json);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -236,9 +235,9 @@ public class DomCapture {
 
             if (isHTML) {
                 mainPhaser.register();
-                getFrameBundledCss(baseUrl, new IDownloadListener() {
+                getFrameBundledCss(baseUrl, new IDownloadListener<String>() {
                     @Override
-                    public void onDownloadComplete(String downloadedString) {
+                    public void onDownloadComplete(String downloadedString, String contentType) {
                         domTree.put("css", downloadedString);
                         mLogger.verbose("Putting css in " + " - CSS = " + downloadedString);
                         mainPhaser.arriveAndDeregister();
@@ -325,9 +324,9 @@ public class DomCapture {
                 final CssTreeNode cssTreeNode = new CssTreeNode();
                 cssTreeNode.setBaseUrl(root.baseUrl);
                 cssTreeNode.setUrlPostfix(value);
-                downloadCss(cssTreeNode, new IDownloadListener() {
+                downloadCss(cssTreeNode, new IDownloadListener<String>() {
                     @Override
-                    public void onDownloadComplete(String downloadedString) {
+                    public void onDownloadComplete(String downloadedString, String contentType) {
                         mLogger.verbose("DomCapture.onDownloadComplete");
 
                         parseCSS(cssTreeNode, downloadedString);
@@ -348,7 +347,7 @@ public class DomCapture {
         }
         root.setDecedents(nodes);
         treePhaser.arriveAndAwaitAdvance();
-        listener.onDownloadComplete(root.calcCss());
+        listener.onDownloadComplete(root.calcCss(), "String");
     }
 
     class CssTreeNode {
@@ -396,9 +395,9 @@ public class DomCapture {
                     cssTreeNode.setBaseUrl(this.baseUrl);
                     String uri = importRule.getLocation().getURI();
                     cssTreeNode.setUrlPostfix(uri);
-                    downloadCss(cssTreeNode, new IDownloadListener() {
+                    downloadCss(cssTreeNode, new IDownloadListener<String>() {
                         @Override
-                        public void onDownloadComplete(String downloadedString) {
+                        public void onDownloadComplete(String downloadedString, String contentType) {
                             parseCSS(cssTreeNode, downloadedString);
                             if (!cssTreeNode.allImportRules.isEmpty()) {
                                 cssTreeNode.downloadNodeCss();
@@ -440,15 +439,15 @@ public class DomCapture {
 
     }
 
-    private void downloadCss(final CssTreeNode node, final IDownloadListener listener) {
+    private void downloadCss(final CssTreeNode node, final IDownloadListener<String> listener) {
         treePhaser.register();
         mLogger.verbose("Given URL to download: " + node.urlPostfix);
-        mServerConnector.downloadString(node.urlPostfix, false, new IDownloadListener() {
+        mServerConnector.downloadString(node.urlPostfix, false, new IDownloadListener<String>() {
             @Override
-            public void onDownloadComplete(String downloadedString) {
+            public void onDownloadComplete(String downloadedString, String contentType) {
                 try {
                     mLogger.verbose("Download Complete");
-                    listener.onDownloadComplete(downloadedString);
+                    listener.onDownloadComplete(downloadedString , "String");
 
                 } catch (Exception e) {
                     GeneralUtils.logExceptionStackTrace(e);
@@ -489,13 +488,7 @@ public class DomCapture {
         node.setAllStyleRules(aCSS.getAllStyleRules());
     }
 
-    private Map<String, Object> parseStringToMap(String executeScripString) throws IOException {
-        Map<String, Object> executeScriptMap;
-        ObjectMapper mapper = new ObjectMapper();
-        executeScriptMap = mapper.readValue(executeScripString, new TypeReference<Map<String, Object>>() {
-        });
-        return executeScriptMap;
-    }
+
 
 
 }

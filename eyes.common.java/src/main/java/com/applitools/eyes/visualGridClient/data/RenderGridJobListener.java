@@ -1,6 +1,4 @@
-package com.applitools.renderingGrid;
-
-import com.applitools.eyes.RunningSession;
+package com.applitools.eyes.visualGridClient.data;
 
 import java.util.List;
 

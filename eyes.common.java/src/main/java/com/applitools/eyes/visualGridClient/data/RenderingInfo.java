@@ -1,4 +1,4 @@
-package com.applitools;
+package com.applitools.eyes.visualGridClient.data;
 
 public class RenderingInfo {
 

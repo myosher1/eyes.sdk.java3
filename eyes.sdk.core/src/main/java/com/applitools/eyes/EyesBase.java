@@ -1,6 +1,7 @@
 package com.applitools.eyes;
 
 import com.applitools.IDomCaptureListener;
+import com.applitools.eyes.visualGridClient.data.RenderingInfo;
 import com.applitools.eyes.capture.AppOutputProvider;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.config.Configuration;
@@ -84,6 +85,7 @@ public abstract class EyesBase {
     private int validationId;
     private boolean isSendDom;
     protected IDomCaptureListener domCaptureListener;
+    private RenderingInfo renderInfo;
 
     public EyesBase() {
 
@@ -1821,6 +1823,14 @@ public abstract class EyesBase {
 
     public void setSendDom(boolean isSendDom) {
         this.isSendDom = isSendDom;
+    }
+
+    public RenderingInfo getRenderingInfo(){
+        if (this.renderInfo != null) {
+            return this.renderInfo;
+        }
+        this.renderInfo = this.serverConnector.getRenderInfo();
+        return this.renderInfo;
     }
 
 }

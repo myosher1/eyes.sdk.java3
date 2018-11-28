@@ -1,23 +1,53 @@
-package com.applitools.renderingGrid;
+package com.applitools.eyes.visualGridClient.data;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class RenderRequest {
 
+    @JsonIgnore
+    private double id;
+
+    @JsonInclude
     private String webHook;
+
+    @JsonInclude
     private String url;
+
+    @JsonInclude
     private RGridDom dom;
-    private RGridResource resource;
+
+    @JsonInclude
+    private Map<String, RGridResource> resources;
+
+    @JsonInclude
     private RenderInfo renderInfo;
+
+    @JsonIgnore
     private String platform;
+
+    @JsonIgnore
     private String browserName;
+
+    @JsonInclude
     private Object scriptHooks;
+
+    @JsonInclude
     private String[] selectorsToFindRegionsFor;
+
+    @JsonInclude
     private boolean sendDom;
 
-    public RenderRequest(String webHook, String url, RGridDom dom, RGridResource resource, RenderInfo renderInfo, String platform, String browserName, Object scriptHooks, String[] selectorsToFindRegionsFor, boolean sendDom) {
+    public RenderRequest(double id, String webHook, String url, RGridDom dom, Map<String, RGridResource> resources, RenderInfo renderInfo, String platform, String browserName, Object scriptHooks, String[] selectorsToFindRegionsFor, boolean sendDom) {
+        this.id = id;
         this.webHook = webHook;
         this.url = url;
         this.dom = dom;
-        this.resource = resource;
+        this.resources = resources;
         this.renderInfo = renderInfo;
         this.platform = platform;
         this.browserName = browserName;
@@ -42,12 +72,12 @@ public class RenderRequest {
         this.dom = dom;
     }
 
-    public RGridResource getResource() {
-        return resource;
+    public Map<String, RGridResource> getResources() {
+        return resources;
     }
 
-    public void setResource(RGridResource resource) {
-        this.resource = resource;
+    public void setResources(Map<String, RGridResource> resources) {
+        this.resources = resources;
     }
 
     public RenderInfo getRenderInfo() {
@@ -96,5 +126,13 @@ public class RenderRequest {
 
     public void setSendDom(boolean sendDom) {
         this.sendDom = sendDom;
+    }
+
+    @JsonProperty("browser")
+    public Map<String,String> getBrowser(){
+        Map<String,String> map = new HashMap<>();
+        map.put("name", this.browserName);
+        map.put("platform", this.platform);
+        return map;
     }
 }

@@ -2,17 +2,19 @@ package com.applitools.utils;
 
 import com.applitools.eyes.EyesException;
 import com.applitools.eyes.Logger;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -33,13 +35,14 @@ public class GeneralUtils {
 
     private static Logger logger;
 
-    private GeneralUtils() {}
+    private GeneralUtils() {
+    }
 
     /**
      * @param inputStream The stream which content we would like to read.
      * @return The entire contents of the input stream as a string.
      * @throws java.io.IOException If there was a problem reading/writing
-     * from/to the streams used during the operation.
+     *                             from/to the streams used during the operation.
      */
     @SuppressWarnings("UnusedDeclaration")
     public static String readToEnd(InputStream inputStream) throws IOException {
@@ -104,9 +107,9 @@ public class GeneralUtils {
      *
      * @param dateTime An ISO 8601 formatted string.
      * @return A {@link java.util.Calendar} instance representing the given
-     *          date and time.
+     * date and time.
      * @throws java.text.ParseException If {@code dateTime} is not in the ISO
-     * 8601 format.
+     *                                  8601 format.
      */
     public static Calendar fromISO8601DateTime(String dateTime)
             throws ParseException {
@@ -135,21 +138,17 @@ public class GeneralUtils {
      *
      * @param milliseconds The number of milliseconds to sleep.
      */
-    public static void sleep(long milliseconds)
-    {
-        try
-        {
+    public static void sleep(long milliseconds) {
+        try {
             Thread.sleep(milliseconds);
-        }
-        catch (InterruptedException ex)
-        {
+        } catch (InterruptedException ex) {
             throw new RuntimeException("sleep interrupted", ex);
         }
     }
 
     /**
      * @param format The date format parser.
-     * @param date The date string in a format matching {@code format}.
+     * @param date   The date string in a format matching {@code format}.
      * @return The {@link java.util.Date} represented by the input string.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -162,9 +161,8 @@ public class GeneralUtils {
     }
 
     /**
-     *
      * @param start The start time. (Milliseconds)
-     * @param end The end time. (Milliseconds).
+     * @param end   The end time. (Milliseconds).
      * @return The elapsed time between the start and end times, rounded up
      * to a full second, in milliseconds.
      */
@@ -241,7 +239,6 @@ public class GeneralUtils {
     }
 
     /**
-     *
      * @param domJson JSON as string to be gzipped
      * @return byte[] of the gzipped string
      */
@@ -256,5 +253,32 @@ public class GeneralUtils {
             e.printStackTrace();
         }
         return resultStream.toByteArray();
+    }
+
+    public static <T> T parseJsonToObject(String executeScripString) throws IOException {
+        T executeScriptMap;
+        ObjectMapper mapper = new ObjectMapper();
+        executeScriptMap = mapper.readValue(executeScripString, new TypeReference<T>() {
+        });
+        return executeScriptMap;
+    }
+
+    public static String getSha256hash(Byte[] content) {
+        byte[] buffer = new byte[8192];
+        int count;
+        MessageDigest digest = null;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+            BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(ArrayUtils.toPrimitive(content)));
+            while ((count = bis.read(buffer)) > 0) {
+                digest.update(buffer, 0, count);
+            }
+            bis.close();
+
+            return new String(digest.digest());
+        } catch (NoSuchAlgorithmException | IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

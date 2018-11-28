@@ -1,4 +1,6 @@
-package com.applitools.renderingGrid;
+package com.applitools.eyes.visualGridClient.data;
+
+import com.applitools.eyes.visualGridClient.ScreenOrientation;
 
 public class EmulationInfo {
 

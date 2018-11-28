@@ -1,6 +1,11 @@
-package com.applitools.renderingGrid;
+package com.applitools.eyes.visualGridClient.data;
 
 import com.applitools.utils.ArgumentGuard;
+import com.applitools.utils.GeneralUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -10,16 +15,32 @@ import java.security.NoSuchAlgorithmException;
 
 public class RGridResource {
 
+    @JsonIgnore
     private String url = null;
 
+    @JsonInclude
     private String contentType = null;
 
-    private byte[] content = null;
+    @JsonIgnore
+    private Byte[] content = null;
 
+    @JsonInclude
     private String sha256hash = null;
+
+    @JsonInclude
+    private String hashFormat = "sha256";
+
 
     public String getUrl() {
         return url;
+    }
+
+    public RGridResource(String url, String contentType, Byte[] content) {
+        this.url = url;
+        this.contentType = contentType;
+        this.content = content;
+        this.sha256hash = getSha256hash();
+
     }
 
     public void setUrl(String url) {
@@ -36,32 +57,19 @@ public class RGridResource {
         this.contentType = contentType;
     }
 
-    public byte[] getContent() {
+    public Byte[] getContent() {
         return content;
     }
 
-    public void setContent(byte[] content) {
+    public void setContent(Byte[] content) {
         ArgumentGuard.notNull(contentType, "content");
         this.content = content;
     }
 
+    @JsonProperty("hash")
     public String getSha256hash() {
         if (sha256hash == null) {
-            byte[] buffer = new byte[8192];
-            int count;
-            MessageDigest digest = null;
-            try {
-                digest = MessageDigest.getInstance("SHA-256");
-                BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(content));
-                while ((count = bis.read(buffer)) > 0) {
-                    digest.update(buffer, 0, count);
-                }
-                bis.close();
-
-                this.sha256hash = new String(digest.digest());
-            } catch (NoSuchAlgorithmException | IOException e) {
-                e.printStackTrace();
-            }
+            this.sha256hash = GeneralUtils.getSha256hash(content);
         }
         return sha256hash;
     }

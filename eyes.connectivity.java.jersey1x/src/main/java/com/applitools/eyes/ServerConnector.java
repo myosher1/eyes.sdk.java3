@@ -4,11 +4,7 @@
 package com.applitools.eyes;
 
 import com.applitools.IResourceUploadListener;
-import com.applitools.RenderingInfo;
-import com.applitools.renderingGrid.RGridResource;
-import com.applitools.renderingGrid.RenderRequest;
-import com.applitools.renderingGrid.RenderStatusResults;
-import com.applitools.renderingGrid.RunningRender;
+import com.applitools.eyes.visualGridClient.data.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -19,6 +15,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.async.TypeListener;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -353,12 +350,11 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public void downloadString(URL uri, boolean isSecondRetry, final IDownloadListener listener) {
+    public void downloadString(URL uri, boolean isSecondRetry, final IDownloadListener<String> listener) {
 
         AsyncWebResource target = Client.create().asyncResource(uri.toString());
 
         AsyncWebResource.Builder request = target.accept(MediaType.WILDCARD);
-
 
         request.get(new TypeListener<ClientResponse>(ClientResponse.class) {
 
@@ -381,7 +377,43 @@ public class ServerConnector extends RestClient
 
                     String theString = writer.toString();
 
-                    listener.onDownloadComplete(theString);
+                    listener.onDownloadComplete(theString, null);
+
+                } catch (Exception e) {
+                    GeneralUtils.logExceptionStackTrace(e);
+                    logger.verbose("Failed to parse request(status= " + status + ") = "+ clientResponse.getEntity(String.class));
+                    listener.onDownloadFailed();
+
+                }
+            }
+
+        });
+    }
+
+    @Override
+    public void downloadResource(URL uri, boolean isSecondRetry, final IDownloadListener<Byte[]> listener) {
+        AsyncWebResource target = Client.create().asyncResource(uri.toString());
+
+        AsyncWebResource.Builder request = target.accept(MediaType.WILDCARD);
+
+        request.get(new TypeListener<ClientResponse>(ClientResponse.class) {
+
+            public void onComplete(Future<ClientResponse> f) {
+                int status = 0;
+                ClientResponse clientResponse = null;
+                try {
+                    clientResponse = f.get();
+                    status = clientResponse.getStatus();
+                    if (status > 300) {
+                        logger.verbose("Got response status code - " + status);
+                        listener.onDownloadFailed();
+                        return;
+                    }
+                    InputStream entityInputStream = clientResponse.getEntityInputStream();
+
+                    byte[] bytes = new byte[clientResponse.getLength()];
+                    entityInputStream.read(bytes);
+                    listener.onDownloadComplete(ArrayUtils.toObject(bytes), null);
 
                 } catch (Exception e) {
                     GeneralUtils.logExceptionStackTrace(e);
@@ -418,7 +450,7 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public void getRenderInfo() {
+    public RenderingInfo getRenderInfo() {
         this.logger.verbose("ServerConnector.getRenderInfo called.");
         WebResource target = restClient.resource(serverUrl).path(RENDER_INFO_PATH).queryParam("apiKey", getApiKey());
 
@@ -433,7 +465,7 @@ public class ServerConnector extends RestClient
 
         renderingInfo = parseResponseWithJsonData(response, validStatusCodes,
                 RenderingInfo.class);
-
+        return renderingInfo;
     }
 
     @Override

@@ -1,16 +1,26 @@
-package com.applitools.renderingGrid;
+package com.applitools.eyes.visualGridClient.data;
 
 import com.applitools.eyes.Region;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class RenderInfo {
 
+    @JsonInclude
     private int width;
-    private int height;
-    private String sizeMode;
-    private Region region;
-    private String emulationInfo;
 
-    public RenderInfo(int width, int height, String sizeMode, Region region, String emulationInfo) {
+    @JsonInclude
+    private int height;
+
+    @JsonInclude
+    private String sizeMode;
+
+    @JsonInclude
+    private Region region;
+
+    @JsonInclude
+    private EmulationInfo emulationInfo;
+
+    public RenderInfo(int width, int height, String sizeMode, Region region, EmulationInfo emulationInfo) {
         this.width = width;
         this.height = height;
         this.sizeMode = sizeMode;
@@ -50,11 +60,11 @@ public class RenderInfo {
         this.region = region;
     }
 
-    public String getEmulationInfo() {
+    public EmulationInfo getEmulationInfo() {
         return emulationInfo;
     }
 
-    public void setEmulationInfo(String emulationInfo) {
+    public void setEmulationInfo(EmulationInfo emulationInfo) {
         this.emulationInfo = emulationInfo;
     }
 }
