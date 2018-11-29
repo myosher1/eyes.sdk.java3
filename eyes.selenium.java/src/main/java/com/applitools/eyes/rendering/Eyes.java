@@ -4,10 +4,7 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IRenderingEyes;
 import com.applitools.eyes.visualGridClient.RenderingGridManager;
-import com.applitools.eyes.visualGridClient.data.RenderingConfiguration;
-import com.applitools.eyes.visualGridClient.data.RenderingInfo;
-import com.applitools.eyes.visualGridClient.data.RunningTest;
-import com.applitools.eyes.visualGridClient.data.Task;
+import com.applitools.eyes.visualGridClient.data.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.JavascriptExecutor;
@@ -205,9 +202,11 @@ public class Eyes implements IRenderingEyes {
         return this.testList.size();
     }
 
-    public void check(RenderingConfiguration.checkRGSettings settings) {
+    public void check(CheckRGSettings settings) {
         String script = (String) this.jsExecutor.executeAsyncScript("var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})");
-
+        for (RunningTest test : testList) {
+            test.check();
+        }
         this.renderingGridManager.check(settings, script, this.renderingConfiguration.getBrowsersInfo(), this.eyesConnector, testList);
 
 

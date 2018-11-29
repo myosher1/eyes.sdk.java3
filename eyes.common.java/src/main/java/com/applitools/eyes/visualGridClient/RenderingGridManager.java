@@ -129,6 +129,7 @@ public class RenderingGridManager {
         logger.verbose("RenderingGridManager.startServices");
         this.eyesOpenerService.start();
         this.eyesCloserService.start();
+        this.renderingGridService.start();
         this.servicesGroup.setDaemon(false);
     }
      private void stopServices() {
@@ -137,8 +138,6 @@ public class RenderingGridManager {
         this.eyesCloserService.stopService();
         this.servicesGroup.setDaemon(false);
     }
-
-
 
 
     private FutureTask<TestResults> getNextTestToOpen() {
@@ -188,7 +187,7 @@ public class RenderingGridManager {
         this.renderRequestsAsList = testToRenderRequestMapping.entrySet();
     }
 
-    public void check(RenderingConfiguration.checkRGSettings settings, String script, List<RenderingConfiguration.RenderBrowserInfo> browsersInfo, IEyesConnector connector, List<RunningTest> testList) {
+    public void check(CheckRGSettings settings, String script, List<RenderingConfiguration.RenderBrowserInfo> browsersInfo, IEyesConnector connector, List<RunningTest> testList) {
         this.renderingTaskList.add(new RenderingTask(connector, script, settings, testList, this.renderingInfo, null, this.cachedResources));
     }
 }

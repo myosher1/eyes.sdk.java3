@@ -1,6 +1,7 @@
 package com.applitools.eyes;
 
 import com.applitools.eyes.visualGridClient.IResourceFuture;
+import com.applitools.eyes.visualGridClient.data.RGridResource;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.ws.rs.core.Response;
@@ -14,9 +15,11 @@ import java.util.concurrent.TimeoutException;
 public class ResourceFuture implements IResourceFuture {
 
     private Future<Response> future;
+    private String url;
 
-    public ResourceFuture(Future<Response> future) {
+    public ResourceFuture(Future<Response> future, String url) {
         this.future = future;
+        this.url = url;
     }
 
     @Override
@@ -35,7 +38,7 @@ public class ResourceFuture implements IResourceFuture {
     }
 
     @Override
-    public Byte[] get() throws InterruptedException, ExecutionException {
+    public RGridResource get() throws InterruptedException, ExecutionException {
         Response response = future.get();
         byte[] bytes = new byte[response.getLength()];
         try {
@@ -43,11 +46,11 @@ public class ResourceFuture implements IResourceFuture {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return ArrayUtils.toObject(bytes);
+        return new RGridResource(url, response.getHeaderString("contentType"), ArrayUtils.toObject(bytes));
     }
 
     @Override
-    public Byte[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public RGridResource get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         Response response = future.get(timeout, unit);
         byte[] bytes = new byte[response.getLength()];
         try {
@@ -55,7 +58,7 @@ public class ResourceFuture implements IResourceFuture {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return ArrayUtils.toObject(bytes);
+        return new RGridResource(url, response.getHeaderString("contentType"), ArrayUtils.toObject(bytes));
     }
 
 }

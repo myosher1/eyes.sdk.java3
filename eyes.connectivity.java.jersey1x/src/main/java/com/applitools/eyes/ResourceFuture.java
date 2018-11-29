@@ -1,6 +1,7 @@
 package com.applitools.eyes;
 
 import com.applitools.eyes.visualGridClient.IResourceFuture;
+import com.applitools.eyes.visualGridClient.data.RGridResource;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.ws.rs.core.Response;
@@ -14,6 +15,7 @@ import java.util.concurrent.TimeoutException;
 public class ResourceFuture implements IResourceFuture {
 
     private Future<Response> future;
+    private String url = null;
 
     public ResourceFuture(Future<Response> future) {
         this.future = future;
@@ -35,7 +37,7 @@ public class ResourceFuture implements IResourceFuture {
     }
 
     @Override
-    public Byte[] get() throws InterruptedException, ExecutionException {
+    public RGridResource get() throws InterruptedException, ExecutionException {
         Response response = future.get();
         byte[] bytes;
         bytes = new byte[(Integer)(response.getMetadata().get("length").get(0))];
@@ -44,11 +46,12 @@ public class ResourceFuture implements IResourceFuture {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return ArrayUtils.toObject(bytes);
+        RGridResource gridResource = new RGridResource(url, (String) response.getMetadata().get("contentType").get(0), ArrayUtils.toObject(bytes));
+        return gridResource;
     }
 
     @Override
-    public Byte[] get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public RGridResource get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         Response response = future.get(timeout, unit);
         byte[] bytes;
         bytes = new byte[(Integer)(response.getMetadata().get("length").get(0))];
@@ -57,7 +60,8 @@ public class ResourceFuture implements IResourceFuture {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return ArrayUtils.toObject(bytes);
+        RGridResource gridResource = new RGridResource(url, (String) response.getMetadata().get("contentType").get(0), ArrayUtils.toObject(bytes));
+        return gridResource;
     }
 
 }

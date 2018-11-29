@@ -26,7 +26,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
     private IEyesConnector eyesConnector;
     private String script;
-    private RenderingConfiguration.checkRGSettings renderingConfiguration;
+    private CheckRGSettings renderingConfiguration;
     private List<RunningTest> testList;
     private RenderingInfo renderingInfo;
     private RenderingTaskListener runningTestListener;
@@ -36,7 +36,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         void onTaskComplete(RenderingTask task);
     }
 
-    public RenderingTask(IEyesConnector eyesConnector, String script, RenderingConfiguration.checkRGSettings renderingConfiguration, List<RunningTest> testList, RenderingInfo renderingInfo, RenderingTaskListener runningTestListener, Map<String, IResourceFuture> cacheMap) {
+    public RenderingTask(IEyesConnector eyesConnector, String script, CheckRGSettings renderingConfiguration, List<RunningTest> testList, RenderingInfo renderingInfo, RenderingTaskListener runningTestListener, Map<String, IResourceFuture> cacheMap) {
         this.eyesConnector = eyesConnector;
         this.script = script;
         this.renderingConfiguration = renderingConfiguration;
@@ -94,7 +94,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         return RenderingTask.isThrown.get();
     }
 
-    private List<RenderRequest> prepareDataForRG(HashMap<String, Object> result, RenderingConfiguration.checkRGSettings settings) {
+    private List<RenderRequest> prepareDataForRG(HashMap<String, Object> result, CheckRGSettings settings) {
 
         final List<RGridResource> allBlobs = Collections.synchronizedList(new ArrayList<RGridResource>());
         List<String> resourceUrls = null;
@@ -133,7 +133,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         return allRequestsForRG;
     }
 
-    private List<RenderRequest> buildRenderRequests(HashMap<String, Object> result, RenderingConfiguration.checkRGSettings settings, List<RGridResource> allBlobs) {
+    private List<RenderRequest> buildRenderRequests(HashMap<String, Object> result, CheckRGSettings settings, List<RGridResource> allBlobs) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
         String cdt;
