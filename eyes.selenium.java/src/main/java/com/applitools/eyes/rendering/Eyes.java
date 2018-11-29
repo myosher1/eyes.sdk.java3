@@ -90,33 +90,52 @@ public class Eyes implements IRenderingEyes {
 
     public void open(WebDriver webDriver) {
         ArgumentGuard.notNull(webDriver, "webDriver");
+        logger.verbose("enter");
         initDriver(webDriver);
-        for (RenderingConfiguration.RenderBrowserInfo browserInfo : renderingConfiguration.getBrowsersInfo()) {
-            IEyesConnector eyesConnector = new EyesConnector();
-            eyesConnector.setProxy(this.proxy);
-            if (logHandler != null) {
-                eyesConnector.setLogHandler(this.logHandler);
-            }
-            if (this.serverUrl != null) {
-                try {
-                    eyesConnector.setServerUrl(serverUrl);
-                } catch (URISyntaxException e) {
-                    GeneralUtils.logExceptionStackTrace(e);
-                }
-            }
-            if (this.eyesConnector == null) {
-                this.eyesConnector = eyesConnector;
-            }
-            if (this.rendringInfo == null) {
-                this.rendringInfo = eyesConnector.getRenderingInfo();
-            }
-            this.testList.add(new RunningTest(this.proxy, eyesConnector, renderingConfiguration, browserInfo, testListener));
+
+        createEyesConnector();
+
+        logger.verbose("initializing rendering info...");
+        if (this.rendringInfo == null) {
+            this.rendringInfo = eyesConnector.getRenderingInfo();
         }
+
+        logger.verbose("getting all browsers info...");
+        List<RenderingConfiguration.RenderBrowserInfo> browserInfos = renderingConfiguration.getBrowsersInfo();
+        logger.verbose("creating test descriptors for each browser info...");
+        for (RenderingConfiguration.RenderBrowserInfo browserInfo : browserInfos) {
+            logger.verbose("creating test descriptor");
+            RunningTest test = new RunningTest(this.proxy, eyesConnector, renderingConfiguration, browserInfo, testListener);
+            this.testList.add(test);
+        }
+
+        logger.verbose(String.format("opening %d tests...", testList.size()));
         for (RunningTest runningTest : testList) {
             runningTest.open();
         }
+        logger.verbose("calling renderingGridManager.open");
         this.renderingGridManager.open(this, rendringInfo);
+        logger.verbose("done");
+    }
 
+    private void createEyesConnector() {
+        logger.verbose("creating eyes server connector");
+        if (this.eyesConnector != null) {
+            return;
+        }
+        IEyesConnector eyesConnector = new EyesConnector();
+        eyesConnector.setProxy(this.proxy);
+        if (logHandler != null) {
+            eyesConnector.setLogHandler(this.logHandler);
+        }
+        if (this.serverUrl != null) {
+            try {
+                eyesConnector.setServerUrl(serverUrl);
+            } catch (URISyntaxException e) {
+                GeneralUtils.logExceptionStackTrace(e);
+            }
+        }
+        this.eyesConnector = eyesConnector;
     }
 
     private void initDriver(WebDriver webDriver) {
@@ -190,7 +209,6 @@ public class Eyes implements IRenderingEyes {
 
     /**
      * Sets the proxy settings to be used by the rest client.
-     *
      * @param abstractProxySettings The proxy settings to be used by the rest client.
      *                              If {@code null} then no proxy is set.
      */
@@ -212,7 +230,6 @@ public class Eyes implements IRenderingEyes {
 
 
     }
-
 
 
 }

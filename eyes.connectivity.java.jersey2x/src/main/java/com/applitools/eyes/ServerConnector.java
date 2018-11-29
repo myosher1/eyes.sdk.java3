@@ -378,7 +378,8 @@ public class ServerConnector extends RestClient
     public IResourceFuture downloadResource(final URL uri, final boolean isSecondRetry, final IDownloadListener<Byte[]> listener) {
         Client client = ClientBuilder.newBuilder().build();
 
-        WebTarget target = client.target(uri.toString());
+        String url = uri.toString();
+        WebTarget target = client.target(url);
 
         Invocation.Builder request = target.request(MediaType.WILDCARD);
 
@@ -406,7 +407,7 @@ public class ServerConnector extends RestClient
             public void failed(Throwable throwable) {
                 GeneralUtils.logExceptionStackTrace(new Exception(throwable));
                 if (!isSecondRetry) {
-                    logger.verbose("Entring retry");
+                    logger.verbose("Entering retry");
                     downloadResource(uri, true, listener);
                 } else {
                     listener.onDownloadFailed();
@@ -414,7 +415,7 @@ public class ServerConnector extends RestClient
             }
         });
 
-        IResourceFuture newFuture = new ResourceFuture(future);
+        IResourceFuture newFuture = new ResourceFuture(future, url);
         return newFuture;
     }
 

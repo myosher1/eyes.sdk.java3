@@ -1,31 +1,34 @@
-package com.applitools.eyes.selenium;
+package com.applitools.eyes.renderingGrid;
 
-import com.applitools.eyes.Logger;
-import com.applitools.eyes.ProxySettings;
-import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.TestResults;
-import com.applitools.eyes.rendering.CheckRGSettings;
+import com.applitools.eyes.*;
 import com.applitools.eyes.rendering.Eyes;
+import com.applitools.eyes.visualGridClient.data.CheckRGSettings;
 import com.applitools.eyes.visualGridClient.data.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.RenderingGridManager;
 import com.applitools.eyes.visualGridClient.data.TestResultSummery;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.ITestContext;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.util.List;
 import java.util.concurrent.Future;
 
 public final class TestRenderingGridService {
-    public static void main(String[] args) {
+
+    @Test
+    public void test() {
         WebDriver webDriver = null;
         RenderingGridManager renderingManager = null;
         try {
             webDriver = new ChromeDriver();
-            webDriver.get("https://nikita-andreev.github.io/applitools/dom_capture.html?aaa");
+            webDriver.get("https://applitools.github.io/demo/TestPages/DomTest/dom_capture.html");
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
             Logger logger = new Logger();
-            logger.setLogHandler(new StdoutLogHandler());
+            logger.setLogHandler(new StdoutLogHandler(true));
             renderingConfiguration.setTestName("Open Concurrency");
             renderingConfiguration.setAppName("RenderingGridIntegration");
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
@@ -37,7 +40,7 @@ public final class TestRenderingGridService {
             eyes.setServerUrl("https://eyes.applitools.com/");
 
             eyes.open(webDriver);
-            eyes.check(new CheckRGSettings());
+            eyes.check(new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, "html", Region.EMPTY, true));
             List<Future<TestResults>> close = eyes.close();
             for (Future<TestResults> future : close) {
                 future.get();
@@ -49,12 +52,19 @@ public final class TestRenderingGridService {
             if (webDriver != null) {
                 webDriver.quit();
             }
-            // End the test.
             TestResultSummery allTestResults = renderingManager.getAllTestResults();
             System.out.println(allTestResults);
+            // End the test.
         }
+    }
 
+    @BeforeMethod
+    public void Before(ITestContext testContext){
+        int x = 0;
+    }
 
-
+    @AfterMethod
+    public void After(ITestContext testContext){
+        int x = 0;
     }
 }
