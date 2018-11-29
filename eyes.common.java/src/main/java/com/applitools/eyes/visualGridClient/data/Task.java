@@ -11,6 +11,7 @@ public class Task implements Callable<TestResults> {
 
     private static AtomicBoolean isThrown = new AtomicBoolean(false);
 
+
     public enum TaskType {OPEN, CHECK, CLOSE, ABORT}
 
 
@@ -30,7 +31,7 @@ public class Task implements Callable<TestResults> {
     }
 
 
-    public Task(TestResults testResults, IEyesConnector eyesConnector, TaskType type, TaskListener runningTestListener, RenderingConfiguration.RenderBrowserInfo browserInfo, RenderingConfiguration configuration) {
+    public Task(TestResults testResults, IEyesConnector eyesConnector, TaskType type, RenderingConfiguration.RenderBrowserInfo browserInfo, RenderingConfiguration configuration, TaskListener runningTestListener) {
         this.testResults = testResults;
         this.eyesConnector = eyesConnector;
         this.type = type;
@@ -86,6 +87,9 @@ public class Task implements Callable<TestResults> {
 
     public void setRenderResult(RenderStatusResults renderResult) {
         this.renderResult = renderResult;
+    }
+    public boolean isTaskReadyToCheck() {
+        return this.testResults != null;
     }
 }
 

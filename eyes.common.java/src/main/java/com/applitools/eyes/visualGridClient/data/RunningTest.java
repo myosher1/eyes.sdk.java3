@@ -78,7 +78,7 @@ public class RunningTest {
     public int getMark() {
         int mark = 0;
         for (Task task : this.getTaskList()) {
-            if (task.getLinkToImage() != null) {
+            if (task.isTaskReadyToCheck()) {
                 mark++;
             }
         }
