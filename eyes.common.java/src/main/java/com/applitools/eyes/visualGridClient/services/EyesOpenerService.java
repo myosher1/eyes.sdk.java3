@@ -1,7 +1,6 @@
 package com.applitools.eyes.visualGridClient.services;
 
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.visualGridClient.services.EyesBaseService;
 
 public class EyesOpenerService extends EyesBaseService {
     

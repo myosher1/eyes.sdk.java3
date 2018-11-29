@@ -21,6 +21,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -535,7 +539,7 @@ public class ServerConnector extends RestClient
 
 
     @Override
-    public void renderPutRequest(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
+    public Future<Boolean> renderPutResource(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
         ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
@@ -546,7 +550,7 @@ public class ServerConnector extends RestClient
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         target.request(MediaType.APPLICATION_OCTET_STREAM_TYPE);
 
-        request.async().get(new InvocationCallback<Response>() {
+        final Future<Response> responseFuture = request.async().get(new InvocationCallback<Response>() {
             @Override
             public void completed(Response response) {
                 // on complete
@@ -558,12 +562,40 @@ public class ServerConnector extends RestClient
                 // on fail
                 if (isRetryOn) {
                     logger.verbose("Async GET failed - entering retry");
-                    renderPutRequest(runningRender, resource, false, listener);
+                    renderPutResource(runningRender, resource, false, listener);
                 } else {
                     listener.onUploadFailed();
                 }
             }
         });
+        return new Future<Boolean>() {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                return false;
+            }
+
+            @Override
+            public boolean isCancelled() {
+                return false;
+            }
+
+            @Override
+            public boolean isDone() {
+                return false;
+            }
+
+            @Override
+            public Boolean get() throws InterruptedException, ExecutionException {
+                Response response = responseFuture.get();
+                return true;
+            }
+
+            @Override
+            public Boolean get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                Response response = responseFuture.get(timeout,unit);
+                return true;
+            }
+        };
 
     }
 

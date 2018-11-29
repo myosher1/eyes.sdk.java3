@@ -18,7 +18,7 @@ public interface IRenderingEyes {
 
     List<Future<TestResults>> close();
 
-    RunningTest getNextTestToCheck();
+    Task getNextTaskToCheck();
 
     interface EyesListener{
 

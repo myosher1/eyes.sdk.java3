@@ -7,6 +7,7 @@ import com.applitools.eyes.visualGridClient.data.*;
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * Defines the interface which should be implemented by a ServerConnector.
@@ -148,7 +149,7 @@ public interface IServerConnector {
      * @param resource The resource to upload
      * @return true if resource was uploaded
      */
-    void renderPutRequest(RunningRender runningRender, RGridResource resource, boolean isRetryOn, IResourceUploadListener listener);
+    Future<Boolean> renderPutResource(RunningRender runningRender, RGridResource resource, boolean isRetryOn, IResourceUploadListener listener);
 
     /**
      * Get the rendering status for current render

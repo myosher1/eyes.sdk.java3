@@ -1,6 +1,7 @@
 package com.applitools.eyes.visualGridClient.data;
 
-import com.applitools.eyes.IDownloadListener;
+import com.applitools.eyes.EyesException;
+import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IResourceFuture;
 import com.applitools.utils.GeneralUtils;
@@ -16,7 +17,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Phaser;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RenderingTask implements Callable<RenderStatusResults> {
@@ -24,32 +25,33 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
     private static AtomicBoolean isThrown = new AtomicBoolean(false);
 
+    private final Map<String, String> hashToUrl;
     private IEyesConnector eyesConnector;
     private String script;
     private CheckRGSettings renderingConfiguration;
     private List<Task> taskList;
     private RenderingInfo renderingInfo;
-    private RenderingTaskListener runningTestListener;
-    private Map<String, IResourceFuture> cacheMap;
+    private Map<String, IResourceFuture> fetchedCacheMap;
+    private Map<String, Future<Boolean>> putResourceCache;
+    private Logger logger;
 
-    interface RenderingTaskListener {
-        void onTaskComplete(RenderingTask task);
-    }
 
-    public RenderingTask(IEyesConnector eyesConnector, String script, CheckRGSettings renderingConfiguration, List<Task> testList, RenderingInfo renderingInfo, RenderingTaskListener runningTestListener, Map<String, IResourceFuture> cacheMap) {
+    public RenderingTask(Map<String, String> hashToUrl, IEyesConnector eyesConnector, String script, CheckRGSettings renderingConfiguration, List<Task> taskList, RenderingInfo renderingInfo, Map<String, IResourceFuture> fetchedCacheMap, Map<String, Future<Boolean>> putResourceCache, Logger logger) {
+        this.hashToUrl = hashToUrl;
         this.eyesConnector = eyesConnector;
         this.script = script;
         this.renderingConfiguration = renderingConfiguration;
-        this.taskList = testList;
+        this.taskList = taskList;
         this.renderingInfo = renderingInfo;
-        this.runningTestListener = runningTestListener;
-        this.cacheMap = cacheMap;
+        this.fetchedCacheMap = fetchedCacheMap;
+        this.putResourceCache = putResourceCache;
+        this.logger = logger;
     }
 
     @Override
-    public RenderStatusResults call(){
+    public RenderStatusResults call() {
         HashMap<String, Object> result;
-        List<RenderRequest> requests = null;
+        RenderRequest[] requests = null;
         Map<Task, RenderRequest> testToRenderRequestMapping = new HashMap<>();
         try {
 
@@ -64,12 +66,120 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         }
         matchRequestsToTests(requests, testToRenderRequestMapping);
 
-        sendResourcesToRG();
+
+        boolean stillRunning;
+
+        List<RunningRender> runningRenders;
+        do {
+            runningRenders = this.eyesConnector.render(requests);
+
+            RenderStatus worstStatus = runningRenders.get(0).getRenderStatus();
+
+            worstStatus = calcWorstStatus(runningRenders, worstStatus);
+
+            stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCES;
+            if (stillRunning) {
+                sendMissingResources(runningRenders);
+            }
+
+        } while (stillRunning);
+
+        Map<RunningRender, RenderRequest> mapping = mapRequestToRunningRender(runningRenders, requests);
+
+        startPollingStatus(mapping);
 
         return null;
     }
 
-    private void matchRequestsToTests(List<RenderRequest> requests, Map<Task, RenderRequest> testToRenderRequestMapping) {
+    private Map<RunningRender, RenderRequest> mapRequestToRunningRender(List<RunningRender> runningRenders, RenderRequest[] requests) {
+        Map<RunningRender, RenderRequest> mapping = new HashMap<>();
+        for (int i = 0; i < requests.length; i++) {
+            RenderRequest request = requests[i];
+            RunningRender runningRender = runningRenders.get(i);
+            mapping.put(runningRender,request);
+        }
+        return mapping;
+    }
+
+    private RenderStatus calcWorstStatus(List<RunningRender> runningRenders, RenderStatus worstStatus) {
+        LOOP:
+        for (RunningRender runningRender : runningRenders) {
+            switch (runningRender.getRenderStatus()) {
+                case NEED_MORE_RESOURCES:
+                    if (worstStatus == RenderStatus.RENDERED || worstStatus == RenderStatus.RENDERING) {
+                        worstStatus = RenderStatus.NEED_MORE_RESOURCES;
+                    }
+                    break;
+                case ERROR:
+                    worstStatus = RenderStatus.ERROR;
+                    break LOOP;
+            }
+        }
+        return worstStatus;
+    }
+
+    private void startPollingStatus(Map<RunningRender, RenderRequest> runningRenders) {
+
+        Iterator<Map.Entry<RunningRender, RenderRequest>> iterator = runningRenders.entrySet().iterator();
+
+        do {
+
+            while (iterator.hasNext()) {
+                Map.Entry<RunningRender, RenderRequest> entry = iterator.next();
+                RunningRender runningRender = entry.getKey();
+                RenderRequest request = entry.getValue();
+                RenderStatus renderStatus = runningRender.getRenderStatus();
+                if(renderStatus == RenderStatus.ERROR){
+                    iterator.remove();
+                    throw new EyesException("RENDERING FAILED");
+                }
+
+                if(renderStatus == RenderStatus.RENDERED){
+                    String[] ids = getRenderIds(runningRenders.keySet());
+                    this.eyesConnector.renderStatusById(ids);
+                    iterator.remove();
+
+                }
+            }
+
+        }while (runningRenders.size() > 0);
+    }
+
+    private String[] getRenderIds(Set<RunningRender> runningRenders) {
+        return new String[0];
+    }
+
+    private void sendMissingResources(List<RunningRender> runningRenders) {
+        for (RunningRender runningRender : runningRenders) {
+            List<String> needMoreResources = runningRender.getNeedMoreResources();
+            for (String hash : needMoreResources) {
+
+                if (putResourceCache.containsKey(hash)) continue;
+
+                String url = hashToUrl.get(hash);
+                try {
+
+                    RGridResource resource = fetchedCacheMap.get(url).get();
+                    Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, resource);
+                    putResourceCache.put(hash, future);
+
+                } catch (InterruptedException | ExecutionException e) {
+                    GeneralUtils.logExceptionStackTrace(logger, e);
+                }
+            }
+
+        }
+
+        for (Future<Boolean> future : putResourceCache.values()) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void matchRequestsToTests(RenderRequest[] requests, Map<Task, RenderRequest> testToRenderRequestMapping) {
         for (Task task : taskList) {
             RenderingConfiguration.RenderBrowserInfo browserInfo = task.getBrowserInfo();
             for (RenderRequest request : requests) {
@@ -79,7 +189,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                 boolean isSameBrowser = request.getBrowserName().equalsIgnoreCase(browserInfo.getBrowserType());
                 boolean isSameViewport = renderInfo.getHeight() == browserInfo.getHeight() && renderInfo.getWidth() == browserInfo.getWidth();
 
-                if(isSameBrowser && isSameViewport){
+                if (isSameBrowser && isSameViewport) {
                     testToRenderRequestMapping.put(task, request);
                 }
             }
@@ -88,13 +198,15 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     }
 
     private void sendResourcesToRG() {
+
+
     }
 
     private static boolean isThrown() {
         return RenderingTask.isThrown.get();
     }
 
-    private List<RenderRequest> prepareDataForRG(HashMap<String, Object> result, CheckRGSettings settings) {
+    private RenderRequest[] prepareDataForRG(HashMap<String, Object> result, CheckRGSettings settings) {
 
         final List<RGridResource> allBlobs = Collections.synchronizedList(new ArrayList<RGridResource>());
         List<String> resourceUrls = null;
@@ -129,9 +241,11 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         //Create RenderingRequest
         List<RenderRequest> allRequestsForRG = buildRenderRequests(result, settings, allBlobs);
 
+        RenderRequest[] asArray = allRequestsForRG.toArray(new RenderRequest[allRequestsForRG.size()]);
 
-        return allRequestsForRG;
+        return asArray;
     }
+
 
     private List<RenderRequest> buildRenderRequests(HashMap<String, Object> result, CheckRGSettings settings, List<RGridResource> allBlobs) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -147,9 +261,10 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                 resourceMapping.put(blob.getUrl(), blob);
             }
         } catch (JsonProcessingException e) {
-            GeneralUtils.logExceptionStackTrace(e);
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
         dom.setResources(resourceMapping);
+
         //Create RG requests
         List<RenderRequest> allRequestsForRG = new ArrayList<>();
 
@@ -160,8 +275,8 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             RenderingConfiguration.RenderBrowserInfo browserInfo = task.getBrowserInfo();
             RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), browserInfo.getSizeMode(), settings.getRegion(), browserInfo.getEmulationInfo());
 
-            RenderRequest request = new RenderRequest(randomRequestId, this.renderingInfo.getResultsUrl(), (String)result.get("url") ,dom ,
-                    resourceMapping , renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), settings.getScriptHooks(), null, settings.isSendDom());
+            RenderRequest request = new RenderRequest(randomRequestId, this.renderingInfo.getResultsUrl(), (String) result.get("url"), dom,
+                    resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), settings.getScriptHooks(), null, settings.isSendDom(), task);
 
             try {
                 String value = objectMapper.writeValueAsString(request);
@@ -176,55 +291,34 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
     private void fetchAllResources(final List<RGridResource> allBlobs, List<String> resourceUrls) {
 
-        //Filter out the urls found in cacheMap
-        List<String> urlsFoundInCache = new ArrayList<>();
-        Iterator<String> iterator = resourceUrls.iterator();
-        while (iterator.hasNext()) {
-            String next =  iterator.next();
-            if(cacheMap.containsKey(next)){
-                urlsFoundInCache.add(next);
-                iterator.remove();
-            }
-        }
-
-        final Phaser phaser = new Phaser(1);
+        List<IResourceFuture> allFetches = new ArrayList<>();
         for (String link : resourceUrls) {
-            IEyesConnector eyesConnector = this.taskList.get(0).getEyesConnector();
-            URL url = null;
-            try {
-                url = new URL(link);
-                final URL finalUrl = url;
-                phaser.register();
-                IResourceFuture future = eyesConnector.getResource(url, new IDownloadListener<Byte[]>() {
-                    @Override
-                    public void onDownloadComplete(Byte[] downloadedString, String contentType) {
-                        RGridResource gridResource = new RGridResource(finalUrl.toString(), contentType, downloadedString);
-                        allBlobs.add(gridResource);
-                        phaser.arriveAndDeregister();
-                    }
 
-                    @Override
-                    public void onDownloadFailed() {
-                    }
-                });
-                this.cacheMap.put(url.toString(), future);
+            if (fetchedCacheMap.containsKey(link)) continue;
+
+            IEyesConnector eyesConnector = this.taskList.get(0).getEyesConnector();
+            try {
+                final URL url = new URL(link);
+                IResourceFuture future = eyesConnector.getResource(url, null);
+                allFetches.add(future);
+                this.fetchedCacheMap.put(url.toString(), future);
+
             } catch (MalformedURLException e) {
-                e.printStackTrace();
+                GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
 
-        //Wait for all results
-        phaser.arriveAndAwaitAdvance();
+        for (IResourceFuture future : allFetches) {
 
-        for (String url : urlsFoundInCache) {
-            IResourceFuture future = cacheMap.get(url);
-            RGridResource resource = null;
             try {
-                resource = future.get();
+
+                RGridResource resource = future.get();
+                allBlobs.add(resource);
+                this.hashToUrl.put(resource.getSha256hash(), resource.getUrl());
+
             } catch (InterruptedException | ExecutionException e) {
-                GeneralUtils.logExceptionStackTrace(e);
+                GeneralUtils.logExceptionStackTrace(logger, e);
             }
-            allBlobs.add(resource);
         }
     }
 

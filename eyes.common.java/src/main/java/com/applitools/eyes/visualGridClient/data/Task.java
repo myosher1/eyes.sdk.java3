@@ -15,10 +15,10 @@ public class Task implements Callable<TestResults> {
 
 
     private TestResults testResults;
-    private String linkToImage = null;
     private IEyesConnector eyesConnector;
 
     private TaskType type;
+    private RenderStatusResults renderResult;
     private TaskListener runningTestListener;
     private RenderingConfiguration.RenderBrowserInfo browserInfo;
     private RenderingConfiguration configuration;
@@ -29,22 +29,14 @@ public class Task implements Callable<TestResults> {
 
     }
 
-    public Task(String linkToImage, IEyesConnector eyes, TaskType type, RenderingConfiguration.RenderBrowserInfo browserInfo, RenderingConfiguration configuration, TaskListener listener) {
-        super();
-        this.linkToImage = linkToImage;
-        this.eyesConnector = eyes;
+
+    public Task(TestResults testResults, IEyesConnector eyesConnector, TaskType type, TaskListener runningTestListener, RenderingConfiguration.RenderBrowserInfo browserInfo, RenderingConfiguration configuration) {
+        this.testResults = testResults;
+        this.eyesConnector = eyesConnector;
         this.type = type;
+        this.runningTestListener = runningTestListener;
         this.browserInfo = browserInfo;
         this.configuration = configuration;
-        this.runningTestListener = listener;
-    }
-
-    String getLinkToImage() {
-        return linkToImage;
-    }
-
-    boolean isTaskReadyToCheck() {
-        return linkToImage != null;
     }
 
     public RenderingConfiguration.RenderBrowserInfo getBrowserInfo() {
@@ -92,5 +84,8 @@ public class Task implements Callable<TestResults> {
         return Task.isThrown.get();
     }
 
+    public void setRenderResult(RenderStatusResults renderResult) {
+        this.renderResult = renderResult;
+    }
 }
 

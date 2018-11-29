@@ -36,9 +36,17 @@ public class RunningTest {
             if (runningTest.listener != null) {
                 RunningTest.this.listener.onTaskComplete(task, RunningTest.this);
             }
-            runningTest.taskList.remove(task);
         }
     };
+
+    public Task getNextCheckTask() {
+        if (!taskList.isEmpty()) {
+            Task task = taskList.get(0);
+            taskList.remove(task);
+            if (task.getType() == Task.TaskType.CHECK && task.isTaskReadyToCheck()) return task;
+        }
+        return null;
+    }
 
     public interface RunningTestListener {
 
@@ -80,6 +88,7 @@ public class RunningTest {
     public synchronized FutureTask<TestResults> getNextTask() {
         if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
+            taskList.remove(task);
             return taskToFutureMapping.get(task);
         }
         return null;

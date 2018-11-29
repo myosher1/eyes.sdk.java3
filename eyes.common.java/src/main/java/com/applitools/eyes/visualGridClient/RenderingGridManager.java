@@ -20,16 +20,18 @@ public class RenderingGridManager {
     private EyesCloserService eyesCloserService;
     private EyesCheckerService eyesCheckerService;
     private RenderingGridService renderingGridService;
-    private HashMap<String, String> resourceCache = new HashMap<>();
     private ThreadGroup servicesGroup = new ThreadGroup("Services Group");
-    private Logger logger;
-    private int totalEyesCount = 0;
-    private int eyesClosedCount = 0;
     private ArrayList<IRenderingEyes> eyesToOpenList = new ArrayList<>(200);
     private final ArrayList<IRenderingEyes> eyesToCloseList = new ArrayList<>(200);
     private ArrayList<IRenderingEyes> allEyes = new ArrayList<>(200);
     private Set<Map.Entry<RunningTest, RenderRequest>> renderRequestsAsList;
     private Map<String, IResourceFuture> cachedResources = Collections.synchronizedMap(new HashMap<String, IResourceFuture>());
+    private Map<String, Future<Boolean>> putResourceCache = Collections.synchronizedMap(new HashMap<String, Future<Boolean>>());
+    private Map<String, String> hashToUrl = Collections.synchronizedMap(new HashMap<String, String>());
+
+    private Logger logger;
+    private int totalEyesCount = 0;
+    private int eyesClosedCount = 0;
 
     private IRenderingEyes.EyesListener eyesListener = new IRenderingEyes.EyesListener() {
         @Override
@@ -104,17 +106,14 @@ public class RenderingGridManager {
     }
 
     private FutureTask<TestResults> getNextTestToCheck() {
-        int mark = -1;
-        RunningTest bestTest = null;
-        for (IRenderingEyes eyes : allEyes) {
-            RunningTest test = eyes.getNextTestToCheck();
-            if (test != null && mark < test.getMark()) {
-                mark = test.getMark();
-                bestTest = test;
+        RunningTest runningTest = null;
+        synchronized (allEyes) {
+            for (IRenderingEyes eyes : allEyes) {
+                Task task = eyes.getNextTaskToCheck();
+                if (task != null) {
+                    return new FutureTask<>(task);
+                }
             }
-        }
-        if (bestTest != null) {
-            return bestTest.getNextTask();
         }
         return null;
     }
@@ -124,6 +123,7 @@ public class RenderingGridManager {
             return null;
         }
         RenderingTask renderingTask = this.renderingTaskList.get(0);
+        this.renderingTaskList.remove(renderingTask);
         return renderingTask;
     }
 
@@ -213,14 +213,10 @@ public class RenderingGridManager {
         }
     }
 
-    public void render(Map<RunningTest, RenderRequest> testToRenderRequestMapping) {
-        this.renderRequestsAsList = testToRenderRequestMapping.entrySet();
-    }
-
-    public void check(CheckRGSettings settings, String script, List<RenderingConfiguration.RenderBrowserInfo> browsersInfo, IEyesConnector connector, List<Task> taskList) {
+    public void check(CheckRGSettings settings, String script, IEyesConnector connector, List<Task> taskList) {
         if(!this.eyesCheckerService.isAlive()){
             startServices();
         }
-        this.renderingTaskList.add(new RenderingTask(connector, script, settings, taskList, this.renderingInfo, null, this.cachedResources));
+        this.renderingTaskList.add(new RenderingTask(hashToUrl, connector, script, settings, taskList, this.renderingInfo, this.cachedResources, this.putResourceCache, logger));
     }
 }

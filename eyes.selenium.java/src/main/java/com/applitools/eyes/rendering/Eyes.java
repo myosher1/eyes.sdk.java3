@@ -183,7 +183,11 @@ public class Eyes implements IRenderingEyes {
     }
 
     @Override
-    public RunningTest getNextTestToCheck() {
+    public Task getNextTaskToCheck() {
+        for (RunningTest runningTest : testList) {
+            if(!runningTest.isTestOpen()) continue;
+            return runningTest.getNextCheckTask();
+        }
         return null;
     }
 
@@ -227,7 +231,7 @@ public class Eyes implements IRenderingEyes {
         for (RunningTest test : testList) {
             taskList.add(test.check());
         }
-        this.renderingGridManager.check(settings, script, this.renderingConfiguration.getBrowsersInfo(), this.eyesConnector, taskList);
+        this.renderingGridManager.check(settings, script, this.eyesConnector, taskList);
     }
 
 

@@ -10,6 +10,9 @@ import java.util.Map;
 public class RenderRequest {
 
     @JsonIgnore
+    private final Task task;
+
+    @JsonIgnore
     private double id;
 
     @JsonInclude
@@ -42,7 +45,7 @@ public class RenderRequest {
     @JsonInclude
     private boolean sendDom;
 
-    public RenderRequest(double id, String webHook, String url, RGridDom dom, Map<String, RGridResource> resources, RenderInfo renderInfo, String platform, String browserName, Object scriptHooks, String[] selectorsToFindRegionsFor, boolean sendDom) {
+    public RenderRequest(double id, String webHook, String url, RGridDom dom, Map<String, RGridResource> resources, RenderInfo renderInfo, String platform, String browserName, Object scriptHooks, String[] selectorsToFindRegionsFor, boolean sendDom, Task task) {
         this.id = id;
         this.webHook = webHook;
         this.url = url;
@@ -54,6 +57,8 @@ public class RenderRequest {
         this.scriptHooks = scriptHooks;
         this.selectorsToFindRegionsFor = selectorsToFindRegionsFor;
         this.sendDom = sendDom;
+        this.task = task;
+
     }
 
     public String getUrl() {
@@ -134,5 +139,9 @@ public class RenderRequest {
         map.put("name", this.browserName);
         map.put("platform", this.platform);
         return map;
+    }
+
+    public Task getTask() {
+        return task;
     }
 }

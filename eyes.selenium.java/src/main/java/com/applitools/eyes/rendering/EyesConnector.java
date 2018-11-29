@@ -3,8 +3,14 @@ package com.applitools.eyes.rendering;
 import com.applitools.eyes.*;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IResourceFuture;
+import com.applitools.eyes.visualGridClient.data.RGridResource;
+import com.applitools.eyes.visualGridClient.data.RenderRequest;
+import com.applitools.eyes.visualGridClient.data.RenderStatusResults;
+import com.applitools.eyes.visualGridClient.data.RunningRender;
 
 import java.net.URL;
+import java.util.List;
+import java.util.concurrent.Future;
 
 class EyesConnector extends EyesBase implements IEyesConnector {
 
@@ -22,6 +28,26 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     @Override
     public IResourceFuture getResource(URL url, IDownloadListener<Byte[]> iDownloadListener) {
         return this.serverConnector.downloadResource(url, false, iDownloadListener);
+    }
+
+    @Override
+    public Future<Boolean> renderPutResource(RunningRender runningRender, RGridResource resource) {
+        return this.serverConnector.renderPutResource(runningRender, resource, true, null);
+    }
+
+    @Override
+    public List<RunningRender> render(RenderRequest... renderRequests) {
+        return null;
+    }
+
+    @Override
+    public RenderStatusResults getRenderStatus() {
+        return null;
+    }
+
+    @Override
+    public List<RenderStatusResults> renderStatusById(String... renderIds) {
+        return this.serverConnector.renderStatusById(renderIds);
     }
 
     /**

@@ -526,7 +526,7 @@ public class ServerConnector extends RestClient
 
 
     @Override
-    public void renderPutRequest(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
+    public Future<Boolean> renderPutResource(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
         ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
@@ -555,7 +555,7 @@ public class ServerConnector extends RestClient
 
                 } catch (Exception e) {
                     if (isRetryOn) {
-                        renderPutRequest(runningRender, resource, false, listener);
+                        renderPutResource(runningRender, resource, false, listener);
                     } else {
                         GeneralUtils.logExceptionStackTrace(e);
                         logger.verbose("Failed to parse request(status= " + status + ") = " + clientResponse.getEntity(String.class));
@@ -566,6 +566,7 @@ public class ServerConnector extends RestClient
 
         });
 
+        return null;
     }
 
     @Override
