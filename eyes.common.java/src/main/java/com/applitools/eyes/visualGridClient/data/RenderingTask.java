@@ -27,7 +27,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private IEyesConnector eyesConnector;
     private String script;
     private CheckRGSettings renderingConfiguration;
-    private List<RunningTest> testList;
+    private List<Task> taskList;
     private RenderingInfo renderingInfo;
     private RenderingTaskListener runningTestListener;
     private Map<String, IResourceFuture> cacheMap;
@@ -36,11 +36,11 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         void onTaskComplete(RenderingTask task);
     }
 
-    public RenderingTask(IEyesConnector eyesConnector, String script, CheckRGSettings renderingConfiguration, List<RunningTest> testList, RenderingInfo renderingInfo, RenderingTaskListener runningTestListener, Map<String, IResourceFuture> cacheMap) {
+    public RenderingTask(IEyesConnector eyesConnector, String script, CheckRGSettings renderingConfiguration, List<Task> testList, RenderingInfo renderingInfo, RenderingTaskListener runningTestListener, Map<String, IResourceFuture> cacheMap) {
         this.eyesConnector = eyesConnector;
         this.script = script;
         this.renderingConfiguration = renderingConfiguration;
-        this.testList = testList;
+        this.taskList = testList;
         this.renderingInfo = renderingInfo;
         this.runningTestListener = runningTestListener;
         this.cacheMap = cacheMap;
@@ -50,7 +50,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     public RenderStatusResults call(){
         HashMap<String, Object> result;
         List<RenderRequest> requests = null;
-        Map<RunningTest, RenderRequest> testToRenderRequestMapping = new HashMap<>();
+        Map<Task, RenderRequest> testToRenderRequestMapping = new HashMap<>();
         try {
 
             //Parse to JSON
@@ -69,18 +69,18 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         return null;
     }
 
-    private void matchRequestsToTests(List<RenderRequest> requests, Map<RunningTest, RenderRequest> testToRenderRequestMapping) {
-        for (RunningTest runningTest : testList) {
+    private void matchRequestsToTests(List<RenderRequest> requests, Map<Task, RenderRequest> testToRenderRequestMapping) {
+        for (Task task : taskList) {
+            RenderingConfiguration.RenderBrowserInfo browserInfo = task.getBrowserInfo();
             for (RenderRequest request : requests) {
 
-                RenderingConfiguration.RenderBrowserInfo browserInfo = runningTest.getBrowserInfo();
                 RenderInfo renderInfo = request.getRenderInfo();
 
                 boolean isSameBrowser = request.getBrowserName().equalsIgnoreCase(browserInfo.getBrowserType());
                 boolean isSameViewport = renderInfo.getHeight() == browserInfo.getHeight() && renderInfo.getWidth() == browserInfo.getWidth();
 
                 if(isSameBrowser && isSameViewport){
-                    testToRenderRequestMapping.put(runningTest, request);
+                    testToRenderRequestMapping.put(task, request);
                 }
             }
 
@@ -155,9 +155,9 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         double randomRequestId = Math.random();
 
-        for (RunningTest runningTest : this.testList) {
+        for (Task task : this.taskList) {
 
-            RenderingConfiguration.RenderBrowserInfo browserInfo = runningTest.getBrowserInfo();
+            RenderingConfiguration.RenderBrowserInfo browserInfo = task.getBrowserInfo();
             RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), browserInfo.getSizeMode(), settings.getRegion(), browserInfo.getEmulationInfo());
 
             RenderRequest request = new RenderRequest(randomRequestId, this.renderingInfo.getResultsUrl(), (String)result.get("url") ,dom ,
@@ -189,7 +189,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         final Phaser phaser = new Phaser(1);
         for (String link : resourceUrls) {
-            IEyesConnector eyesConnector = this.testList.get(0).getEyes();
+            IEyesConnector eyesConnector = this.taskList.get(0).getEyesConnector();
             URL url = null;
             try {
                 url = new URL(link);

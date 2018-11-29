@@ -187,7 +187,7 @@ public class RenderingGridManager {
         this.renderRequestsAsList = testToRenderRequestMapping.entrySet();
     }
 
-    public void check(CheckRGSettings settings, String script, List<RenderingConfiguration.RenderBrowserInfo> browsersInfo, IEyesConnector connector, List<RunningTest> testList) {
-        this.renderingTaskList.add(new RenderingTask(connector, script, settings, testList, this.renderingInfo, null, this.cachedResources));
+    public void check(CheckRGSettings settings, String script, List<RenderingConfiguration.RenderBrowserInfo> browsersInfo, IEyesConnector connector, List<Task> taskList) {
+        this.renderingTaskList.add(new RenderingTask(connector, script, settings, taskList, this.renderingInfo, null, this.cachedResources));
     }
 }

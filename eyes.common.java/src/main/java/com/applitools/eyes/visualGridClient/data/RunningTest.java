@@ -114,11 +114,12 @@ public class RunningTest {
         return this.taskToFutureMapping.get(task);
     }
 
-    public void check(RenderRequest request) {
+    public Task check() {
         Task  task = new Task(null, eyes, Task.TaskType.CHECK, this.getBrowserInfo(), this.configuration, taskListener);
         this.taskList.add(task);
         eyes.log("Close Task was added");
         this.taskToFutureMapping.get(task);
+        return task;
     }
 
     /**

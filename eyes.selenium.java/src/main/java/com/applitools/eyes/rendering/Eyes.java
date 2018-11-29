@@ -203,11 +203,12 @@ public class Eyes implements IRenderingEyes {
     }
 
     public void check(CheckRGSettings settings) {
+        List<Task> taskList = new ArrayList<>();
         String script = (String) this.jsExecutor.executeAsyncScript("var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})");
         for (RunningTest test : testList) {
-            test.check();
+            taskList.add(test.check());
         }
-        this.renderingGridManager.check(settings, script, this.renderingConfiguration.getBrowsersInfo(), this.eyesConnector, testList);
+        this.renderingGridManager.check(settings, script, this.renderingConfiguration.getBrowsersInfo(), this.eyesConnector, taskList);
 
 
     }

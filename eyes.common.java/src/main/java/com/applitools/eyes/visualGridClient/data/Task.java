@@ -84,6 +84,10 @@ public class Task implements Callable<TestResults> {
         return testResults;
     }
 
+    public IEyesConnector getEyesConnector() {
+        return eyesConnector;
+    }
+
     private static boolean isThrown() {
         return Task.isThrown.get();
     }
