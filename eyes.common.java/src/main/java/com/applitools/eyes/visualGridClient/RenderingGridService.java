@@ -2,11 +2,12 @@ package com.applitools.eyes.visualGridClient;
 
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.data.RenderStatusResults;
+import com.applitools.eyes.visualGridClient.data.RenderingTask;
 import com.applitools.utils.GeneralUtils;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RenderingGridService extends Thread{
@@ -22,7 +23,7 @@ public class RenderingGridService extends Thread{
     private Logger logger;
 
     public interface RenderGridServiceListener {
-        FutureTask<RenderStatusResults> getNextTask();
+        RenderingTask getNextTask();
 
     }
 
@@ -48,7 +49,7 @@ public class RenderingGridService extends Thread{
         System.out.println("Service '" + this.getName() + "' is dead - R.I.P");
     }
 
-    private FutureTask<RenderStatusResults> checkAndRunNextTask() {
+    private Future<RenderStatusResults> checkAndRunNextTask() {
         logger.verbose("EyesOpenerService. checkAndRunNextTask");
         if (currentWorkingSession.get() < threadPoolSize) {
             return runNextTask();
@@ -56,11 +57,11 @@ public class RenderingGridService extends Thread{
         return null;
     }
 
-    private FutureTask<RenderStatusResults> runNextTask() {
+    private Future<RenderStatusResults> runNextTask() {
         logger.verbose("EyesOpenerService.runNextTask");
-        FutureTask<RenderStatusResults> task = this.listener.getNextTask();
+        RenderingTask task = this.listener.getNextTask();
         if (task != null) {
-            this.executor.submit(task);
+            return this.executor.submit(task);
         } else {
             try {
                 Thread.sleep(1500);
@@ -68,7 +69,7 @@ public class RenderingGridService extends Thread{
                 GeneralUtils.logExceptionStackTrace(e);
             }
         }
-        return task;
+        return null;
     }
 
     public void stopService() {

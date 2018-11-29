@@ -66,6 +66,7 @@ public class RenderingGridManager {
     public RenderingGridManager(int concurrentOpenSessions, Logger logger) {
         this.concurrentOpenSessions = concurrentOpenSessions;
         this.logger = logger;
+
         this.eyesOpenerService = new EyesOpenerService("EyesOpenerService", logger, servicesGroup,
                 this.concurrentOpenSessions, new EyesBaseService.EyesServiceListener() {
             @Override
@@ -74,6 +75,7 @@ public class RenderingGridManager {
             }
 
         });
+
         this.eyesCloserService = new EyesCloserService("EyesCloserService", logger, servicesGroup, this.concurrentOpenSessions, new EyesBaseService.EyesServiceListener() {
             @Override
             public FutureTask<TestResults> getNextTask() {
@@ -81,19 +83,48 @@ public class RenderingGridManager {
             }
 
         });
+
         this.renderingGridService = new RenderingGridService("RenderGridService", logger, servicesGroup,
                 this.concurrentOpenSessions, new RenderingGridService.RenderGridServiceListener() {
             @Override
-            public FutureTask<RenderStatusResults> getNextTask() {
+            public RenderingTask getNextTask() {
                 return RenderingGridManager.this.getNextRenderingTask();
             }
+        });
+
+        this.eyesCheckerService = new EyesCheckerService("EyesCloserService", logger, servicesGroup, this.concurrentOpenSessions, new EyesBaseService.EyesServiceListener() {
+            @Override
+            public FutureTask<TestResults> getNextTask() {
+                return getNextTestToCheck();
+            }
+
         });
         this.executor = Executors.newFixedThreadPool(4);
 
     }
 
-    private FutureTask<RenderStatusResults> getNextRenderingTask() {
+    private FutureTask<TestResults> getNextTestToCheck() {
+        int mark = -1;
+        RunningTest bestTest = null;
+        for (IRenderingEyes eyes : allEyes) {
+            RunningTest test = eyes.getNextTestToCheck();
+            if (test != null && mark < test.getMark()) {
+                mark = test.getMark();
+                bestTest = test;
+            }
+        }
+        if (bestTest != null) {
+            return bestTest.getNextTask();
+        }
         return null;
+    }
+
+    private RenderingTask getNextRenderingTask() {
+        if (this.renderingTaskList.isEmpty()) {
+            return null;
+        }
+        RenderingTask renderingTask = this.renderingTaskList.get(0);
+        return renderingTask;
     }
 
 
@@ -121,7 +152,6 @@ public class RenderingGridManager {
         }
         eyes.setListener(this.eyesListener);
         totalEyesCount++;
-        startServices();
 
     }
 
@@ -188,6 +218,9 @@ public class RenderingGridManager {
     }
 
     public void check(CheckRGSettings settings, String script, List<RenderingConfiguration.RenderBrowserInfo> browsersInfo, IEyesConnector connector, List<Task> taskList) {
+        if(!this.eyesCheckerService.isAlive()){
+            startServices();
+        }
         this.renderingTaskList.add(new RenderingTask(connector, script, settings, taskList, this.renderingInfo, null, this.cachedResources));
     }
 }

@@ -18,6 +18,8 @@ public interface IRenderingEyes {
 
     List<Future<TestResults>> close();
 
+    RunningTest getNextTestToCheck();
+
     interface EyesListener{
 
         void onTaskComplete(Task task, IRenderingEyes eyes);

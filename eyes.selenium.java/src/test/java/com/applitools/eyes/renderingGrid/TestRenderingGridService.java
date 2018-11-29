@@ -1,6 +1,9 @@
 package com.applitools.eyes.renderingGrid;
 
-import com.applitools.eyes.*;
+import com.applitools.eyes.Logger;
+import com.applitools.eyes.ProxySettings;
+import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.TestResults;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.visualGridClient.data.CheckRGSettings;
 import com.applitools.eyes.visualGridClient.data.RenderingConfiguration;
@@ -38,9 +41,9 @@ public final class TestRenderingGridService {
             eyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
             eyes.setLogHandler(new StdoutLogHandler(true));
             eyes.setServerUrl("https://eyes.applitools.com/");
-
             eyes.open(webDriver);
-            eyes.check(new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, "html", Region.EMPTY, true));
+            CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
+            eyes.check(setting);
             List<Future<TestResults>> close = eyes.close();
             for (Future<TestResults> future : close) {
                 future.get();

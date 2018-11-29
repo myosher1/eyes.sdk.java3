@@ -32,8 +32,6 @@ public class Eyes implements IRenderingEyes {
     private AbstractProxySettings proxy;
 
     private String PROCESS_RESOURCES;
-    private String EXTRACT_RESOURCES;
-    private String MOCK_DOM;
     private JavascriptExecutor jsExecutor;
     private RenderingInfo rendringInfo;
     private IEyesConnector eyesConnector;
@@ -41,8 +39,6 @@ public class Eyes implements IRenderingEyes {
     {
         try {
             PROCESS_RESOURCES = GeneralUtils.readToEnd(Eyes.class.getResourceAsStream("/processResources.js"));
-            EXTRACT_RESOURCES = GeneralUtils.readToEnd(Eyes.class.getResourceAsStream("/extractResources.js"));
-            MOCK_DOM = GeneralUtils.readToEnd(Eyes.class.getResourceAsStream("/test-iframe.cdt.json"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -186,6 +182,11 @@ public class Eyes implements IRenderingEyes {
         return futureList;
     }
 
+    @Override
+    public RunningTest getNextTestToCheck() {
+        return null;
+    }
+
     public void setLogHandler(StdoutLogHandler logHandler) {
         this.logHandler = logHandler;
     }
@@ -227,8 +228,6 @@ public class Eyes implements IRenderingEyes {
             taskList.add(test.check());
         }
         this.renderingGridManager.check(settings, script, this.renderingConfiguration.getBrowsersInfo(), this.eyesConnector, taskList);
-
-
     }
 
 
