@@ -16,6 +16,7 @@ public class ResourceFuture implements IResourceFuture {
 
     private Future<Response> future;
     private String url;
+    private RGridResource rgResource;
 
     public ResourceFuture(Future<Response> future, String url) {
         this.future = future;
@@ -39,26 +40,32 @@ public class ResourceFuture implements IResourceFuture {
 
     @Override
     public RGridResource get() throws InterruptedException, ExecutionException {
-        Response response = future.get();
-        byte[] bytes = new byte[response.getLength()];
-        try {
-            response.readEntity(InputStream.class).read(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(this.rgResource == null){
+            Response response = future.get();
+            byte[] bytes = new byte[response.getLength()];
+            try {
+                response.readEntity(InputStream.class).read(bytes);
+                rgResource= new RGridResource(url, response.getHeaderString("contentType"), ArrayUtils.toObject(bytes));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return new RGridResource(url, response.getHeaderString("contentType"), ArrayUtils.toObject(bytes));
+        return rgResource;
     }
 
     @Override
     public RGridResource get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        Response response = future.get(timeout, unit);
-        byte[] bytes = new byte[response.getLength()];
-        try {
-            response.readEntity(InputStream.class).read(bytes);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(this.rgResource == null){
+            Response response = future.get(timeout, unit);
+            byte[] bytes = new byte[response.getLength()];
+            try {
+                response.readEntity(InputStream.class).read(bytes);
+                rgResource= new RGridResource(url, response.getHeaderString("contentType"), ArrayUtils.toObject(bytes));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        return new RGridResource(url, response.getHeaderString("contentType"), ArrayUtils.toObject(bytes));
+        return rgResource;
     }
 
 }
