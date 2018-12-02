@@ -64,9 +64,7 @@ public class RGridDom {
             objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
 
             sha256 = objectMapper.writeValueAsString(map);
-            byte[] bytes = GeneralUtils.getSha256hash(ArrayUtils.toObject(sha256.getBytes()));
-            sha256 = Base64.encodeBase64String(bytes);
-            return sha256;
+            sha256 =  GeneralUtils.getSha256hash(ArrayUtils.toObject(sha256.getBytes()));
         }
         return sha256;
     }

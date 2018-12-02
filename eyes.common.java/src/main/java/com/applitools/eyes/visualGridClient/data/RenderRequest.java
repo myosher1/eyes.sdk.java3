@@ -7,7 +7,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashMap;
 import java.util.Map;
 
-public class RenderRequest {
+public class  RenderRequest {
+    @JsonInclude
+    private String renderId;
 
     @JsonIgnore
     private final Task task;
@@ -148,5 +150,13 @@ public class RenderRequest {
 
     public String getWebHook() {
         return webHook;
+    }
+
+    public String getRenderId() {
+        return renderId;
+    }
+
+    public void setRenderId(String renderId) {
+        this.renderId = renderId;
     }
 }

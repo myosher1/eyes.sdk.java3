@@ -21,6 +21,7 @@ public interface IServerConnector {
     String RENDER_INFO_PATH = API_SESSIONS + "/renderinfo";
     String RESOURCES_SHA_256 = "/resources/sha256/";
     String RENDER_STATUS = "/render-status";
+    String RENDER = "/render";
 
     int TIMEOUT = 1000 * 60 * 5; // 5 Minutes
     String API_PATH = "/" + API_SESSIONS + "/running";

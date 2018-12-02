@@ -1,7 +1,10 @@
 package com.applitools.eyes.visualGridClient.data;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RunningRender {
 
     private String renderId = null;
@@ -13,6 +16,9 @@ public class RunningRender {
     private List<String> needMoreResources = null;
 
     private boolean needMoreDom = false;
+
+    public RunningRender() {
+    }
 
     public RunningRender(String renderId, String jobId, RenderStatus renderStatus, List<String> needMoreResources, boolean needMoreDom) {
         this.renderId = renderId;

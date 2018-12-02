@@ -1,55 +1,48 @@
 package com.applitools.eyes.visualGridClient.data;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
 public enum RenderStatus {
 
-    NEED_MORE_RESOURCES(1, "need-more-resources"), RENDERING(2, "rendering"), RENDERED(3, "rendered"), ERROR(4, "error");
+    NEED_MORE_RESOURCE, RENDERING, RENDERED, ERROR;
 
-    private final Integer value;
-    private final String text;
+    private static Map<String, RenderStatus> namesMap = new HashMap<>(3);
 
     /**
      * A mapping between the integer code and its corresponding text to facilitate lookup by code.
      */
     private static Map<Integer, RenderStatus> valueToTextMapping;
 
-    RenderStatus(Integer value, String text) {
-        this.value = value;
-        this.text = text;
+    static {
+        namesMap.put("need-more-resources", NEED_MORE_RESOURCE);
+        namesMap.put("rendering", RENDERING);
+        namesMap.put("rendered", RENDERED);
+        namesMap.put("error", ERROR);
     }
 
-    public static RenderStatus getText(Integer i) {
-        if (valueToTextMapping == null) {
-            initMapping();
+    @JsonCreator
+    public static RenderStatus forValue(String value) {
+        return namesMap.get(StringUtils.lowerCase(value));
+    }
+
+    @JsonValue
+    public String toValue() {
+        for (Map.Entry<String, RenderStatus> entry : namesMap.entrySet()) {
+            if (entry.getValue() == this)
+                return entry.getKey();
         }
-        return valueToTextMapping.get(i);
+
+        return null; // or fail
     }
 
-    private static void initMapping() {
-        valueToTextMapping = new HashMap<>();
-        for (RenderStatus s : values()) {
-            valueToTextMapping.put(s.value, s);
-        }
-    }
 
-    public Integer getValue() {
-        return value;
-    }
 
-    public String getText() {
-        return text;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("RenderStatus");
-        sb.append("{value=").append(value);
-        sb.append(", text='").append(text).append('\'');
-        sb.append('}');
-        return sb.toString();
+    RenderStatus() {
     }
 }
 

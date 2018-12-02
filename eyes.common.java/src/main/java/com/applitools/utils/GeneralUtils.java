@@ -253,7 +253,7 @@ public class GeneralUtils {
         return executeScriptMap;
     }
 
-    public static byte[] getSha256hash(Byte[] content) {
+    public static String getSha256hash(Byte[] content) {
         byte[] buffer = new byte[8192];
         int count;
         MessageDigest digest = null;
@@ -264,8 +264,11 @@ public class GeneralUtils {
                 digest.update(buffer, 0, count);
             }
             bis.close();
-
-            return digest.digest();
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest.digest()) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
         } catch (NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();
         }

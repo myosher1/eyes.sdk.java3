@@ -11,6 +11,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
@@ -70,8 +72,7 @@ public class RGridResource {
     @JsonProperty("hash")
     public String getSha256hash() {
         if (sha256hash == null) {
-            byte[] bytes = GeneralUtils.getSha256hash(content);
-            this.sha256hash = Base64.encodeBase64String(bytes);
+            this.sha256hash = GeneralUtils.getSha256hash(content);
         }
         return sha256hash;
     }

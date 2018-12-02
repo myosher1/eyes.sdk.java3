@@ -75,11 +75,16 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             do {
                 runningRenders = this.eyesConnector.render(requests);
 
+                for (int i = 0; i < requests.length; i++) {
+                    RenderRequest request = requests[i];
+                    request.setRenderId(runningRenders.get(i).getRenderId());
+                }
+
                 RenderStatus worstStatus = runningRenders.get(0).getRenderStatus();
 
                 worstStatus = calcWorstStatus(runningRenders, worstStatus);
 
-                stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCES;
+                stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE;
                 if (stillRunning) {
                     sendMissingResources(runningRenders);
                 }
@@ -110,9 +115,9 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         LOOP:
         for (RunningRender runningRender : runningRenders) {
             switch (runningRender.getRenderStatus()) {
-                case NEED_MORE_RESOURCES:
+                case NEED_MORE_RESOURCE:
                     if (worstStatus == RenderStatus.RENDERED || worstStatus == RenderStatus.RENDERING) {
-                        worstStatus = RenderStatus.NEED_MORE_RESOURCES;
+                        worstStatus = RenderStatus.NEED_MORE_RESOURCE;
                     }
                     break;
                 case ERROR:
@@ -124,37 +129,30 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     }
 
     private void startPollingStatus(Map<RunningRender, RenderRequest> runningRenders) {
+
+        List<String> ids = getRenderIds(runningRenders.keySet());
+
         do {
-            List<RunningRender> renderedRenders = new ArrayList<>();
 
-            Iterator<Map.Entry<RunningRender, RenderRequest>> iterator = runningRenders.entrySet().iterator();
+            List<RenderStatusResults> renderStatusResultsList = this.eyesConnector.renderStatusById(ids.toArray(new String[0]));
 
-            while (iterator.hasNext()) {
-                Map.Entry<RunningRender, RenderRequest> entry = iterator.next();
-                RunningRender runningRender = entry.getKey();
-                RenderStatus renderStatus = runningRender.getRenderStatus();
-                if (renderStatus == RenderStatus.ERROR) {
-                    iterator.remove();
-                    throw new EyesException("Rendering failed!");
-                }
-
-                if (renderStatus == RenderStatus.RENDERED) {
-                    renderedRenders.add(runningRender);
-                }
-            }
-
-            String[] ids = getRenderIds(renderedRenders);
-            List<RenderStatusResults> renderStatusResultsList = this.eyesConnector.renderStatusById(ids);
             for (int i = 0; i < renderStatusResultsList.size(); i++) {
                 RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
-                RunningRender runningRender = renderedRenders.get(i);
                 if (renderStatusResults.getStatus() == RenderStatus.RENDERED) {
-                    RenderRequest request = runningRenders.remove(runningRender);
-                    request.getTask().setRenderResult(renderStatusResults);
+
+                    String removed = ids.remove(i);
+
+                    for (RunningRender renderedRender : runningRenders.keySet()) {
+                        if (renderedRender.getRenderId().equalsIgnoreCase(removed)) {
+                            Task task = runningRenders.get(renderedRender).getTask();
+                            task.setRenderResult(renderStatusResults);
+                            break;
+                        }
+                    }
                 }
             }
 
-            if (runningRenders.size() > 0) {
+            if (ids.size() > 0) {
                 try {
                     Thread.sleep(1500);
                 } catch (InterruptedException e) {
@@ -162,30 +160,30 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                 }
             }
 
-        } while (runningRenders.size() > 0);
+
+        } while (ids.size() > 0);
     }
 
-    private String[] getRenderIds(Collection<RunningRender> runningRenders) {
+    private List<String> getRenderIds(Collection<RunningRender> runningRenders) {
         List<String> ids = new ArrayList<>();
         for (RunningRender runningRender : runningRenders) {
             ids.add(runningRender.getRenderId());
         }
-        return ids.toArray(new String[0]);
+        return ids;
     }
 
     private void sendMissingResources(List<RunningRender> runningRenders) {
         for (RunningRender runningRender : runningRenders) {
             List<String> needMoreResources = runningRender.getNeedMoreResources();
-            for (String hash : needMoreResources) {
+            for (String url : needMoreResources) {
 
-                if (putResourceCache.containsKey(hash)) continue;
+                if (putResourceCache.containsKey(url)) continue;
 
-                String url = hashToUrl.get(hash);
                 try {
 
                     RGridResource resource = fetchedCacheMap.get(url).get();
                     Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, resource);
-                    putResourceCache.put(hash, future);
+                    putResourceCache.put(url, future);
 
                 } catch (InterruptedException | ExecutionException e) {
                     GeneralUtils.logExceptionStackTrace(logger, e);
@@ -196,7 +194,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         for (Future<Boolean> future : putResourceCache.values()) {
             try {
-                future.get();
+                Boolean aBoolean = future.get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }

@@ -504,7 +504,7 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(renderRequests, "renderRequests");
         this.logger.verbose("ServerConnector.render called with "+renderRequests);
 
-        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
+        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER));
         if (renderRequests.length > 1) {
             target.matrixParam("render-id", (Object)renderRequests);
         }
@@ -523,13 +523,14 @@ public class ServerConnector extends RestClient
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
             objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
-            String json = objectMapper.writeValueAsString(renderRequests[0]);
+            String json = objectMapper.writeValueAsString(renderRequests);
             Response response = request.post(Entity.json(json));
             if (validStatusCodes.contains(response.getStatus())) {
                 this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
-                return Arrays.asList(response.readEntity(RunningRender[].class));
+                RunningRender[] runningRenders = parseResponseWithJsonData(response, validStatusCodes, RunningRender[].class);
+                return Arrays.asList(runningRenders);
             }
-            throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+               throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
         } catch (JsonProcessingException e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
@@ -571,31 +572,14 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(resource, "resource");
         ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
 
-        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256hash() + " for render: " + runningRender.getRenderId());
-
+        this.logger.verbose("called with resource#" + resource.getSha256hash() + " for render: " + runningRender.getRenderId());
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256hash()).queryParam("render-id", runningRender.getRenderId());
-        Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
-        target.request(MediaType.APPLICATION_OCTET_STREAM_TYPE);
+        Invocation.Builder request = target.request(MediaType.TEXT_PLAIN);
+        request.header("X-Auth-Token", renderingInfo.getAccessToken());
 
-        request.async().get(new InvocationCallback<Response>() {
-            @Override
-            public void completed(Response response) {
-                // on complete
-                listener.onUploadComplete(response.getStatus() == Response.Status.OK.getStatusCode());
-            }
-
-            @Override
-            public void failed(Throwable throwable) {
-                // on fail
-                if (isRetryOn) {
-                    logger.verbose("Async GET failed - entering retry");
-                    renderPutResource(runningRender, resource, false, listener);
-                } else {
-                    listener.onUploadFailed();
-                }
-            }
-        });
-        return null;
+        Future<Response> future = request.async().put(Entity.entity(ArrayUtils.toPrimitive(resource.getContent()), MediaType.APPLICATION_JSON));
+        PutFuture putFuture = new PutFuture(future);
+        return putFuture;
     }
 
 
@@ -611,13 +595,7 @@ public class ServerConnector extends RestClient
         this.logger.verbose("ServerConnector.renderStatus called for render: " + renderIds);
 
         WebTarget target = target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
-//        if (renderIds.length > 1) {
-//            target.matrixParam("render-id", (Object)renderIds);
-//        }
-//        else{
-//            target.queryParam("render-id", (Object)renderIds);
-//        }
-        Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
+        Invocation.Builder request = target.request(MediaType.TEXT_PLAIN);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
 
         // Ok, let's create the running session from the response
@@ -625,12 +603,23 @@ public class ServerConnector extends RestClient
         validStatusCodes.add(Response.Status.OK.getStatusCode());
         validStatusCodes.add(Response.Status.NOT_FOUND.getStatusCode());
 
-        Response response = request.head();
-        if (validStatusCodes.contains(response.getStatus())) {
-            this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
-            return Arrays.asList(response.readEntity(RenderStatusResults[].class));
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+        objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+        try {
+            String json = objectMapper.writeValueAsString(renderIds);
+            Entity<String> entity = Entity.entity(json, MediaType.APPLICATION_JSON);
+            Response response = request.post(entity);
+            if (validStatusCodes.contains(response.getStatus())) {
+                this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
+                return Arrays.asList(response.readEntity(RenderStatusResults[].class));
+            }
+            throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+        } catch (JsonProcessingException e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
-        throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+        return null;
+
     }
 
     @Override
