@@ -1354,6 +1354,7 @@ public abstract class EyesBase {
                 testName, viewportSize));
 
         config.setSessionType(sessionType != null ? sessionType : SessionType.SEQUENTIAL);
+        config.setViewportSize(viewportSize);
 
         openBase();
     }

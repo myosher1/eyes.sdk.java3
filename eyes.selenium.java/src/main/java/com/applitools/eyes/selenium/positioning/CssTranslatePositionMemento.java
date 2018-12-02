@@ -9,16 +9,15 @@ import java.util.Map;
  * Encapsulates state for {@link CssTranslatePositionProvider} instances.
  */
 public class CssTranslatePositionMemento extends PositionMemento {
-    private final Map<String, String> transforms;
+    private final String transform;
     private final Location position;
 
     /**
      *
-     * @param transforms The current transforms. The keys are the style keys
-     *                   from which each of the transforms were taken.
+     * @param transform The current transform.
      */
-    public CssTranslatePositionMemento(Map<String, String> transforms, Location position) {
-        this.transforms = transforms;
+    public CssTranslatePositionMemento(String transform, Location position) {
+        this.transform = transform;
         this.position = position;
     }
 
@@ -27,8 +26,8 @@ public class CssTranslatePositionMemento extends PositionMemento {
      * @return The current transforms. The keys are the style keys from
      * which each of the transforms were taken.
      */
-    public Map<String, String> getTransform() {
-        return transforms;
+    public String getTransform() {
+        return transform;
     }
 
     public Location getPosition() { return position; }

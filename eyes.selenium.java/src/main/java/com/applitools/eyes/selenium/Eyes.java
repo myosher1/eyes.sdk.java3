@@ -884,16 +884,21 @@ public class Eyes extends EyesBase {
 
         ArgumentGuard.notNull(checkSettings, "checkSettings");
 
+        this.regionToCheck = null;
+
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
         String name = checkSettingsInternal.getName();
 
+        logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
+
+        this.stitchContent = checkSettingsInternal.getStitchContent();
+        final Region targetRegion = checkSettingsInternal.getTargetRegion();
         this.scrollRootElement = this.getScrollRootElement(seleniumCheckTarget);
 
         currentFramePositionProvider = null;
         setPositionProvider(createPositionProvider());
-
-        logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
+        this.originalFC = driver.getFrameChain().clone();
 
         ValidationInfo validationInfo = this.fireValidationWillStartEvent(name);
 
@@ -901,15 +906,7 @@ public class Eyes extends EyesBase {
             logger.verbose("URL: " + driver.getCurrentUrl());
         }
 
-        this.stitchContent = checkSettingsInternal.getStitchContent();
-
-        final Region targetRegion = checkSettingsInternal.getTargetRegion();
-
-        this.originalFC = driver.getFrameChain().clone();
-
         int switchedToFrameCount = this.switchToFrame(seleniumCheckTarget);
-
-        this.regionToCheck = null;
 
         MatchResult result = null;
 
@@ -1033,12 +1030,9 @@ public class Eyes extends EyesBase {
         }
 
         if (frameTarget.getFrameReference() != null) {
-            WebElement frameElement = frameTarget.getFrameReference();
-            if (frameElement != null) {
-                switchTo.frame(frameElement);
-                updateFrameScrollRoot(frameTarget);
-                return true;
-            }
+            switchTo.frame(frameTarget.getFrameReference());
+            updateFrameScrollRoot(frameTarget);
+            return true;
         }
 
         if (frameTarget.getFrameSelector() != null) {
@@ -1706,7 +1700,7 @@ public class Eyes extends EyesBase {
                 // This can happen in Appium for example.
                 logger.verbose("Failed to set ContextBasedScaleProvider.");
                 logger.verbose("Using FixedScaleProvider instead...");
-                factory = new FixedScaleProviderFactory(logger,1 / devicePixelRatio, scaleProviderHandler);
+                factory = new FixedScaleProviderFactory(logger, 1 / devicePixelRatio, scaleProviderHandler);
             }
             logger.verbose("Done!");
             return factory;
@@ -1730,9 +1724,6 @@ public class Eyes extends EyesBase {
         WebElement scrollRootElement = null;
         if (currentFrame != null) {
             scrollRootElement = currentFrame.getScrollRootElement();
-        }
-        if (scrollRootElement == null) {
-            scrollRootElement = this.scrollRootElement;
         }
         if (scrollRootElement == null) {
             scrollRootElement = driver.findElement(By.tagName("html"));
@@ -1980,14 +1971,11 @@ public class Eyes extends EyesBase {
                 (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
 
         this.regionToCheck = null;
-        PositionMemento originalPositionMemento = positionProviderHandler.get().getState();
+        WebElement scrollRootElement = getCurrentFrameScrollRootElement();
+        PositionProvider positionProvider = createPositionProvider(scrollRootElement);
+        PositionMemento originalPositionMemento = positionProvider.getState();
 
         ensureElementVisible(targetElement);
-
-        WebElement scrollRootElement = getCurrentFrameScrollRootElement();
-        PositionProvider scrollPositionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
-
-        Location originalScrollPosition = scrollPositionProvider.getCurrentPosition();
 
         String originalOverflow = null;
 
@@ -2021,7 +2009,6 @@ public class Eyes extends EyesBase {
 
             logger.verbose("Element region: " + elementRegion);
 
-            logger.verbose("replacing regionToCheck");
             regionToCheck = elementRegion;
 
             if (!effectiveViewport.isSizeEmpty()) {
@@ -2039,8 +2026,7 @@ public class Eyes extends EyesBase {
 
             checkFrameOrElement = false;
 
-            positionProviderHandler.get().restoreState(originalPositionMemento);
-            scrollPositionProvider.setPosition(originalScrollPosition);
+            positionProvider.restoreState(originalPositionMemento);
             regionToCheck = null;
             elementPositionProvider = null;
         }
