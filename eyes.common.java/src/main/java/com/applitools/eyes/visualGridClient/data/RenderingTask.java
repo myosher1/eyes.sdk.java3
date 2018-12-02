@@ -50,44 +50,49 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
     @Override
     public RenderStatusResults call() {
-        HashMap<String, Object> result;
-        RenderRequest[] requests = null;
-        Map<Task, RenderRequest> testToRenderRequestMapping = new HashMap<>();
+
         try {
+            HashMap<String, Object> result;
+            RenderRequest[] requests = null;
+            Map<Task, RenderRequest> testToRenderRequestMapping = new HashMap<>();
+            try {
 
-            //Parse to JSON
-            result = GeneralUtils.parseJsonToObject(script);
+                //Parse to JSON
+                result = GeneralUtils.parseJsonToObject(script);
 
-            //Build RenderRequests
-            requests = prepareDataForRG(result, renderingConfiguration);
+                //Build RenderRequests
+                requests = prepareDataForRG(result, renderingConfiguration);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        matchRequestsToTests(requests, testToRenderRequestMapping);
-
-
-        boolean stillRunning;
-
-        List<RunningRender> runningRenders;
-        do {
-            runningRenders = this.eyesConnector.render(requests);
-
-            RenderStatus worstStatus = runningRenders.get(0).getRenderStatus();
-
-            worstStatus = calcWorstStatus(runningRenders, worstStatus);
-
-            stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCES;
-            if (stillRunning) {
-                sendMissingResources(runningRenders);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            matchRequestsToTests(requests, testToRenderRequestMapping);
 
-        } while (stillRunning);
 
-        Map<RunningRender, RenderRequest> mapping = mapRequestToRunningRender(runningRenders, requests);
+            boolean stillRunning;
 
-        startPollingStatus(mapping);
+            List<RunningRender> runningRenders;
+            do {
+                runningRenders = this.eyesConnector.render(requests);
 
+                RenderStatus worstStatus = runningRenders.get(0).getRenderStatus();
+
+                worstStatus = calcWorstStatus(runningRenders, worstStatus);
+
+                stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCES;
+                if (stillRunning) {
+                    sendMissingResources(runningRenders);
+                }
+
+            } while (stillRunning);
+
+            Map<RunningRender, RenderRequest> mapping = mapRequestToRunningRender(runningRenders, requests);
+
+            startPollingStatus(mapping);
+
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
         return null;
     }
 
@@ -257,12 +262,20 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         //Fetch all resources
         fetchAllResources(allBlobs, resourceUrls);
 
+        addBlobsToCache(allBlobs);
+
         //Create RenderingRequest
         List<RenderRequest> allRequestsForRG = buildRenderRequests(result, settings, allBlobs);
 
         RenderRequest[] asArray = allRequestsForRG.toArray(new RenderRequest[allRequestsForRG.size()]);
 
         return asArray;
+    }
+
+    private void addBlobsToCache(List<RGridResource> allBlobs) {
+        for (RGridResource blob : allBlobs) {
+            this.fetchedCacheMap.put(blob.getUrl(), this.eyesConnector.createResourceFuture(blob));
+        }
     }
 
 

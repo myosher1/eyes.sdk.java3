@@ -3,7 +3,6 @@ package com.applitools.eyes.visualGridClient.services;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
 import com.applitools.utils.GeneralUtils;
-import sun.tools.tree.ThisExpression;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,7 +17,7 @@ public class EyesBaseService extends Thread {
     private boolean isServiceOn = true;
     private ExecutorService executor;
     private AtomicInteger currentWorkingSession = new AtomicInteger(1);
-    private Logger logger;
+    protected Logger logger;
 
     public interface EyesServiceListener {
         FutureTask<TestResults> getNextTask();
@@ -64,7 +63,7 @@ public class EyesBaseService extends Thread {
                 logger.verbose(this.serviceName + " is sleeping for 1.5s");
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
-                GeneralUtils.logExceptionStackTrace(e);
+                GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
         return task;

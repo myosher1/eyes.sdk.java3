@@ -15,19 +15,19 @@ public class RenderRequest {
     @JsonIgnore
     private double id;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String webHook;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String url;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private RGridDom dom;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Map<String, RGridResource> resources;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private RenderInfo renderInfo;
 
     @JsonIgnore
@@ -36,13 +36,13 @@ public class RenderRequest {
     @JsonIgnore
     private String browserName;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Object scriptHooks;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String[] selectorsToFindRegionsFor;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private boolean sendDom;
 
     public RenderRequest(double id, String webHook, String url, RGridDom dom, Map<String, RGridResource> resources, RenderInfo renderInfo, String platform, String browserName, Object scriptHooks, String[] selectorsToFindRegionsFor, boolean sendDom, Task task) {
@@ -134,6 +134,7 @@ public class RenderRequest {
     }
 
     @JsonProperty("browser")
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Map<String,String> getBrowser(){
         Map<String,String> map = new HashMap<>();
         map.put("name", this.browserName);
@@ -143,5 +144,9 @@ public class RenderRequest {
 
     public Task getTask() {
         return task;
+    }
+
+    public String getWebHook() {
+        return webHook;
     }
 }

@@ -167,4 +167,5 @@ public interface IServerConnector {
      */
     List<RenderStatusResults> renderStatusById(String... renderIds);
 
+    IResourceFuture createResourceFuture(RGridResource gridResource);
 }

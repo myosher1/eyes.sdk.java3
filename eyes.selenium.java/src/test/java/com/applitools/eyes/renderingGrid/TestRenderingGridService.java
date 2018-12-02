@@ -26,11 +26,12 @@ public final class TestRenderingGridService {
     public void test() {
         WebDriver webDriver = null;
         RenderingGridManager renderingManager = null;
+        Logger logger = null;
         try {
             webDriver = new ChromeDriver();
             webDriver.get("https://applitools.github.io/demo/TestPages/DomTest/dom_capture.html");
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
-            Logger logger = new Logger();
+            logger = new Logger();
             logger.setLogHandler(new StdoutLogHandler(true));
             renderingConfiguration.setTestName("Open Concurrency");
             renderingConfiguration.setAppName("RenderingGridIntegration");
@@ -38,7 +39,7 @@ public final class TestRenderingGridService {
             renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.FIREFOX);
             renderingManager = new RenderingGridManager(3, logger);
             Eyes eyes = new Eyes(renderingManager, renderingConfiguration, logger);
-            eyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
+            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             eyes.setLogHandler(new StdoutLogHandler(true));
             eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver);
@@ -50,7 +51,7 @@ public final class TestRenderingGridService {
             }
 
         } catch (Exception e) {
-            GeneralUtils.logExceptionStackTrace(e);
+            GeneralUtils.logExceptionStackTrace(logger, e);
         } finally {
             if (webDriver != null) {
                 webDriver.quit();

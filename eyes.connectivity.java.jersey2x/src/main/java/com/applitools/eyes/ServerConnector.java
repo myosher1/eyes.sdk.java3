@@ -8,6 +8,10 @@ import com.applitools.eyes.visualGridClient.IResourceFuture;
 import com.applitools.eyes.visualGridClient.data.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
@@ -407,7 +411,7 @@ public class ServerConnector extends RestClient
 
             @Override
             public void failed(Throwable throwable) {
-                GeneralUtils.logExceptionStackTrace(new Exception(throwable));
+                GeneralUtils.logExceptionStackTrace(logger, throwable);
                 if (!isSecondRetry) {
                     logger.verbose("Entering retry");
                     downloadResource(uri, true, listener);
@@ -446,7 +450,6 @@ public class ServerConnector extends RestClient
 
             }
 
-            GeneralUtils.logExceptionStackTrace(logger, e);
             Response response = null;
             try {
                 switch (method){
@@ -467,7 +470,7 @@ public class ServerConnector extends RestClient
                     Thread.sleep(THREAD_SLEEP_MILLIS);
 
                 } catch (InterruptedException e1) {
-                    GeneralUtils.logExceptionStackTrace(e);
+                    GeneralUtils.logExceptionStackTrace(logger, e1);
                 }
 
                 if (retiresCounter.incrementAndGet() < NUM_OF_RETRIES) {
@@ -516,13 +519,22 @@ public class ServerConnector extends RestClient
         validStatusCodes.add(Response.Status.OK.getStatusCode());
         validStatusCodes.add(Response.Status.NOT_FOUND.getStatusCode());
 
-        Response response = request.head();
-        if (validStatusCodes.contains(response.getStatus())) {
-            this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
-            return Arrays.asList(response.readEntity(RunningRender[].class));
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+            String json = objectMapper.writeValueAsString(renderRequests[0]);
+            Response response = request.post(Entity.json(json));
+            if (validStatusCodes.contains(response.getStatus())) {
+                this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
+                return Arrays.asList(response.readEntity(RunningRender[].class));
+            }
+            throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+        } catch (JsonProcessingException e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
 
-        throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+        return null;
     }
 
     @Override
@@ -599,12 +611,12 @@ public class ServerConnector extends RestClient
         this.logger.verbose("ServerConnector.renderStatus called for render: " + renderIds);
 
         WebTarget target = target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
-        if (renderIds.length > 1) {
-            target.matrixParam("render-id", (Object)renderIds);
-        }
-        else{
-            target.queryParam("render-id", (Object)renderIds);
-        }
+//        if (renderIds.length > 1) {
+//            target.matrixParam("render-id", (Object)renderIds);
+//        }
+//        else{
+//            target.queryParam("render-id", (Object)renderIds);
+//        }
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
 
@@ -619,5 +631,11 @@ public class ServerConnector extends RestClient
             return Arrays.asList(response.readEntity(RenderStatusResults[].class));
         }
         throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+    }
+
+    @Override
+    public IResourceFuture createResourceFuture(RGridResource gridResource) {
+        return new ResourceFuture(gridResource);
+
     }
 }

@@ -200,7 +200,7 @@ public class RenderingGridManager {
                 TestResults obj = future.get();
                 allResults.add(obj);
             } catch (InterruptedException | ExecutionException e) {
-                GeneralUtils.logExceptionStackTrace(e);
+                GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
         stopServices();

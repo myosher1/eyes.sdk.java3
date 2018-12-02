@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.HashMap;
@@ -29,7 +30,7 @@ public class RGridDom {
     @JsonInclude
     private String hashFormat = "sha256";
 
-    public void addResource(RGridResource resource){
+    public void addResource(RGridResource resource) {
         if (this.resources == null) {
             this.resources = new HashMap<>();
         }
@@ -53,7 +54,7 @@ public class RGridDom {
     }
 
     @JsonProperty("hash")
-    public String getSha256() {
+    public String getSha256() throws JsonProcessingException {
         Map<String, Object> map = new HashMap<>();
         map.put("cdt", cdt);
         map.put("resources", this.resources);
@@ -62,16 +63,12 @@ public class RGridDom {
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
 
-            try {
-
-                sha256 =  objectMapper.writeValueAsString(map);
-                 sha256 = GeneralUtils.getSha256hash(ArrayUtils.toObject(sha256.getBytes()));
-
-            } catch (JsonProcessingException e) {
-                GeneralUtils.logExceptionStackTrace(e);
-            }
+            sha256 = objectMapper.writeValueAsString(map);
+            byte[] bytes = GeneralUtils.getSha256hash(ArrayUtils.toObject(sha256.getBytes()));
+            sha256 = Base64.encodeBase64String(bytes);
+            return sha256;
         }
-        return this.sha256;
+        return sha256;
     }
 
     public void setSha256(String sha256) {
@@ -86,5 +83,7 @@ public class RGridDom {
         this.cdt = cdt;
     }
 
-
+    public String getHashFormat() {
+        return hashFormat;
+    }
 }

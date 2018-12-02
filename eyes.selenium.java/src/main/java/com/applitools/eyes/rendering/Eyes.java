@@ -128,7 +128,7 @@ public class Eyes implements IRenderingEyes {
             try {
                 eyesConnector.setServerUrl(serverUrl);
             } catch (URISyntaxException e) {
-                GeneralUtils.logExceptionStackTrace(e);
+                GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
         this.eyesConnector = eyesConnector;

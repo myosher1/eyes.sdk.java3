@@ -69,7 +69,7 @@ public class DomCapture {
             String json = objectMapper.writeValueAsString(dom);
             return json;
         } catch (JsonProcessingException e) {
-            GeneralUtils.logExceptionStackTrace(e);
+            GeneralUtils.logExceptionStackTrace(mLogger, e);
         }
         return "";
     }

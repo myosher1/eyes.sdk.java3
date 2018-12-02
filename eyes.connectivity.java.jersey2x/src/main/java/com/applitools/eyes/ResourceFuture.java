@@ -23,6 +23,11 @@ public class ResourceFuture implements IResourceFuture {
         this.url = url;
     }
 
+    public ResourceFuture(RGridResource rgResource) {
+        this.url = rgResource.getUrl();
+        this.rgResource = rgResource;
+    }
+
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         return future.cancel(mayInterruptIfRunning);
@@ -67,5 +72,4 @@ public class ResourceFuture implements IResourceFuture {
         }
         return rgResource;
     }
-
 }

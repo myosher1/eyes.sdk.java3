@@ -16,7 +16,7 @@ public class EyesCloserService extends EyesBaseService {
         try {
             semaphore.acquire();
         } catch (InterruptedException e) {
-            GeneralUtils.logExceptionStackTrace(e);
+            GeneralUtils.logExceptionStackTrace(this.logger, e);
         }
     }
 }

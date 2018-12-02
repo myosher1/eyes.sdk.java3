@@ -66,7 +66,7 @@ public class RenderingGridService extends Thread{
             try {
                 Thread.sleep(1500);
             } catch (InterruptedException e) {
-                GeneralUtils.logExceptionStackTrace(e);
+                GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
         return null;

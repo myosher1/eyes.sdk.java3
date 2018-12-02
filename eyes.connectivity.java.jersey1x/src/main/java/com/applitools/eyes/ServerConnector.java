@@ -602,4 +602,9 @@ public class ServerConnector extends RestClient
         ClientResponse response = request.head();
         return Arrays.asList(response.getEntity(RenderStatusResults[].class));
     }
+
+    @Override
+    public IResourceFuture createResourceFuture(RGridResource gridResource) {
+        return new ResourceFuture(gridResource);
+    }
 }

@@ -639,4 +639,9 @@ public class ServerConnector extends RestClient
         throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
     }
 
+    @Override
+    public IResourceFuture createResourceFuture(RGridResource gridResource) {
+        return new ResourceFuture(gridResource);
+    }
+
 }

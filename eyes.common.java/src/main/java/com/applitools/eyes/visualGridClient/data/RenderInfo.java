@@ -5,19 +5,19 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class RenderInfo {
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private int width;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private int height;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String sizeMode;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Region region;
 
-    @JsonInclude
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private EmulationInfo emulationInfo;
 
     public RenderInfo(int width, int height, String sizeMode, Region region, EmulationInfo emulationInfo) {

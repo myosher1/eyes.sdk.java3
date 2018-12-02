@@ -37,7 +37,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
     @Override
     public List<RunningRender> render(RenderRequest... renderRequests) {
-        return null;
+        return this.serverConnector.render(renderRequests);
     }
 
     @Override
@@ -48,6 +48,11 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     @Override
     public List<RenderStatusResults> renderStatusById(String... renderIds) {
         return this.serverConnector.renderStatusById(renderIds);
+    }
+
+    @Override
+    public IResourceFuture createResourceFuture(RGridResource rg) {
+        return this.serverConnector.createResourceFuture(rg);
     }
 
     /**
@@ -65,6 +70,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
 
     public void setProxy(AbstractProxySettings proxy) {
+        super.setProxy(proxy);
     }
 
     @Override

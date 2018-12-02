@@ -16,9 +16,15 @@ public class ResourceFuture implements IResourceFuture {
 
     private Future<Response> future;
     private String url = null;
+    private RGridResource resource;
 
     public ResourceFuture(Future<Response> future) {
         this.future = future;
+    }
+
+    public ResourceFuture(RGridResource resource) {
+        this.resource = resource;
+        this.url = resource.getUrl();
     }
 
     @Override

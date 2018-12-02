@@ -253,7 +253,7 @@ public class GeneralUtils {
         return executeScriptMap;
     }
 
-    public static String getSha256hash(Byte[] content) {
+    public static byte[] getSha256hash(Byte[] content) {
         byte[] buffer = new byte[8192];
         int count;
         MessageDigest digest = null;
@@ -265,7 +265,7 @@ public class GeneralUtils {
             }
             bis.close();
 
-            return new String(digest.digest());
+            return digest.digest();
         } catch (NoSuchAlgorithmException | IOException e) {
             e.printStackTrace();
         }
