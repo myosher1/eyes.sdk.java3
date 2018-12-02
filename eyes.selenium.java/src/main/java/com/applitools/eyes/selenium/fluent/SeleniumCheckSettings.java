@@ -55,6 +55,8 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         clone.targetElement = this.targetElement;
         clone.targetSelector = this.targetSelector;
         clone.frameChain.addAll(this.frameChain);
+        clone.scrollRootElement = this.scrollRootElement;
+        clone.scrollRootSelector = this.scrollRootSelector;
         return clone;
     }
 

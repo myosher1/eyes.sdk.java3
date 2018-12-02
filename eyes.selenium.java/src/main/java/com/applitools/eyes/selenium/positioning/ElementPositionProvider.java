@@ -18,8 +18,8 @@ public class ElementPositionProvider implements PositionProvider {
         ArgumentGuard.notNull(element, "element");
 
         this.logger = logger;
-        this.element = (element instanceof  EyesRemoteWebElement) ?
-                (EyesRemoteWebElement)element : new EyesRemoteWebElement(logger, driver, element);
+        this.element = (element instanceof EyesRemoteWebElement) ?
+                (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
 
         logger.verbose("creating ElementPositionProvider");
     }
@@ -41,16 +41,16 @@ public class ElementPositionProvider implements PositionProvider {
      * Go to the specified location.
      * @param location The position to scroll to.
      */
-    public void setPosition(Location location) {
+    public Location setPosition(Location location) {
         logger.verbose(String.format("Scrolling element to %s", location));
 
-        element.scrollTo(location);
+        Location result = element.scrollTo(location);
 
-        logger.verbose("Done scrolling element!");
+        logger.verbose("Done scrolling element! result: " + result);
+        return result;
     }
 
     /**
-     *
      * @return The entire size of the container which the position is relative
      * to.
      */

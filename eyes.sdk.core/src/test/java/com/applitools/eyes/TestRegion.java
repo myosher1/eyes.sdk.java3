@@ -132,7 +132,6 @@ public class TestRegion {
     @Test
     public void testIntersect() {
         Region r1, r2;
-        Region.initLogger(new Logger());
         Location l1 = new Location(10, 10);
         Location l2 = new Location(20, 30);
         RectangleSize s1 = new RectangleSize(50, 100);

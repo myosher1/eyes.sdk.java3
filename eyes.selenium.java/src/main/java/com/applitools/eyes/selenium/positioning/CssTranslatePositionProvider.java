@@ -17,6 +17,10 @@ public class CssTranslatePositionProvider implements PositionProvider {
     protected final IEyesJsExecutor executor;
     private final WebElement scrollRootElement;
 
+    private final String JSSetTransform =
+            "var originalTransform = arguments[0].style.transform;" +
+                    "arguments[0].style.transform = '%s';" +
+                    "return originalTransform;";
 
     private Location lastSetPosition; // cache.
 
@@ -37,31 +41,36 @@ public class CssTranslatePositionProvider implements PositionProvider {
         return lastSetPosition;
     }
 
-    public void setPosition(Location location) {
+    public Location setPosition(Location location) {
         ArgumentGuard.notNull(location, "location");
         logger.verbose("CssTranslatePositionProvider - Setting position to: " + location);
-        EyesSeleniumUtils.translateTo(executor, location);
+        //EyesSeleniumUtils.translateTo(executor, location);
+        executor.executeScript(
+                String.format("arguments[0].style.transform='translate(-%dpx,-%dpx)';",
+                        location.getX(), location.getY()),
+                this.scrollRootElement);
         logger.verbose("Done!");
         lastSetPosition = location;
+        return lastSetPosition;
     }
 
     public RectangleSize getEntireSize() {
         RectangleSize entireSize =
-        //        EyesSeleniumUtils.getCurrentFrameContentEntireSize(executor);
-                EyesSeleniumUtils.getEntireElementSize(executor, scrollRootElement);
+                EyesSeleniumUtils.getEntireElementSize(logger, executor, scrollRootElement);
         logger.verbose("CssTranslatePositionProvider - Entire size: " + entireSize);
         return entireSize;
     }
 
     public PositionMemento getState() {
         return new CssTranslatePositionMemento(
-                EyesSeleniumUtils.getCurrentTransform(executor),
+                (String)executor.executeScript("return arguments[0].style.transform;", this.scrollRootElement),
                 lastSetPosition);
     }
 
     public void restoreState(PositionMemento state) {
-        EyesSeleniumUtils.setTransforms(executor,
-                ((CssTranslatePositionMemento)state).getTransform());
+        executor.executeScript(
+                String.format(JSSetTransform, ((CssTranslatePositionMemento)state).getTransform()),
+                this.scrollRootElement);
         lastSetPosition = ((CssTranslatePositionMemento)state).getPosition();
     }
 }

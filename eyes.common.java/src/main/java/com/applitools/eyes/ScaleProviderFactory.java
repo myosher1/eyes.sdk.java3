@@ -2,20 +2,20 @@ package com.applitools.eyes;
 
 import com.applitools.utils.PropertyHandler;
 
-import java.awt.image.BufferedImage;
-
 /**
  * Abstraction for instantiating scale providers.
  */
 public abstract class ScaleProviderFactory {
 
+    protected Logger logger;
     private final PropertyHandler<ScaleProvider> scaleProviderHandler;
 
     /**
      *
      * @param scaleProviderHandler A handler to update once a {@link ScaleProvider} instance is created.
      */
-    public ScaleProviderFactory(PropertyHandler<ScaleProvider> scaleProviderHandler) {
+    public ScaleProviderFactory(Logger logger, PropertyHandler<ScaleProvider> scaleProviderHandler) {
+        this.logger = logger;
         this.scaleProviderHandler = scaleProviderHandler;
     }
 

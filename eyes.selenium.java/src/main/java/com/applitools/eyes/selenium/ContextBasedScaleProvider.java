@@ -16,7 +16,8 @@ public class ContextBasedScaleProvider implements ScaleProvider {
     private static final int ALLOWED_DCES_DEVIATION = 10;
     private static final int UNKNOWN_SCALE_RATIO = 0;
 
-    private final Logger logger;
+    private Logger logger;
+
     private final double devicePixelRatio;
     private final RectangleSize topLevelContextEntireSize;
     private final RectangleSize viewportSize;
@@ -45,12 +46,12 @@ public class ContextBasedScaleProvider implements ScaleProvider {
             RectangleSize topLevelContextEntireSize, RectangleSize viewportSize,
             double devicePixelRatio, boolean isMobileDevice) {
 
+        ArgumentGuard.notNull(logger, "logger");
         this.logger = logger;
         this.topLevelContextEntireSize = topLevelContextEntireSize;
         this.viewportSize = viewportSize;
         this.devicePixelRatio = devicePixelRatio;
         this.isMobileDevice = isMobileDevice;
-
         // Since we need the image size to decide what the scale ratio is.
         scaleRatio = UNKNOWN_SCALE_RATIO;
     }

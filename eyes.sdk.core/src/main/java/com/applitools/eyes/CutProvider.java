@@ -22,4 +22,6 @@ public interface CutProvider {
      * @return A new scale cut provider instance.
      */
     CutProvider scale(double scaleRatio);
+
+    void setLogger(Logger logger);
 }

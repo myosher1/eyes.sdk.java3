@@ -4,8 +4,8 @@ import com.applitools.eyes.IDownloadListener;
 import com.applitools.eyes.IServerConnector;
 import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
+import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.selenium.positioning.ElementPositionProvider;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -22,10 +22,8 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.UnsupportedEncodingException;
+import java.net.*;
 import java.util.*;
 import java.util.concurrent.Phaser;
 
@@ -59,7 +57,7 @@ public class DomCapture {
         mLogger = eyes.getLogger();
     }
 
-    public String getFullWindowDom(WebDriver driver, ElementPositionProvider positionProvider) {
+    public String getFullWindowDom(WebDriver driver, PositionProvider positionProvider) {
         this.mDriver = driver;
         Location initialPosition = positionProvider.getCurrentPosition();
         positionProvider.setPosition(Location.ZERO);
@@ -175,7 +173,7 @@ public class DomCapture {
                 frameIndices.push(0);
 
             } catch (Exception e) {
-                GeneralUtils.logExceptionStackTrace(e);
+                GeneralUtils.logExceptionStackTrace(mLogger, e);
                 mDriver.switchTo().parentFrame();
                 return;
             }
@@ -223,7 +221,7 @@ public class DomCapture {
                     traverseDomTree(mDriver, argsObj, dom, -1, urlHref);
 
                 } catch (MalformedURLException e) {
-                    GeneralUtils.logExceptionStackTrace(e);
+                    GeneralUtils.logExceptionStackTrace(mLogger, e);
                 }
             }
             frameIndices.pop();
@@ -419,12 +417,12 @@ public class DomCapture {
 
             boolean absolute = false;
             try {
+                urlPostfix = URLEncoder.encode(urlPostfix, "UTF-8");
                 absolute = new URI(urlPostfix).isAbsolute();
                 this.urlPostfix = absolute ? new URL(urlPostfix) : new URL(baseUrl, urlPostfix);
-            } catch (URISyntaxException | MalformedURLException e) {
-                GeneralUtils.logExceptionStackTrace(e);
+            } catch (UnsupportedEncodingException | URISyntaxException | MalformedURLException e) {
+                GeneralUtils.logExceptionStackTrace(mLogger, e);
             }
-
         }
 
 
@@ -450,9 +448,8 @@ public class DomCapture {
                     listener.onDownloadComplete(downloadedString , "String");
 
                 } catch (Exception e) {
-                    GeneralUtils.logExceptionStackTrace(e);
-                }
-                finally {
+                    GeneralUtils.logExceptionStackTrace(mLogger, e);
+                } finally {
                     treePhaser.arriveAndDeregister();
                     mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
                     mLogger.verbose("current unarrived  - " + treePhaser.getUnarrivedParties());

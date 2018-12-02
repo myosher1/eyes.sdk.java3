@@ -98,10 +98,6 @@ public abstract class EyesBase {
 
         logger = new Logger();
 
-        Region.initLogger(logger);
-        ImageUtils.initLogger(logger);
-        GeneralUtils.initLogger(logger);
-
         initProviders();
 
         setServerConnector(new ServerConnector());
@@ -132,7 +128,7 @@ public abstract class EyesBase {
     private void initProviders(boolean hardReset) {
         if (hardReset) {
             scaleProviderHandler = new SimplePropertyHandler<>();
-            scaleProviderHandler.set(new NullScaleProvider());
+            scaleProviderHandler.set(new NullScaleProvider(logger));
             cutProviderHandler = new SimplePropertyHandler<>();
             cutProviderHandler.set(new NullCutProvider());
             positionProviderHandler = new SimplePropertyHandler<>();
@@ -145,7 +141,7 @@ public abstract class EyesBase {
 
         if (scaleProviderHandler == null) {
             scaleProviderHandler = new SimplePropertyHandler<>();
-            scaleProviderHandler.set(new NullScaleProvider());
+            scaleProviderHandler.set(new NullScaleProvider(logger));
         }
 
         if (cutProviderHandler == null) {
@@ -157,7 +153,6 @@ public abstract class EyesBase {
             positionProviderHandler = new SimplePropertyHandler<>();
             positionProviderHandler.set(new InvalidPositionProvider());
         }
-
 
         if (viewportSizeHandler == null) {
             viewportSizeHandler = new SimplePropertyHandler<>();
@@ -591,6 +586,7 @@ public abstract class EyesBase {
      */
     public void setImageCut(CutProvider cutProvider) {
         if (cutProvider != null) {
+            cutProvider.setLogger(logger);
             cutProviderHandler = new ReadOnlyPropertyHandler<>(logger,
                     cutProvider);
         } else {
@@ -610,11 +606,12 @@ public abstract class EyesBase {
      */
     public void setScaleRatio(Double scaleRatio) {
         if (scaleRatio != null) {
+            FixedScaleProvider scaleProvider = new FixedScaleProvider(logger, scaleRatio);
             scaleProviderHandler = new ReadOnlyPropertyHandler<ScaleProvider>(
-                    logger, new FixedScaleProvider(scaleRatio));
+                    logger, scaleProvider);
         } else {
             scaleProviderHandler = new SimplePropertyHandler<>();
-            scaleProviderHandler.set(new NullScaleProvider());
+            scaleProviderHandler.set(new NullScaleProvider(logger));
         }
     }
 
@@ -648,7 +645,7 @@ public abstract class EyesBase {
     public void setSaveDebugScreenshots(boolean saveDebugScreenshots) {
         DebugScreenshotsProvider prev = debugScreenshotsProvider;
         if (saveDebugScreenshots) {
-            debugScreenshotsProvider = new FileDebugScreenshotsProvider();
+            debugScreenshotsProvider = new FileDebugScreenshotsProvider(logger);
         } else {
             debugScreenshotsProvider = new NullDebugScreenshotProvider();
         }
@@ -1359,6 +1356,7 @@ public abstract class EyesBase {
                 testName, viewportSize));
 
         config.setSessionType(sessionType != null ? sessionType : SessionType.SEQUENTIAL);
+        config.setViewportSize(viewportSize);
 
         openBase();
     }
@@ -1730,7 +1728,7 @@ public abstract class EyesBase {
 
         // Cropping by region if necessary
         if (!region.isSizeEmpty()) {
-            screenshot = getSubScreenshot(screenshot, region, checkSettingsInternal);
+            screenshot = screenshot.getSubScreenshot(region, false);
             debugScreenshotsProvider.save(screenshot.getImage(), "SUB_SCREENSHOT");
         }
 
@@ -1755,7 +1753,7 @@ public abstract class EyesBase {
 
             }
         } catch (Exception e) {
-            GeneralUtils.logExceptionStackTrace(e);
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
         AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl), screenshot);
         logger.verbose("Done!");

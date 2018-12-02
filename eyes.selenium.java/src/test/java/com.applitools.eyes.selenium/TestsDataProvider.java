@@ -39,7 +39,12 @@ public class TestsDataProvider {
         Object[] platforms = testPlatforms.split(";");
 
         List<List<Object>> lists = new ArrayList<>();
-        lists.add(Arrays.asList(new Object[]{chromeOptions, /**/firefoxOptions, ie11Options/**/, safariOptions/**/}));
+        lists.add(Arrays.asList(new Object[]{
+                chromeOptions,
+//                firefoxOptions,
+//                ie11Options,
+//                safariOptions
+        }));
         lists.add(Arrays.asList(platforms));
 
         List<Object[]> permutations = TestUtils.generatePermutationsList(lists);

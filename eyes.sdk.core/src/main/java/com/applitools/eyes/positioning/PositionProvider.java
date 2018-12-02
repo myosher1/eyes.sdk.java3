@@ -18,7 +18,7 @@ public interface PositionProvider {
      * Go to the specified location.
      * @param location The position to set.
      */
-    void setPosition(Location location);
+    Location setPosition(Location location);
 
     /**
      *
