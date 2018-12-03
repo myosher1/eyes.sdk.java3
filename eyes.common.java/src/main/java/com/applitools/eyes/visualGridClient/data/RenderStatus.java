@@ -9,7 +9,7 @@ import java.util.Map;
 
 public enum RenderStatus {
 
-    NEED_MORE_RESOURCE, RENDERING, RENDERED, ERROR;
+    NEED_MORE_RESOURCE, RENDERING, RENDERED, ERROR, NEED_MORE_DOM;
 
     private static Map<String, RenderStatus> namesMap = new HashMap<>(3);
 

@@ -7,25 +7,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class RGridDom {
 
+    public static final String CONTENT_TYPE = "x-applitools-html/cdt";
     @JsonIgnore
-    private String domNodes = null;
+    private List domNodes = null;
 
     @JsonIgnore
     private Map<String, RGridResource> resources = null;
 
     @JsonIgnore
     private String sha256;
-
-    @JsonIgnore
-    private String cdt = null;
 
     @JsonInclude
     private String hashFormat = "sha256";
@@ -37,11 +35,11 @@ public class RGridDom {
         this.resources.put(resource.getUrl(), resource);
     }
 
-    public String getDomNodes() {
+    public List getDomNodes() {
         return domNodes;
     }
 
-    public void setDomNodes(String domNodes) {
+    public void setDomNodes(List domNodes) {
         this.domNodes = domNodes;
     }
 
@@ -54,17 +52,21 @@ public class RGridDom {
     }
 
     @JsonProperty("hash")
-    public String getSha256() throws JsonProcessingException {
+    public String getSha256() {
         Map<String, Object> map = new HashMap<>();
-        map.put("cdt", cdt);
+        map.put("domNodes", domNodes);
         map.put("resources", this.resources);
         if (this.sha256 == null) {
 
             ObjectMapper objectMapper = new ObjectMapper();
             objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
 
-            sha256 = objectMapper.writeValueAsString(map);
-            sha256 =  GeneralUtils.getSha256hash(ArrayUtils.toObject(sha256.getBytes()));
+            try {
+                sha256 = objectMapper.writeValueAsString(map);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            sha256 = GeneralUtils.getSha256hash(ArrayUtils.toObject(sha256.getBytes()));
         }
         return sha256;
     }
@@ -73,15 +75,24 @@ public class RGridDom {
         this.sha256 = sha256;
     }
 
-    public String getCdt() {
-        return cdt;
-    }
-
-    public void setCdt(String cdt) {
-        this.cdt = cdt;
-    }
-
     public String getHashFormat() {
         return hashFormat;
+    }
+
+    public RGridResource asResource() {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+
+        RGridResource gridResource = null;
+        try {
+
+            String domNodesAsString = objectMapper.writeValueAsString(this.domNodes);
+            gridResource = new RGridResource(null, CONTENT_TYPE, ArrayUtils.toObject(domNodesAsString.getBytes()));
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return gridResource;
     }
 }

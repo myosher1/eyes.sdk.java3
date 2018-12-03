@@ -152,6 +152,7 @@ public interface IServerConnector {
      */
     Future<Boolean> renderPutResource(RunningRender runningRender, RGridResource resource, boolean isRetryOn, IResourceUploadListener listener);
 
+
     /**
      * Get the rendering status for current render
      *

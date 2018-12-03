@@ -516,10 +516,10 @@ public class ServerConnector extends RestClient
 
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
-        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256hash() + " for render: " + runningRender.getRenderId());
+        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
 
 
-        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256hash()).queryParam("render-id", runningRender.getRenderId());
+        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
 
@@ -545,9 +545,9 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(resource, "resource");
         ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
 
-        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256hash() + " for render: " + runningRender.getRenderId());
+        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
 
-        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256hash()).queryParam("render-id", runningRender.getRenderId());
+        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         target.request(MediaType.APPLICATION_OCTET_STREAM_TYPE);
 

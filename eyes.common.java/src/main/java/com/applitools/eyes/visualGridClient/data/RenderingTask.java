@@ -1,6 +1,5 @@
 package com.applitools.eyes.visualGridClient.data;
 
-import com.applitools.eyes.EyesException;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IResourceFuture;
@@ -69,24 +68,37 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             matchRequestsToTests(requests, testToRenderRequestMapping);
 
 
-            boolean stillRunning;
+            boolean stillRunning = true;
 
-            List<RunningRender> runningRenders;
+            List<RunningRender> runningRenders = null;
             do {
-                runningRenders = this.eyesConnector.render(requests);
+
+                try {
+
+
+                    runningRenders = this.eyesConnector.render(requests);
+
+                } catch (Exception e) {
+                    Thread.sleep(1500);
+                    logger.verbose("/render throws exception... sleeping for 1.5s");
+                    continue;
+                }
 
                 for (int i = 0; i < requests.length; i++) {
                     RenderRequest request = requests[i];
                     request.setRenderId(runningRenders.get(i).getRenderId());
                 }
 
-                RenderStatus worstStatus = runningRenders.get(0).getRenderStatus();
+                RunningRender runningRender = runningRenders.get(0);
+                RenderStatus worstStatus = runningRender.getRenderStatus();
 
                 worstStatus = calcWorstStatus(runningRenders, worstStatus);
 
-                stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE;
+                boolean isNeedMoreDom = runningRender.isNeedMoreDom();
+
+                stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom;
                 if (stillRunning) {
-                    sendMissingResources(runningRenders);
+                    sendMissingResources(runningRenders, requests[0].getDom(), isNeedMoreDom);
                 }
 
             } while (stillRunning);
@@ -132,36 +144,51 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         List<String> ids = getRenderIds(runningRenders.keySet());
 
-        do {
+        try {
+            do {
 
-            List<RenderStatusResults> renderStatusResultsList = this.eyesConnector.renderStatusById(ids.toArray(new String[0]));
+                List<RenderStatusResults> renderStatusResultsList = this.eyesConnector.renderStatusById(ids.toArray(new String[0]));
+                if (renderStatusResultsList == null || renderStatusResultsList.isEmpty() || renderStatusResultsList.get(0) == null) {
+                    try {
+                        Thread.sleep(500);
+                        continue;
+                    } catch (InterruptedException e) {
+                        GeneralUtils.logExceptionStackTrace(logger, e);
+                    }
+                }
+                else {
+                    logger.verbose("render status result received ");
+                }
 
-            for (int i = 0; i < renderStatusResultsList.size(); i++) {
-                RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
-                if (renderStatusResults.getStatus() == RenderStatus.RENDERED) {
+                for (int i = 0; i < renderStatusResultsList.size(); i++) {
+                    RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
+                    if (renderStatusResults.getStatus() == RenderStatus.RENDERED) {
 
-                    String removed = ids.remove(i);
+                        String removed = ids.remove(i);
 
-                    for (RunningRender renderedRender : runningRenders.keySet()) {
-                        if (renderedRender.getRenderId().equalsIgnoreCase(removed)) {
-                            Task task = runningRenders.get(renderedRender).getTask();
-                            task.setRenderResult(renderStatusResults);
-                            break;
+                        for (RunningRender renderedRender : runningRenders.keySet()) {
+                            if (renderedRender.getRenderId().equalsIgnoreCase(removed)) {
+                                Task task = runningRenders.get(renderedRender).getTask();
+                                task.setRenderResult(renderStatusResults);
+                                break;
+                            }
                         }
                     }
                 }
-            }
 
-            if (ids.size() > 0) {
-                try {
-                    Thread.sleep(1500);
-                } catch (InterruptedException e) {
-                    GeneralUtils.logExceptionStackTrace(logger, e);
+                if (ids.size() > 0) {
+                    try {
+                        Thread.sleep(1500);
+                    } catch (InterruptedException e) {
+                        GeneralUtils.logExceptionStackTrace(logger, e);
+                    }
                 }
-            }
 
 
-        } while (ids.size() > 0);
+            } while (ids.size() > 0);
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
     }
 
     private List<String> getRenderIds(Collection<RunningRender> runningRenders) {
@@ -172,8 +199,12 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         return ids;
     }
 
-    private void sendMissingResources(List<RunningRender> runningRenders) {
+    private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, boolean isNeedMoreDom) {
         for (RunningRender runningRender : runningRenders) {
+            if(isNeedMoreDom) {
+                Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
+                putResourceCache.put("dom", future);
+            }
             List<String> needMoreResources = runningRender.getNeedMoreResources();
             for (String url : needMoreResources) {
 
@@ -183,7 +214,9 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
                     RGridResource resource = fetchedCacheMap.get(url).get();
                     Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, resource);
-                    putResourceCache.put(url, future);
+                    if (!putResourceCache.containsKey(url)) {
+                        putResourceCache.put(url, future);
+                    }
 
                 } catch (InterruptedException | ExecutionException e) {
                     GeneralUtils.logExceptionStackTrace(logger, e);
@@ -235,7 +268,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         org.apache.commons.codec.binary.Base64 codec = new Base64();
 
-        for (String key : result.keySet()) {
+         for (String key : result.keySet()) {
             Object value = result.get(key);
             switch (key) {
                 case "blobs":
@@ -272,7 +305,10 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
     private void addBlobsToCache(List<RGridResource> allBlobs) {
         for (RGridResource blob : allBlobs) {
-            this.fetchedCacheMap.put(blob.getUrl(), this.eyesConnector.createResourceFuture(blob));
+            String url = blob.getUrl();
+            if (!this.fetchedCacheMap.containsKey(url)) {
+                this.fetchedCacheMap.put(url, this.eyesConnector.createResourceFuture(blob));
+            }
         }
     }
 
@@ -280,18 +316,14 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private List<RenderRequest> buildRenderRequests(HashMap<String, Object> result, CheckRGSettings settings, List<RGridResource> allBlobs) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
-        String cdt;
+        Object cdt;
         RGridDom dom = null;
         Map<String, RGridResource> resourceMapping = new HashMap<>();
-        try {
-            cdt = objectMapper.writeValueAsString(result.get("cdt"));
-            dom = new RGridDom();
-            dom.setCdt(cdt);
-            for (RGridResource blob : allBlobs) {
-                resourceMapping.put(blob.getUrl(), blob);
-            }
-        } catch (JsonProcessingException e) {
-            GeneralUtils.logExceptionStackTrace(logger, e);
+        cdt = result.get("cdt");
+        dom = new RGridDom();
+        dom.setDomNodes((List) cdt);
+        for (RGridResource blob : allBlobs) {
+            resourceMapping.put(blob.getUrl(), blob);
         }
         dom.setResources(resourceMapping);
 
@@ -305,7 +337,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             RenderingConfiguration.RenderBrowserInfo browserInfo = task.getBrowserInfo();
             RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), browserInfo.getSizeMode(), settings.getRegion(), browserInfo.getEmulationInfo());
 
-            RenderRequest request = new RenderRequest(randomRequestId, this.renderingInfo.getResultsUrl(), (String) result.get("url"), dom,
+            RenderRequest request = new RenderRequest(this.renderingInfo.getResultsUrl(), (String) result.get("url"), dom,
                     resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), settings.getScriptHooks(), null, settings.isSendDom(), task);
 
             try {
@@ -344,7 +376,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
                 RGridResource resource = future.get();
                 allBlobs.add(resource);
-                this.hashToUrl.put(resource.getSha256hash(), resource.getUrl());
+                this.hashToUrl.put(resource.getSha256(), resource.getUrl());
 
             } catch (InterruptedException | ExecutionException e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);

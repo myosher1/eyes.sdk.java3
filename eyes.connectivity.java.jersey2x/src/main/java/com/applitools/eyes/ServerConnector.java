@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
+import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.message.GZipEncoder;
 
 import javax.ws.rs.HttpMethod;
@@ -544,10 +545,10 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
         // eslint-disable-next-line max-len
-        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256hash() + " for render: " + runningRender.getRenderId());
+        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
 
 
-        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256hash()).queryParam("render-id", runningRender.getRenderId());
+        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
 
@@ -572,8 +573,8 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(resource, "resource");
         ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
 
-        this.logger.verbose("called with resource#" + resource.getSha256hash() + " for render: " + runningRender.getRenderId());
-        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256hash()).queryParam("render-id", runningRender.getRenderId());
+        this.logger.verbose("called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
+        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
         Invocation.Builder request = target.request(MediaType.TEXT_PLAIN);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
 
@@ -591,31 +592,39 @@ public class ServerConnector extends RestClient
     @Override
     public List<RenderStatusResults> renderStatusById(String... renderIds) {
 
-        ArgumentGuard.notNull(renderIds, "renderIds");
-        this.logger.verbose("ServerConnector.renderStatus called for render: " + renderIds);
-
-        WebTarget target = target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
-        Invocation.Builder request = target.request(MediaType.TEXT_PLAIN);
-        request.header("X-Auth-Token", renderingInfo.getAccessToken());
-
-        // Ok, let's create the running session from the response
-        List<Integer> validStatusCodes = new ArrayList<>();
-        validStatusCodes.add(Response.Status.OK.getStatusCode());
-        validStatusCodes.add(Response.Status.NOT_FOUND.getStatusCode());
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
-        objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
         try {
-            String json = objectMapper.writeValueAsString(renderIds);
-            Entity<String> entity = Entity.entity(json, MediaType.APPLICATION_JSON);
-            Response response = request.post(entity);
-            if (validStatusCodes.contains(response.getStatus())) {
-                this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
-                return Arrays.asList(response.readEntity(RenderStatusResults[].class));
+            ArgumentGuard.notNull(renderIds, "renderIds");
+            this.logger.verbose("ServerConnector.renderStatus called for render: " + renderIds);
+
+
+            WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
+            target.property(ClientProperties.CONNECT_TIMEOUT, 1000);
+            target.property(ClientProperties.READ_TIMEOUT,    1000);
+            Invocation.Builder request = target.request(MediaType.TEXT_PLAIN);
+            request.header("X-Auth-Token", renderingInfo.getAccessToken());
+
+            // Ok, let's create the running session from the response
+            List<Integer> validStatusCodes = new ArrayList<>();
+            validStatusCodes.add(Response.Status.OK.getStatusCode());
+            validStatusCodes.add(Response.Status.NOT_FOUND.getStatusCode());
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+            try {
+                String json = objectMapper.writeValueAsString(renderIds);
+                Entity<String> entity = Entity.entity(json, MediaType.APPLICATION_JSON);
+                Response response = request.post(entity);
+                if (validStatusCodes.contains(response.getStatus())) {
+                    this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
+                    RenderStatusResults[] renderStatusResults = parseResponseWithJsonData(response, validStatusCodes, RenderStatusResults[].class);
+                    return Arrays.asList(renderStatusResults);
+                }
+            } catch (JsonProcessingException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
             }
-            throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
-        } catch (JsonProcessingException e) {
+            return null;
+        } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
         return null;

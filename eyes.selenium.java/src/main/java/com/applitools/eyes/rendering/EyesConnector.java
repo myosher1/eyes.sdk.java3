@@ -3,10 +3,7 @@ package com.applitools.eyes.rendering;
 import com.applitools.eyes.*;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IResourceFuture;
-import com.applitools.eyes.visualGridClient.data.RGridResource;
-import com.applitools.eyes.visualGridClient.data.RenderRequest;
-import com.applitools.eyes.visualGridClient.data.RenderStatusResults;
-import com.applitools.eyes.visualGridClient.data.RunningRender;
+import com.applitools.eyes.visualGridClient.data.*;
 
 import java.net.URL;
 import java.util.List;
@@ -34,6 +31,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     public Future<Boolean> renderPutResource(RunningRender runningRender, RGridResource resource) {
         return this.serverConnector.renderPutResource(runningRender, resource, true, null);
     }
+
 
     @Override
     public List<RunningRender> render(RenderRequest... renderRequests) {

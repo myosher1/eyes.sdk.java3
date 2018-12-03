@@ -5,16 +5,6 @@ import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.ArrayUtils;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 public class RGridResource {
 
@@ -28,7 +18,7 @@ public class RGridResource {
     private Byte[] content = null;
 
     @JsonInclude
-    private String sha256hash = null;
+    private String sha256 = null;
 
     @JsonInclude
     private String hashFormat = "sha256";
@@ -42,7 +32,7 @@ public class RGridResource {
         this.url = url;
         this.contentType = contentType;
         this.content = content;
-        this.sha256hash = getSha256hash();
+        this.sha256 = getSha256();
 
     }
 
@@ -70,11 +60,11 @@ public class RGridResource {
     }
 
     @JsonProperty("hash")
-    public String getSha256hash() {
-        if (sha256hash == null) {
-            this.sha256hash = GeneralUtils.getSha256hash(content);
+    public String getSha256() {
+        if (sha256 == null) {
+            this.sha256 = GeneralUtils.getSha256hash(content);
         }
-        return sha256hash;
+        return sha256;
     }
 
     public String getHashFormat() {

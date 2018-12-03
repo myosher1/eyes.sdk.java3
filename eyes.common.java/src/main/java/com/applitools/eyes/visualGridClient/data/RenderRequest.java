@@ -14,11 +14,8 @@ public class  RenderRequest {
     @JsonIgnore
     private final Task task;
 
-    @JsonIgnore
-    private double id;
-
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String webHook;
+    private String webhook;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String url;
@@ -47,9 +44,8 @@ public class  RenderRequest {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private boolean sendDom;
 
-    public RenderRequest(double id, String webHook, String url, RGridDom dom, Map<String, RGridResource> resources, RenderInfo renderInfo, String platform, String browserName, Object scriptHooks, String[] selectorsToFindRegionsFor, boolean sendDom, Task task) {
-        this.id = id;
-        this.webHook = webHook;
+    public RenderRequest(String webHook, String url, RGridDom dom, Map<String, RGridResource> resources, RenderInfo renderInfo, String platform, String browserName, Object scriptHooks, String[] selectorsToFindRegionsFor, boolean sendDom, Task task) {
+        this.webhook = webHook;
         this.url = url;
         this.dom = dom;
         this.resources = resources;
@@ -148,8 +144,8 @@ public class  RenderRequest {
         return task;
     }
 
-    public String getWebHook() {
-        return webHook;
+    public String getWebhook() {
+        return webhook;
     }
 
     public String getRenderId() {

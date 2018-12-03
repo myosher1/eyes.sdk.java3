@@ -381,7 +381,7 @@ public class ServerConnector extends RestClient
                     listener.onDownloadComplete(theString, null);
 
                 } catch (Exception e) {
-                    GeneralUtils.logExceptionStackTrace(e);
+                    GeneralUtils.logExceptionStackTrace(logger, e);
                     logger.verbose("Failed to parse request(status= " + status + ") = "+ clientResponse.getEntity(String.class));
                     listener.onDownloadFailed();
 
@@ -483,7 +483,7 @@ public class ServerConnector extends RestClient
             target.entity(jsonMapper.writeValueAsString(renderRequests).getBytes());
 
         } catch (JsonProcessingException e) {
-            GeneralUtils.logExceptionStackTrace(e);
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
         WebResource.Builder request = target.accept(MediaType.APPLICATION_JSON);
 
@@ -506,10 +506,10 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
         // eslint-disable-next-line max-len
-        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256hash() + " for render: " + runningRender.getRenderId());
+        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
 
         this.logger.verbose("ServerConnector.getRenderInfo called.");
-        WebResource target = restClient.resource(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256hash()).queryParam("render-id", runningRender.getRenderId());
+        WebResource target = restClient.resource(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
 
 
         WebResource.Builder request = target.accept(MediaType.APPLICATION_JSON);
@@ -531,9 +531,9 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(resource, "resource");
         ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
 
-        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256hash() + " for render: " + runningRender.getRenderId());
+        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
 
-        AsyncWebResource target = restClient.asyncResource(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256hash()).queryParam("render-id", runningRender.getRenderId());
+        AsyncWebResource target = restClient.asyncResource(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
         target.entity(resource.getContent(), MediaType.APPLICATION_OCTET_STREAM_TYPE);
 
 
@@ -557,7 +557,7 @@ public class ServerConnector extends RestClient
                     if (isRetryOn) {
                         renderPutResource(runningRender, resource, false, listener);
                     } else {
-                        GeneralUtils.logExceptionStackTrace(e);
+                        GeneralUtils.logExceptionStackTrace(logger, e);
                         logger.verbose("Failed to parse request(status= " + status + ") = " + clientResponse.getEntity(String.class));
                         listener.onUploadFailed();
                     }
@@ -590,7 +590,7 @@ public class ServerConnector extends RestClient
             target.entity(jsonMapper.writeValueAsString(renderIds).getBytes());
 
         } catch (JsonProcessingException e) {
-            GeneralUtils.logExceptionStackTrace(e);
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
         WebResource.Builder request = target.accept(MediaType.APPLICATION_JSON);
 
