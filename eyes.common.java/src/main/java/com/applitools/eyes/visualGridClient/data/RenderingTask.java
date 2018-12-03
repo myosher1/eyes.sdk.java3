@@ -11,6 +11,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -295,12 +296,26 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         addBlobsToCache(allBlobs);
 
+        parseAndFetchCSSResources(allBlobs);
+
         //Create RenderingRequest
         List<RenderRequest> allRequestsForRG = buildRenderRequests(result, settings, allBlobs);
 
         RenderRequest[] asArray = allRequestsForRG.toArray(new RenderRequest[allRequestsForRG.size()]);
 
         return asArray;
+    }
+
+    private void parseAndFetchCSSResources(List<RGridResource> allBlobs) {
+        for (RGridResource blob : allBlobs) {
+            if (!blob.getContentType().equalsIgnoreCase("text/css")) continue;
+            try {
+                String css = new String(ArrayUtils.toPrimitive(blob.getContent()), "UTF-8");
+                // TODO - parse the css
+            } catch (UnsupportedEncodingException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
+        }
     }
 
     private void addBlobsToCache(List<RGridResource> allBlobs) {
