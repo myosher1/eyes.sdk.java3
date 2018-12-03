@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 public interface IRenderingEyes {
+
     boolean isEyesClosed();
 
     RunningTest getNextTestToClose();
@@ -19,6 +20,8 @@ public interface IRenderingEyes {
     List<Future<TestResults>> close();
 
     Task getNextTaskToCheck();
+
+    int getBestMarkForCheck();
 
     interface EyesListener{
 

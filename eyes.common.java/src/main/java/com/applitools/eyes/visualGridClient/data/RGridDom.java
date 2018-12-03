@@ -53,22 +53,28 @@ public class RGridDom {
 
     @JsonProperty("hash")
     public String getSha256() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("domNodes", domNodes);
-        map.put("resources", this.resources);
         if (this.sha256 == null) {
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
-
-            try {
-                sha256 = objectMapper.writeValueAsString(map);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-            sha256 = GeneralUtils.getSha256hash(ArrayUtils.toObject(sha256.getBytes()));
+            sha256 = GeneralUtils.getSha256hash(ArrayUtils.toObject(getStringObjectMap().getBytes()));
         }
         return sha256;
+    }
+
+    private String getStringObjectMap() {
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("domNodes", this.domNodes);
+        map.put("resources", this.resources);
+
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+
+        try {
+            return objectMapper.writeValueAsString(map);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void setSha256(String sha256) {
@@ -81,18 +87,9 @@ public class RGridDom {
 
     public RGridResource asResource() {
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
-
         RGridResource gridResource = null;
-        try {
+            gridResource = new RGridResource(null, CONTENT_TYPE, ArrayUtils.toObject(getStringObjectMap().getBytes()));
 
-            String domNodesAsString = objectMapper.writeValueAsString(this.domNodes);
-            gridResource = new RGridResource(null, CONTENT_TYPE, ArrayUtils.toObject(domNodesAsString.getBytes()));
-
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
         return gridResource;
     }
 }

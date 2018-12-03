@@ -94,7 +94,7 @@ public class RenderingGridManager {
             }
         });
 
-        this.eyesCheckerService = new EyesCheckerService("EyesCloserService", logger, servicesGroup, this.concurrentOpenSessions, new EyesBaseService.EyesServiceListener() {
+        this.eyesCheckerService = new EyesCheckerService("EyesCheckerService", logger, servicesGroup, this.concurrentOpenSessions, new EyesBaseService.EyesServiceListener() {
             @Override
             public FutureTask<TestResults> getNextTask() {
                 return getNextTestToCheck();
@@ -106,16 +106,23 @@ public class RenderingGridManager {
     }
 
     private FutureTask<TestResults> getNextTestToCheck() {
-        RunningTest runningTest = null;
+        Task bestTask = null;
+        int bestMark = -1;
         synchronized (allEyes) {
-            for (IRenderingEyes eyes : allEyes) {
-                Task task = eyes.getNextTaskToCheck();
-                if (task != null) {
-                    return new FutureTask<>(task);
+            for (IRenderingEyes eye : allEyes) {
+                int bestTestMark = eye.getBestMarkForCheck();
+                if (bestMark < bestTestMark) {
+                    bestTask = eye.getNextTaskToCheck();
                 }
             }
         }
-        return null;
+
+        if (bestTask == null) {
+            return null;
+        }
+
+        FutureTask<TestResults> futureTask = new FutureTask<>(bestTask);
+        return futureTask;
     }
 
     private RenderingTask getNextRenderingTask() {
@@ -160,6 +167,7 @@ public class RenderingGridManager {
         this.eyesOpenerService.start();
         this.eyesCloserService.start();
         this.renderingGridService.start();
+        this.eyesCheckerService.start();
         this.servicesGroup.setDaemon(false);
     }
      private void stopServices() {

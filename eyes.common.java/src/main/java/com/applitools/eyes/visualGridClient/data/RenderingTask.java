@@ -76,7 +76,6 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
                 try {
 
-
                     runningRenders = this.eyesConnector.render(requests);
 
                 } catch (Exception e) {

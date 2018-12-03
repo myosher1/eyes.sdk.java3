@@ -21,6 +21,7 @@ public class RunningTest {
     private RunningTestListener listener;
     private RenderingConfiguration configuration;
     private HashMap<Task, FutureTask<TestResults>> taskToFutureMapping = new HashMap<>();
+
     private Task.TaskListener taskListener = new Task.TaskListener() {
         @Override
         public void onTaskComplete(Task task) {
@@ -42,8 +43,11 @@ public class RunningTest {
     public Task getNextCheckTask() {
         if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
-            taskList.remove(task);
-            if (task.getType() == Task.TaskType.CHECK && task.isTaskReadyToCheck()) return task;
+            if (task.getType() == Task.TaskType.CHECK && task.isTaskReadyToCheck()){
+                this.getTaskList().remove(task);
+                return task;
+            }
+
         }
         return null;
     }

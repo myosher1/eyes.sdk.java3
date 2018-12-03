@@ -44,7 +44,7 @@ public class RenderingConfiguration extends Configuration {
         private BrowserType browserType;
         private String platform = "linux";
         private EmulationInfo emulationInfo = null;
-        private String sizeMode;
+        private String sizeMode = "full-page";
         public RenderBrowserInfo(int width, int height, BrowserType browserType, EmulationInfo emulationInfo) {
             this.width = width;
             this.height = height;

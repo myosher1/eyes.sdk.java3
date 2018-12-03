@@ -52,26 +52,21 @@ public class Task implements Callable<TestResults> {
     @Override
     public TestResults call() throws Exception {
         testResults = null;
-            System.out.println("Task.run()");
-            switch (type) {
-                case OPEN:
-                        System.out.println("Task.run opening task");
-                        eyesConnector.open(configuration.getAppName(), configuration.getTestName());
-                    break;
-                case CHECK:
-                    System.out.println("Task.call CHECK");
+        switch (type) {
+            case OPEN:
+                System.out.println("Task.run opening task");
+                eyesConnector.open(configuration.getAppName(), configuration.getTestName());
+                break;
+            case CHECK:
+                System.out.println("Task.call CHECK");
 
-                    break;
-                case CLOSE:
-                    if(!Task.isThrown()){
-                        isThrown.set(true);
-                        throw new Exception("Michael's Exception! ");
-                    }
-                        testResults = eyesConnector.close(configuration.isThrowExceptionOn());
-                    break;
-                case ABORT:
-                    eyesConnector.abortIfNotClosed();
-            }
+                break;
+            case CLOSE:
+                testResults = eyesConnector.close(configuration.isThrowExceptionOn());
+                break;
+            case ABORT:
+                eyesConnector.abortIfNotClosed();
+        }
         //call the callback
         this.runningTestListener.onTaskComplete(this);
         return testResults;
@@ -88,8 +83,9 @@ public class Task implements Callable<TestResults> {
     public void setRenderResult(RenderStatusResults renderResult) {
         this.renderResult = renderResult;
     }
+
     public boolean isTaskReadyToCheck() {
-        return this.testResults != null;
+        return this.renderResult != null;
     }
 }
 

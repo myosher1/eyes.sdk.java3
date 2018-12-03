@@ -183,12 +183,38 @@ public class Eyes implements IRenderingEyes {
     }
 
     @Override
-    public Task getNextTaskToCheck() {
+    public synchronized Task getNextTaskToCheck() {
+        int bestMark = -1;
+        RunningTest bestTest = null;
         for (RunningTest runningTest : testList) {
-            if(!runningTest.isTestOpen()) continue;
-            return runningTest.getNextCheckTask();
+            Task task = runningTest.getTaskList().get(0);
+            if(!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck()) continue;
+            if(bestMark < runningTest.getMark()){
+                bestTest = runningTest;
+                bestMark = runningTest.getMark();
+            }
         }
-        return null;
+        if (bestTest == null) {
+            return null;
+        }
+        return bestTest.getNextCheckTask();
+    }
+
+    @Override
+    public int getBestMarkForCheck() {
+        int bestMark = -1;
+        for (RunningTest runningTest : testList) {
+            List<Task> taskList = runningTest.getTaskList();
+            if (taskList == null || taskList.isEmpty()) {
+                continue;
+            }
+            Task task = taskList.get(0);
+            if(!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck()) continue;
+            if(bestMark < runningTest.getMark()){
+                bestMark = runningTest.getMark();
+            }
+        }
+        return bestMark;
     }
 
     public void setLogHandler(StdoutLogHandler logHandler) {
@@ -206,7 +232,6 @@ public class Eyes implements IRenderingEyes {
         }
         return isEyesClosed;
     }
-
 
     public void setListener(EyesListener listener) {
         this.listener = listener;
