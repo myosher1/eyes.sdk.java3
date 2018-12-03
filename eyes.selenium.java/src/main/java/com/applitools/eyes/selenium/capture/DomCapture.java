@@ -445,23 +445,23 @@ public class DomCapture {
             public void onDownloadComplete(String downloadedString, String contentType) {
                 try {
                     mLogger.verbose("Download Complete");
-                    listener.onDownloadComplete(downloadedString , "String");
+                    listener.onDownloadComplete(downloadedString, "String");
 
                 } catch (Exception e) {
                     GeneralUtils.logExceptionStackTrace(mLogger, e);
                 } finally {
                     treePhaser.arriveAndDeregister();
                     mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
-                    mLogger.verbose("current unarrived  - " + treePhaser.getUnarrivedParties());
+                    mLogger.verbose("current missing - " + treePhaser.getUnarrivedParties());
                 }
             }
 
             @Override
             public void onDownloadFailed() {
                 treePhaser.arriveAndDeregister();
-                mLogger.verbose("Download Faild");
+                mLogger.verbose("Download Failed");
                 mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
-                mLogger.verbose("current unarrived  - " + treePhaser.getUnarrivedParties());
+                mLogger.verbose("current missing  - " + treePhaser.getUnarrivedParties());
             }
         });
     }
@@ -470,23 +470,21 @@ public class DomCapture {
         if (css == null) {
             return;
         }
-        CascadingStyleSheet cascadingStyleSheet = CSSReader.readFromString(css, ECSSVersion.CSS30);
+
+        final CascadingStyleSheet cascadingStyleSheet = CSSReader.readFromString(css, ECSSVersion.CSS30);
         if (cascadingStyleSheet == null) {
             return;
         }
+
         ICommonsList<ICSSTopLevelRule> allRules = cascadingStyleSheet.getAllRules();
-        if (allRules == null) {
+        if (allRules.isEmpty()) {
             return;
         }
 
-        final CascadingStyleSheet aCSS = CSSReader.readFromString(css, ECSSVersion.CSS30);
-        ICommonsList<CSSImportRule> allImportRules = aCSS.getAllImportRules();
+        ICommonsList<CSSImportRule> allImportRules = cascadingStyleSheet.getAllImportRules();
         node.setAllImportRules(allImportRules);
-        node.setAllStyleRules(aCSS.getAllStyleRules());
+        node.setAllStyleRules(cascadingStyleSheet.getAllStyleRules());
     }
-
-
-
 
 }
 
