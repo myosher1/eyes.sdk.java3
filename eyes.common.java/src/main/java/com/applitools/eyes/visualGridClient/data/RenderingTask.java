@@ -270,10 +270,17 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         List<String> resourceUrls = null;
 
         org.apache.commons.codec.binary.Base64 codec = new Base64();
-
+        URL baseUrl = null;
         for (String key : result.keySet()) {
             Object value = result.get(key);
             switch (key) {
+                case "url":
+                    try {
+                        baseUrl = new URL((String)value);
+                    } catch (MalformedURLException e) {
+                        GeneralUtils.logExceptionStackTrace(logger, e);
+                    }
+                    break;
                 case "blobs":
                     List listOfBlobs = (List) value;
                     for (Object blob : listOfBlobs) {
@@ -298,7 +305,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         addBlobsToCache(allBlobs);
 
-        parseAndFetchCSSResources(allBlobs);
+        parseAndFetchCSSResources(allBlobs, baseUrl);
 
         //Create RenderingRequest
         List<RenderRequest> allRequestsForRG = buildRenderRequests(result, settings, allBlobs);
@@ -308,7 +315,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         return asArray;
     }
 
-    private void parseAndFetchCSSResources(List<RGridResource> allBlobs) {
+    private void parseAndFetchCSSResources(List<RGridResource> allBlobs, URL baseUrl) {
         for (RGridResource blob : allBlobs) {
             String contentTypeStr = blob.getContentType();
             String[] parts = contentTypeStr.split(";");
@@ -332,47 +339,52 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             if (cont) continue;
             try {
                 String css = new String(ArrayUtils.toPrimitive(blob.getContent()), charset);
-                parseCSS(css);
+                parseCSS(css, baseUrl);
             } catch (UnsupportedEncodingException e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
     }
 
-    private void parseCSS(String css) {
+    private void parseCSS(String css, URL baseUrl) {
         final CascadingStyleSheet cascadingStyleSheet = CSSReader.readFromString(css, ECSSVersion.CSS30);
         if (cascadingStyleSheet == null) {
             return;
         }
-        List<String> allResourceUris = new ArrayList<>();
-        collectAllFontFaceUris(cascadingStyleSheet, allResourceUris);
-        collectAllBackgroundImageUris(cascadingStyleSheet, allResourceUris);
+        List<URL> allResourceUris = new ArrayList<>();
+        collectAllFontFaceUris(cascadingStyleSheet, allResourceUris, baseUrl);
+        collectAllBackgroundImageUris(cascadingStyleSheet, allResourceUris, baseUrl);
         int x = allResourceUris.size(); // TODO - for debugging
     }
 
-    private void collectAllFontFaceUris(CascadingStyleSheet cascadingStyleSheet, List<String> allResourceUris) {
+    private void collectAllFontFaceUris(CascadingStyleSheet cascadingStyleSheet, List<URL> allResourceUris, URL baseUrl) {
         ICommonsList<CSSFontFaceRule> allFontFaceRules = cascadingStyleSheet.getAllFontFaceRules();
         for (CSSFontFaceRule fontFaceRule : allFontFaceRules) {
-            getAllResourcesUrisFromDeclarations(allResourceUris, fontFaceRule,"src");
+            getAllResourcesUrisFromDeclarations(allResourceUris, fontFaceRule,"src", baseUrl);
         }
     }
 
-    private void collectAllBackgroundImageUris(CascadingStyleSheet cascadingStyleSheet, List<String> allResourceUris) {
+    private void collectAllBackgroundImageUris(CascadingStyleSheet cascadingStyleSheet, List<URL> allResourceUris, URL baseUrl) {
         ICommonsList<CSSStyleRule> allStyleRules = cascadingStyleSheet.getAllStyleRules();
         for (CSSStyleRule styleRule : allStyleRules) {
-            getAllResourcesUrisFromDeclarations(allResourceUris, styleRule,"background");
-            getAllResourcesUrisFromDeclarations(allResourceUris, styleRule,"background-image");
+            getAllResourcesUrisFromDeclarations(allResourceUris, styleRule,"background", baseUrl);
+            getAllResourcesUrisFromDeclarations(allResourceUris, styleRule,"background-image", baseUrl);
         }
     }
 
-    private <T extends IHasCSSDeclarations<T>> void getAllResourcesUrisFromDeclarations(List<String> allResourceUris, IHasCSSDeclarations<T> rule, String propertyName) {
+    private <T extends IHasCSSDeclarations<T>> void getAllResourcesUrisFromDeclarations(List<URL> allResourceUris, IHasCSSDeclarations<T> rule, String propertyName, URL baseUrl) {
         ICommonsList<CSSDeclaration> sourcesList = rule.getAllDeclarationsOfPropertyName(propertyName);
         for (CSSDeclaration cssDeclaration : sourcesList) {
             CSSExpression cssDeclarationExpression = cssDeclaration.getExpression();
             ICommonsList<ICSSExpressionMember> allExpressionMembers = cssDeclarationExpression.getAllMembers();
             ICommonsList<CSSExpressionMemberTermURI> allUriExpressions = allExpressionMembers.getAllInstanceOf(CSSExpressionMemberTermURI.class);
             for (CSSExpressionMemberTermURI uriExpression : allUriExpressions) {
-                allResourceUris.add(uriExpression.getURIString());
+                try {
+                    URL url = new URL(baseUrl, uriExpression.getURIString());
+                    allResourceUris.add(url);
+                } catch (MalformedURLException e) {
+                    GeneralUtils.logExceptionStackTrace(logger,e);
+                }
             }
         }
     }

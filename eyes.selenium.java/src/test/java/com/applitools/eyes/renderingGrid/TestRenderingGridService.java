@@ -29,7 +29,7 @@ public final class TestRenderingGridService {
         Logger logger = null;
         try {
             webDriver = new ChromeDriver();
-            webDriver.get("http://applitools.github.io/demo/TestPages/VisualGridTestPage");
+            webDriver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage");
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
             logger = new Logger();
             logger.setLogHandler(new StdoutLogHandler(true));
