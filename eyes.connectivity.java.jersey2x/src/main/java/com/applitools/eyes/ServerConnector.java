@@ -91,7 +91,7 @@ public class ServerConnector extends RestClient
      * Sets the proxy settings to be used by the rest client.
      *
      * @param abstractProxySettings The proxy settings to be used by the rest client.
-     *                      If {@code null} then no proxy is set.
+     *                              If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void setProxy(AbstractProxySettings abstractProxySettings) {
@@ -385,7 +385,7 @@ public class ServerConnector extends RestClient
     public IResourceFuture downloadResource(final URL uri, final boolean isSecondRetry, final IDownloadListener<Byte[]> listener) {
         Client client = ClientBuilder.newBuilder().build();
 
-        String url = uri.toString();
+        final String url = uri.toString();
         WebTarget target = client.target(url);
 
         Invocation.Builder request = target.request(MediaType.WILDCARD);
@@ -393,11 +393,23 @@ public class ServerConnector extends RestClient
         Future<Response> future = request.async().get(new InvocationCallback<Response>() {
             @Override
             public void completed(Response response) {
-                byte[] bytes = new byte[response.getLength()];
+                byte[] bytes;
+                InputStream inputStream = response.readEntity(InputStream.class);
+                int available = response.getLength();
+
+                if (available < 1) {
+                    logger.verbose("Response got negative length URL - " + url);
+                    try {
+                        available = inputStream.available();
+                    } catch (IOException e) {
+                        GeneralUtils.logExceptionStackTrace(logger, e);
+                    }
+                }
+                bytes = new byte[available];
                 try {
-                    response.readEntity(InputStream.class).read(bytes);
+                    inputStream.read(bytes);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    GeneralUtils.logExceptionStackTrace(logger, e);
                 }
                 logger.verbose(uri + " - completed");
                 MultivaluedMap<String, Object> headers = response.getHeaders();
@@ -443,46 +455,46 @@ public class ServerConnector extends RestClient
         return entity;
     }
 
-        private Response sendWithRetry(String method, Invocation.Builder request, Entity entity, AtomicInteger retiresCounter) {
+    private Response sendWithRetry(String method, Invocation.Builder request, Entity entity, AtomicInteger retiresCounter) {
 
-            if (retiresCounter == null) {
+        if (retiresCounter == null) {
 
-                retiresCounter = new AtomicInteger(0);
-
-            }
-
-            Response response = null;
-            try {
-                switch (method){
-
-                    case HttpMethod.POST:
-                        response = request.post(entity);
-                        break;
-                    case HttpMethod.PUT:
-                        response = request.put(entity);
-                }
-
-                return response;
-            } catch (Exception e) {
-
-                GeneralUtils.logExceptionStackTrace(logger, e);
-                try {
-
-                    Thread.sleep(THREAD_SLEEP_MILLIS);
-
-                } catch (InterruptedException e1) {
-                    GeneralUtils.logExceptionStackTrace(logger, e1);
-                }
-
-                if (retiresCounter.incrementAndGet() < NUM_OF_RETRIES) {
-
-                    return sendWithRetry(method, request, entity, retiresCounter);
-                } else {
-                    throw e;
-                }
-            }
+            retiresCounter = new AtomicInteger(0);
 
         }
+
+        Response response = null;
+        try {
+            switch (method) {
+
+                case HttpMethod.POST:
+                    response = request.post(entity);
+                    break;
+                case HttpMethod.PUT:
+                    response = request.put(entity);
+            }
+
+            return response;
+        } catch (Exception e) {
+
+            GeneralUtils.logExceptionStackTrace(logger, e);
+            try {
+
+                Thread.sleep(THREAD_SLEEP_MILLIS);
+
+            } catch (InterruptedException e1) {
+                GeneralUtils.logExceptionStackTrace(logger, e1);
+            }
+
+            if (retiresCounter.incrementAndGet() < NUM_OF_RETRIES) {
+
+                return sendWithRetry(method, request, entity, retiresCounter);
+            } else {
+                throw e;
+            }
+        }
+
+    }
 
 
     @Override
@@ -503,14 +515,13 @@ public class ServerConnector extends RestClient
     @Override
     public List<RunningRender> render(RenderRequest... renderRequests) {
         ArgumentGuard.notNull(renderRequests, "renderRequests");
-        this.logger.verbose("ServerConnector.render called with "+renderRequests);
+        this.logger.verbose("ServerConnector.render called with " + renderRequests);
 
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER));
         if (renderRequests.length > 1) {
-            target.matrixParam("render-id", (Object)renderRequests);
-        }
-        else{
-            target.queryParam("render-id", (Object)renderRequests);
+            target.matrixParam("render-id", (Object) renderRequests);
+        } else {
+            target.queryParam("render-id", (Object) renderRequests);
         }
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
@@ -531,7 +542,7 @@ public class ServerConnector extends RestClient
                 RunningRender[] runningRenders = parseResponseWithJsonData(response, validStatusCodes, RunningRender[].class);
                 return Arrays.asList(runningRenders);
             }
-               throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+            throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
         } catch (JsonProcessingException e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
@@ -564,7 +575,7 @@ public class ServerConnector extends RestClient
             return response.getStatus() == Response.Status.OK.getStatusCode();
         }
 
-        throw new EyesException("ServerConnector.checkResourceExists - unexpected status ("+response.getStatus()+")");
+        throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
     }
 
     @Override
@@ -599,7 +610,7 @@ public class ServerConnector extends RestClient
 
             WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
             target.property(ClientProperties.CONNECT_TIMEOUT, 1000);
-            target.property(ClientProperties.READ_TIMEOUT,    1000);
+            target.property(ClientProperties.READ_TIMEOUT, 1000);
             Invocation.Builder request = target.request(MediaType.TEXT_PLAIN);
             request.header("X-Auth-Token", renderingInfo.getAccessToken());
 

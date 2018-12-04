@@ -1,5 +1,6 @@
 package com.applitools.eyes.visualGridClient.data;
 
+import com.applitools.eyes.IDownloadListener;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IResourceFuture;
@@ -37,8 +38,9 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private Logger logger;
 
 
-    public interface RenderTaskListener{
+    public interface RenderTaskListener {
         void onRenderSuccess();
+
         void onRenderFailed(Exception e);
     }
 
@@ -69,7 +71,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                 result = GeneralUtils.parseJsonToObject(script);
 
                 //Build RenderRequests
-                requests = prepareDataForRG(result, renderingConfiguration);
+                requests = prepareDataForRG(result);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -241,12 +243,12 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         }
     }
 
-    private RenderRequest[] prepareDataForRG(HashMap<String, Object> result, CheckRGSettings settings) {
+    private RenderRequest[] prepareDataForRG(HashMap<String, Object> result) {
 
         final List<RGridResource> allBlobs = Collections.synchronizedList(new ArrayList<RGridResource>());
-        List<String> resourceUrls = null;
+        List<String> resourceUrls = new ArrayList<>();
 
-        resourceUrls = parseScriptResult(result, allBlobs, resourceUrls);
+        parseScriptResult(result, allBlobs, resourceUrls);
 
 
         //Fetch all resources
@@ -270,7 +272,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         return asArray;
     }
 
-    private List<String> parseScriptResult(HashMap<String, Object> result, List<RGridResource> allBlobs, List<String> resourceUrls) {
+    private void parseScriptResult(Map<String, Object> result, List<RGridResource> allBlobs, List<String> resourceUrls) {
         org.apache.commons.codec.binary.Base64 codec = new Base64();
         URL baseUrl = null;
         for (String key : result.keySet()) {
@@ -278,7 +280,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             switch (key) {
                 case "url":
                     try {
-                        baseUrl = new URL((String)value);
+                        baseUrl = new URL((String) value);
                     } catch (MalformedURLException e) {
                         GeneralUtils.logExceptionStackTrace(logger, e);
                     }
@@ -293,28 +295,27 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                         allBlobs.add(resource);
                     }
                     break;
+
                 case "resourceUrls":
                     List<String> list = (List<String>) value;
-//                    list.add("https://nikita-andreev.github.io/applitools/style0.css");
                     resourceUrls.addAll(Collections.synchronizedList(list));
                     break;
-                case "frames":
-                    List framesMap = (List) value;
 
-                    System.out.println(framesMap);
+                case "frames":
+                    List<Map<String,Object>> allObjects = (List) value;
+                    for (Map<String, Object> frameObj : allObjects) {
+                        parseScriptResult(frameObj, allBlobs, resourceUrls);
+                    }
+
+                    System.out.println(allObjects);
                     break;
             }
+        }
         addBlobsToCache(allBlobs);
 
         parseAndFetchCSSResources(allBlobs, baseUrl);
 
-        //Create RenderingRequest
-        List<RenderRequest> allRequestsForRG = buildRenderRequests(result, allBlobs);
 
-        RenderRequest[] asArray = allRequestsForRG.toArray(new RenderRequest[allRequestsForRG.size()]);
-
-        }
-        return resourceUrls;
     }
 
     private void parseAndFetchCSSResources(List<RGridResource> allBlobs, URL baseUrl) {
@@ -362,15 +363,15 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private void collectAllFontFaceUris(CascadingStyleSheet cascadingStyleSheet, List<URL> allResourceUris, URL baseUrl) {
         ICommonsList<CSSFontFaceRule> allFontFaceRules = cascadingStyleSheet.getAllFontFaceRules();
         for (CSSFontFaceRule fontFaceRule : allFontFaceRules) {
-            getAllResourcesUrisFromDeclarations(allResourceUris, fontFaceRule,"src", baseUrl);
+            getAllResourcesUrisFromDeclarations(allResourceUris, fontFaceRule, "src", baseUrl);
         }
     }
 
     private void collectAllBackgroundImageUris(CascadingStyleSheet cascadingStyleSheet, List<URL> allResourceUris, URL baseUrl) {
         ICommonsList<CSSStyleRule> allStyleRules = cascadingStyleSheet.getAllStyleRules();
         for (CSSStyleRule styleRule : allStyleRules) {
-            getAllResourcesUrisFromDeclarations(allResourceUris, styleRule,"background", baseUrl);
-            getAllResourcesUrisFromDeclarations(allResourceUris, styleRule,"background-image", baseUrl);
+            getAllResourcesUrisFromDeclarations(allResourceUris, styleRule, "background", baseUrl);
+            getAllResourcesUrisFromDeclarations(allResourceUris, styleRule, "background-image", baseUrl);
         }
     }
 
@@ -385,7 +386,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                     URL url = new URL(baseUrl, uriExpression.getURIString());
                     allResourceUris.add(url);
                 } catch (MalformedURLException e) {
-                    GeneralUtils.logExceptionStackTrace(logger,e);
+                    GeneralUtils.logExceptionStackTrace(logger, e);
                 }
             }
         }
@@ -447,7 +448,17 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             IEyesConnector eyesConnector = this.taskList.get(0).getEyesConnector();
             try {
                 final URL url = new URL(link);
-                IResourceFuture future = eyesConnector.getResource(url, null);
+                IResourceFuture future = eyesConnector.getResource(url, new IDownloadListener<Byte[]>() {
+                    @Override
+                    public void onDownloadComplete(Byte[] downloadedString, String contentType) {
+
+                    }
+
+                    @Override
+                    public void onDownloadFailed() {
+
+                    }
+                });
                 allFetches.add(future);
                 this.fetchedCacheMap.put(url.toString(), future);
 
