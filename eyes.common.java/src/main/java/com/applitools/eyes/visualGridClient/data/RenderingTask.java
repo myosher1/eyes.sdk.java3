@@ -346,21 +346,33 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         }
         List<String> allResourceUris = new ArrayList<>();
         collectAllFontFaceUris(cascadingStyleSheet, allResourceUris);
-        int x = allResourceUris.size();
+        collectAllBackgroundImageUris(cascadingStyleSheet, allResourceUris);
+        int x = allResourceUris.size(); // TODO - for debugging
     }
 
     private void collectAllFontFaceUris(CascadingStyleSheet cascadingStyleSheet, List<String> allResourceUris) {
         ICommonsList<CSSFontFaceRule> allFontFaceRules = cascadingStyleSheet.getAllFontFaceRules();
         for (CSSFontFaceRule fontFaceRule : allFontFaceRules) {
-            ICommonsList<CSSDeclaration> sourcesList = fontFaceRule.getAllDeclarationsOfPropertyName("src");
-            for (CSSDeclaration cssDeclaration : sourcesList) {
-                CSSExpression cssDeclarationExpression = cssDeclaration.getExpression();
-                ICommonsList<ICSSExpressionMember> allExpressionMembers = cssDeclarationExpression.getAllMembers();
-                ICommonsList<CSSExpressionMemberTermURI> allUriExpressions = allExpressionMembers.getAllInstanceOf(CSSExpressionMemberTermURI.class);
-                for (CSSExpressionMemberTermURI uriExpression : allUriExpressions) {
-                    CSSURI uri = uriExpression.getURI();
-                    allResourceUris.add(uri.getURI());
-                }
+            getAllResourcesUrisFromDeclarations(allResourceUris, fontFaceRule,"src");
+        }
+    }
+
+    private void collectAllBackgroundImageUris(CascadingStyleSheet cascadingStyleSheet, List<String> allResourceUris) {
+        ICommonsList<CSSStyleRule> allStyleRules = cascadingStyleSheet.getAllStyleRules();
+        for (CSSStyleRule styleRule : allStyleRules) {
+            getAllResourcesUrisFromDeclarations(allResourceUris, styleRule,"background");
+            getAllResourcesUrisFromDeclarations(allResourceUris, styleRule,"background-image");
+        }
+    }
+
+    private <T extends IHasCSSDeclarations<T>> void getAllResourcesUrisFromDeclarations(List<String> allResourceUris, IHasCSSDeclarations<T> rule, String propertyName) {
+        ICommonsList<CSSDeclaration> sourcesList = rule.getAllDeclarationsOfPropertyName(propertyName);
+        for (CSSDeclaration cssDeclaration : sourcesList) {
+            CSSExpression cssDeclarationExpression = cssDeclaration.getExpression();
+            ICommonsList<ICSSExpressionMember> allExpressionMembers = cssDeclarationExpression.getAllMembers();
+            ICommonsList<CSSExpressionMemberTermURI> allUriExpressions = allExpressionMembers.getAllInstanceOf(CSSExpressionMemberTermURI.class);
+            for (CSSExpressionMemberTermURI uriExpression : allUriExpressions) {
+                allResourceUris.add(uriExpression.getURIString());
             }
         }
     }
