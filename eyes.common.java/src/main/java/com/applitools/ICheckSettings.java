@@ -1,4 +1,4 @@
-package com.applitools.eyes.fluent;
+package com.applitools;
 
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;

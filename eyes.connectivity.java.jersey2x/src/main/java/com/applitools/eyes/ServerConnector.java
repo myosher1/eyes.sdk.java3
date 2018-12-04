@@ -412,14 +412,10 @@ public class ServerConnector extends RestClient
                     GeneralUtils.logExceptionStackTrace(logger, e);
                 }
                 logger.verbose(uri + " - completed");
-                MultivaluedMap<String, Object> headers = response.getHeaders();
-                List<Object> contentTypes = headers.get("Content-Type");
-                String contentType = null;
-                for (Object type : contentTypes) {
-                    contentType = (String) type;
-                    break;
+                String contentType = Utils.getResponseContentType(response);
+                if (null != listener) {
+                    listener.onDownloadComplete(ArrayUtils.toObject(bytes), contentType);
                 }
-                listener.onDownloadComplete(ArrayUtils.toObject(bytes), contentType);
             }
 
             @Override
@@ -429,7 +425,9 @@ public class ServerConnector extends RestClient
                     logger.verbose("Entering retry");
                     downloadResource(uri, true, listener);
                 } else {
-                    listener.onDownloadFailed();
+                    if (null != listener) {
+                        listener.onDownloadFailed();
+                    }
                 }
             }
         });

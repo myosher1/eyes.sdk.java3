@@ -3,6 +3,7 @@ package com.applitools.eyes.visualGridClient.data;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
+import com.applitools.eyes.visualGridClient.services.EyesBaseService;
 import com.applitools.utils.GeneralUtils;
 
 import java.util.concurrent.Callable;
@@ -64,14 +65,14 @@ public class Task implements Callable<TestResults> {
                     eyesConnector.open(configuration.getAppName(), configuration.getTestName());
                     break;
                 case CHECK:
-                    System.out.println("Task.call CHECK");
+
 
                     break;
                 case CLOSE:
-                    testResults = eyesConnector.close(configuration.isThrowExceptionOn());
+                    testResults = this.eyesConnector.close(configuration.isThrowExceptionOn());
                     break;
                 case ABORT:
-                    eyesConnector.abortIfNotClosed();
+                    this.eyesConnector.abortIfNotClosed();
             }
             //call the callback
             this.runningTestListener.onTaskComplete(this);

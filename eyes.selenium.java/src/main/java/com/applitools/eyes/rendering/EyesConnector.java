@@ -1,5 +1,6 @@
 package com.applitools.eyes.rendering;
 
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IResourceFuture;
@@ -10,6 +11,10 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 class EyesConnector extends EyesBase implements IEyesConnector {
+
+    public EyesConnector() {
+        this.matchWindowTask = new MatchRGWindowTask(this.logger, this.serverConnector, this);
+    }
 
     /**
      * ﻿Starts a new test without setting the viewport size of the AUT.
@@ -51,6 +56,16 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     @Override
     public IResourceFuture createResourceFuture(RGridResource rg) {
         return this.serverConnector.createResourceFuture(rg);
+    }
+
+    @Override
+    public MatchResult matchWindow(String url, String tag, ICheckSettings checkSettings) {
+        return super.matchWindow(null, tag, false, checkSettings);
+    }
+
+    @Override
+    protected void ensureRunningSession() {
+
     }
 
     /**
@@ -110,4 +125,10 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     protected String getAUTSessionId() {
         return null;
     }
+
+    public void setRenderInfo(RenderingInfo renderInfo) {
+        this.renderInfo = renderInfo;
+    }
+
+
 }

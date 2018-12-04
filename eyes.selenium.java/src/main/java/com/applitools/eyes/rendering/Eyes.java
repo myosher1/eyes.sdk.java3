@@ -89,19 +89,15 @@ public class Eyes implements IRenderingEyes {
         logger.verbose("enter");
         initDriver(webDriver);
 
-        createEyesConnector();
 
-        logger.verbose("initializing rendering info...");
-        if (this.renderingInfo == null) {
-            this.renderingInfo = eyesConnector.getRenderingInfo();
-        }
+
 
         logger.verbose("getting all browsers info...");
         List<RenderingConfiguration.RenderBrowserInfo> browserInfos = renderingConfiguration.getBrowsersInfo();
         logger.verbose("creating test descriptors for each browser info...");
         for (RenderingConfiguration.RenderBrowserInfo browserInfo : browserInfos) {
             logger.verbose("creating test descriptor");
-            RunningTest test = new RunningTest(this.proxy, eyesConnector, renderingConfiguration, browserInfo, logger, testListener);
+            RunningTest test = new RunningTest(this.proxy, createEyesConnector(), renderingConfiguration, browserInfo, logger, testListener);
             this.testList.add(test);
         }
 
@@ -114,12 +110,18 @@ public class Eyes implements IRenderingEyes {
         logger.verbose("done");
     }
 
-    private void createEyesConnector() {
+    private IEyesConnector createEyesConnector() {
         logger.verbose("creating eyes server connector");
-        if (this.eyesConnector != null) {
-            return;
-        }
         IEyesConnector eyesConnector = new EyesConnector();
+
+        logger.verbose("initializing rendering info...");
+        if (this.renderingInfo == null) {
+            this.renderingInfo = eyesConnector.getRenderingInfo();
+        }
+        else{
+             eyesConnector.setRenderInfo(this.renderingInfo);
+        }
+
         eyesConnector.setProxy(this.proxy);
         if (logHandler != null) {
             eyesConnector.setLogHandler(this.logHandler);
@@ -132,6 +134,7 @@ public class Eyes implements IRenderingEyes {
             }
         }
         this.eyesConnector = eyesConnector;
+        return eyesConnector;
     }
 
     private void initDriver(WebDriver webDriver) {
