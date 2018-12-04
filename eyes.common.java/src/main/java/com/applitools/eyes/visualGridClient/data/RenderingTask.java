@@ -7,6 +7,10 @@ import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.helger.commons.collection.impl.ICommonsList;
+import com.helger.css.ECSSVersion;
+import com.helger.css.decl.*;
+import com.helger.css.reader.CSSReader;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -155,8 +159,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                     } catch (InterruptedException e) {
                         GeneralUtils.logExceptionStackTrace(logger, e);
                     }
-                }
-                else {
+                } else {
                     logger.verbose("render status result received ");
                 }
 
@@ -201,7 +204,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
     private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, boolean isNeedMoreDom) {
         for (RunningRender runningRender : runningRenders) {
-            if(isNeedMoreDom) {
+            if (isNeedMoreDom) {
                 Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
                 putResourceCache.put("dom", future);
             }
@@ -268,7 +271,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         org.apache.commons.codec.binary.Base64 codec = new Base64();
 
-         for (String key : result.keySet()) {
+        for (String key : result.keySet()) {
             Object value = result.get(key);
             switch (key) {
                 case "blobs":
@@ -307,12 +310,57 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
     private void parseAndFetchCSSResources(List<RGridResource> allBlobs) {
         for (RGridResource blob : allBlobs) {
-            if (!blob.getContentType().equalsIgnoreCase("text/css")) continue;
+            String contentTypeStr = blob.getContentType();
+            String[] parts = contentTypeStr.split(";");
+            boolean cont = true;
+            String charset = "UTF-8";
+            for (String part : parts) {
+                part = part.trim();
+                if (part.equalsIgnoreCase("text/css")) {
+                    cont = false;
+                } else {
+                    String[] keyVal = part.split("=");
+                    if (keyVal.length == 2) {
+                        String key = keyVal[0].trim();
+                        String val = keyVal[1].trim();
+                        if (key.equalsIgnoreCase("charset")) {
+                            charset = val.toUpperCase();
+                        }
+                    }
+                }
+            }
+            if (cont) continue;
             try {
-                String css = new String(ArrayUtils.toPrimitive(blob.getContent()), "UTF-8");
-                // TODO - parse the css
+                String css = new String(ArrayUtils.toPrimitive(blob.getContent()), charset);
+                parseCSS(css);
             } catch (UnsupportedEncodingException e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
+            }
+        }
+    }
+
+    private void parseCSS(String css) {
+        final CascadingStyleSheet cascadingStyleSheet = CSSReader.readFromString(css, ECSSVersion.CSS30);
+        if (cascadingStyleSheet == null) {
+            return;
+        }
+        List<String> allResourceUris = new ArrayList<>();
+        collectAllFontFaceUris(cascadingStyleSheet, allResourceUris);
+        int x = allResourceUris.size();
+    }
+
+    private void collectAllFontFaceUris(CascadingStyleSheet cascadingStyleSheet, List<String> allResourceUris) {
+        ICommonsList<CSSFontFaceRule> allFontFaceRules = cascadingStyleSheet.getAllFontFaceRules();
+        for (CSSFontFaceRule fontFaceRule : allFontFaceRules) {
+            ICommonsList<CSSDeclaration> sourcesList = fontFaceRule.getAllDeclarationsOfPropertyName("src");
+            for (CSSDeclaration cssDeclaration : sourcesList) {
+                CSSExpression cssDeclarationExpression = cssDeclaration.getExpression();
+                ICommonsList<ICSSExpressionMember> allExpressionMembers = cssDeclarationExpression.getAllMembers();
+                ICommonsList<CSSExpressionMemberTermURI> allUriExpressions = allExpressionMembers.getAllInstanceOf(CSSExpressionMemberTermURI.class);
+                for (CSSExpressionMemberTermURI uriExpression : allUriExpressions) {
+                    CSSURI uri = uriExpression.getURI();
+                    allResourceUris.add(uri.getURI());
+                }
             }
         }
     }
