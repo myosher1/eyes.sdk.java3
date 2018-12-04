@@ -23,7 +23,6 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RenderingTask implements Callable<RenderStatusResults> {
 
@@ -33,7 +32,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private CheckRGSettings renderingConfiguration;
     private List<Task> taskList;
     private RenderingInfo renderingInfo;
-    private Map<String, IResourceFuture> fetchedCacheMap;
+    private Map<URL, IResourceFuture> fetchedCacheMap;
     private Map<String, Future<Boolean>> putResourceCache;
     private Logger logger;
 
@@ -45,7 +44,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     }
 
 
-    public RenderingTask(IEyesConnector eyesConnector, String script, CheckRGSettings renderingConfiguration, List<Task> taskList, RenderingInfo renderingInfo, Map<String, IResourceFuture> fetchedCacheMap, Map<String, Future<Boolean>> putResourceCache, Logger logger, RenderTaskListener listener) {
+    public RenderingTask(IEyesConnector eyesConnector, String script, CheckRGSettings renderingConfiguration, List<Task> taskList, RenderingInfo renderingInfo, Map<URL, IResourceFuture> fetchedCacheMap, Map<String, Future<Boolean>> putResourceCache, Logger logger, RenderTaskListener listener) {
         this.eyesConnector = eyesConnector;
         this.script = script;
         this.renderingConfiguration = renderingConfiguration;
@@ -246,20 +245,19 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private RenderRequest[] prepareDataForRG(HashMap<String, Object> result) {
 
         final List<RGridResource> allBlobs = Collections.synchronizedList(new ArrayList<RGridResource>());
-        List<String> resourceUrls = new ArrayList<>();
-
-        parseScriptResult(result, allBlobs, resourceUrls);
-
+        List<URL> resourceUrls = new ArrayList<>();
 
         //Fetch all resources
-        fetchAllResources(allBlobs, resourceUrls);
+        while (!resourceUrls.isEmpty()) {
+            fetchAllResources(allBlobs, resourceUrls);
+        }
 
         addBlobsToCache(allBlobs);
 
         String urlAsString = (String) result.get("url");
 
         try {
-            parseAndFetchCSSResources(allBlobs, new URL(urlAsString));
+            parseAndCollectCSSResources(allBlobs, new URL(urlAsString), resourceUrls);
         } catch (MalformedURLException e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
@@ -272,19 +270,17 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         return asArray;
     }
 
-    private void parseScriptResult(Map<String, Object> result, List<RGridResource> allBlobs, List<String> resourceUrls) {
+    private void parseScriptResult(Map<String, Object> result, List<RGridResource> allBlobs, List<URL> resourceUrls) {
         org.apache.commons.codec.binary.Base64 codec = new Base64();
         URL baseUrl = null;
+        try {
+            baseUrl = new URL((String) result.get("url"));
+        } catch (MalformedURLException e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
         for (String key : result.keySet()) {
             Object value = result.get(key);
             switch (key) {
-                case "url":
-                    try {
-                        baseUrl = new URL((String) value);
-                    } catch (MalformedURLException e) {
-                        GeneralUtils.logExceptionStackTrace(logger, e);
-                    }
-                    break;
                 case "blobs":
                     List listOfBlobs = (List) value;
                     for (Object blob : listOfBlobs) {
@@ -298,11 +294,17 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
                 case "resourceUrls":
                     List<String> list = (List<String>) value;
-                    resourceUrls.addAll(Collections.synchronizedList(list));
+                    for (String url : list) {
+                        try {
+                            resourceUrls.add(new URL(baseUrl, url));
+                        } catch (MalformedURLException e) {
+                            GeneralUtils.logExceptionStackTrace(logger, e);
+                        }
+                    }
                     break;
 
                 case "frames":
-                    List<Map<String,Object>> allObjects = (List) value;
+                    List<Map<String, Object>> allObjects = (List) value;
                     for (Map<String, Object> frameObj : allObjects) {
                         parseScriptResult(frameObj, allBlobs, resourceUrls);
                     }
@@ -313,51 +315,57 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         }
         addBlobsToCache(allBlobs);
 
-        parseAndFetchCSSResources(allBlobs, baseUrl);
-
-
+        parseAndCollectCSSResources(allBlobs, baseUrl, resourceUrls);
     }
 
-    private void parseAndFetchCSSResources(List<RGridResource> allBlobs, URL baseUrl) {
+    private void parseAndCollectCSSResources(List<RGridResource> allBlobs, URL baseUrl, List<URL> resourceUrls) {
         for (RGridResource blob : allBlobs) {
             String contentTypeStr = blob.getContentType();
-            String[] parts = contentTypeStr.split(";");
-            boolean cont = true;
-            String charset = "UTF-8";
-            for (String part : parts) {
-                part = part.trim();
-                if (part.equalsIgnoreCase("text/css")) {
-                    cont = false;
-                } else {
-                    String[] keyVal = part.split("=");
-                    if (keyVal.length == 2) {
-                        String key = keyVal[0].trim();
-                        String val = keyVal[1].trim();
-                        if (key.equalsIgnoreCase("charset")) {
-                            charset = val.toUpperCase();
-                        }
+            String css = getCss(blob.getContent(), contentTypeStr);
+            if (css == null) continue;
+            parseCSS(css, baseUrl, resourceUrls);
+        }
+    }
+
+    private String getCss(Byte[] contentBytes, String contentTypeStr) {
+        String[] parts = contentTypeStr.split(";");
+        String charset = "UTF-8";
+        for (String part : parts) {
+            part = part.trim();
+            if (part.equalsIgnoreCase("text/css")) {
+                charset = null;
+            } else {
+                String[] keyVal = part.split("=");
+                if (keyVal.length == 2) {
+                    String key = keyVal[0].trim();
+                    String val = keyVal[1].trim();
+                    if (key.equalsIgnoreCase("charset")) {
+                        charset = val.toUpperCase();
                     }
                 }
             }
-            if (cont) continue;
+        }
+
+        String css = null;
+        if (charset != null) {
             try {
-                String css = new String(ArrayUtils.toPrimitive(blob.getContent()), charset);
-                parseCSS(css, baseUrl);
+                css = new String(ArrayUtils.toPrimitive(contentBytes), charset);
             } catch (UnsupportedEncodingException e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
+        return css;
     }
 
-    private void parseCSS(String css, URL baseUrl) {
+    private void parseCSS(String css, URL baseUrl, List<URL> resourceUrls) {
         final CascadingStyleSheet cascadingStyleSheet = CSSReader.readFromString(css, ECSSVersion.CSS30);
         if (cascadingStyleSheet == null) {
             return;
         }
-        List<URL> allResourceUris = new ArrayList<>();
-        collectAllFontFaceUris(cascadingStyleSheet, allResourceUris, baseUrl);
-        collectAllBackgroundImageUris(cascadingStyleSheet, allResourceUris, baseUrl);
-        int x = allResourceUris.size(); // TODO - for debugging
+        collectAllImportUris(cascadingStyleSheet, resourceUrls, baseUrl);
+        collectAllFontFaceUris(cascadingStyleSheet, resourceUrls, baseUrl);
+        collectAllBackgroundImageUris(cascadingStyleSheet, resourceUrls, baseUrl);
+        int x = resourceUrls.size(); // TODO - for debugging
     }
 
     private void collectAllFontFaceUris(CascadingStyleSheet cascadingStyleSheet, List<URL> allResourceUris, URL baseUrl) {
@@ -372,6 +380,19 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         for (CSSStyleRule styleRule : allStyleRules) {
             getAllResourcesUrisFromDeclarations(allResourceUris, styleRule, "background", baseUrl);
             getAllResourcesUrisFromDeclarations(allResourceUris, styleRule, "background-image", baseUrl);
+        }
+    }
+
+    private void collectAllImportUris(CascadingStyleSheet cascadingStyleSheet, List<URL> allResourceUris, URL baseUrl) {
+        ICommonsList<CSSImportRule> allImportRules = cascadingStyleSheet.getAllImportRules();
+        for (CSSImportRule importRule : allImportRules) {
+            String uri = importRule.getLocation().getURI();
+            try {
+                URL url = new URL(baseUrl, uri);
+                allResourceUris.add(url);
+            } catch (MalformedURLException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
         }
     }
 
@@ -394,7 +415,12 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
     private void addBlobsToCache(List<RGridResource> allBlobs) {
         for (RGridResource blob : allBlobs) {
-            String url = blob.getUrl();
+            URL url = null;
+            try {
+                url = new URL(blob.getUrl());
+            } catch (MalformedURLException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
             if (!this.fetchedCacheMap.containsKey(url)) {
                 this.fetchedCacheMap.put(url, this.eyesConnector.createResourceFuture(blob));
             }
@@ -438,33 +464,30 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         return allRequestsForRG;
     }
 
-    private void fetchAllResources(final List<RGridResource> allBlobs, List<String> resourceUrls) {
+    private void fetchAllResources(final List<RGridResource> allBlobs, List<URL> resourceUrls) {
 
         List<IResourceFuture> allFetches = new ArrayList<>();
-        for (String link : resourceUrls) {
 
+        final Iterator<URL> iterator = resourceUrls.iterator();
+        while (iterator.hasNext()) {
+            URL link = iterator.next();
             if (fetchedCacheMap.containsKey(link)) continue;
 
             IEyesConnector eyesConnector = this.taskList.get(0).getEyesConnector();
-            try {
-                final URL url = new URL(link);
-                IResourceFuture future = eyesConnector.getResource(url, new IDownloadListener<Byte[]>() {
-                    @Override
-                    public void onDownloadComplete(Byte[] downloadedString, String contentType) {
+            IResourceFuture future = eyesConnector.getResource(link, new IDownloadListener<Byte[]>() {
+                @Override
+                public void onDownloadComplete(Byte[] downloadedString, String contentType) {
+                    iterator.remove();
+                }
 
-                    }
+                @Override
+                public void onDownloadFailed() {
+                    iterator.remove();
+                }
+            });
+            allFetches.add(future);
+            this.fetchedCacheMap.put(link, future);
 
-                    @Override
-                    public void onDownloadFailed() {
-
-                    }
-                });
-                allFetches.add(future);
-                this.fetchedCacheMap.put(url.toString(), future);
-
-            } catch (MalformedURLException e) {
-                GeneralUtils.logExceptionStackTrace(logger, e);
-            }
         }
 
         for (IResourceFuture future : allFetches) {
@@ -472,6 +495,9 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             try {
 
                 RGridResource resource = future.get();
+                String css = getCss(resource.getContent(), resource.getContentType());
+                if (css == null) continue;
+                parseCSS(css, null, resourceUrls);
                 allBlobs.add(resource);
 
             } catch (InterruptedException | ExecutionException e) {
