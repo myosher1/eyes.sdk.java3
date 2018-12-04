@@ -36,7 +36,7 @@ public final class TestRenderingGridService {
             renderingConfiguration.setTestName("Open Concurrency");
             renderingConfiguration.setAppName("RenderingGridIntegration");
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
-            renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.FIREFOX);
+//            renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.FIREFOX);
             renderingManager = new RenderingGridManager(3, logger);
             Eyes eyes = new Eyes(renderingManager, renderingConfiguration, logger);
             eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));

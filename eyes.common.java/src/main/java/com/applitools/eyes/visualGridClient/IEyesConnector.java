@@ -39,4 +39,6 @@ public interface IEyesConnector {
     List<RenderStatusResults> renderStatusById(String... renderIds);
 
     IResourceFuture createResourceFuture(RGridResource rg);
+
+
 }

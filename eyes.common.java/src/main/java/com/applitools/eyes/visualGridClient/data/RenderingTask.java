@@ -26,10 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RenderingTask implements Callable<RenderStatusResults> {
 
-
-    private static AtomicBoolean isThrown = new AtomicBoolean(false);
-
-    private final Map<String, String> hashToUrl;
+    private final RenderTaskListener listener;
     private IEyesConnector eyesConnector;
     private String script;
     private CheckRGSettings renderingConfiguration;
@@ -40,8 +37,13 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private Logger logger;
 
 
-    public RenderingTask(Map<String, String> hashToUrl, IEyesConnector eyesConnector, String script, CheckRGSettings renderingConfiguration, List<Task> taskList, RenderingInfo renderingInfo, Map<String, IResourceFuture> fetchedCacheMap, Map<String, Future<Boolean>> putResourceCache, Logger logger) {
-        this.hashToUrl = hashToUrl;
+    public interface RenderTaskListener{
+        void onRenderSuccess();
+        void onRenderFailed(Exception e);
+    }
+
+
+    public RenderingTask(IEyesConnector eyesConnector, String script, CheckRGSettings renderingConfiguration, List<Task> taskList, RenderingInfo renderingInfo, Map<String, IResourceFuture> fetchedCacheMap, Map<String, Future<Boolean>> putResourceCache, Logger logger, RenderTaskListener listener) {
         this.eyesConnector = eyesConnector;
         this.script = script;
         this.renderingConfiguration = renderingConfiguration;
@@ -50,15 +52,17 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         this.fetchedCacheMap = fetchedCacheMap;
         this.putResourceCache = putResourceCache;
         this.logger = logger;
+        this.listener = listener;
     }
 
     @Override
     public RenderStatusResults call() {
 
         try {
+
             HashMap<String, Object> result;
             RenderRequest[] requests = null;
-            Map<Task, RenderRequest> testToRenderRequestMapping = new HashMap<>();
+
             try {
 
                 //Parse to JSON
@@ -70,8 +74,6 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            matchRequestsToTests(requests, testToRenderRequestMapping);
-
 
             boolean stillRunning = true;
 
@@ -113,6 +115,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
+            listener.onRenderFailed(e);
         }
         return null;
     }
@@ -189,6 +192,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
 
             } while (ids.size() > 0);
+            listener.onRenderSuccess();
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
@@ -230,38 +234,11 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         for (Future<Boolean> future : putResourceCache.values()) {
             try {
-                Boolean aBoolean = future.get();
+                future.get();
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void matchRequestsToTests(RenderRequest[] requests, Map<Task, RenderRequest> testToRenderRequestMapping) {
-        for (Task task : taskList) {
-            RenderingConfiguration.RenderBrowserInfo browserInfo = task.getBrowserInfo();
-            for (RenderRequest request : requests) {
-
-                RenderInfo renderInfo = request.getRenderInfo();
-
-                boolean isSameBrowser = request.getBrowserName().equalsIgnoreCase(browserInfo.getBrowserType());
-                boolean isSameViewport = renderInfo.getHeight() == browserInfo.getHeight() && renderInfo.getWidth() == browserInfo.getWidth();
-
-                if (isSameBrowser && isSameViewport) {
-                    testToRenderRequestMapping.put(task, request);
-                }
-            }
-
-        }
-    }
-
-    private void sendResourcesToRG() {
-
-
-    }
-
-    private static boolean isThrown() {
-        return RenderingTask.isThrown.get();
     }
 
     private RenderRequest[] prepareDataForRG(HashMap<String, Object> result, CheckRGSettings settings) {
@@ -269,29 +246,8 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         final List<RGridResource> allBlobs = Collections.synchronizedList(new ArrayList<RGridResource>());
         List<String> resourceUrls = null;
 
-        org.apache.commons.codec.binary.Base64 codec = new Base64();
+        resourceUrls = parseScriptResult(result, allBlobs, resourceUrls);
 
-        for (String key : result.keySet()) {
-            Object value = result.get(key);
-            switch (key) {
-                case "blobs":
-                    List listOfBlobs = (List) value;
-                    for (Object blob : listOfBlobs) {
-                        Map blobAsMap = (Map) blob;
-                        String contentAsString = (String) blobAsMap.get("value");
-                        Byte[] content = ArrayUtils.toObject(codec.decode(contentAsString));
-                        RGridResource resource = new RGridResource((String) blobAsMap.get("url"), (String) blobAsMap.get("type"), content);
-                        allBlobs.add(resource);
-                    }
-                    break;
-                case "resourceUrls":
-
-                    List<String> list = (List<String>) value;
-//                    list.add("https://nikita-andreev.github.io/applitools/style0.css");
-                    resourceUrls = Collections.synchronizedList(list);
-                    break;
-            }
-        }
 
         //Fetch all resources
         fetchAllResources(allBlobs, resourceUrls);
@@ -306,6 +262,37 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         RenderRequest[] asArray = allRequestsForRG.toArray(new RenderRequest[allRequestsForRG.size()]);
 
         return asArray;
+    }
+
+    private List<String> parseScriptResult(HashMap<String, Object> result, List<RGridResource> allBlobs, List<String> resourceUrls) {
+        org.apache.commons.codec.binary.Base64 codec = new Base64();
+        for (String key : result.keySet()) {
+            Object value = result.get(key);
+            switch (key) {
+                case "blobs":
+                    List listOfBlobs = (List) value;
+                    for (Object blob : listOfBlobs) {
+                        Map blobAsMap = (Map) blob;
+                        String contentAsString = (String) blobAsMap.get("value");
+                        Byte[] content = ArrayUtils.toObject(codec.decode(contentAsString));
+                        RGridResource resource = new RGridResource((String) blobAsMap.get("url"), (String) blobAsMap.get("type"), content);
+                        allBlobs.add(resource);
+                    }
+                    break;
+                case "resourceUrls":
+                    List<String> list = (List<String>) value;
+//                    list.add("https://nikita-andreev.github.io/applitools/style0.css");
+                    resourceUrls.addAll(Collections.synchronizedList(list));
+                    break;
+                case "frames":
+                    List framesMap = (List) value;
+
+                    System.out.println(framesMap);
+                    break;
+            }
+
+        }
+        return resourceUrls;
     }
 
     private void parseAndFetchCSSResources(List<RGridResource> allBlobs) {
@@ -404,8 +391,6 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         //Create RG requests
         List<RenderRequest> allRequestsForRG = new ArrayList<>();
 
-        double randomRequestId = Math.random();
-
         for (Task task : this.taskList) {
 
             RenderingConfiguration.RenderBrowserInfo browserInfo = task.getBrowserInfo();
@@ -450,7 +435,6 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
                 RGridResource resource = future.get();
                 allBlobs.add(resource);
-                this.hashToUrl.put(resource.getSha256(), resource.getUrl());
 
             } catch (InterruptedException | ExecutionException e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);

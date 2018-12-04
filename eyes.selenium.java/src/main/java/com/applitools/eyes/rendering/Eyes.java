@@ -33,7 +33,7 @@ public class Eyes implements IRenderingEyes {
 
     private String PROCESS_RESOURCES;
     private JavascriptExecutor jsExecutor;
-    private RenderingInfo rendringInfo;
+    private RenderingInfo renderingInfo;
     private IEyesConnector eyesConnector;
 
     {
@@ -92,8 +92,8 @@ public class Eyes implements IRenderingEyes {
         createEyesConnector();
 
         logger.verbose("initializing rendering info...");
-        if (this.rendringInfo == null) {
-            this.rendringInfo = eyesConnector.getRenderingInfo();
+        if (this.renderingInfo == null) {
+            this.renderingInfo = eyesConnector.getRenderingInfo();
         }
 
         logger.verbose("getting all browsers info...");
@@ -101,7 +101,7 @@ public class Eyes implements IRenderingEyes {
         logger.verbose("creating test descriptors for each browser info...");
         for (RenderingConfiguration.RenderBrowserInfo browserInfo : browserInfos) {
             logger.verbose("creating test descriptor");
-            RunningTest test = new RunningTest(this.proxy, eyesConnector, renderingConfiguration, browserInfo, testListener);
+            RunningTest test = new RunningTest(this.proxy, eyesConnector, renderingConfiguration, browserInfo, logger, testListener);
             this.testList.add(test);
         }
 
@@ -110,7 +110,7 @@ public class Eyes implements IRenderingEyes {
             runningTest.open();
         }
         logger.verbose("calling renderingGridManager.open");
-        this.renderingGridManager.open(this, rendringInfo);
+        this.renderingGridManager.open(this, renderingInfo);
         logger.verbose("done");
     }
 
@@ -246,17 +246,23 @@ public class Eyes implements IRenderingEyes {
         this.proxy = abstractProxySettings;
     }
 
-    public int getRunningTestCount() {
-        return this.testList.size();
-    }
-
     public void check(CheckRGSettings settings) {
         List<Task> taskList = new ArrayList<>();
         String script = (String) this.jsExecutor.executeAsyncScript("var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})");
-        for (RunningTest test : testList) {
+        for (final RunningTest test : testList) {
             taskList.add(test.check());
+            this.renderingGridManager.check(settings, script, this.eyesConnector, taskList, new RenderingGridManager.RenderListener() {
+                @Override
+                public void onRenderSuccess() {
+
+                }
+
+                @Override
+                public void onRenderFailed(Exception e) {
+                    test.setTestInExceptionMode(e);
+                }
+            });
         }
-        this.renderingGridManager.check(settings, script, this.eyesConnector, taskList);
     }
 
 

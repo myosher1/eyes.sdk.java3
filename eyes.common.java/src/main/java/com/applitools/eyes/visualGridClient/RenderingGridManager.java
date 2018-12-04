@@ -33,6 +33,11 @@ public class RenderingGridManager {
     private int totalEyesCount = 0;
     private int eyesClosedCount = 0;
 
+    public interface RenderListener{
+        void onRenderSuccess();
+        void onRenderFailed(Exception e);
+    }
+
     private IRenderingEyes.EyesListener eyesListener = new IRenderingEyes.EyesListener() {
         @Override
         public void onTaskComplete(Task task, IRenderingEyes eyes) {
@@ -221,10 +226,21 @@ public class RenderingGridManager {
         }
     }
 
-    public void check(CheckRGSettings settings, String script, IEyesConnector connector, List<Task> taskList) {
+    public void check(CheckRGSettings settings, String script, IEyesConnector connector, List<Task> taskList, final RenderListener listener) {
         if(!this.eyesCheckerService.isAlive()){
             startServices();
         }
-        this.renderingTaskList.add(new RenderingTask(hashToUrl, connector, script, settings, taskList, this.renderingInfo, this.cachedResources, this.putResourceCache, logger));
+        RenderingTask renderingTask = new RenderingTask(connector, script, settings, taskList, this.renderingInfo, this.cachedResources, this.putResourceCache, logger, new RenderingTask.RenderTaskListener() {
+            @Override
+            public void onRenderSuccess() {
+                listener.onRenderSuccess();
+            }
+
+            @Override
+            public void onRenderFailed(Exception e) {
+                listener.onRenderFailed(e);
+            }
+        });
+        this.renderingTaskList.add(renderingTask);
     }
 }

@@ -2,6 +2,7 @@ package com.applitools.eyes.visualGridClient.data;
 
 
 import com.applitools.eyes.AbstractProxySettings;
+import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 
@@ -18,9 +19,12 @@ public class RunningTest {
     private RenderingConfiguration.RenderBrowserInfo browserInfo;
     private AtomicBoolean isTestOpen = new AtomicBoolean(false);
     private AtomicBoolean isTestClose = new AtomicBoolean(false);
+    private AtomicBoolean isTestInExceptionMode = new AtomicBoolean(false);
+    private Exception exception = null;
     private RunningTestListener listener;
     private RenderingConfiguration configuration;
     private HashMap<Task, FutureTask<TestResults>> taskToFutureMapping = new HashMap<>();
+    private Logger logger;
 
     private Task.TaskListener taskListener = new Task.TaskListener() {
         @Override
@@ -38,12 +42,17 @@ public class RunningTest {
                 RunningTest.this.listener.onTaskComplete(task, RunningTest.this);
             }
         }
+
+        @Override
+        public void onTaskFailed(Exception e) {
+           setTestInExceptionMode(e);
+        }
     };
 
     public Task getNextCheckTask() {
         if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
-            if (task.getType() == Task.TaskType.CHECK && task.isTaskReadyToCheck()){
+            if (task.getType() == Task.TaskType.CHECK && task.isTaskReadyToCheck()) {
                 this.getTaskList().remove(task);
                 return task;
             }
@@ -56,11 +65,13 @@ public class RunningTest {
 
         void onTaskComplete(Task task, RunningTest test);
     }
-    public RunningTest(AbstractProxySettings proxy, IEyesConnector eyes, RenderingConfiguration configuration, RenderingConfiguration.RenderBrowserInfo browserInfo, RunningTestListener listener) {
+
+    public RunningTest(AbstractProxySettings proxy, IEyesConnector eyes, RenderingConfiguration configuration, RenderingConfiguration.RenderBrowserInfo browserInfo,Logger logger, RunningTestListener listener) {
         this.eyes = eyes;
         this.browserInfo = browserInfo;
         this.configuration = configuration;
         this.listener = listener;
+        this.logger= logger;
         this.proxy = proxy;
 
 
@@ -104,7 +115,7 @@ public class RunningTest {
 
     public void open() {
         eyes.log("Open task was added");
-        Task task = new Task(null, eyes, Task.TaskType.OPEN, this.getBrowserInfo(), this.configuration, taskListener);
+        Task task = new Task(null, eyes, Task.TaskType.OPEN, this.getBrowserInfo(), this.configuration, this.logger, taskListener);
         FutureTask<TestResults> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         this.taskList.add(task);
@@ -119,7 +130,7 @@ public class RunningTest {
             }
         }
 
-        Task  task = new Task(null, eyes, Task.TaskType.CLOSE, this.getBrowserInfo(), this.configuration, taskListener);
+        Task task = new Task(null, eyes, Task.TaskType.CLOSE, this.getBrowserInfo(), this.configuration, this.logger, taskListener);
         FutureTask<TestResults> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         this.taskList.add(task);
@@ -128,7 +139,7 @@ public class RunningTest {
     }
 
     public Task check() {
-        Task  task = new Task(null, eyes, Task.TaskType.CHECK, this.getBrowserInfo(), this.configuration, taskListener);
+        Task task = new Task(null, eyes, Task.TaskType.CHECK, this.getBrowserInfo(), this.configuration,this.logger, taskListener);
         this.taskList.add(task);
         eyes.log("Close Task was added");
         this.taskToFutureMapping.get(task);
@@ -151,5 +162,10 @@ public class RunningTest {
 
     public IEyesConnector getEyes() {
         return eyes;
+    }
+
+    public void setTestInExceptionMode(Exception e) {
+        exception = e;
+        this.isTestInExceptionMode.set(true);
     }
 }
