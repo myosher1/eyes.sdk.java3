@@ -1,8 +1,8 @@
 package com.applitools.eyes.selenium;
 
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.FloatingMatchSettings;
 import com.applitools.eyes.Region;
-import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.selenium.fluent.Target;
 
 import org.openqa.selenium.By;

@@ -1,5 +1,6 @@
 package com.applitools.eyes;
 
+import com.applitools.ICheckSettings;
 import com.applitools.IDomCaptureListener;
 import com.applitools.eyes.visualGridClient.data.RenderingInfo;
 import com.applitools.eyes.capture.AppOutputProvider;
@@ -44,7 +45,7 @@ public abstract class EyesBase {
 
     private boolean shouldMatchWindowRunOnceOnTimeout;
 
-    private MatchWindowTask matchWindowTask;
+    protected MatchWindowTask matchWindowTask;
 
     protected IServerConnector serverConnector;
     protected RunningSession runningSession;
@@ -85,7 +86,7 @@ public abstract class EyesBase {
     private int validationId;
     private boolean isSendDom;
     protected IDomCaptureListener domCaptureListener;
-    private RenderingInfo renderInfo;
+    protected RenderingInfo renderInfo;
 
     public EyesBase() {
 
@@ -1171,7 +1172,7 @@ public abstract class EyesBase {
         return validationInfo;
     }
 
-    private MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
+    protected MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
                                     ICheckSettings checkSettings) {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
@@ -1402,7 +1403,7 @@ public abstract class EyesBase {
         }
     }
 
-    private void ensureRunningSession() {
+    protected void ensureRunningSession() {
         if (runningSession != null) {
             logger.log("session already running.");
             return;
@@ -1681,7 +1682,7 @@ public abstract class EyesBase {
         }
     }
 
-    protected Object getAgentSetup() {
+    public Object getAgentSetup() {
         return null;
     }
 
@@ -1755,7 +1756,7 @@ public abstract class EyesBase {
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
-        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl), screenshot);
+        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl, null), screenshot);
         logger.verbose("Done!");
         return result;
     }

@@ -3,12 +3,12 @@
  */
 package com.applitools.eyes.images;
 
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
 import com.applitools.eyes.events.ValidationInfo;
 import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.CheckSettings;
-import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.positioning.NullRegionProvider;
 import com.applitools.eyes.positioning.RegionProvider;
 import com.applitools.eyes.triggers.MouseAction;

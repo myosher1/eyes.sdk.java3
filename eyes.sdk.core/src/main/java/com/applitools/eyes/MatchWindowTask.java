@@ -20,17 +20,19 @@ import java.util.List;
 public class MatchWindowTask {
 
     private static final int MATCH_INTERVAL = 500; // Milliseconds
-
-    private final Logger logger;
-    private final IServerConnector serverConnector;
-    private final RunningSession runningSession;
-    private final int defaultRetryTimeout;
-    private final AppOutputProvider appOutputProvider;
-
     private EyesScreenshot lastScreenshot = null;
-    private MatchResult matchResult;
     private Region lastScreenshotBounds;
-    private EyesBase eyes;
+    private int defaultRetryTimeout;
+
+    protected Logger logger;
+    protected IServerConnector serverConnector;
+    protected RunningSession runningSession;
+    protected AppOutputProvider appOutputProvider;
+    protected MatchResult matchResult;
+    protected EyesBase eyes;
+
+    protected MatchWindowTask() {
+    }
 
     /**
      * @param logger            A logger instance.
@@ -233,7 +235,7 @@ public class MatchWindowTask {
             if (shouldMatchWindowRunOnceOnTimeout) {
                 GeneralUtils.sleep(retryTimeout);
             }
-            screenshot = tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal);
+            screenshot =  tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal);
         } else {
             screenshot = retryTakingScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal,
                     retryTimeout);

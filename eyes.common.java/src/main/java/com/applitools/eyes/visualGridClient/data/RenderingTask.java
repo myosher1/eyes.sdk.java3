@@ -321,6 +321,9 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private void parseAndFetchCSSResources(List<RGridResource> allBlobs, URL baseUrl) {
         for (RGridResource blob : allBlobs) {
             String contentTypeStr = blob.getContentType();
+            if(contentTypeStr == null){
+                logger.log("contentTypeStr == null #@#@");
+            }
             String[] parts = contentTypeStr.split(";");
             boolean cont = true;
             String charset = "UTF-8";
@@ -448,17 +451,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             IEyesConnector eyesConnector = this.taskList.get(0).getEyesConnector();
             try {
                 final URL url = new URL(link);
-                IResourceFuture future = eyesConnector.getResource(url, new IDownloadListener<Byte[]>() {
-                    @Override
-                    public void onDownloadComplete(Byte[] downloadedString, String contentType) {
-
-                    }
-
-                    @Override
-                    public void onDownloadFailed() {
-
-                    }
-                });
+                IResourceFuture future = eyesConnector.getResource(url, null);
                 allFetches.add(future);
                 this.fetchedCacheMap.put(url.toString(), future);
 

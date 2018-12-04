@@ -1,5 +1,6 @@
 package com.applitools.eyes.fluent;
 
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;
 
