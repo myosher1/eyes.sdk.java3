@@ -2,6 +2,7 @@ package com.applitools.eyes;
 
 import com.applitools.eyes.visualGridClient.IResourceFuture;
 import com.applitools.eyes.visualGridClient.data.RGridResource;
+import com.applitools.utils.GeneralUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.ws.rs.core.Response;
@@ -16,11 +17,13 @@ public class ResourceFuture implements IResourceFuture {
 
     private Future<Response> future;
     private String url;
+    private Logger logger;
     private RGridResource rgResource;
 
-    public ResourceFuture(Future<Response> future, String url) {
+    public ResourceFuture(Future<Response> future, String url,Logger logger) {
         this.future = future;
         this.url = url;
+        this.logger = logger;
     }
 
     public ResourceFuture(RGridResource rgResource) {
@@ -45,15 +48,29 @@ public class ResourceFuture implements IResourceFuture {
 
     @Override
     public RGridResource get() throws InterruptedException, ExecutionException {
+
+        Response response = future.get();
+
         if(this.rgResource == null){
-            Response response = future.get();
-            byte[] bytes = new byte[response.getLength()];
-            try {
-                response.readEntity(InputStream.class).read(bytes);
-                rgResource= new RGridResource(url, response.getHeaderString("contentType"), ArrayUtils.toObject(bytes));
-            } catch (IOException e) {
-                e.printStackTrace();
+
+            byte[] bytes;
+            InputStream inputStream = response.readEntity(InputStream.class);
+            int available = response.getLength();
+
+            if (available < 1) {
+                try {
+                    available = inputStream.available();
+                } catch (IOException e) {
+                    GeneralUtils.logExceptionStackTrace(logger, e);
+                }
             }
+            bytes = new byte[available];
+            try {
+                inputStream.read(bytes);
+            } catch (IOException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
+                rgResource= new RGridResource(url, response.getHeaderString("contentType"), ArrayUtils.toObject(bytes));
         }
         return rgResource;
     }
