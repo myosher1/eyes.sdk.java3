@@ -69,13 +69,15 @@ public class Task implements Callable<TestResults> {
                     System.out.println("Task.run opening task");
                     eyesConnector.open(configuration);
                     break;
+
                 case CHECK:
                     eyesConnector.matchWindow(renderResult.getImageLocation(), checkSettings);
-
                     break;
+
                 case CLOSE:
                     testResults = eyesConnector.close(configuration.isThrowExceptionOn());
                     break;
+
                 case ABORT:
                     eyesConnector.abortIfNotClosed();
             }

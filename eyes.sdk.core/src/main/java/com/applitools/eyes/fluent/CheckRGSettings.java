@@ -12,32 +12,26 @@ import java.util.Map;
 
 public class CheckRGSettings extends CheckSettings implements ICheckRGSettings, ICheckRGSettingsInternal, Cloneable {
 
-    public enum SizeMode {FULL_PAGE, VIEWPORT, SELECTOR, REGION}
-
     private static final String BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot";
 
-    private SizeMode sizeMode;
     private String selector;
     private Region region;
     private Map<String, List<String>> scriptHooks = new HashMap<>();
     private boolean isSendDom;
 
     public CheckRGSettings() {
-        this.sizeMode = SizeMode.VIEWPORT;
+        super.setStitchContent(true);
     }
 
     public CheckRGSettings(String selector) {
         this.selector = selector;
-        this.sizeMode = SizeMode.SELECTOR;
     }
 
     public CheckRGSettings(Region region) {
         this.region = region;
-        this.sizeMode = SizeMode.REGION;
     }
 
-    public CheckRGSettings(SizeMode sizeMode, String selector, Region region, boolean isSendDom) {
-        this.sizeMode = sizeMode;
+    public CheckRGSettings(String selector, Region region, boolean isSendDom) {
         this.selector = selector;
         this.region = region;
         this.isSendDom = isSendDom;
@@ -55,17 +49,25 @@ public class CheckRGSettings extends CheckSettings implements ICheckRGSettings, 
 
     @JsonProperty("sizeMode")
     public String getSizeMode() {
-        switch (this.sizeMode) {
-            case REGION:
-                return "region";
-            case SELECTOR:
-                return "selector";
-            case VIEWPORT:
-                return "viewport";
-            case FULL_PAGE:
+        if (region == null && selector == null) {
+            if (getStitchContent()) {
                 return "full-page";
+            } else {
+                return "viewport";
+            }
+        } else if (region != null) {
+            if (getStitchContent()) {
+                return "region";
+            } else {
+                return "region";
+            }
+        } else /* if (selector != null) */ {
+            if (getStitchContent()) {
+                return "selector";
+            } else {
+                return "selector";
+            }
         }
-        return null;
     }
 
     public String getSelector() {
@@ -96,9 +98,7 @@ public class CheckRGSettings extends CheckSettings implements ICheckRGSettings, 
      */
     @Override
     public ICheckRGSettings fully() {
-        CheckRGSettings clone = (CheckRGSettings) super.fully();
-        clone.sizeMode = SizeMode.FULL_PAGE;
-        return clone;
+        return (CheckRGSettings) super.fully();
     }
 
     /**
@@ -106,17 +106,19 @@ public class CheckRGSettings extends CheckSettings implements ICheckRGSettings, 
      */
     @Override
     public ICheckRGSettings fully(boolean fully) {
-        CheckRGSettings clone = (CheckRGSettings) super.fully(fully);
-        clone.sizeMode = fully ? SizeMode.FULL_PAGE : SizeMode.VIEWPORT;
-        return clone;
+        return (CheckRGSettings) super.fully(fully);
+    }
+
+    @Override
+    public ICheckRGSettings withName(String name) {
+        return (CheckRGSettings) super.withName(name);
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
     @Override
-    public CheckRGSettings clone(){
+    public CheckRGSettings clone() {
         CheckRGSettings clone = new CheckRGSettings();
         populateClone(clone);
-        clone.sizeMode = this.sizeMode;
         clone.region = this.region;
         clone.selector = this.selector;
         clone.isSendDom = this.isSendDom;

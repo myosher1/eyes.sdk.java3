@@ -2,7 +2,6 @@ package com.applitools.eyes.rendering;
 
 import com.applitools.ICheckRGSettings;
 import com.applitools.eyes.*;
-import com.applitools.eyes.fluent.CheckRGSettings;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IRenderingEyes;
 import com.applitools.eyes.visualGridClient.RenderingGridManager;
@@ -23,12 +22,10 @@ public class Eyes implements IRenderingEyes {
 
     private final Logger logger;
     private String serverUrl;
-    private RenderingConfiguration renderingConfiguration;
     private RenderingGridManager renderingGridManager;
     private List<RunningTest> testList = new ArrayList<>();
     private final List<RunningTest> testsInOpenProcess = new ArrayList<>();
     private final List<RunningTest> testsInCloseProcess = new ArrayList<>();
-    private LogHandler logHandler;
     private AtomicBoolean isEyesClosed = new AtomicBoolean(false);
     private AtomicBoolean isEyesIssuedOpenTasks = new AtomicBoolean(false);
     private IRenderingEyes.EyesListener listener;
@@ -46,7 +43,6 @@ public class Eyes implements IRenderingEyes {
             e.printStackTrace();
         }
     }
-
 
     private RunningTest.RunningTestListener testListener = new RunningTest.RunningTestListener() {
         @Override
@@ -71,34 +67,31 @@ public class Eyes implements IRenderingEyes {
             if (task.getType() == Task.TaskType.CLOSE) {
 
             }
+
             if (Eyes.this.listener != null) {
                 Eyes.this.listener.onTaskComplete(task, Eyes.this);
             }
         }
     };
 
-    public Eyes(RenderingGridManager renderingGridManager, RenderingConfiguration renderingConfiguration, Logger logger) {
-        ArgumentGuard.notNull(renderingConfiguration, "renderingConfiguration");
+    public Eyes(RenderingGridManager renderingGridManager) {
+        ArgumentGuard.notNull(renderingGridManager, "renderingGridManager");
         this.renderingGridManager = renderingGridManager;
-        this.renderingConfiguration = renderingConfiguration;
-        this.logger = logger;
-        if (this.renderingGridManager == null) {
-            this.renderingGridManager = new RenderingGridManager(renderingConfiguration.getConcurrentSessions(), logger);
-        }
+        this.logger = renderingGridManager.getLogger();
     }
 
-    public void open(WebDriver webDriver) {
-        ArgumentGuard.notNull(webDriver, "webDriver");
+    public void open(WebDriver webDriver, RenderingConfiguration renderingConfiguration) {
         logger.verbose("enter");
+
+        ArgumentGuard.notNull(webDriver, "webDriver");
+        ArgumentGuard.notNull(renderingConfiguration, "renderingConfiguration");
+
         initDriver(webDriver);
 
-
-
-
         logger.verbose("getting all browsers info...");
-        List<RenderingConfiguration.RenderBrowserInfo> browserInfos = renderingConfiguration.getBrowsersInfo();
+        List<RenderingConfiguration.RenderBrowserInfo> browserInfoList = renderingConfiguration.getBrowsersInfo();
         logger.verbose("creating test descriptors for each browser info...");
-        for (RenderingConfiguration.RenderBrowserInfo browserInfo : browserInfos) {
+        for (RenderingConfiguration.RenderBrowserInfo browserInfo : browserInfoList) {
             logger.verbose("creating test descriptor");
             RunningTest test = new RunningTest(this.proxy, createEyesConnector(browserInfo), renderingConfiguration, browserInfo, logger, testListener);
             this.testList.add(test);
@@ -116,15 +109,12 @@ public class Eyes implements IRenderingEyes {
         logger.verbose("initializing rendering info...");
         if (this.renderingInfo == null) {
             this.renderingInfo = eyesConnector.getRenderingInfo();
-        }
-        else{
-             eyesConnector.setRenderInfo(this.renderingInfo);
+        } else {
+            eyesConnector.setRenderInfo(this.renderingInfo);
         }
 
         eyesConnector.setProxy(this.proxy);
-        if (logHandler != null) {
-            eyesConnector.setLogHandler(this.logHandler);
-        }
+        eyesConnector.setLogHandler(this.logger.getLogHandler());
         if (this.serverUrl != null) {
             try {
                 eyesConnector.setServerUrl(serverUrl);
@@ -132,6 +122,7 @@ public class Eyes implements IRenderingEyes {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
+
         this.eyesConnector = eyesConnector;
         return eyesConnector;
     }
@@ -141,7 +132,6 @@ public class Eyes implements IRenderingEyes {
             this.jsExecutor = (JavascriptExecutor) webDriver;
         }
     }
-
 
     public RunningTest getNextTestToOpen() {
         RunningTest currentBestTest = null;
@@ -190,8 +180,9 @@ public class Eyes implements IRenderingEyes {
         RunningTest bestTest = null;
         for (RunningTest runningTest : testList) {
             Task task = runningTest.getTaskList().get(0);
-            if(!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck()) continue;
-            if(bestMark < runningTest.getMark()){
+            if (!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck())
+                continue;
+            if (bestMark < runningTest.getMark()) {
                 bestTest = runningTest;
                 bestMark = runningTest.getMark();
             }
@@ -211,16 +202,13 @@ public class Eyes implements IRenderingEyes {
                 continue;
             }
             Task task = taskList.get(0);
-            if(!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck()) continue;
-            if(bestMark < runningTest.getMark()){
+            if (!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck())
+                continue;
+            if (bestMark < runningTest.getMark()) {
                 bestMark = runningTest.getMark();
             }
         }
         return bestMark;
-    }
-
-    public void setLogHandler(StdoutLogHandler logHandler) {
-        this.logHandler = logHandler;
     }
 
     public void setServerUrl(String serverUrl) {
@@ -268,7 +256,7 @@ public class Eyes implements IRenderingEyes {
         }
     }
 
-    private synchronized void addOpenTaskToAllRunningTest(){
+    private synchronized void addOpenTaskToAllRunningTest() {
         if (!this.isEyesIssuedOpenTasks.get()) {
             for (RunningTest runningTest : testList) {
                 runningTest.open();
@@ -278,5 +266,7 @@ public class Eyes implements IRenderingEyes {
         }
     }
 
-
+    public Logger getLogger() {
+        return logger;
+    }
 }

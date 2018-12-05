@@ -4,7 +4,7 @@ import com.applitools.eyes.TestResults;
 
 import java.util.List;
 
-public class TestResultSummery {
+public class TestResultSummary {
     private List<Object> allResults;
     private int passed = 0;
     private int unresolved = 0;
@@ -14,7 +14,7 @@ public class TestResultSummery {
     private int missing = 0;
     private int matches = 0;
 
-    public TestResultSummery(List<TestResults> allResults) {
+    public TestResultSummary(List<TestResults> allResults) {
         for (TestResults result : allResults) {
                 if (result.getStatus() != null) {
                     switch (result.getStatus()) {

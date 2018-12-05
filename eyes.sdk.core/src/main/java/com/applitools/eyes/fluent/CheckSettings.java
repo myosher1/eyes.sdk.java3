@@ -394,4 +394,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         clone.strictRegions.addAll(this.strictRegions);
         clone.floatingRegions.addAll(this.floatingRegions);
     }
+
+    public void setStitchContent(boolean stitchContent) {
+        this.stitchContent = stitchContent;
+    }
+
 }
