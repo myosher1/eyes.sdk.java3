@@ -21,9 +21,14 @@ public class IgnoreRegionByElement implements GetRegion {
         Point locationAsPoint = element.getLocation();
         Dimension size = element.getSize();
 
-        // Element's coordinates are context relative, so we need to convert them first.
-        Location adjustedLocation = screenshot.getLocationInScreenshot(new Location(locationAsPoint.getX(), locationAsPoint.getY()),
-                CoordinatesType.CONTEXT_RELATIVE);
+        Location adjustedLocation;
+        if (screenshot != null) {
+            // Element's coordinates are context relative, so we need to convert them first.
+            adjustedLocation = screenshot.getLocationInScreenshot(new Location(locationAsPoint.getX(), locationAsPoint.getY()),
+                    CoordinatesType.CONTEXT_RELATIVE);
+        } else {
+            adjustedLocation = new Location(locationAsPoint.getX(), locationAsPoint.getY());
+        }
 
         List<Region> value = new ArrayList<>();
         value.add(new Region(adjustedLocation, new RectangleSize(size.getWidth(), size.getHeight()),

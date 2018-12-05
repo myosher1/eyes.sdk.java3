@@ -321,7 +321,9 @@ public class ServerConnector extends RestClient
             requestDos.writeInt(jsonBytes.length);
             requestDos.flush();
             requestOutputStream.write(jsonBytes);
-            requestOutputStream.write(screenshot);
+            if (screenshot != null) {
+                requestOutputStream.write(screenshot);
+            }
             requestOutputStream.flush();
 
             // Ok, get the data bytes

@@ -175,7 +175,7 @@ public class MatchWindowTask {
                 regions.addAll(regionProvider.getRegions(eyes, screenshot, adjustLocation));
             }
             catch (OutOfBoundsException ex){
-                logger.log("WARNING - ignore region was out of bounds.");
+                logger.log("WARNING - region was out of bounds.");
             }
         }
         return regions.toArray(new Region[0]);

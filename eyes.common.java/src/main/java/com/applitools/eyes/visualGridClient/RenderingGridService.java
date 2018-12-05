@@ -50,7 +50,6 @@ public class RenderingGridService extends Thread{
     }
 
     private Future<RenderStatusResults> checkAndRunNextTask() {
-        logger.verbose("EyesOpenerService. checkAndRunNextTask");
         if (currentWorkingSession.get() < threadPoolSize) {
             return runNextTask();
         }
@@ -58,7 +57,6 @@ public class RenderingGridService extends Thread{
     }
 
     private Future<RenderStatusResults> runNextTask() {
-        logger.verbose("EyesOpenerService.runNextTask");
         RenderingTask task = this.listener.getNextTask();
         if (task != null) {
             return this.executor.submit(task);

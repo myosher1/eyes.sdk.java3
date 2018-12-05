@@ -2,6 +2,9 @@ package com.applitools.eyes.rendering;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
+import com.applitools.eyes.capture.AppOutputWithScreenshot;
+import com.applitools.eyes.config.Configuration;
+import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IResourceFuture;
 import com.applitools.eyes.visualGridClient.data.*;
@@ -12,19 +15,19 @@ import java.util.concurrent.Future;
 
 class EyesConnector extends EyesBase implements IEyesConnector {
 
-    public EyesConnector() {
-        this.matchWindowTask = new MatchRGWindowTask(this.logger, this.serverConnector, this);
+    private RenderingConfiguration.RenderBrowserInfo browserInfo;
+
+    public EyesConnector(RenderingConfiguration.RenderBrowserInfo browserInfo) {
+        this.browserInfo = browserInfo;
     }
 
     /**
      * ﻿Starts a new test without setting the viewport size of the AUT.
-     *
-     * @param appName  The name of the application under test.
-     * @param testName The test name.
-     * @see #open(String, String, RectangleSize)
      */
-    public void open(String appName, String testName) {
-        open(appName, testName, null);
+    public void open(Configuration config) {
+        config.setViewportSize(browserInfo.getViewportSize());
+        this.config = config;
+        openBase();
     }
 
     @Override
@@ -59,18 +62,24 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public MatchResult matchWindow(String url, String tag, ICheckSettings checkSettings) {
-        return super.matchWindow(null, tag, false, checkSettings);
-    }
+    public MatchResult matchWindow(String resultImageURL, ICheckSettings checkSettings) {
 
-    @Override
-    protected void ensureRunningSession() {
+        ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
 
+        MatchWindowTask matchWindowTask = new MatchWindowTask(this.logger, this.serverConnector, this.runningSession, getMatchTimeout(), this);
+
+        ImageMatchSettings imageMatchSettings = matchWindowTask.createImageMatchSettings(checkSettingsInternal, null);
+
+        String tag = checkSettingsInternal.getName();
+
+        AppOutput appOutput = new AppOutput(tag, null, null, resultImageURL);
+        AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, null);
+
+        return matchWindowTask.performMatch(new Trigger[0], appOutputWithScreenshot, tag, false, imageMatchSettings);
     }
 
     /**
      * Starts a test.
-     *
      * @param appName    The name of the application under test.
      * @param testName   The test name.
      * @param dimensions Determines the resolution used for the baseline.
@@ -88,7 +97,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
     @Override
     protected String getBaseAgentId() {
-        return null;
+        return "eyes.selenium.rendering_grid.java/3.141.2";
     }
 
     @Override
@@ -103,7 +112,6 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
     @Override
     protected void setViewportSize(RectangleSize size) {
-
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.applitools.eyes.visualGridClient.data;
 
+import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.config.Configuration;
 
 import java.util.ArrayList;
@@ -12,7 +13,8 @@ public class RenderingConfiguration extends Configuration {
 
     }
 
-    public enum BrowserType{CHROME, FIREFOX}
+    public enum BrowserType {CHROME, FIREFOX}
+
     private List<RenderBrowserInfo> browsersInfo = new ArrayList<>();
 
     private int concurrentSessions = 3;
@@ -26,7 +28,7 @@ public class RenderingConfiguration extends Configuration {
         this.testName = testName;
     }
 
-    public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType){
+    public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType) {
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType);
         browsersInfo.add(browserInfo);
         return this;
@@ -36,46 +38,39 @@ public class RenderingConfiguration extends Configuration {
         return concurrentSessions;
     }
 
-    public class RenderBrowserInfo{
+    public class RenderBrowserInfo {
 
-        private int width;
-
-        private int height;
+        private RectangleSize viewportSize;
         private BrowserType browserType;
         private String platform = "linux";
         private EmulationInfo emulationInfo = null;
         private String sizeMode = "full-page";
+
         public RenderBrowserInfo(int width, int height, BrowserType browserType, EmulationInfo emulationInfo) {
-            this.width = width;
-            this.height = height;
+            this.viewportSize = new RectangleSize(width, height);
             this.browserType = browserType;
             this.emulationInfo = emulationInfo;
         }
 
         public RenderBrowserInfo(int width, int height, BrowserType browserType) {
-            this.width = width;
-            this.height = height;
+            this.viewportSize = new RectangleSize(width, height);
             this.browserType = browserType;
         }
 
         public int getWidth() {
-            return width;
-        }
-
-        public void setWidth(int width) {
-            this.width = width;
+            return viewportSize.getWidth();
         }
 
         public int getHeight() {
-            return height;
+            return viewportSize.getHeight();
         }
 
-        public void setHeight(int height) {
-            this.height = height;
+        public RectangleSize getViewportSize() {
+            return viewportSize;
         }
 
         public String getBrowserType() {
-            switch (this.browserType){
+            switch (this.browserType) {
                 case CHROME:
                     return "chrome";
                 case FIREFOX:

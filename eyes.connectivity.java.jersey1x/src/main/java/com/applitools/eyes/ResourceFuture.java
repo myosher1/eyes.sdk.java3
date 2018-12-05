@@ -7,6 +7,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +16,8 @@ import java.util.concurrent.TimeoutException;
 public class ResourceFuture implements IResourceFuture {
 
     private Future<Response> future;
-    private String url = null;
+
+    private URL url = null;
     private RGridResource resource;
 
     public ResourceFuture(Future<Response> future) {
@@ -68,6 +70,11 @@ public class ResourceFuture implements IResourceFuture {
         }
         RGridResource gridResource = new RGridResource(url, (String) response.getMetadata().get("contentType").get(0), ArrayUtils.toObject(bytes));
         return gridResource;
+    }
+
+    @Override
+    public String getUrl() {
+        return url.toString();
     }
 
 }

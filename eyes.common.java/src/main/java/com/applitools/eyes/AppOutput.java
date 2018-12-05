@@ -17,10 +17,10 @@ public class AppOutput {
     private final String screenshot64;
 
     /**
-     * @param title        The title of the window.
-     * @param screenshot64 Base64 encoding of the screenshot's bytes (the
-     *                     byte can be in either in compressed or
-     * @param screenshotUrl
+     * @param title         The title of the window.
+     * @param screenshot64  Base64 encoding of the screenshot's bytes.
+     * @param domUrl        A URL to a DOM snapshot.
+     * @param screenshotUrl A URL to a screenshot.
      */
     public AppOutput(String title, String screenshot64, String domUrl, String screenshotUrl) {
         this.title = title;

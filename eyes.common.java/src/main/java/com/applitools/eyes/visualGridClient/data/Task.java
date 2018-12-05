@@ -1,9 +1,10 @@
 package com.applitools.eyes.visualGridClient.data;
 
+import com.applitools.ICheckSettings;
+import com.applitools.ICheckSettingsInternal;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
-import com.applitools.eyes.visualGridClient.services.EyesBaseService;
 import com.applitools.utils.GeneralUtils;
 
 import java.util.concurrent.Callable;
@@ -27,16 +28,19 @@ public class Task implements Callable<TestResults> {
     private TaskListener runningTestListener;
     private RenderingConfiguration.RenderBrowserInfo browserInfo;
     private RenderingConfiguration configuration;
+    private ICheckSettings checkSettings;
 
     interface TaskListener {
 
         void onTaskComplete(Task task);
-         void onTaskFailed(Exception e);
+
+        void onTaskFailed(Exception e);
 
     }
 
 
-    public Task(TestResults testResults, IEyesConnector eyesConnector, TaskType type, RenderingConfiguration.RenderBrowserInfo browserInfo, RenderingConfiguration configuration, Logger logger, TaskListener runningTestListener) {
+    public Task(TestResults testResults, IEyesConnector eyesConnector, TaskType type, RenderingConfiguration.RenderBrowserInfo browserInfo,
+                RenderingConfiguration configuration, Logger logger, TaskListener runningTestListener, ICheckSettings checkSettings) {
         this.testResults = testResults;
         this.eyesConnector = eyesConnector;
         this.type = type;
@@ -44,6 +48,7 @@ public class Task implements Callable<TestResults> {
         this.browserInfo = browserInfo;
         this.configuration = configuration;
         this.logger = logger;
+        this.checkSettings = checkSettings;
     }
 
     public RenderingConfiguration.RenderBrowserInfo getBrowserInfo() {
@@ -62,17 +67,17 @@ public class Task implements Callable<TestResults> {
             switch (type) {
                 case OPEN:
                     System.out.println("Task.run opening task");
-                    eyesConnector.open(configuration.getAppName(), configuration.getTestName());
+                    eyesConnector.open(configuration);
                     break;
                 case CHECK:
-                    this.eyesConnector.matchWindow();
+                    eyesConnector.matchWindow(renderResult.getImageLocation(), checkSettings);
 
                     break;
                 case CLOSE:
-                    testResults = this.eyesConnector.close(configuration.isThrowExceptionOn());
+                    testResults = eyesConnector.close(configuration.isThrowExceptionOn());
                     break;
                 case ABORT:
-                    this.eyesConnector.abortIfNotClosed();
+                    eyesConnector.abortIfNotClosed();
             }
             //call the callback
             this.runningTestListener.onTaskComplete(this);

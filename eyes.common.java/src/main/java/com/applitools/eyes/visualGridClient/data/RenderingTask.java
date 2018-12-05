@@ -1,5 +1,6 @@
 package com.applitools.eyes.visualGridClient.data;
 
+import com.applitools.ICheckRGSettings;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IResourceFuture;
@@ -28,7 +29,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private final RenderTaskListener listener;
     private IEyesConnector eyesConnector;
     private String script;
-    private CheckRGSettings renderingConfiguration;
+    private ICheckRGSettings renderingConfiguration;
     private List<Task> taskList;
     private RenderingInfo renderingInfo;
     private Map<String, IResourceFuture> fetchedCacheMap;
@@ -43,7 +44,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     }
 
 
-    public RenderingTask(IEyesConnector eyesConnector, String script, CheckRGSettings renderingConfiguration, List<Task> taskList, RenderingInfo renderingInfo, Map<String, IResourceFuture> fetchedCacheMap, Map<String, Future<Boolean>> putResourceCache, Logger logger, RenderTaskListener listener) {
+    public RenderingTask(IEyesConnector eyesConnector, String script, ICheckRGSettings renderingConfiguration, List<Task> taskList, RenderingInfo renderingInfo, Map<String, IResourceFuture> fetchedCacheMap, Map<String, Future<Boolean>> putResourceCache, Logger logger, RenderTaskListener listener) {
         this.eyesConnector = eyesConnector;
         this.script = script;
         this.renderingConfiguration = renderingConfiguration;
@@ -343,6 +344,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         byte[] decode = codec.decode(contentAsString);
         Byte[] content = ArrayUtils.toObject(decode);
         String url = (String) blobAsMap.get("url");
+        url = url.replaceAll("blob:", "");
         RGridResource resource = null;
         try {
 

@@ -1,6 +1,7 @@
 package com.applitools.eyes.rendering;
 
 import com.applitools.eyes.*;
+import com.applitools.eyes.fluent.CheckRGSettings;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IRenderingEyes;
 import com.applitools.eyes.visualGridClient.RenderingGridManager;
@@ -98,7 +99,7 @@ public class Eyes implements IRenderingEyes {
         logger.verbose("creating test descriptors for each browser info...");
         for (RenderingConfiguration.RenderBrowserInfo browserInfo : browserInfos) {
             logger.verbose("creating test descriptor");
-            RunningTest test = new RunningTest(this.proxy, createEyesConnector(), renderingConfiguration, browserInfo, logger, testListener);
+            RunningTest test = new RunningTest(this.proxy, createEyesConnector(browserInfo), renderingConfiguration, browserInfo, logger, testListener);
             this.testList.add(test);
         }
 
@@ -107,9 +108,9 @@ public class Eyes implements IRenderingEyes {
         logger.verbose("done");
     }
 
-    private IEyesConnector createEyesConnector() {
+    private IEyesConnector createEyesConnector(RenderingConfiguration.RenderBrowserInfo browserInfo) {
         logger.verbose("creating eyes server connector");
-        IEyesConnector eyesConnector = new EyesConnector();
+        IEyesConnector eyesConnector = new EyesConnector(browserInfo);
 
         logger.verbose("initializing rendering info...");
         if (this.renderingInfo == null) {
@@ -251,7 +252,7 @@ public class Eyes implements IRenderingEyes {
         List<Task> taskList = new ArrayList<>();
         String script = (String) this.jsExecutor.executeAsyncScript("var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})");
         for (final RunningTest test : testList) {
-            taskList.add(test.check());
+            taskList.add(test.check(settings));
             this.renderingGridManager.check(settings, script, this.eyesConnector, taskList, new RenderingGridManager.RenderListener() {
                 @Override
                 public void onRenderSuccess() {

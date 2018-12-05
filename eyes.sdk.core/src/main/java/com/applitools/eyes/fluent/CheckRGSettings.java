@@ -1,5 +1,6 @@
-package com.applitools.eyes.visualGridClient.data;
+package com.applitools.eyes.fluent;
 
+import com.applitools.ICheckRGSettings;
 import com.applitools.eyes.Region;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 
-public class CheckRGSettings {
+public class CheckRGSettings extends CheckSettings implements ICheckRGSettings {
 
     public enum SizeMode {FULL_PAGE, VIEWPORT, SELECTOR, REGION}
 

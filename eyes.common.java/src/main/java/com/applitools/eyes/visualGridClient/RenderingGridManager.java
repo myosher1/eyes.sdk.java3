@@ -1,5 +1,6 @@
 package com.applitools.eyes.visualGridClient;
 
+import com.applitools.ICheckRGSettings;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualGridClient.data.*;
@@ -9,7 +10,6 @@ import com.applitools.eyes.visualGridClient.services.EyesCloserService;
 import com.applitools.eyes.visualGridClient.services.EyesOpenerService;
 import com.applitools.utils.GeneralUtils;
 
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -225,7 +225,7 @@ public class RenderingGridManager {
         }
     }
 
-    public void check(CheckRGSettings settings, String script, IEyesConnector connector, List<Task> taskList, final RenderListener listener) {
+    public void check(ICheckRGSettings settings, String script, IEyesConnector connector, List<Task> taskList, final RenderListener listener) {
 
         RenderingTask renderingTask = new RenderingTask(connector, script, settings, taskList, this.renderingInfo, this.cachedResources, this.putResourceCache, logger, new RenderingTask.RenderTaskListener() {
             @Override

@@ -20,19 +20,23 @@ public class IgnoreRegionBySelector implements GetRegion {
 
     @Override
     public List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot, boolean adjustLocation) {
-        List<WebElement> elements = ((Eyes)eyesBase).getDriver().findElements(this.selector);
+        List<WebElement> elements = ((Eyes) eyesBase).getDriver().findElements(this.selector);
         List<Region> values = new ArrayList<>(elements.size());
         for (WebElement element : elements) {
 
             Point locationAsPoint = element.getLocation();
             Dimension size = element.getSize();
 
-            // Element's coordinates are context relative, so we need to convert them first.
-            Location adjustedLocation = screenshot.getLocationInScreenshot(
-                    new Location(locationAsPoint.getX(), locationAsPoint.getY()),
-                    CoordinatesType.CONTEXT_RELATIVE);
-
-            values.add(new Region(adjustedLocation,  new RectangleSize(size.getWidth(), size.getHeight()),
+            Location adjustedLocation;
+            if (screenshot != null) {
+                // Element's coordinates are context relative, so we need to convert them first.
+                adjustedLocation = screenshot.getLocationInScreenshot(
+                        new Location(locationAsPoint.getX(), locationAsPoint.getY()),
+                        CoordinatesType.CONTEXT_RELATIVE);
+            } else {
+                adjustedLocation = new Location(locationAsPoint.getX(), locationAsPoint.getY());
+            }
+            values.add(new Region(adjustedLocation, new RectangleSize(size.getWidth(), size.getHeight()),
                     CoordinatesType.SCREENSHOT_AS_IS));
         }
         return values;

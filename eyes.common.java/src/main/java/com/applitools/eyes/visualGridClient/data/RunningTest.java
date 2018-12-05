@@ -1,6 +1,7 @@
 package com.applitools.eyes.visualGridClient.data;
 
 
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.AbstractProxySettings;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
@@ -115,7 +116,7 @@ public class RunningTest {
 
     public void open() {
         eyes.log("Open task was added");
-        Task task = new Task(null, eyes, Task.TaskType.OPEN, this.getBrowserInfo(), this.configuration, this.logger, taskListener);
+        Task task = new Task(null, eyes, Task.TaskType.OPEN, this.getBrowserInfo(), this.configuration, this.logger, taskListener, null);
         FutureTask<TestResults> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         this.taskList.add(task);
@@ -130,7 +131,7 @@ public class RunningTest {
             }
         }
 
-        Task task = new Task(null, eyes, Task.TaskType.CLOSE, this.getBrowserInfo(), this.configuration, this.logger, taskListener);
+        Task task = new Task(null, eyes, Task.TaskType.CLOSE, this.getBrowserInfo(), this.configuration, this.logger, taskListener, null);
         FutureTask<TestResults> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         this.taskList.add(task);
@@ -138,8 +139,8 @@ public class RunningTest {
         return this.taskToFutureMapping.get(task);
     }
 
-    public Task check() {
-        Task task = new Task(null, eyes, Task.TaskType.CHECK, this.getBrowserInfo(), this.configuration,this.logger, taskListener);
+    public Task check(ICheckSettings checkSettings) {
+        Task task = new Task(null, eyes, Task.TaskType.CHECK, this.getBrowserInfo(), this.configuration,this.logger, taskListener, checkSettings);
         this.taskList.add(task);
         eyes.log("Close Task was added");
         this.taskToFutureMapping.get(task);

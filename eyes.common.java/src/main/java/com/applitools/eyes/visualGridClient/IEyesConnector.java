@@ -2,6 +2,7 @@ package com.applitools.eyes.visualGridClient;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
+import com.applitools.eyes.config.Configuration;
 import com.applitools.eyes.visualGridClient.data.*;
 
 import java.net.URISyntaxException;
@@ -18,7 +19,7 @@ public interface IEyesConnector {
 
     void setServerUrl(String serverUrl) throws URISyntaxException;
 
-    void open(String appName, String testName);
+    void open(Configuration config);
 
     TestResults close(boolean throwExceptionOn);
 
@@ -38,8 +39,7 @@ public interface IEyesConnector {
 
     IResourceFuture createResourceFuture(RGridResource rg);
 
-    MatchResult matchWindow(String url, String tag, ICheckSettings checkSettings);
-
+    MatchResult matchWindow(String resultImageURL, ICheckSettings checkSettings);
 
     void setRenderInfo(RenderingInfo renderingInfo);
 }
