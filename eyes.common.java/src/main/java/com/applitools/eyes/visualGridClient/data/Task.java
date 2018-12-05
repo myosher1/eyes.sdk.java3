@@ -65,7 +65,7 @@ public class Task implements Callable<TestResults> {
                     eyesConnector.open(configuration.getAppName(), configuration.getTestName());
                     break;
                 case CHECK:
-
+                    this.eyesConnector.matchWindow();
 
                     break;
                 case CLOSE:

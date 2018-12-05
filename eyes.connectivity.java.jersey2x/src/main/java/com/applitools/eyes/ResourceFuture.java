@@ -9,6 +9,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -19,11 +20,11 @@ import java.util.concurrent.TimeoutException;
 public class ResourceFuture implements IResourceFuture {
 
     private Future<Response> future;
-    private String url;
+    private URL url;
     private Logger logger;
     private RGridResource rgResource;
 
-    public ResourceFuture(Future<Response> future, String url, Logger logger) {
+    public ResourceFuture(Future<Response> future, URL url, Logger logger) {
         this.future = future;
         this.url = url;
         this.logger = logger;
@@ -95,5 +96,10 @@ public class ResourceFuture implements IResourceFuture {
             }
         }
         return rgResource;
+    }
+
+    @Override
+    public String getUrl() {
+        return this.url.toString();
     }
 }

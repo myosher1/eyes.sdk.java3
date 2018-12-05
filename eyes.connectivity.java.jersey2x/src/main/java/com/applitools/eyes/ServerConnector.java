@@ -382,39 +382,19 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public IResourceFuture downloadResource(final URL uri, final boolean isSecondRetry, final IDownloadListener<Byte[]> listener) {
+    public IResourceFuture downloadResource(final URL url, final boolean isSecondRetry, final IDownloadListener<Byte[]> listener) {
         Client client = ClientBuilder.newBuilder().build();
 
-        final String url = uri.toString();
-        WebTarget target = client.target(url);
+        WebTarget target = client.target(url.toString());
 
         Invocation.Builder request = target.request(MediaType.WILDCARD);
 
         Future<Response> future = request.async().get(new InvocationCallback<Response>() {
             @Override
             public void completed(Response response) {
-                byte[] bytes;
-                InputStream inputStream = response.readEntity(InputStream.class);
-                int available = response.getLength();
 
-                if (available < 1) {
-                    logger.verbose("Response got negative length URL - " + url);
-                    try {
-                        available = inputStream.available();
-                    } catch (IOException e) {
-                        GeneralUtils.logExceptionStackTrace(logger, e);
-                    }
-                }
-                bytes = new byte[available];
-                try {
-                    inputStream.read(bytes);
-                } catch (IOException e) {
-                    GeneralUtils.logExceptionStackTrace(logger, e);
-                }
-                logger.verbose(uri + " - completed");
-                String contentType = Utils.getResponseContentType(response);
                 if (null != listener) {
-                    listener.onDownloadComplete(ArrayUtils.toObject(bytes), contentType);
+                    listener.onDownloadComplete(null, null);
                 }
             }
 
@@ -423,7 +403,7 @@ public class ServerConnector extends RestClient
                 GeneralUtils.logExceptionStackTrace(logger, throwable);
                 if (!isSecondRetry) {
                     logger.verbose("Entering retry");
-                    downloadResource(uri, true, listener);
+                    downloadResource(url, true, listener);
                 } else {
                     if (null != listener) {
                         listener.onDownloadFailed();

@@ -30,6 +30,7 @@ public final class TestRenderingGridService {
         try {
             webDriver = new ChromeDriver();
             webDriver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage");
+            System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
 //            webDriver.get("http://applitools-vg-test.surge.sh/test.html");
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
             logger = new Logger();
@@ -40,7 +41,7 @@ public final class TestRenderingGridService {
 //            renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.FIREFOX);
             renderingManager = new RenderingGridManager(3, logger);
             Eyes eyes = new Eyes(renderingManager, renderingConfiguration, logger);
-            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+//            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             eyes.setLogHandler(new StdoutLogHandler(true));
             eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver);

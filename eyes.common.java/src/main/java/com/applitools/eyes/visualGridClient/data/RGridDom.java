@@ -32,7 +32,7 @@ public class RGridDom {
         if (this.resources == null) {
             this.resources = new HashMap<>();
         }
-        this.resources.put(resource.getUrl(), resource);
+        this.resources.put(resource.getUrl().toString(), resource);
     }
 
     public List getDomNodes() {

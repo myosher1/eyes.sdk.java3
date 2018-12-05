@@ -9,13 +9,13 @@ import com.applitools.eyes.visualGridClient.services.EyesCloserService;
 import com.applitools.eyes.visualGridClient.services.EyesOpenerService;
 import com.applitools.utils.GeneralUtils;
 
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.*;
 
 public class RenderingGridManager {
 
     private int concurrentOpenSessions;
-    private ExecutorService executor;
     private EyesOpenerService eyesOpenerService;
     private EyesCloserService eyesCloserService;
     private EyesCheckerService eyesCheckerService;
@@ -24,10 +24,8 @@ public class RenderingGridManager {
     private ArrayList<IRenderingEyes> eyesToOpenList = new ArrayList<>(200);
     private final ArrayList<IRenderingEyes> eyesToCloseList = new ArrayList<>(200);
     private ArrayList<IRenderingEyes> allEyes = new ArrayList<>(200);
-    private Set<Map.Entry<RunningTest, RenderRequest>> renderRequestsAsList;
     private Map<String, IResourceFuture> cachedResources = Collections.synchronizedMap(new HashMap<String, IResourceFuture>());
     private Map<String, Future<Boolean>> putResourceCache = Collections.synchronizedMap(new HashMap<String, Future<Boolean>>());
-    private Map<String, String> hashToUrl = Collections.synchronizedMap(new HashMap<String, String>());
 
     private Logger logger;
     private int totalEyesCount = 0;
@@ -106,8 +104,6 @@ public class RenderingGridManager {
             }
 
         });
-        this.executor = Executors.newFixedThreadPool(4);
-
     }
 
     private FutureTask<TestResults> getNextTestToCheck() {
