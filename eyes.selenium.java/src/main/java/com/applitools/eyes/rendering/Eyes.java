@@ -1,5 +1,6 @@
 package com.applitools.eyes.rendering;
 
+import com.applitools.ICheckRGSettings;
 import com.applitools.eyes.*;
 import com.applitools.eyes.fluent.CheckRGSettings;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
@@ -247,7 +248,7 @@ public class Eyes implements IRenderingEyes {
         this.proxy = abstractProxySettings;
     }
 
-    public void check(CheckRGSettings settings) {
+    public void check(ICheckRGSettings settings) {
         addOpenTaskToAllRunningTest();
         List<Task> taskList = new ArrayList<>();
         String script = (String) this.jsExecutor.executeAsyncScript("var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})");

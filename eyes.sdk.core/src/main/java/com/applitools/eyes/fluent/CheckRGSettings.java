@@ -1,6 +1,7 @@
 package com.applitools.eyes.fluent;
 
 import com.applitools.ICheckRGSettings;
+import com.applitools.ICheckRGSettingsInternal;
 import com.applitools.eyes.Region;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -9,18 +10,31 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-public class CheckRGSettings extends CheckSettings implements ICheckRGSettings {
+public class CheckRGSettings extends CheckSettings implements ICheckRGSettings, ICheckRGSettingsInternal, Cloneable {
 
     public enum SizeMode {FULL_PAGE, VIEWPORT, SELECTOR, REGION}
 
-    public static final String BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot";
+    private static final String BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot";
 
-    private SizeMode sizeMode = SizeMode.FULL_PAGE;
+    private SizeMode sizeMode;
     private String selector;
     private Region region;
     private Map<String, List<String>> scriptHooks = new HashMap<>();
     private boolean isSendDom;
+
+    public CheckRGSettings() {
+        this.sizeMode = SizeMode.VIEWPORT;
+    }
+
+    public CheckRGSettings(String selector) {
+        this.selector = selector;
+        this.sizeMode = SizeMode.SELECTOR;
+    }
+
+    public CheckRGSettings(Region region) {
+        this.region = region;
+        this.sizeMode = SizeMode.REGION;
+    }
 
     public CheckRGSettings(SizeMode sizeMode, String selector, Region region, boolean isSendDom) {
         this.sizeMode = sizeMode;
@@ -69,5 +83,43 @@ public class CheckRGSettings extends CheckSettings implements ICheckRGSettings {
     public boolean isSendDom() {
         return isSendDom;
     }
-}
 
+    @Override
+    public ICheckRGSettings sendDom(boolean sendDom) {
+        CheckRGSettings clone = this.clone();
+        clone.isSendDom = sendDom;
+        return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ICheckRGSettings fully() {
+        CheckRGSettings clone = (CheckRGSettings) super.fully();
+        clone.sizeMode = SizeMode.FULL_PAGE;
+        return clone;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public ICheckRGSettings fully(boolean fully) {
+        CheckRGSettings clone = (CheckRGSettings) super.fully(fully);
+        clone.sizeMode = fully ? SizeMode.FULL_PAGE : SizeMode.VIEWPORT;
+        return clone;
+    }
+
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
+    @Override
+    public CheckRGSettings clone(){
+        CheckRGSettings clone = new CheckRGSettings();
+        populateClone(clone);
+        clone.sizeMode = this.sizeMode;
+        clone.region = this.region;
+        clone.selector = this.selector;
+        clone.isSendDom = this.isSendDom;
+        return clone;
+    }
+}

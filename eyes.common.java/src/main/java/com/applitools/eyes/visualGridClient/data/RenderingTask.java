@@ -1,10 +1,10 @@
 package com.applitools.eyes.visualGridClient.data;
 
 import com.applitools.ICheckRGSettings;
+import com.applitools.ICheckRGSettingsInternal;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IResourceFuture;
-import com.applitools.eyes.visualGridClient.RenderingGridManager;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,13 +36,11 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private Map<String, Future<Boolean>> putResourceCache;
     private Logger logger;
 
-
     public interface RenderTaskListener {
         void onRenderSuccess();
 
         void onRenderFailed(Exception e);
     }
-
 
     public RenderingTask(IEyesConnector eyesConnector, String script, ICheckRGSettings renderingConfiguration, List<Task> taskList, RenderingInfo renderingInfo, Map<String, IResourceFuture> fetchedCacheMap, Map<String, Future<Boolean>> putResourceCache, Logger logger, RenderTaskListener listener) {
         this.eyesConnector = eyesConnector;
@@ -62,10 +60,9 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         try {
 
             HashMap<String, Object> result;
-            RenderRequest[] requests = null;
+            RenderRequest[] requests = new RenderRequest[0];
 
             try {
-
                 //Parse to JSON
                 result = GeneralUtils.parseJsonToObject(script);
 
@@ -73,7 +70,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                 requests = prepareDataForRG(result);
 
             } catch (IOException e) {
-                e.printStackTrace();
+                GeneralUtils.logExceptionStackTrace(logger, e);
             }
 
             boolean stillRunning = true;
@@ -159,13 +156,13 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                 if (renderStatusResultsList == null || renderStatusResultsList.isEmpty() || renderStatusResultsList.get(0) == null) {
                     try {
                         Thread.sleep(500);
-                        continue;
                     } catch (InterruptedException e) {
                         GeneralUtils.logExceptionStackTrace(logger, e);
                     }
-                } else {
-                    logger.verbose("render status result received ");
+                    continue;
                 }
+
+                logger.verbose("render status result received ");
 
                 for (int i = 0; i < renderStatusResultsList.size(); i++) {
                     RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
@@ -223,13 +220,13 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                     IResourceFuture resourceFuture = fetchedCacheMap.get(url);
                     if (resourceFuture == null) {
                         logger.log("fetchedCacheMap.get(url) == null - " + url);
+                    } else {
+                        RGridResource resource = resourceFuture.get();
+                        Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, resource);
+                        if (!putResourceCache.containsKey(url)) {
+                            putResourceCache.put(url, future);
+                        }
                     }
-                    RGridResource resource = resourceFuture.get();
-                    Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, resource);
-                    if (!putResourceCache.containsKey(url)) {
-                        putResourceCache.put(url, future);
-                    }
-
                 } catch (InterruptedException | ExecutionException e) {
                     GeneralUtils.logExceptionStackTrace(logger, e);
                 }
@@ -262,11 +259,12 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         //Create RenderingRequest
         List<RenderRequest> allRequestsForRG = buildRenderRequests(result, allBlobs);
 
-        RenderRequest[] asArray = allRequestsForRG.toArray(new RenderRequest[allRequestsForRG.size()]);
-
+        @SuppressWarnings("UnnecessaryLocalVariable")
+        RenderRequest[] asArray = allRequestsForRG.toArray(new RenderRequest[0]);
         return asArray;
     }
 
+    @SuppressWarnings("unchecked")
     private void parseScriptResult(Map<String, Object> result, List<RGridResource> allBlobs, List<URL> resourceUrls) {
         org.apache.commons.codec.binary.Base64 codec = new Base64();
         URL baseUrl = null;
@@ -339,21 +337,14 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     }
 
     private RGridResource parseBlobToGridResource(Base64 codec, URL baseUrl, Map blob) {
-        Map blobAsMap = blob;
-        String contentAsString = (String) blobAsMap.get("value");
+        String contentAsString = (String) blob.get("value");
         byte[] decode = codec.decode(contentAsString);
         Byte[] content = ArrayUtils.toObject(decode);
-        String url = (String) blobAsMap.get("url");
+        String url = (String) blob.get("url");
         url = url.replaceAll("blob:", "");
         RGridResource resource = null;
         try {
-
-            resource = new RGridResource(new URL(baseUrl, url), (String) blobAsMap.get("type"), content);
-
-        } catch (MalformedURLException e) {
-            GeneralUtils.logExceptionStackTrace(logger, e);
-        }
-        try {
+            resource = new RGridResource(new URL(baseUrl, url), (String) blob.get("type"), content);
             resource.setBaseUrl(baseUrl);
         } catch (MalformedURLException e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
@@ -408,7 +399,6 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         collectAllImportUris(cascadingStyleSheet, resourceUrls, baseUrl);
         collectAllFontFaceUris(cascadingStyleSheet, resourceUrls, baseUrl);
         collectAllBackgroundImageUris(cascadingStyleSheet, resourceUrls, baseUrl);
-        int x = resourceUrls.size(); // TODO - for debugging
     }
 
     private void collectAllFontFaceUris(CascadingStyleSheet cascadingStyleSheet, List<URL> allResourceUris, URL baseUrl) {
@@ -458,14 +448,12 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
     private void addBlobsToCache(List<RGridResource> allBlobs) {
         for (RGridResource blob : allBlobs) {
-            URL url;
-            url = blob.getUrl();
-            if (!this.fetchedCacheMap.containsKey(url)) {
+            URL url = blob.getUrl();
+            if (!this.fetchedCacheMap.containsKey(url.toString())) {
                 this.fetchedCacheMap.put(url.toString(), this.eyesConnector.createResourceFuture(blob));
             }
         }
     }
-
 
     private List<RenderRequest> buildRenderRequests(HashMap<String, Object> result, List<RGridResource> allBlobs) {
         ObjectMapper objectMapper = new ObjectMapper();
@@ -483,20 +471,22 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         //Create RG requests
         List<RenderRequest> allRequestsForRG = new ArrayList<>();
+        ICheckRGSettingsInternal rcInternal = (ICheckRGSettingsInternal) renderingConfiguration;
 
         for (Task task : this.taskList) {
 
             RenderingConfiguration.RenderBrowserInfo browserInfo = task.getBrowserInfo();
-            RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), browserInfo.getSizeMode(), renderingConfiguration.getRegion(), browserInfo.getEmulationInfo());
+            RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), browserInfo.getSizeMode(), rcInternal.getRegion(), browserInfo.getEmulationInfo());
 
             RenderRequest request = new RenderRequest(this.renderingInfo.getResultsUrl(), (String) result.get("url"), dom,
-                    resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), renderingConfiguration.getScriptHooks(), null, renderingConfiguration.isSendDom(), task);
+                    resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), rcInternal.getScriptHooks(), null, rcInternal.isSendDom(), task);
 
             allRequestsForRG.add(request);
         }
         return allRequestsForRG;
     }
 
+    @SuppressWarnings("WhileLoopReplaceableByForEach")
     private void fetchAllResources(final List<RGridResource> allBlobs, List<URL> resourceUrls) {
 
         List<IResourceFuture> allFetches = new ArrayList<>();
@@ -510,7 +500,6 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             IResourceFuture future = eyesConnector.getResource(link, null);
             allFetches.add(future);
             this.fetchedCacheMap.put(link.toString(), future);
-
         }
 
         for (IResourceFuture future : allFetches) {
