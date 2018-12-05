@@ -567,7 +567,8 @@ public class ServerConnector extends RestClient
         Invocation.Builder request = target.request(MediaType.TEXT_PLAIN);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
 
-        Future<Response> future = request.async().put(Entity.entity(ArrayUtils.toPrimitive(resource.getContent()), MediaType.APPLICATION_JSON));
+
+        Future<Response> future = request.async().put(Entity.entity(ArrayUtils.toPrimitive(resource.getContent()), resource.getContentType() ));
         PutFuture putFuture = new PutFuture(future);
         return putFuture;
     }

@@ -28,6 +28,7 @@ public class Eyes implements IRenderingEyes {
     private final List<RunningTest> testsInCloseProcess = new ArrayList<>();
     private LogHandler logHandler;
     private AtomicBoolean isEyesClosed = new AtomicBoolean(false);
+    private AtomicBoolean isEyesIssuedOpenTasks = new AtomicBoolean(false);
     private IRenderingEyes.EyesListener listener;
     private AbstractProxySettings proxy;
 
@@ -102,10 +103,6 @@ public class Eyes implements IRenderingEyes {
         }
 
         logger.verbose(String.format("opening %d tests...", testList.size()));
-        for (RunningTest runningTest : testList) {
-            runningTest.open();
-        }
-        logger.verbose("calling renderingGridManager.open");
         this.renderingGridManager.open(this, renderingInfo);
         logger.verbose("done");
     }
@@ -250,6 +247,7 @@ public class Eyes implements IRenderingEyes {
     }
 
     public void check(CheckRGSettings settings) {
+        addOpenTaskToAllRunningTest();
         List<Task> taskList = new ArrayList<>();
         String script = (String) this.jsExecutor.executeAsyncScript("var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})");
         for (final RunningTest test : testList) {
@@ -265,6 +263,16 @@ public class Eyes implements IRenderingEyes {
                     test.setTestInExceptionMode(e);
                 }
             });
+        }
+    }
+
+    private synchronized void addOpenTaskToAllRunningTest(){
+        if (!this.isEyesIssuedOpenTasks.get()) {
+            for (RunningTest runningTest : testList) {
+                runningTest.open();
+            }
+            logger.verbose("calling addOpenTaskToAllRunningTest.open");
+            this.isEyesIssuedOpenTasks.set(true);
         }
     }
 

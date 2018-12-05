@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +22,7 @@ public class RGridDom {
     private List domNodes = null;
 
     @JsonIgnore
-    private Map<String, RGridResource> resources = null;
+    private Map<String, RGridResource> resources = new HashMap<>();
 
     @JsonIgnore
     private String sha256;
@@ -28,10 +30,10 @@ public class RGridDom {
     @JsonInclude
     private String hashFormat = "sha256";
 
+    @JsonIgnore
+    private URL url;
+
     public void addResource(RGridResource resource) {
-        if (this.resources == null) {
-            this.resources = new HashMap<>();
-        }
         this.resources.put(resource.getUrl().toString(), resource);
     }
 
@@ -87,9 +89,18 @@ public class RGridDom {
 
     public RGridResource asResource() {
 
-        RGridResource gridResource = null;
-            gridResource = new RGridResource(null, CONTENT_TYPE, ArrayUtils.toObject(getStringObjectMap().getBytes()));
+        RGridResource gridResource = new RGridResource(this.url, CONTENT_TYPE, ArrayUtils.toObject(getStringObjectMap().getBytes()));
 
         return gridResource;
+    }
+
+    public void addResources(ArrayList<RGridResource> frameResourceUrlsMapping) {
+        for (RGridResource gridResource : frameResourceUrlsMapping) {
+            this.resources.put(gridResource.getUrl().toString(), gridResource);
+        }
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
     }
 }

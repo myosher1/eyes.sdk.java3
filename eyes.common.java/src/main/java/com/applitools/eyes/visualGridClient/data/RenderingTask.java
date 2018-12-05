@@ -3,8 +3,8 @@ package com.applitools.eyes.visualGridClient.data;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.IEyesConnector;
 import com.applitools.eyes.visualGridClient.IResourceFuture;
+import com.applitools.eyes.visualGridClient.RenderingGridManager;
 import com.applitools.utils.GeneralUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.helger.commons.collection.impl.ICommonsList;
@@ -218,10 +218,10 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                 if (putResourceCache.containsKey(url)) continue;
 
                 try {
-                    logger.log("trying to get url from map - "+ url);
+                    logger.log("trying to get url from map - " + url);
                     IResourceFuture resourceFuture = fetchedCacheMap.get(url);
-                    if(resourceFuture == null){
-                        logger.log("fetchedCacheMap.get(url) == null - "+url);
+                    if (resourceFuture == null) {
+                        logger.log("fetchedCacheMap.get(url) == null - " + url);
                     }
                     RGridResource resource = resourceFuture.get();
                     Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, resource);
@@ -256,7 +256,6 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         while (!resourceUrls.isEmpty()) {
             fetchAllResources(allBlobs, resourceUrls);
         }
-
         addBlobsToCache(allBlobs);
 
         //Create RenderingRequest
@@ -281,24 +280,10 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                 case "blobs":
                     List listOfBlobs = (List) value;
                     for (Object blob : listOfBlobs) {
-                        Map blobAsMap = (Map) blob;
-                        String contentAsString = (String) blobAsMap.get("value");
-                        Byte[] content = ArrayUtils.toObject(codec.decode(contentAsString));
-                        String url = (String) blobAsMap.get("url");
-                        RGridResource resource = null;
-                        try {
-
-                            resource = new RGridResource(new URL(baseUrl, url), (String) blobAsMap.get("type"), content);
-
-                        } catch (MalformedURLException e) {
-                            GeneralUtils.logExceptionStackTrace(logger, e);
+                        RGridResource resource = parseBlobToGridResource(codec, baseUrl, (Map) blob);
+                        if (!allBlobs.contains(resource)) {
+                            allBlobs.add(resource);
                         }
-                        try {
-                            resource.setBaseUrl(baseUrl);
-                        } catch (MalformedURLException e) {
-                            GeneralUtils.logExceptionStackTrace(logger, e);
-                        }
-                        allBlobs.add(resource);
                     }
                     break;
 
@@ -306,6 +291,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                     List<String> list = (List<String>) value;
                     for (String url : list) {
                         try {
+                            if (this.fetchedCacheMap.containsKey(url)) continue;
                             resourceUrls.add(new URL(baseUrl, url));
                         } catch (MalformedURLException e) {
                             GeneralUtils.logExceptionStackTrace(logger, e);
@@ -316,16 +302,61 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                 case "frames":
                     List<Map<String, Object>> allObjects = (List) value;
                     for (Map<String, Object> frameObj : allObjects) {
+                        RGridDom frame = new RGridDom();
+                        try {
+                            frame.setUrl(new URL((String) frameObj.get("url")));
+                            frame.setDomNodes((List) frameObj.get("cdt"));
+                            List blobs = (List<String>) frameObj.get("blobs");
+                            for (Object blob : blobs) {
+                                RGridResource resource = parseBlobToGridResource(codec, baseUrl, (Map) blob);
+                                frame.addResource(resource);
+                            }
+                            List<String> frameResourceUrlsAsStrings = (List<String>) frameObj.get("resourceUrls");
+                            List<URL> frameResourceUrls = new ArrayList<>();
+
+                            URL frameBaseUrl = new URL((String) frameObj.get("url"));
+                            for (String frameResourceUrl : frameResourceUrlsAsStrings) {
+                                frameResourceUrls.add(new URL(frameBaseUrl, frameResourceUrl));
+                            }
+                            ArrayList<RGridResource> resourceArrayList = new ArrayList<>();
+                            fetchAllResources(resourceArrayList, frameResourceUrls);
+                            allBlobs.addAll(resourceArrayList);
+                            frame.addResources(resourceArrayList);
+                            allBlobs.add(frame.asResource());
+                        } catch (MalformedURLException e) {
+                            GeneralUtils.logExceptionStackTrace(logger, e);
+                        }
+
                         parseScriptResult(frameObj, allBlobs, resourceUrls);
                     }
-
-                    System.out.println(allObjects);
                     break;
             }
         }
         addBlobsToCache(allBlobs);
 
         parseAndCollectCSSResources(allBlobs, baseUrl, resourceUrls);
+    }
+
+    private RGridResource parseBlobToGridResource(Base64 codec, URL baseUrl, Map blob) {
+        Map blobAsMap = blob;
+        String contentAsString = (String) blobAsMap.get("value");
+        byte[] decode = codec.decode(contentAsString);
+        Byte[] content = ArrayUtils.toObject(decode);
+        String url = (String) blobAsMap.get("url");
+        RGridResource resource = null;
+        try {
+
+            resource = new RGridResource(new URL(baseUrl, url), (String) blobAsMap.get("type"), content);
+
+        } catch (MalformedURLException e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
+        try {
+            resource.setBaseUrl(baseUrl);
+        } catch (MalformedURLException e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
+        return resource;
     }
 
     private void parseAndCollectCSSResources(List<RGridResource> allBlobs, URL baseUrl, List<URL> resourceUrls) {
@@ -425,7 +456,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
     private void addBlobsToCache(List<RGridResource> allBlobs) {
         for (RGridResource blob : allBlobs) {
-            URL url = null;
+            URL url;
             url = blob.getUrl();
             if (!this.fetchedCacheMap.containsKey(url)) {
                 this.fetchedCacheMap.put(url.toString(), this.eyesConnector.createResourceFuture(blob));
@@ -502,8 +533,8 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private void removeUrlFromList(URL url, List<URL> resourceUrls) {
         Iterator<URL> iterator = resourceUrls.iterator();
         while (iterator.hasNext()) {
-            URL resourceUrl =  iterator.next();
-            if(resourceUrl.toString().equalsIgnoreCase(url.toString())){
+            URL resourceUrl = iterator.next();
+            if (resourceUrl.toString().equalsIgnoreCase(url.toString())) {
                 iterator.remove();
             }
         }

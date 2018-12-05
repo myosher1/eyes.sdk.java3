@@ -34,7 +34,6 @@ public class EyesBaseService extends Thread {
 
     @Override
     public void run() {
-        logger.verbose(serviceName + ".run()");
         Object task = null;
         while (isServiceOn || task != null) {
             task = checkAndRunNextTask();
@@ -46,7 +45,6 @@ public class EyesBaseService extends Thread {
     }
 
     private FutureTask<TestResults> checkAndRunNextTask() {
-        logger.verbose(this.serviceName + ". checkAndRunNextTask");
         if (currentWorkingSession.get() < threadPoolSize) {
             return runNextTask();
         }
@@ -54,14 +52,12 @@ public class EyesBaseService extends Thread {
     }
 
     private FutureTask<TestResults> runNextTask() {
-        logger.verbose(this.serviceName + ".runNextTask");
         final FutureTask<TestResults> task = this.listener.getNextTask();
         if (task != null) {
             this.executor.submit(task);
         } else {
             try {
-                logger.verbose(this.serviceName + " is sleeping for 1.5s");
-                Thread.sleep(1500);
+                Thread.sleep(3000);
             } catch (InterruptedException e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
