@@ -125,7 +125,7 @@ public class DomCapture {
             executeScriptMap = GeneralUtils.parseJsonToObject(executeScripString);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            GeneralUtils.logExceptionStackTrace(logger, e);
             return null;
 
         }
@@ -136,7 +136,7 @@ public class DomCapture {
         try {
             traverseDomTree(driver, argsObj, executeScriptMap, -1, new URL(driver.getCurrentUrl()));
         } catch (MalformedURLException e) {
-            e.printStackTrace();
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
 
         mainPhaser.arriveAndAwaitAdvance();
@@ -192,7 +192,7 @@ public class DomCapture {
                 try {
                     dom = GeneralUtils.parseJsonToObject(json);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    GeneralUtils.logExceptionStackTrace(logger, e);
                 }
 
                 frameHasContent = false;
@@ -259,8 +259,7 @@ public class DomCapture {
     private void loop(WebDriver mDriver, Map<String, Object> argsObj, Map<String, Object> domTree, URL baseUrl) {
         logger.verbose("DomCapture.loop");
         Object childNodesObj = domTree.get("childNodes");
-        int index = 0;
-        index = -1;
+        int index = -1;
         if (frameIndices.size() > 0) {
             index = frameIndices.peek();
         }
