@@ -195,32 +195,33 @@ public class DomCapture {
                     GeneralUtils.logExceptionStackTrace(logger, e);
                 }
 
-                frameHasContent = false;
+                if (dom != null) {
 
-                domTree.put("childNodes", new Object[]{dom});
+                    frameHasContent = false;
 
-                Object attrsNodeObj = domTree.get("attributes");
-                if (null != attrsNodeObj) {
-                    Map<String, Object> attrsNode = (Map<String, Object>) attrsNodeObj;
+                    domTree.put("childNodes", new Object[]{dom});
 
-                    Object srcUrlObj = attrsNode.get("src");
-                    if (null != srcUrlObj) {
-                        srcUrl = (String) srcUrlObj;
+                    Object attrsNodeObj = domTree.get("attributes");
+                    if (null != attrsNodeObj) {
+                        Map<String, Object> attrsNode = (Map<String, Object>) attrsNodeObj;
+
+                        Object srcUrlObj = attrsNode.get("src");
+                        if (null != srcUrlObj) {
+                            srcUrl = (String) srcUrlObj;
+                        }
                     }
-                }
 
-                if (srcUrl == null) {
-                    mLogger.log("WARNING! IFRAME WITH NO SRC");
-                }
-                try {
-                    if (srcUrl.contains("img.bbystatic.com/BestBuy_US/js/tracking/ens-index.html")) {
-                        mLogger.verbose("sgfwgsdgsdfg");
+                    if (srcUrl == null) {
+                        logger.log("WARNING! IFRAME WITH NO SRC");
+                    } else {
+                        try {
+                            URL urlHref = new URL(baseUrl, srcUrl);
+                            traverseDomTree(mDriver, argsObj, dom, -1, urlHref);
+
+                        } catch (MalformedURLException e) {
+                            GeneralUtils.logExceptionStackTrace(logger, e);
+                        }
                     }
-                    URL urlHref = new URL(baseUrl, srcUrl);
-                    traverseDomTree(mDriver, argsObj, dom, -1, urlHref);
-
-                } catch (MalformedURLException e) {
-                    GeneralUtils.logExceptionStackTrace(mLogger, e);
                 }
             }
             frameIndices.pop();
