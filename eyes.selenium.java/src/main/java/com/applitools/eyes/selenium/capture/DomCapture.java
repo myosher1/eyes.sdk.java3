@@ -48,16 +48,16 @@ public class DomCapture {
 
 
     private static IServerConnector mServerConnector = null;
-    private WebDriver mDriver;
-    private final Logger mLogger;
+    private WebDriver driver;
+    private final Logger logger;
 
     public DomCapture(Eyes eyes) {
         mServerConnector = eyes.getServerConnector();
-        mLogger = eyes.getLogger();
+        logger = eyes.getLogger();
     }
 
     public String getFullWindowDom(WebDriver driver, PositionProvider positionProvider) {
-        this.mDriver = driver;
+        this.driver = driver;
         Location initialPosition = positionProvider.getCurrentPosition();
         positionProvider.setPosition(Location.ZERO);
         Map dom = GetWindowDom();
@@ -68,7 +68,7 @@ public class DomCapture {
             String json = objectMapper.writeValueAsString(dom);
             return json;
         } catch (JsonProcessingException e) {
-            GeneralUtils.logExceptionStackTrace(mLogger, e);
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
         return "";
     }
@@ -77,7 +77,7 @@ public class DomCapture {
 
         Map argsObj = initMapDom();
 
-        Map<String, Object> result = getFrameDom_(argsObj);
+        Map<String, Object> result = getFrameDom(argsObj);
 
         return result;
     }
@@ -112,12 +112,12 @@ public class DomCapture {
         return argsObj;
     }
 
-    private Map<String, Object> getFrameDom_(Map<String, Object> argsObj) {
-        mLogger.verbose("Trying to get DOM from mDriver");
+    private Map<String, Object> getFrameDom(Map<String, Object> argsObj) {
+        logger.verbose("Trying to get DOM from driver");
         long startingTime = System.currentTimeMillis();
-        String executeScripString = (String) ((JavascriptExecutor) mDriver).executeScript(CAPTURE_FRAME_SCRIPT, argsObj);
+        String executeScripString = (String) ((JavascriptExecutor) driver).executeScript(CAPTURE_FRAME_SCRIPT, argsObj);
 
-        mLogger.verbose("Finished capturing DOM in - " + (System.currentTimeMillis() - startingTime));
+        logger.verbose("Finished capturing DOM in - " + (System.currentTimeMillis() - startingTime));
         startingTime = System.currentTimeMillis();
 
         final Map<String, Object> executeScriptMap;
@@ -130,18 +130,18 @@ public class DomCapture {
 
         }
 
-        mLogger.verbose("Finished converting DOM map in - " + (System.currentTimeMillis() - startingTime));
+        logger.verbose("Finished converting DOM map in - " + (System.currentTimeMillis() - startingTime));
         startingTime = System.currentTimeMillis();
 
         try {
-            traverseDomTree(mDriver, argsObj, executeScriptMap, -1, new URL(mDriver.getCurrentUrl()));
+            traverseDomTree(driver, argsObj, executeScriptMap, -1, new URL(driver.getCurrentUrl()));
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
 
         mainPhaser.arriveAndAwaitAdvance();
 
-        mLogger.verbose("Finished going over DOM CSS in - " + (System.currentTimeMillis() - startingTime));
+        logger.verbose("Finished going over DOM CSS in - " + (System.currentTimeMillis() - startingTime));
 
         return executeScriptMap;
     }
@@ -152,7 +152,7 @@ public class DomCapture {
     private void traverseDomTree(WebDriver mDriver, Map<String, Object> argsObj, final Map<String, Object> domTree
             , int frameIndex, URL baseUrl) {
 
-        mLogger.verbose("DomCapture.traverseDomTree  baseUrl - " + baseUrl);
+        logger.verbose("DomCapture.traverseDomTree  baseUrl - " + baseUrl);
 
         Map<String, Object> dom = null;
 
@@ -172,7 +172,7 @@ public class DomCapture {
                 frameIndices.push(0);
 
             } catch (Exception e) {
-                GeneralUtils.logExceptionStackTrace(mLogger, e);
+                GeneralUtils.logExceptionStackTrace(logger, e);
                 mDriver.switchTo().parentFrame();
                 return;
             }
@@ -237,18 +237,18 @@ public class DomCapture {
                     @Override
                     public void onDownloadComplete(String downloadedString, String contentType) {
                         domTree.put("css", downloadedString);
-                        mLogger.verbose("Putting css in " + " - CSS = " + downloadedString);
+                        logger.verbose("Putting css in " + " - CSS = " + downloadedString);
                         mainPhaser.arriveAndDeregister();
                     }
 
                     @Override
                     public void onDownloadFailed() {
-                        mLogger.verbose("mainPhaser.arriveAndDeregister()");
+                        logger.verbose("mainPhaser.arriveAndDeregister()");
                         mainPhaser.arriveAndDeregister();
 
                     }
                 });
-                mLogger.verbose("Finish getFrameBundledCss(baseUrl)");
+                logger.verbose("Finish getFrameBundledCss(baseUrl)");
             }
 
             loop(mDriver, argsObj, domTree, baseUrl);
@@ -257,7 +257,7 @@ public class DomCapture {
     }
 
     private void loop(WebDriver mDriver, Map<String, Object> argsObj, Map<String, Object> domTree, URL baseUrl) {
-        mLogger.verbose("DomCapture.loop");
+        logger.verbose("DomCapture.loop");
         Object childNodesObj = domTree.get("childNodes");
         int index = 0;
         index = -1;
@@ -272,7 +272,7 @@ public class DomCapture {
             if (node instanceof Map) {
                 final Map<String, Object> domSubTree = (Map<String, Object>) node;
 
-                mLogger.verbose("Current DOM subtree hash : " + domSubTree.hashCode());
+                logger.verbose("Current DOM subtree hash : " + domSubTree.hashCode());
 
                 Object tagNameObj = domSubTree.get("tagName");
 
@@ -283,7 +283,7 @@ public class DomCapture {
                     if (frameIndices.size() > 0) {
                         frameIndices.pop();
                     } else {
-                        mLogger.verbose("frameIndices size is 0");
+                        logger.verbose("frameIndices size is 0");
                     }
                     frameIndices.push(index + 1);
                     traverseDomTree(mDriver, argsObj, domSubTree, index, baseUrl);
@@ -297,19 +297,21 @@ public class DomCapture {
                 }
             }
         }
-        mLogger.verbose("DomCapture.loop - finish");
+        logger.verbose("DomCapture.loop - finish");
     }
 
 
     private void getFrameBundledCss(final URL baseUrl, IDownloadListener listener) {
-        URI uri = URI.create(baseUrl.toString());
+        String baseUrlStr = baseUrl.toString();
+        URI uri = URI.create(baseUrlStr);
         if (!uri.isAbsolute()) {
-            mLogger.log("WARNING! Base URL is not an absolute URL!");
+            logger.log("WARNING! Base URL is not an absolute URL!");
+            logger.log("uri: " + uri);
         }
         CssTreeNode root = new CssTreeNode();
         root.setBaseUrl(baseUrl);
 
-        List<String> result = (List<String>) ((JavascriptExecutor) mDriver).executeScript(CAPTURE_CSSOM_SCRIPT);
+        List<String> result = (List<String>) ((JavascriptExecutor) driver).executeScript(CAPTURE_CSSOM_SCRIPT);
         final List<CssTreeNode> nodes = new ArrayList<>();
         for (String item : result) {
             String kind = item.substring(0, 5);
@@ -325,7 +327,7 @@ public class DomCapture {
                 downloadCss(cssTreeNode, new IDownloadListener<String>() {
                     @Override
                     public void onDownloadComplete(String downloadedString, String contentType) {
-                        mLogger.verbose("DomCapture.onDownloadComplete");
+                        logger.verbose("DomCapture.onDownloadComplete");
 
                         parseCSS(cssTreeNode, downloadedString);
                         if (cssTreeNode.allImportRules != null && !cssTreeNode.allImportRules.isEmpty()) {
@@ -337,7 +339,7 @@ public class DomCapture {
                     @Override
 
                     public void onDownloadFailed() {
-                        mLogger.verbose("DomCapture.onDownloadFailed");
+                        logger.verbose("DomCapture.onDownloadFailed");
                     }
                 });
                 nodes.add(cssTreeNode);
@@ -405,7 +407,7 @@ public class DomCapture {
 
                         @Override
                         public void onDownloadFailed() {
-                            mLogger.verbose("Download Failed");
+                            logger.verbose("Download Failed");
                         }
                     });
                     decedents.add(cssTreeNode);
@@ -421,7 +423,7 @@ public class DomCapture {
                 absolute = new URI(urlPostfix).isAbsolute();
                 this.urlPostfix = absolute ? new URL(urlPostfix) : new URL(baseUrl, urlPostfix);
             } catch (UnsupportedEncodingException | URISyntaxException | MalformedURLException e) {
-                GeneralUtils.logExceptionStackTrace(mLogger, e);
+                GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
 
@@ -439,29 +441,29 @@ public class DomCapture {
 
     private void downloadCss(final CssTreeNode node, final IDownloadListener<String> listener) {
         treePhaser.register();
-        mLogger.verbose("Given URL to download: " + node.urlPostfix);
+        logger.verbose("Given URL to download: " + node.urlPostfix);
         mServerConnector.downloadString(node.urlPostfix, false, new IDownloadListener<String>() {
             @Override
             public void onDownloadComplete(String downloadedString, String contentType) {
                 try {
-                    mLogger.verbose("Download Complete");
+                    logger.verbose("Download Complete");
                     listener.onDownloadComplete(downloadedString, "String");
 
                 } catch (Exception e) {
-                    GeneralUtils.logExceptionStackTrace(mLogger, e);
+                    GeneralUtils.logExceptionStackTrace(logger, e);
                 } finally {
                     treePhaser.arriveAndDeregister();
-                    mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
-                    mLogger.verbose("current missing - " + treePhaser.getUnarrivedParties());
+                    logger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
+                    logger.verbose("current missing - " + treePhaser.getUnarrivedParties());
                 }
             }
 
             @Override
             public void onDownloadFailed() {
                 treePhaser.arriveAndDeregister();
-                mLogger.verbose("Download Failed");
-                mLogger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
-                mLogger.verbose("current missing  - " + treePhaser.getUnarrivedParties());
+                logger.verbose("Download Failed");
+                logger.verbose("treePhaser.arriveAndDeregister(); " + node.urlPostfix);
+                logger.verbose("current missing  - " + treePhaser.getUnarrivedParties());
             }
         });
     }
