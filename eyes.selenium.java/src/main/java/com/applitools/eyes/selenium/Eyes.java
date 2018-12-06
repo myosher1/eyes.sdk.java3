@@ -762,7 +762,7 @@ public class Eyes extends EyesBase {
             debugScreenshotsProvider.save(subScreenshot.getImage(), String.format("subscreenshot_%s", name));
 
             ImageMatchSettings ims = mwt.createImageMatchSettings(checkSettingsInternal, subScreenshot);
-            AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()),null);
+            AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()), null);
             AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, subScreenshot);
             MatchResult matchResult = mwt.performMatch(
                     new Trigger[0], appOutputWithScreenshot, name, false, ims);
@@ -938,7 +938,9 @@ public class Eyes extends EyesBase {
                     currentFramePositionProvider = createPositionProvider(driver.findElement(By.tagName("html")));
                 }
                 result = this.checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
-                switchTo.frames(this.originalFC);
+                if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+                    switchTo.frames(this.originalFC);
+                }
             }
         }
 
@@ -956,13 +958,15 @@ public class Eyes extends EyesBase {
             this.positionMemento = null;
         }
 
-        switchTo.resetScroll();
+        if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+            switchTo.resetScroll();
 
-        if (originalFC != null) {
-            tryRestoreScrollbars(originalFC);
+            if (originalFC != null) {
+                tryRestoreScrollbars(originalFC);
+            }
+
+            trySwitchToFrames(driver, switchTo, this.originalFC);
         }
-
-        trySwitchToFrames(driver, switchTo, this.originalFC);
 
         this.stitchContent = false;
 
@@ -1143,13 +1147,10 @@ public class Eyes extends EyesBase {
             Location elementLocation = new Location(p.getX(), p.getY());
 
             WebElement scrollRootElement;
-            if (originalFC.size() > 0 && !element.equals(originalFC.peek().getReference()))
-            {
+            if (originalFC.size() > 0 && !element.equals(originalFC.peek().getReference())) {
                 switchTo.frames(originalFC);
                 scrollRootElement = driver.findElement(By.tagName("html"));
-            }
-            else
-            {
+            } else {
                 scrollRootElement = this.scrollRootElement;
             }
 
@@ -2199,19 +2200,22 @@ public class Eyes extends EyesBase {
             return;
         }
 
-        FrameChain originalFrame = driver.getFrameChain();
-        driver.switchTo().defaultContent();
+        if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+            FrameChain originalFrame = driver.getFrameChain();
+            driver.switchTo().defaultContent();
 
-        try {
-            EyesSeleniumUtils.setViewportSize(logger, driver, size);
-            effectiveViewport = new Region(Location.ZERO, size);
-        } catch (EyesException e) {
-            // Just in case the user catches this error
+            try {
+                EyesSeleniumUtils.setViewportSize(logger, driver, size);
+                effectiveViewport = new Region(Location.ZERO, size);
+            } catch (EyesException e1) {
+                // Just in case the user catches this error
+                ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
+
+                throw new TestFailedException("Failed to set the viewport size", e1);
+            }
             ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
-
-            throw new TestFailedException("Failed to set the viewport size", e);
         }
-        ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
+
         viewportSizeHandler.set(new RectangleSize(size.getWidth(), size.getHeight()));
     }
 
@@ -2297,7 +2301,7 @@ public class Eyes extends EyesBase {
             }
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
             logger.verbose("done restoring scrollbars.");
-        } else{
+        } else {
             logger.verbose("no need to restore scrollbars.");
         }
         driver.getFrameChain().clear();
@@ -2502,16 +2506,19 @@ public class Eyes extends EyesBase {
     }
 
     private WebElement getScrollRootElement(IScrollRootElementContainer scrollRootElementContainer) {
-        if (scrollRootElementContainer == null) {
-            return driver.findElement(By.tagName("html"));
+        if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+            if (scrollRootElementContainer == null) {
+                return driver.findElement(By.tagName("html"));
+            }
+            WebElement scrollRootElement = scrollRootElementContainer.getScrollRootElement();
+            if (scrollRootElement == null) {
+                By scrollRootSelector = scrollRootElementContainer.getScrollRootSelector();
+                scrollRootElement = driver.findElement(scrollRootSelector != null ? scrollRootSelector : By.tagName("html"));
+            }
+            return scrollRootElement;
         }
 
-        WebElement scrollRootElement = scrollRootElementContainer.getScrollRootElement();
-        if (scrollRootElement == null) {
-            By scrollRootSelector = scrollRootElementContainer.getScrollRootSelector();
-            scrollRootElement = driver.findElement(scrollRootSelector != null ? scrollRootSelector : By.tagName("html"));
-        }
-        return scrollRootElement;
+        return null;
     }
 
     private PositionProvider getElementPositionProvider(WebElement scrollRootElement) {
@@ -2599,8 +2606,12 @@ public class Eyes extends EyesBase {
         return new EyesSeleniumAgentSetup();
     }
 
-    public IServerConnector getServerConnector(){
+    public IServerConnector getServerConnector() {
         return this.serverConnector;
     }
 
+    @Override
+    public boolean isSendDom() {
+        return !EyesSeleniumUtils.isMobileDevice(driver) && super.isSendDom();
+    }
 }
