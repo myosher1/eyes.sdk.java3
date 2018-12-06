@@ -857,20 +857,27 @@ public class Eyes extends EyesBase {
     @Override
     public String tryCaptureDom() {
         FrameChain fc = driver.getFrameChain().clone();
-        Frame frame = fc.peek();
-        WebElement scrollRootElement = null;
-        if (frame != null) {
-            scrollRootElement = frame.getScrollRootElement();
-        }
-        if (scrollRootElement == null) {
-            scrollRootElement = driver.findElement(By.tagName("html"));
-        }
-        PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
+        String fullWindowDom = "";
+        try {
+            Frame frame = fc.peek();
+            WebElement scrollRootElement = null;
+            if (frame != null) {
+                scrollRootElement = frame.getScrollRootElement();
+            }
+            if (scrollRootElement == null) {
+                scrollRootElement = driver.findElement(By.tagName("html"));
+            }
+            PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
 
-        DomCapture domCapture = new DomCapture(this);
-        String fullWindowDom = domCapture.getFullWindowDom(this.driver, positionProvider);
-        if (this.domCaptureListener != null) {
-            this.domCaptureListener.onDomCaptureComplete(fullWindowDom);
+            DomCapture domCapture = new DomCapture(this);
+            fullWindowDom = domCapture.getFullWindowDom(this.driver, positionProvider);
+            if (this.domCaptureListener != null) {
+                this.domCaptureListener.onDomCaptureComplete(fullWindowDom);
+            }
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        } finally {
+            ((EyesTargetLocator) driver.switchTo()).frames(fc);
         }
         return fullWindowDom;
     }
