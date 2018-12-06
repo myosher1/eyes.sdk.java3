@@ -40,7 +40,6 @@ public class DomCapture {
     static {
         try {
             CAPTURE_FRAME_SCRIPT = GeneralUtils.readToEnd(DomCapture.class.getResourceAsStream("/captureframe.js"));
-
             CAPTURE_CSSOM_SCRIPT = GeneralUtils.readToEnd(DomCapture.class.getResourceAsStream("/capturecssom.js"));
         } catch (IOException e) {
             e.printStackTrace();
@@ -227,6 +226,7 @@ public class DomCapture {
             frameIndices.pop();
             mDriver.switchTo().parentFrame();
         }
+
         if (frameHasContent) {
             String tagName = (String) tagNameObj;
             boolean isHTML = tagName.equalsIgnoreCase("HTML");

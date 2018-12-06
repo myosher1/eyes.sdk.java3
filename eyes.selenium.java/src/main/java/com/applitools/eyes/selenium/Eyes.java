@@ -882,7 +882,6 @@ public class Eyes extends EyesBase {
         return fullWindowDom;
     }
 
-
     public void check(ICheckSettings checkSettings) {
         if (getIsDisabled()) {
             logger.log(String.format("check(%s): Ignored", checkSettings));
