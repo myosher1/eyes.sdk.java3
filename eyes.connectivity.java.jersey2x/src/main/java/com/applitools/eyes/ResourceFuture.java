@@ -20,11 +20,11 @@ import java.util.concurrent.TimeoutException;
 public class ResourceFuture implements IResourceFuture {
 
     private Future<Response> future;
-    private URL url;
+    private String url;
     private Logger logger;
     private RGridResource rgResource;
 
-    public ResourceFuture(Future<Response> future, URL url, Logger logger) {
+    public ResourceFuture(Future<Response> future, String url, Logger logger) {
         this.future = future;
         this.url = url;
         this.logger = logger;
@@ -100,6 +100,6 @@ public class ResourceFuture implements IResourceFuture {
 
     @Override
     public String getUrl() {
-        return this.url.toString();
+        return this.url;
     }
 }

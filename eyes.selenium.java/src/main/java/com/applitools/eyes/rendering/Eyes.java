@@ -175,7 +175,7 @@ public class Eyes implements IRenderingEyes {
     }
 
     @Override
-    public synchronized Task getNextTaskToCheck() {
+    public synchronized Task getNextCheckTask() {
         int bestMark = -1;
         RunningTest bestTest = null;
         for (RunningTest runningTest : testList) {
@@ -238,11 +238,17 @@ public class Eyes implements IRenderingEyes {
 
     public void check(ICheckRGSettings settings) {
         addOpenTaskToAllRunningTest();
+
         List<Task> taskList = new ArrayList<>();
-        String script = (String) this.jsExecutor.executeAsyncScript("var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})");
+
+        String domCaptureScript = "var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})";
+
+        String scriptResult = (String) this.jsExecutor.executeAsyncScript(domCaptureScript);
+
         for (final RunningTest test : testList) {
-            taskList.add(test.check(settings));
-            this.renderingGridManager.check(settings, script, this.eyesConnector, taskList, new RenderingGridManager.RenderListener() {
+            Task checkTask = test.check(settings);
+            taskList.add(checkTask);
+            this.renderingGridManager.check(settings, scriptResult, this.eyesConnector, taskList, new RenderingGridManager.RenderListener() {
                 @Override
                 public void onRenderSuccess() {
 

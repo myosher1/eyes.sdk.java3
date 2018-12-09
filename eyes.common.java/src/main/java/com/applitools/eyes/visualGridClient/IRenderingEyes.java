@@ -19,7 +19,7 @@ public interface IRenderingEyes {
 
     List<Future<TestResults>> close();
 
-    Task getNextTaskToCheck();
+    Task getNextCheckTask();
 
     int getBestMarkForCheck();
 

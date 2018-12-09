@@ -414,7 +414,7 @@ public class ServerConnector extends RestClient
             }
         });
 
-        IResourceFuture newFuture = new ResourceFuture(future, url, logger);
+        IResourceFuture newFuture = new ResourceFuture(future, url.toString(), logger);
         return newFuture;
     }
 
