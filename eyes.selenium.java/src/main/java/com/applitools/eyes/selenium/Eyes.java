@@ -2377,6 +2377,14 @@ public class Eyes extends EyesBase {
         FrameChain originalFrameChain = driver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
 
+        switchTo.frames(originalFC);
+        PositionProvider positionProvider = getPositionProvider();
+        PositionMemento originalPosition = null;
+        if (positionProvider != null) {
+            originalPosition = positionProvider.getState();
+        }
+        switchTo.frames(originalFrameChain);
+
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
 
         EyesWebDriverScreenshot result;
@@ -2398,8 +2406,8 @@ public class Eyes extends EyesBase {
             BufferedImage entireFrameOrElement;
             if (elementPositionProvider == null) {
                 WebElement scrollRootElement = driver.findElement(By.tagName("html"));
-                PositionProvider positionProvider = this.getElementPositionProvider(scrollRootElement);
-                entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, positionProvider);
+                PositionProvider elemPositionProvider = this.getElementPositionProvider(scrollRootElement);
+                entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, elemPositionProvider);
             } else {
                 entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, elementPositionProvider);
             }
@@ -2473,9 +2481,8 @@ public class Eyes extends EyesBase {
         }
 
         switchTo.frames(this.originalFC);
-        PositionProvider positionProvider = getPositionProvider();
         if (positionProvider != null) {
-            positionProvider.setPosition(Location.ZERO);
+            positionProvider.restoreState(originalPosition);
         }
         switchTo.frames(originalFrameChain);
 
