@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
+// Needs to be refactored to join on jobRequest and on 
 
 public class EyesBaseService extends Thread {
 
@@ -37,11 +38,19 @@ public class EyesBaseService extends Thread {
         Object task = null;
         while (isServiceOn || task != null) {
             task = checkAndRunNextTask();
+            // Go to sleep if task is null
+            if (task == null) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    GeneralUtils.logExceptionStackTrace(logger, e);
+                }
+            }
         }
         if (this.executor != null) {
             this.executor.shutdown();
         }
-        System.out.println("Service '" + this.getName() + "' is dead - R.I.P");
+        logger.log("Service '" + this.getName() + "' is dead - R.I.P");
     }
 
     private FutureTask<TestResults> checkAndRunNextTask() {
@@ -55,12 +64,6 @@ public class EyesBaseService extends Thread {
         final FutureTask<TestResults> task = this.listener.getNextTask();
         if (task != null) {
             this.executor.submit(task);
-        } else {
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                GeneralUtils.logExceptionStackTrace(logger, e);
-            }
         }
         return task;
     }

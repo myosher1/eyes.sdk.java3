@@ -31,10 +31,10 @@ public class RGridDom {
     private String hashFormat = "sha256";
 
     @JsonIgnore
-    private URL url;
+    private String url;
 
     public void addResource(RGridResource resource) {
-        this.resources.put(resource.getUrl().toString(), resource);
+        this.resources.put(resource.getUrl(), resource);
     }
 
     public List getDomNodes() {
@@ -96,11 +96,11 @@ public class RGridDom {
 
     public void addResources(ArrayList<RGridResource> frameResourceUrlsMapping) {
         for (RGridResource gridResource : frameResourceUrlsMapping) {
-            this.resources.put(gridResource.getUrl().toString(), gridResource);
+            this.resources.put(gridResource.getUrl(), gridResource);
         }
     }
 
-    public void setUrl(URL url) {
+    public void setUrl(String url) {
         this.url = url;
     }
 }

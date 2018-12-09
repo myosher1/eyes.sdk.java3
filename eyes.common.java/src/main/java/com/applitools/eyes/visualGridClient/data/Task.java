@@ -1,7 +1,6 @@
 package com.applitools.eyes.visualGridClient.data;
 
 import com.applitools.ICheckSettings;
-import com.applitools.ICheckSettingsInternal;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualGridClient.IEyesConnector;

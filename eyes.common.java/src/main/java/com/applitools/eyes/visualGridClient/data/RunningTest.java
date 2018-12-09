@@ -168,5 +168,6 @@ public class RunningTest {
     public void setTestInExceptionMode(Exception e) {
         exception = e;
         this.isTestInExceptionMode.set(true);
+        //TODO abort if not closed - create new result object containing the exception.
     }
 }

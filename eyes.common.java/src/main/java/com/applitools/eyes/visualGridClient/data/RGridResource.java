@@ -6,16 +6,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 public class RGridResource {
 
     @JsonIgnore
-    private URL url = null;
-
-    @JsonIgnore
-    private URL baseUrl = null;
+    private String url = null;
 
     @JsonInclude
     private String contentType = null;
@@ -30,11 +24,11 @@ public class RGridResource {
     private String hashFormat = "sha256";
 
 
-    public URL getUrl() {
+    public String getUrl() {
         return url;
     }
 
-    public RGridResource(URL url, String contentType, Byte[] content) {
+    public RGridResource(String url, String contentType, Byte[] content) {
         this.url = url;
         this.contentType = contentType;
         this.content = content;
@@ -42,7 +36,7 @@ public class RGridResource {
 
     }
 
-    public void setUrl(URL url) {
+    public void setUrl(String url) {
         ArgumentGuard.notNull(url, "url");
         this.url = url;
     }
@@ -77,12 +71,5 @@ public class RGridResource {
         return hashFormat;
     }
 
-    public URL getBaseUrl() {
-        return baseUrl;
-    }
-
-    public void setBaseUrl(URL baseUrl) throws MalformedURLException {
-        this.baseUrl = baseUrl;
-            this.url = new URL(baseUrl, url.toString());
-    }
 }
+

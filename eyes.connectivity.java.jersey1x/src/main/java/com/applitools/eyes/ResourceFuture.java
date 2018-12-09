@@ -17,7 +17,7 @@ public class ResourceFuture implements IResourceFuture {
 
     private Future<Response> future;
 
-    private URL url = null;
+    private String url = null;
     private RGridResource resource;
 
     public ResourceFuture(Future<Response> future) {
