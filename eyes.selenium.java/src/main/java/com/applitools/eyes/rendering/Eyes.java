@@ -2,10 +2,8 @@ package com.applitools.eyes.rendering;
 
 import com.applitools.ICheckRGSettings;
 import com.applitools.eyes.*;
-import com.applitools.eyes.visualGridClient.IEyesConnector;
-import com.applitools.eyes.visualGridClient.IRenderingEyes;
-import com.applitools.eyes.visualGridClient.RenderingGridManager;
-import com.applitools.eyes.visualGridClient.data.*;
+import com.applitools.eyes.visualGridClient.services.*;
+import com.applitools.eyes.visualGridClient.model.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.JavascriptExecutor;
@@ -24,7 +22,6 @@ public class Eyes implements IRenderingEyes {
     private String serverUrl;
     private RenderingGridManager renderingGridManager;
     private List<RunningTest> testList = new ArrayList<>();
-    private final List<RunningTest> testsInOpenProcess = new ArrayList<>();
     private final List<RunningTest> testsInCloseProcess = new ArrayList<>();
     private AtomicBoolean isEyesClosed = new AtomicBoolean(false);
     private AtomicBoolean isEyesIssuedOpenTasks = new AtomicBoolean(false);
@@ -54,17 +51,8 @@ public class Eyes implements IRenderingEyes {
                         isEyesClosed &= runningTest.isTestClose();
                     }
                     Eyes.this.isEyesClosed.set(isEyesClosed);
-                    synchronized (Eyes.this.testsInCloseProcess) {
-                        Eyes.this.testsInOpenProcess.remove(test);
-                    }
                     break;
                 case OPEN:
-                    synchronized (Eyes.this.testsInOpenProcess) {
-                        Eyes.this.testsInOpenProcess.add(test);
-                    }
-            }
-
-            if (task.getType() == Task.TaskType.CLOSE) {
 
             }
 
@@ -106,12 +94,12 @@ public class Eyes implements IRenderingEyes {
         logger.verbose("creating eyes server connector");
         IEyesConnector eyesConnector = new EyesConnector(browserInfo);
 
-        logger.verbose("initializing rendering info...");
         if (this.renderingInfo == null) {
+            logger.verbose("initializing rendering info...");
             this.renderingInfo = eyesConnector.getRenderingInfo();
-        } else {
-            eyesConnector.setRenderInfo(this.renderingInfo);
         }
+        eyesConnector.setRenderInfo(this.renderingInfo);
+
 
         eyesConnector.setProxy(this.proxy);
         eyesConnector.setLogHandler(this.logger.getLogHandler());
@@ -137,17 +125,13 @@ public class Eyes implements IRenderingEyes {
         RunningTest currentBestTest = null;
         int currentBestMark = -1;
         for (RunningTest test : testList) {
-            if (test.isTestOpen() || this.testsInOpenProcess.contains(test)) continue;
+            if (test.isTestOpen() || !test.hasCheckTask()) continue;
             if (test.getMark() > currentBestMark) {
                 currentBestTest = test;
             }
         }
-        synchronized (testsInOpenProcess) {
-            this.testsInOpenProcess.add(currentBestTest);
-        }
         return currentBestTest;
     }
-
 
     public RunningTest getNextTestToClose() {
         RunningTest test = null;
@@ -175,13 +159,21 @@ public class Eyes implements IRenderingEyes {
     }
 
     @Override
-    public synchronized Task getNextCheckTask() {
+    public synchronized RunningTest getNextCheckTask() {
+
         int bestMark = -1;
+
         RunningTest bestTest = null;
         for (RunningTest runningTest : testList) {
-            Task task = runningTest.getTaskList().get(0);
+
+            Task task = null;
+
+            if (runningTest.getTaskList().isEmpty()) continue;
+
+            task = runningTest.getTaskList().get(0);
             if (!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck())
                 continue;
+
             if (bestMark < runningTest.getMark()) {
                 bestTest = runningTest;
                 bestMark = runningTest.getMark();
@@ -190,11 +182,11 @@ public class Eyes implements IRenderingEyes {
         if (bestTest == null) {
             return null;
         }
-        return bestTest.getNextCheckTask();
+        return bestTest;
     }
 
     @Override
-    public int getBestMarkForCheck() {
+    public int getBestScoreForCheck() {
         int bestMark = -1;
         for (RunningTest runningTest : testList) {
             List<Task> taskList = runningTest.getTaskList();
@@ -204,8 +196,28 @@ public class Eyes implements IRenderingEyes {
             Task task = taskList.get(0);
             if (!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck())
                 continue;
-            if (bestMark < runningTest.getMark()) {
-                bestMark = runningTest.getMark();
+            int mark = runningTest.getMark();
+            if (bestMark < mark) {
+                bestMark = mark;
+            }
+        }
+        return bestMark;
+    }
+
+    @Override
+    public int getBestScoreForOpen() {
+        int bestMark = -1;
+        for (RunningTest runningTest : testList) {
+            List<Task> taskList = runningTest.getTaskList();
+            if (taskList == null || taskList.isEmpty()) {
+                continue;
+            }
+            Task task = taskList.get(0);
+            if (!runningTest.isTestOpen() || task.getType() != Task.TaskType.OPEN)
+                continue;
+            int mark = runningTest.getMark();
+            if (bestMark < mark) {
+                bestMark = mark;
             }
         }
         return bestMark;
@@ -229,6 +241,7 @@ public class Eyes implements IRenderingEyes {
 
     /**
      * Sets the proxy settings to be used by the rest client.
+     *
      * @param abstractProxySettings The proxy settings to be used by the rest client.
      *                              If {@code null} then no proxy is set.
      */
@@ -246,20 +259,24 @@ public class Eyes implements IRenderingEyes {
         String scriptResult = (String) this.jsExecutor.executeAsyncScript(domCaptureScript);
 
         for (final RunningTest test : testList) {
+            if(!test.isTestOpen()){
+                test.open();
+            }
             Task checkTask = test.check(settings);
             taskList.add(checkTask);
-            this.renderingGridManager.check(settings, scriptResult, this.eyesConnector, taskList, new RenderingGridManager.RenderListener() {
-                @Override
-                public void onRenderSuccess() {
 
-                }
-
-                @Override
-                public void onRenderFailed(Exception e) {
-                    test.setTestInExceptionMode(e);
-                }
-            });
         }
+        this.renderingGridManager.check(settings, scriptResult, this.eyesConnector, taskList, new RenderingGridManager.RenderListener() {
+            @Override
+            public void onRenderSuccess() {
+
+            }
+
+            @Override
+            public void onRenderFailed(Exception e) {
+
+            }
+        });
     }
 
     private synchronized void addOpenTaskToAllRunningTest() {

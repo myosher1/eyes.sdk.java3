@@ -238,14 +238,14 @@ public class Eyes extends EyesBase {
     }
 
     /**
-     * @return The image rotation data.
+     * @return The image rotation model.
      */
     public ImageRotation getRotation() {
         return rotation;
     }
 
     /**
-     * @param rotation The image rotation data.
+     * @param rotation The image rotation model.
      */
     public void setRotation(ImageRotation rotation) {
         this.rotation = rotation;

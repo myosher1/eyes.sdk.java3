@@ -1,9 +1,11 @@
-package com.applitools.eyes.visualGridClient.data;
+package com.applitools.eyes.visualGridClient.services;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.Logger;
+import com.applitools.eyes.MatchResult;
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.visualGridClient.IEyesConnector;
+import com.applitools.eyes.visualGridClient.model.RenderStatusResults;
+import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.utils.GeneralUtils;
 
 import java.util.concurrent.Callable;
@@ -14,6 +16,7 @@ public class Task implements Callable<TestResults> {
 
     private static AtomicBoolean isThrown = new AtomicBoolean(false);
     private final Logger logger;
+    private MatchResult matchResult;
 
 
     public enum TaskType {OPEN, CHECK, CLOSE, ABORT}
@@ -34,6 +37,8 @@ public class Task implements Callable<TestResults> {
         void onTaskComplete(Task task);
 
         void onTaskFailed(Exception e);
+
+        void onRenderComplete();
 
     }
 
@@ -70,14 +75,17 @@ public class Task implements Callable<TestResults> {
                     break;
 
                 case CHECK:
-                    eyesConnector.matchWindow(renderResult.getImageLocation(), checkSettings);
+                    logger.log("Task.run check task");
+                    matchResult = eyesConnector.matchWindow(renderResult.getImageLocation(), checkSettings);
                     break;
 
                 case CLOSE:
+                    logger.log("Task.run close task");
                     testResults = eyesConnector.close(configuration.isThrowExceptionOn());
                     break;
 
                 case ABORT:
+                    logger.log("Task.run abort task");
                     eyesConnector.abortIfNotClosed();
             }
             //call the callback
@@ -104,6 +112,10 @@ public class Task implements Callable<TestResults> {
 
     public boolean isTaskReadyToCheck() {
         return this.renderResult != null;
+    }
+
+    public MatchResult getMatchResult() {
+        return matchResult;
     }
 }
 

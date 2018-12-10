@@ -1,10 +1,11 @@
-package com.applitools.eyes.visualGridClient.data;
+package com.applitools.eyes.visualGridClient.model;
 
 import com.applitools.ICheckRGSettings;
 import com.applitools.ICheckRGSettingsInternal;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.visualGridClient.IEyesConnector;
-import com.applitools.eyes.visualGridClient.IResourceFuture;
+import com.applitools.eyes.visualGridClient.services.IEyesConnector;
+import com.applitools.eyes.visualGridClient.services.IResourceFuture;
+import com.applitools.eyes.visualGridClient.services.Task;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,8 +19,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
@@ -30,8 +29,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
     private final RenderTaskListener listener;
     private IEyesConnector eyesConnector;
-    private String scriptResult
-            ;
+    private String scriptResult;
     private ICheckRGSettings renderingConfiguration;
     private List<Task> taskList;
     private RenderingInfo renderingInfo;
@@ -90,6 +88,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                 } catch (Exception e) {
                     Thread.sleep(1500);
                     logger.verbose("/render throws exception... sleeping for 1.5s");
+                    GeneralUtils.logExceptionStackTrace(logger, e);
                     continue;
                 }
 
@@ -169,11 +168,11 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
                 logger.verbose("render status result received ");
 
-                for (int i = 0; i < renderStatusResultsList.size(); i++) {
+                for (int i = 0, j = 0; i < renderStatusResultsList.size(); i++) {
                     RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
                     if (renderStatusResults.getStatus() == RenderStatus.RENDERED) {
 
-                        String removed = ids.remove(i);
+                        String removed = ids.remove(j);
 
                         for (RunningRender renderedRender : runningRenders.keySet()) {
                             if (renderedRender.getRenderId().equalsIgnoreCase(removed)) {
@@ -182,6 +181,8 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                                 break;
                             }
                         }
+                    } else {
+                        j++;
                     }
                 }
 
@@ -213,7 +214,9 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         for (RunningRender runningRender : runningRenders) {
             if (isNeedMoreDom) {
                 Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
-                putResourceCache.put("dom", future);
+                synchronized (putResourceCache) {
+                    putResourceCache.put("dom", future);
+                }
             }
             List<String> needMoreResources = runningRender.getNeedMoreResources();
             for (String url : needMoreResources) {
@@ -229,7 +232,9 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                         RGridResource resource = resourceFuture.get();
                         Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, resource);
                         if (!putResourceCache.containsKey(url)) {
-                            putResourceCache.put(url, future);
+                            synchronized (putResourceCache) {
+                                putResourceCache.put(url, future);
+                            }
                         }
                     }
                 } catch (InterruptedException | ExecutionException e) {
@@ -239,11 +244,13 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         }
 
-        for (Future<Boolean> future : putResourceCache.values()) {
-            try {
-                future.get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+        synchronized (putResourceCache) {
+            for (Future<Boolean> future : putResourceCache.values()) {
+                try {
+                    future.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

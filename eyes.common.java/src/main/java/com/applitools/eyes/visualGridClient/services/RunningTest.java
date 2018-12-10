@@ -1,11 +1,11 @@
-package com.applitools.eyes.visualGridClient.data;
+package com.applitools.eyes.visualGridClient.services;
 
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.AbstractProxySettings;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.visualGridClient.IEyesConnector;
+import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,9 +48,14 @@ public class RunningTest {
         public void onTaskFailed(Exception e) {
            setTestInExceptionMode(e);
         }
+
+        @Override
+        public void onRenderComplete() {
+
+        }
     };
 
-    public Task getNextCheckTask() {
+    public Task getNextCheckTaskAndRemove() {
         if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
             if (task.getType() == Task.TaskType.CHECK && task.isTaskReadyToCheck()) {
@@ -60,6 +65,26 @@ public class RunningTest {
 
         }
         return null;
+    }
+
+    public synchronized Task getNextOpenTaskAndRemove() {
+        if (!taskList.isEmpty()) {
+            Task task = taskList.get(0);
+            if (task.getType() == Task.TaskType.OPEN && !isTestOpen.get()) {
+                this.getTaskList().remove(task);
+                return task;
+            }
+
+        }
+        return null;
+    }
+
+    public boolean hasCheckTask() {
+        for (Task task : taskList) {
+            if(task.getType() == Task.TaskType.CHECK)
+                return true;
+        }
+        return false;
     }
 
     public interface RunningTestListener {
@@ -101,7 +126,7 @@ public class RunningTest {
         return mark;
     }
 
-    public synchronized FutureTask<TestResults> getNextTask() {
+    public synchronized FutureTask<TestResults> getNextCloseTask() {
         if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
             taskList.remove(task);

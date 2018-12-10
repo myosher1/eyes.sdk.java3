@@ -1,8 +1,8 @@
 package com.applitools.eyes;
 
 import com.applitools.IResourceUploadListener;
-import com.applitools.eyes.visualGridClient.IResourceFuture;
-import com.applitools.eyes.visualGridClient.data.*;
+import com.applitools.eyes.visualGridClient.services.IResourceFuture;
+import com.applitools.eyes.visualGridClient.model.*;
 
 import java.net.URI;
 import java.net.URL;
@@ -15,7 +15,7 @@ import java.util.concurrent.Future;
 public interface IServerConnector {
 
     String API_SESSIONS = "api/sessions";
-    String RUNNING_DATA_PATH = API_SESSIONS + "/running/data";
+    String RUNNING_DATA_PATH = API_SESSIONS + "/running/model";
 
     //Rendering Grid
     String RENDER_INFO_PATH = API_SESSIONS + "/renderinfo";
@@ -170,4 +170,6 @@ public interface IServerConnector {
     List<RenderStatusResults> renderStatusById(String... renderIds);
 
     IResourceFuture createResourceFuture(RGridResource gridResource);
+
+    void setRenderingInfo(RenderingInfo renderInfo);
 }

@@ -71,7 +71,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
                     Integer.parseInt(userAgent.getBrowserMajorVersion()));
 
             if (devicesRegions.containsKey(deviceData)) {
-                logger.verbose("device data found in hash table");
+                logger.verbose("device model found in hash table");
                 Region crop = devicesRegions.get(deviceData);
                 image = ImageUtils.cropImage(logger, image, crop);
             } else {

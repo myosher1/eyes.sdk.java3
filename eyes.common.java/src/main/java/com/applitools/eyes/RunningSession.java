@@ -6,7 +6,7 @@ package com.applitools.eyes;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Encapsulates data for the session currently running in the agent.
+ * Encapsulates model for the session currently running in the agent.
  */
 @JsonIgnoreProperties({"isNewSession", "$id", "steps"})
 public class RunningSession {

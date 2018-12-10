@@ -1,6 +1,6 @@
-package com.applitools.eyes.visualGridClient;
+package com.applitools.eyes.visualGridClient.services;
 
-import com.applitools.eyes.visualGridClient.data.RGridResource;
+import com.applitools.eyes.visualGridClient.model.RGridResource;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;

@@ -4,8 +4,8 @@
 package com.applitools.eyes;
 
 import com.applitools.IResourceUploadListener;
-import com.applitools.eyes.visualGridClient.IResourceFuture;
-import com.applitools.eyes.visualGridClient.data.*;
+import com.applitools.eyes.visualGridClient.services.IResourceFuture;
+import com.applitools.eyes.visualGridClient.model.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -21,12 +21,10 @@ import org.glassfish.jersey.message.GZipEncoder;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
@@ -275,7 +273,7 @@ public class ServerConnector extends RestClient
             throws EyesException {
 
         ArgumentGuard.notNull(runningSession, "runningSession");
-        ArgumentGuard.notNull(matchData, "data");
+        ArgumentGuard.notNull(matchData, "model");
 
         Response response;
         List<Integer> validStatusCodes;
@@ -286,13 +284,13 @@ public class ServerConnector extends RestClient
         WebTarget runningSessionsEndpoint =
                 endPoint.path(runningSession.getId());
 
-        // Serializing data into JSON (we'll treat it as binary later).
+        // Serializing model into JSON (we'll treat it as binary later).
         // IMPORTANT This serializes everything EXCEPT for the screenshot (which
         // we'll add later).
         try {
             jsonData = jsonMapper.writeValueAsString(matchData);
         } catch (IOException e) {
-            throw new EyesException("Failed to serialize data for matchWindow!",
+            throw new EyesException("Failed to serialize model for matchWindow!",
                     e);
         }
 
@@ -305,7 +303,7 @@ public class ServerConnector extends RestClient
             jsonToBytesConverter.flush();
             jsonBytes = jsonToBytesConverter.toByteArray();
         } catch (IOException e) {
-            throw new EyesException("Failed create binary data from JSON!", e);
+            throw new EyesException("Failed create binary model from JSON!", e);
         }
 
         // Getting the screenshot's bytes (notice this can be either
@@ -313,7 +311,7 @@ public class ServerConnector extends RestClient
         byte[] screenshot = Base64.decodeBase64(
                 matchData.getAppOutput().getScreenshot64());
 
-        // Ok, let's create the request data
+        // Ok, let's create the request model
         ByteArrayOutputStream requestOutputStream = new ByteArrayOutputStream();
         DataOutputStream requestDos = new DataOutputStream(requestOutputStream);
         byte[] requestData;
@@ -326,7 +324,7 @@ public class ServerConnector extends RestClient
             }
             requestOutputStream.flush();
 
-            // Ok, get the data bytes
+            // Ok, get the model bytes
             requestData = requestOutputStream.toByteArray();
 
             // Release the streams
@@ -522,7 +520,7 @@ public class ServerConnector extends RestClient
                 RunningRender[] runningRenders = parseResponseWithJsonData(response, validStatusCodes, RunningRender[].class);
                 return Arrays.asList(runningRenders);
             }
-            throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+            throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + "), msg ("+response.readEntity(String.class)+")");
         } catch (JsonProcessingException e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
@@ -627,5 +625,10 @@ public class ServerConnector extends RestClient
     public IResourceFuture createResourceFuture(RGridResource gridResource) {
         return new ResourceFuture(gridResource);
 
+    }
+
+    @Override
+    public void setRenderingInfo(RenderingInfo renderInfo) {
+        this.renderingInfo = renderInfo;
     }
 }

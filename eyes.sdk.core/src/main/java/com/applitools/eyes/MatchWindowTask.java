@@ -79,7 +79,7 @@ public class MatchWindowTask {
         this.appOutputProvider = null;
     }
     /**
-     * Creates the match data and calls the server connector matchWindow method.
+     * Creates the match model and calls the server connector matchWindow method.
      * @param userInputs         The user inputs related to the current appOutput.
      * @param appOutput          The application output to be matched.
      * @param tag                Optional tag to be associated with the match (can be {@code null}).
@@ -103,7 +103,7 @@ public class MatchWindowTask {
             }
         }
 
-        // Prepare match data.
+        // Prepare match model.
         MatchWindowData data = new MatchWindowData(
                 userInputs,
                 appOutput.getAppOutput(),

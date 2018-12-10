@@ -70,14 +70,14 @@ public class ImageDeltaCompressor {
     }
 
     /**
-     * Computes the width and height of the image data contained in the block
+     * Computes the width and height of the image model contained in the block
      * at the input column and row.
      * @param imageSize The image size in pixels.
      * @param blockSize The block size for which we would like to compute the
-     *                  image data width and height.
+     *                  image model width and height.
      * @param blockColumn The block column index
      * @param blockRow The block row index
-     * @return The width and height of the image data contained in the block.
+     * @return The width and height of the image model contained in the block.
      */
     private static Dimension getActualBlockSize(Dimension imageSize,
             int blockSize, int blockColumn, int blockRow) {
@@ -111,7 +111,7 @@ public class ImageDeltaCompressor {
 
         boolean isIdentical = true; // initial default
 
-        // Getting the actual amount of data in the block we wish to copy
+        // Getting the actual amount of model in the block we wish to copy
         Dimension actualBlockSize =
                 getActualBlockSize(imageSize, blockSize, blockColumn, blockRow);
 
@@ -197,7 +197,7 @@ public class ImageDeltaCompressor {
         // Since we need to write "short" and other variations.
         DataOutputStream resultDataOutputStream =
                 new DataOutputStream(resultCountingStream);
-        // This will be used for doing actual data compression
+        // This will be used for doing actual model compression
         DeflaterOutputStream compressed =
                 new DeflaterOutputStream(resultCountingStream,
                         new Deflater(Deflater.BEST_COMPRESSION,true));

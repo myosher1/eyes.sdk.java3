@@ -1,5 +1,6 @@
-package com.applitools.eyes.visualGridClient.data;
+package com.applitools.eyes.visualGridClient.model;
 
+import com.applitools.eyes.visualGridClient.services.Task;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

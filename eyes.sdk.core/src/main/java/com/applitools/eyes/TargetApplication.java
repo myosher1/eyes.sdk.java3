@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
- * A base class for encapsulating data about applications to be tested.
+ * A base class for encapsulating model about applications to be tested.
  */
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,

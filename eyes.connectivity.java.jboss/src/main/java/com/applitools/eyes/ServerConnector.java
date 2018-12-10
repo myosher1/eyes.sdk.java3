@@ -4,8 +4,8 @@
 package com.applitools.eyes;
 
 import com.applitools.IResourceUploadListener;
-import com.applitools.eyes.visualGridClient.IResourceFuture;
-import com.applitools.eyes.visualGridClient.data.*;
+import com.applitools.eyes.visualGridClient.services.IResourceFuture;
+import com.applitools.eyes.visualGridClient.model.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -269,7 +269,7 @@ public class ServerConnector extends RestClient
             throws EyesException {
 
         ArgumentGuard.notNull(runningSession, "runningSession");
-        ArgumentGuard.notNull(matchData, "data");
+        ArgumentGuard.notNull(matchData, "model");
 
         Response response;
         List<Integer> validStatusCodes;
@@ -280,13 +280,13 @@ public class ServerConnector extends RestClient
         WebTarget runningSessionsEndpoint =
                 endPoint.path(runningSession.getId());
 
-        // Serializing data into JSON (we'll treat it as binary later).
+        // Serializing model into JSON (we'll treat it as binary later).
         // IMPORTANT This serializes everything EXCEPT for the screenshot (which
         // we'll add later).
         try {
             jsonData = jsonMapper.writeValueAsString(matchData);
         } catch (IOException e) {
-            throw new EyesException("Failed to serialize data for matchWindow!",
+            throw new EyesException("Failed to serialize model for matchWindow!",
                                     e);
         }
 
@@ -299,7 +299,7 @@ public class ServerConnector extends RestClient
             jsonToBytesConverter.flush();
             jsonBytes = jsonToBytesConverter.toByteArray();
         } catch (IOException e) {
-            throw new EyesException("Failed create binary data from JSON!", e);
+            throw new EyesException("Failed create binary model from JSON!", e);
         }
 
         // Getting the screenshot's bytes (notice this can be either
@@ -307,7 +307,7 @@ public class ServerConnector extends RestClient
         byte[] screenshot = Base64.decodeBase64(
                 matchData.getAppOutput().getScreenshot64());
 
-        // Ok, let's create the request data
+        // Ok, let's create the request model
         ByteArrayOutputStream requestOutputStream = new ByteArrayOutputStream();
         DataOutputStream requestDos = new DataOutputStream(requestOutputStream);
         byte[] requestData;
@@ -318,7 +318,7 @@ public class ServerConnector extends RestClient
             requestOutputStream.write(screenshot);
             requestOutputStream.flush();
 
-            // Ok, get the data bytes
+            // Ok, get the model bytes
             requestData = requestOutputStream.toByteArray();
 
             // Release the streams

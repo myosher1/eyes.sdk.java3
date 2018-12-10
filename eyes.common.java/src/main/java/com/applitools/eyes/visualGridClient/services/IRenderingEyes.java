@@ -1,8 +1,6 @@
-package com.applitools.eyes.visualGridClient;
+package com.applitools.eyes.visualGridClient.services;
 
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.visualGridClient.data.RunningTest;
-import com.applitools.eyes.visualGridClient.data.Task;
 
 import java.util.List;
 import java.util.concurrent.Future;
@@ -19,9 +17,11 @@ public interface IRenderingEyes {
 
     List<Future<TestResults>> close();
 
-    Task getNextCheckTask();
+    RunningTest getNextCheckTask();
 
-    int getBestMarkForCheck();
+    int getBestScoreForCheck();
+
+    int getBestScoreForOpen();
 
     interface EyesListener{
 

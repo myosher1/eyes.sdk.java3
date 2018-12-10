@@ -61,7 +61,7 @@ function() {
         var absolutizeUrl_1 = absolutizeUrl;
 
         function isSameOrigin(location, url) {
-            const {origin} = location.protocol === 'data:' ? location.origin : new URL(url, location.href);
+            const {origin} = location.protocol === 'model:' ? location.origin : new URL(url, location.href);
             return origin === location.origin || /^blob:/.test(url);
         }
 

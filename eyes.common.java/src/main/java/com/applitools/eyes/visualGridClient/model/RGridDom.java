@@ -1,4 +1,4 @@
-package com.applitools.eyes.visualGridClient.data;
+package com.applitools.eyes.visualGridClient.model;
 
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

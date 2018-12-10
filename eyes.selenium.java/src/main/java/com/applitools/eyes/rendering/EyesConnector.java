@@ -5,9 +5,9 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.config.Configuration;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
-import com.applitools.eyes.visualGridClient.IEyesConnector;
-import com.applitools.eyes.visualGridClient.IResourceFuture;
-import com.applitools.eyes.visualGridClient.data.*;
+import com.applitools.eyes.visualGridClient.services.IEyesConnector;
+import com.applitools.eyes.visualGridClient.services.IResourceFuture;
+import com.applitools.eyes.visualGridClient.model.*;
 
 import java.net.URL;
 import java.util.List;
@@ -136,6 +136,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
     public void setRenderInfo(RenderingInfo renderInfo) {
         this.renderInfo = renderInfo;
+        this.serverConnector.setRenderingInfo(renderInfo);
     }
 
 

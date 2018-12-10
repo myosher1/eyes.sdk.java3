@@ -1,9 +1,9 @@
-package com.applitools.eyes.visualGridClient;
+package com.applitools.eyes.visualGridClient.services;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
 import com.applitools.eyes.config.Configuration;
-import com.applitools.eyes.visualGridClient.data.*;
+import com.applitools.eyes.visualGridClient.model.*;
 
 import java.net.URISyntaxException;
 import java.net.URL;

@@ -21,7 +21,7 @@ public class ResponseTimeMatchFinderTask implements Runnable {
     /**
      *
      * @param matchDataContainer The container to use for passing
-     *                           the match data to this instance.
+     *                           the match model to this instance.
      * @param matchInterval The time to wait between match attempts.
      *                      (Milliseconds)
      * @param serverConnector The server connector instance.
@@ -50,7 +50,7 @@ public class ResponseTimeMatchFinderTask implements Runnable {
         MatchWindowDataWithScreenshot currentMatchData =
                 matchDataContainer.take();
         if (currentMatchData == null) {
-            // No more data to handle
+            // No more model to handle
             return;
         }
         lastScreenshot = currentMatchData.getScreenshot();
@@ -67,7 +67,7 @@ public class ResponseTimeMatchFinderTask implements Runnable {
             currentMatchData = matchDataContainer.take();
 
             if (currentMatchData == null) {
-                // No more data to handle
+                // No more model to handle
                 return;
             }
 
@@ -99,7 +99,7 @@ public class ResponseTimeMatchFinderTask implements Runnable {
 
     /**
      *
-     * @return The match data for which there was a successful match, or
+     * @return The match model for which there was a successful match, or
      * {@code null} if no match was found.
      */
     public MatchWindowDataWithScreenshot getTheMatch() {
@@ -108,7 +108,7 @@ public class ResponseTimeMatchFinderTask implements Runnable {
 
     /**
      *
-     * @return The last match data for which the match failed,
+     * @return The last match model for which the match failed,
      * or {@code null} if there was no failed match.
      */
     public MatchWindowDataWithScreenshot getLastNonMatch() {

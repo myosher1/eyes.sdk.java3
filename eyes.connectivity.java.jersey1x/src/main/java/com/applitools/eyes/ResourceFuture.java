@@ -1,13 +1,12 @@
 package com.applitools.eyes;
 
-import com.applitools.eyes.visualGridClient.IResourceFuture;
-import com.applitools.eyes.visualGridClient.data.RGridResource;
+import com.applitools.eyes.visualGridClient.services.IResourceFuture;
+import com.applitools.eyes.visualGridClient.model.RGridResource;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;

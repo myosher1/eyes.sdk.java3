@@ -2,12 +2,11 @@ package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.fluent.CheckRGSettings;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
-import com.applitools.eyes.visualGridClient.RenderingGridManager;
-import com.applitools.eyes.visualGridClient.data.RenderingConfiguration;
-import com.applitools.eyes.visualGridClient.data.TestResultSummary;
+import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
+import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
+import com.applitools.eyes.visualGridClient.model.TestResultSummary;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -39,7 +38,8 @@ public final class TestRenderingGridService {
             renderingConfiguration.setTestName("Open Concurrency");
             renderingConfiguration.setAppName("RenderingGridIntegration");
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
-//            renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.FIREFOX);
+            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
+            renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
             //eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);

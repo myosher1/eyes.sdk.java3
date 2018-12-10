@@ -188,7 +188,7 @@ public class ResponseTimeAlgorithm {
         int maxScreenshotsCount = STANDARD_INTERVAL_SCREENSHOTS_COUNT +
                 FAST_INTERVAL_SCREENSHOTS_COUNT;
 
-        // The shared object to pass the capture data between threads.
+        // The shared object to pass the capture model between threads.
         BlockingInstanceContainer<MatchWindowDataWithScreenshot>
                 matchDataContainer = new BlockingInstanceContainer<>();
 
@@ -230,7 +230,7 @@ public class ResponseTimeAlgorithm {
 
             logger.verbose("Taking screenshot...");
             lastScreenshotRequestTime = System.currentTimeMillis();
-            // Get the screenshot and build the match data.
+            // Get the screenshot and build the match model.
             AppOutputWithScreenshot appOutputWithScreenshot =
                     appOutputProvider.getAppOutput(regionProvider.getRegion(),
                             matcherTask.getLastScreenshot(), null);
@@ -248,7 +248,7 @@ public class ResponseTimeAlgorithm {
                     collectedData.set(collectedData.size() - 1, updatedPrimary);
 
                 } else {
-                    // No collected data yet, so we'll mark the screenshot we
+                    // No collected model yet, so we'll mark the screenshot we
                     // just took as primary.
                     isPrimary = true;
                     logger.verbose("current screenshot is primary.");
@@ -316,7 +316,7 @@ public class ResponseTimeAlgorithm {
                             currentTime);
         }
 
-        logger.verbose("Finished collecting data.");
+        logger.verbose("Finished collecting model.");
         matchDataContainer.close();
 
         // If we left the loop because we reached maxScreenshot/timeout, give
@@ -360,7 +360,7 @@ public class ResponseTimeAlgorithm {
      * @param logger The logger to use.
      * @param serverConnector The server connector to use for matching.
      * @param runningSession The session for which we perform the match.
-     * @param dataToSearch The data inside which we search for a match.
+     * @param dataToSearch The model inside which we search for a match.
      * @param fromIndex The index in the search area from which to start
      *                  searching. (inclusive)
      * @param toIndex The index in the search area up to which to perform the
@@ -425,7 +425,7 @@ public class ResponseTimeAlgorithm {
     }
 
     /**
-     * Find the EARLIEST match within the collected data.
+     * Find the EARLIEST match within the collected model.
      *
      * @param logger The logger to use.
      * @param serverConnector The server connector to use for the matching.
@@ -433,9 +433,9 @@ public class ResponseTimeAlgorithm {
      *                       matching.
      * @param collectedData The list of captured screenshots in which to
      *                      search for a match.
-     * @param theMatch The match data of the currently known successful match,
+     * @param theMatch The match model of the currently known successful match,
      *                 or  {@code null} if no match is known.
-     * @param lastNonMatch The match data of the last known failed match, or
+     * @param lastNonMatch The match model of the last known failed match, or
      *                  {@code null} if no such failed match is known.
      * @return The index of earliest match found.
      */
@@ -480,7 +480,7 @@ public class ResponseTimeAlgorithm {
      * Updates the primary flag for the earliest match, if it happened before
      * the deadline.
      * @param collectedData The list of captured screenshots and their
-     *                      meta data.
+     *                      meta model.
      * @param theMatchIndex The index of the earliest match found.
      * @param deadline The deadline given for the progression session.
      * @return The match object which is now marked as primary, or {@code

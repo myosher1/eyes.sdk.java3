@@ -6,12 +6,12 @@ import com.applitools.eyes.TestResults;
 public interface ISessionEventHandler {
 
     /**
-     * Called when the data gathering for creating a session phase had started.
+     * Called when the model gathering for creating a session phase had started.
      */
     void initStarted();
 
     /**
-     * Called when the data gathering phase had ended.
+     * Called when the model gathering phase had ended.
      */
     void initEnded();
 

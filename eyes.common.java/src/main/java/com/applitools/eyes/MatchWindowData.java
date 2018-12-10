@@ -6,12 +6,12 @@ package com.applitools.eyes;
 import com.applitools.utils.ArgumentGuard;
 
 /**
- * Encapsulates the data to be sent to the agent on a "matchWindow" command.
+ * Encapsulates the model to be sent to the agent on a "matchWindow" command.
  */
 public class MatchWindowData {
 
     /**
-     * Encapsulates the "Options" section of the MatchExpectedOutput body data.
+     * Encapsulates the "Options" section of the MatchExpectedOutput body model.
      */
     public static class Options {
         private final Trigger[] userInputs;

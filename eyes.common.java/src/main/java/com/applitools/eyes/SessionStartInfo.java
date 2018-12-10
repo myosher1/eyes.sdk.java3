@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import java.util.List;
 
 /**
- * Encapsulates data required to start session using the Session API.
+ * Encapsulates model required to start session using the Session API.
  */
 
 /*

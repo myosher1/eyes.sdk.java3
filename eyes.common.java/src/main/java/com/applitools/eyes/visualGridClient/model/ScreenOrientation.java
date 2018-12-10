@@ -1,4 +1,4 @@
-package com.applitools.eyes.visualGridClient;
+package com.applitools.eyes.visualGridClient.model;
 
 public class ScreenOrientation {
 

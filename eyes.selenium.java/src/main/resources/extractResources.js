@@ -31,7 +31,7 @@ function extractResources(el, win) {
 
   allResourceUrls.forEach(url => {
     const {origin} =
-      win.location.protocol === 'data:' ? win.location.origin : new win.URL(url, win.location.href);
+      win.location.protocol === 'model:' ? win.location.origin : new win.URL(url, win.location.href);
     if (origin === win.location.origin || /^blob:/.test(url)) {
       blobUrls.push(url);
     } else {

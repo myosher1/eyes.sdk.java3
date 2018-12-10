@@ -1,4 +1,4 @@
-package com.applitools.eyes.visualGridClient.data;
+package com.applitools.eyes.visualGridClient.model;
 
 import com.applitools.eyes.Region;
 import com.fasterxml.jackson.annotation.JsonInclude;

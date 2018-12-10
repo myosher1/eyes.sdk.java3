@@ -1,4 +1,4 @@
-package com.applitools.eyes.visualGridClient.data;
+package com.applitools.eyes.visualGridClient.model;
 
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
