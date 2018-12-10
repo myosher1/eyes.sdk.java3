@@ -192,23 +192,25 @@ public class RenderingGridManager {
     }
 
     private FutureTask<TestResults> getNextCheckTask() {
-        RunningTest bestTest = null;
-        int bestMark = -1;
+        ScoreTask bestScoreTask = null;
+        int bestScore = -1;
         synchronized (allEyes) {
             for (IRenderingEyes eyes : allEyes) {
-                int currentTestMark = eyes.getBestScoreForCheck();
-                if (bestMark < currentTestMark) {
-                    bestTest = eyes.getNextCheckTask();
-                    bestMark = currentTestMark;
+                ScoreTask currentScoreTask = eyes.getBestScoreTaskForCheck();
+                if (currentScoreTask == null) continue;
+                int currentTestMark = currentScoreTask.getScore();
+                if (bestScore < currentTestMark) {
+                    bestScoreTask = currentScoreTask;
+                    bestScore = currentTestMark;
                 }
             }
         }
 
-        if (bestTest == null) {
+        if (bestScoreTask == null) {
             return null;
         }
 
-        return new FutureTask<>(bestTest.getNextCheckTaskAndRemove());
+        return new FutureTask<>(bestScoreTask.getTask());
     }
 
     private synchronized RenderingTask getNextRenderingTask() {
@@ -286,28 +288,30 @@ public class RenderingGridManager {
 
 
     private synchronized FutureTask<TestResults> getNextTestToOpen() {
-        RunningTest bestTest = null;
+        ScoreTask bestScoreTask = null;
         int bestMark = -1;
         logger.verbose("looking for best test in a list of " + allEyes.size());
         synchronized (allEyes) {
             for (IRenderingEyes eyes : allEyes) {
-                int currentTestMark = eyes.getBestScoreForOpen();
-                if (bestMark < currentTestMark) {
-                    bestTest = eyes.getNextTestToOpen();
-                    bestMark = currentTestMark;
+                ScoreTask currentTestMark = eyes.getBestScoreTaskForOpen();
+                if (currentTestMark == null) continue;
+                int currentScore = currentTestMark.getScore();
+                if (bestMark < currentScore) {
+                    bestMark = currentScore;
+                    bestScoreTask = currentTestMark;
                 }
             }
         }
 
-        if (bestTest == null) {
+        if (bestScoreTask == null) {
             logger.verbose("no test found.");
             return null;
         }
 
         logger.verbose("found test with mark " + bestMark);
-        logger.verbose("calling getNextOpenTaskAndRemove on " + bestTest.toString());
-        Task nextOpenTaskAndRemove = bestTest.getNextOpenTaskAndRemove();
-        return new FutureTask<>(nextOpenTaskAndRemove);
+        logger.verbose("calling getNextOpenTaskAndRemove on " + bestScoreTask.toString());
+        Task nextOpenTask = bestScoreTask.getTask();
+        return new FutureTask<>(nextOpenTask);
     }
 
     public TestResultSummary getAllTestResults() {

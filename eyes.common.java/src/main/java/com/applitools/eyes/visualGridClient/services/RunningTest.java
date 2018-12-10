@@ -27,6 +27,13 @@ public class RunningTest {
     private HashMap<Task, FutureTask<TestResults>> taskToFutureMapping = new HashMap<>();
     private Logger logger;
 
+    public interface RunningTestListener {
+
+        void onTaskComplete(Task task, RunningTest test);
+
+        void onRenderComplete();
+    }
+
     private Task.TaskListener taskListener = new Task.TaskListener() {
         @Override
         public void onTaskComplete(Task task) {
@@ -57,52 +64,6 @@ public class RunningTest {
         }
     };
 
-    public Task getNextCheckTaskAndRemove() {
-        logger.verbose("enter");
-        if (!taskList.isEmpty()) {
-            Task task = taskList.get(0);
-            if (task.getType() == Task.TaskType.CHECK && task.isTaskReadyToCheck()) {
-                taskList.remove(task);
-                logger.verbose("removing task " + task.toString() + " and exiting");
-                logger.verbose("tasks in taskList: " + taskList.size());
-                return task;
-            }
-
-        }
-        logger.verbose("exit with null");
-        return null;
-    }
-
-    public synchronized Task getNextOpenTaskAndRemove() {
-        logger.verbose("enter");
-        if (!taskList.isEmpty()) {
-            Task task = taskList.get(0);
-            if (task.getType() == Task.TaskType.OPEN && !isTestOpen.get()) {
-                taskList.remove(task);
-                logger.verbose("removing task " + task.toString() + " and exiting");
-                logger.verbose("tasks in taskList: " + taskList.size());
-                return task;
-            }
-        }
-        logger.verbose("exit with null");
-        return null;
-    }
-
-    public boolean hasCheckTask() {
-        for (Task task : taskList) {
-            if(task.getType() == Task.TaskType.CHECK)
-                return true;
-        }
-        return false;
-    }
-
-    public interface RunningTestListener {
-
-        void onTaskComplete(Task task, RunningTest test);
-
-        void onRenderComplete();
-    }
-
     public RunningTest(AbstractProxySettings proxy, IEyesConnector eyes, RenderingConfiguration configuration, RenderingConfiguration.RenderBrowserInfo browserInfo,Logger logger, RunningTestListener listener) {
         this.eyes = eyes;
         this.browserInfo = browserInfo;
@@ -124,14 +85,21 @@ public class RunningTest {
         return taskList;
     }
 
-    public int getMark() {
-        int mark = 0;
+    public ScoreTask getScoreTaskObjectByType(Task.TaskType taskType) {
+        int score = 0;
         for (Task task : this.getTaskList()) {
             if (task.isTaskReadyToCheck()) {
-                mark++;
+                score++;
             }
         }
-        return mark;
+        if(this.taskList.isEmpty())
+            return null;
+
+        Task task = this.taskList.get(0);
+        if(task.getType() != taskType)
+            return null;
+
+        return new ScoreTask(task, score, taskList);
     }
 
     public synchronized FutureTask<TestResults> getNextCloseTask() {

@@ -13,15 +13,11 @@ public interface IRenderingEyes {
 
     void setListener(EyesListener listener);
 
-    RunningTest getNextTestToOpen();
-
     List<Future<TestResults>> close();
 
-    RunningTest getNextCheckTask();
+    ScoreTask getBestScoreTaskForCheck();
 
-    int getBestScoreForCheck();
-
-    int getBestScoreForOpen();
+    ScoreTask getBestScoreTaskForOpen();
 
     interface EyesListener{
 

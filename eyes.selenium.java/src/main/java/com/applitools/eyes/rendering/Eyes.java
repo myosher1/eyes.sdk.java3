@@ -128,18 +128,6 @@ public class Eyes implements IRenderingEyes {
         }
     }
 
-    public RunningTest getNextTestToOpen() {
-        RunningTest currentBestTest = null;
-        int currentBestMark = -1;
-        for (RunningTest test : testList) {
-            if (test.isTestOpen() || !test.hasCheckTask()) continue;
-            if (test.getMark() > currentBestMark) {
-                currentBestTest = test;
-            }
-        }
-        return currentBestTest;
-    }
-
     public RunningTest getNextTestToClose() {
         RunningTest test = null;
         for (RunningTest runningTest : testList) {
@@ -166,63 +154,46 @@ public class Eyes implements IRenderingEyes {
     }
 
     @Override
-    public synchronized RunningTest getNextCheckTask() {
+    public synchronized ScoreTask getBestScoreTaskForCheck() {
 
-        int bestMark = -1;
+        int bestScore = -1;
 
-        RunningTest bestTest = null;
+        ScoreTask currentBest = null;
         for (RunningTest runningTest : testList) {
 
-            if (runningTest.getTaskList().isEmpty()) continue;
-
-            Task task = runningTest.getTaskList().get(0);
-            if (!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck())
-                continue;
-
-            if (bestMark < runningTest.getMark()) {
-                bestTest = runningTest;
-                bestMark = runningTest.getMark();
-            }
-        }
-        return bestTest;
-    }
-
-    @Override
-    public int getBestScoreForCheck() {
-        int bestMark = -1;
-        for (RunningTest runningTest : testList) {
             List<Task> taskList = runningTest.getTaskList();
-            if (taskList == null || taskList.isEmpty()) {
-                continue;
-            }
+
+            if (taskList.isEmpty()) continue;
+
             Task task = taskList.get(0);
             if (!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck())
                 continue;
-            int mark = runningTest.getMark();
-            if (bestMark < mark) {
-                bestMark = mark;
+
+            ScoreTask scoreTask = runningTest.getScoreTaskObjectByType(Task.TaskType.CHECK);
+            if (bestScore < scoreTask.getScore()) {
+                currentBest = scoreTask;
+                bestScore = scoreTask.getScore();
             }
         }
-        return bestMark;
+        return currentBest;
     }
 
     @Override
-    public int getBestScoreForOpen() {
+    public ScoreTask getBestScoreTaskForOpen() {
         int bestMark = -1;
+        ScoreTask currentBest = null;
         for (RunningTest runningTest : testList) {
-            List<Task> taskList = runningTest.getTaskList();
-            if (taskList == null || taskList.isEmpty()) {
-                continue;
-            }
-            Task task = taskList.get(0);
-            if (runningTest.isTestOpen() || task.getType() != Task.TaskType.OPEN)
-                continue;
-            int mark = runningTest.getMark();
-            if (bestMark < mark) {
-                bestMark = mark;
+
+            ScoreTask currentScoreTask = runningTest.getScoreTaskObjectByType(Task.TaskType.OPEN);
+            if (currentScoreTask == null) continue;
+
+            if (bestMark < currentScoreTask.getScore()) {
+                bestMark = currentScoreTask.getScore();
+                currentBest =currentScoreTask;
+
             }
         }
-        return bestMark;
+        return currentBest;
     }
 
     public void setServerUrl(String serverUrl) {
