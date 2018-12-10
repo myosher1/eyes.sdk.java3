@@ -644,4 +644,9 @@ public class ServerConnector extends RestClient
         return new ResourceFuture(gridResource);
     }
 
+    @Override
+    public void setRenderingInfo(RenderingInfo renderInfo) {
+        this.renderingInfo = renderInfo;
+    }
+
 }

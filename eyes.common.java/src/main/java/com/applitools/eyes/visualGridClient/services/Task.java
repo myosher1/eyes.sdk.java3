@@ -107,7 +107,10 @@ public class Task implements Callable<TestResults> {
     }
 
     public void setRenderResult(RenderStatusResults renderResult) {
+        logger.verbose("enter");
         this.renderResult = renderResult;
+        this.runningTestListener.onRenderComplete();
+        logger.verbose("exit");
     }
 
     public boolean isTaskReadyToCheck() {
