@@ -271,7 +271,7 @@ public class RenderingGridManager {
     }
 
 
-    private FutureTask<TestResults> getNextTestToOpen() {
+    private synchronized FutureTask<TestResults> getNextTestToOpen() {
         RunningTest bestTest = null;
         int bestMark = -1;
         synchronized (allEyes) {

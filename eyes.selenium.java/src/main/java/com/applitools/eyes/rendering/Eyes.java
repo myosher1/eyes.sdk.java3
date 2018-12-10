@@ -213,7 +213,7 @@ public class Eyes implements IRenderingEyes {
                 continue;
             }
             Task task = taskList.get(0);
-            if (!runningTest.isTestOpen() || task.getType() != Task.TaskType.OPEN)
+            if (runningTest.isTestOpen() || task.getType() != Task.TaskType.OPEN)
                 continue;
             int mark = runningTest.getMark();
             if (bestMark < mark) {
@@ -250,6 +250,7 @@ public class Eyes implements IRenderingEyes {
     }
 
     public void check(ICheckRGSettings settings) {
+
         addOpenTaskToAllRunningTest();
 
         List<Task> taskList = new ArrayList<>();
@@ -259,9 +260,6 @@ public class Eyes implements IRenderingEyes {
         String scriptResult = (String) this.jsExecutor.executeAsyncScript(domCaptureScript);
 
         for (final RunningTest test : testList) {
-            if(!test.isTestOpen()){
-                test.open();
-            }
             Task checkTask = test.check(settings);
             taskList.add(checkTask);
 
