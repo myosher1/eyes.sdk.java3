@@ -173,11 +173,9 @@ public class Eyes implements IRenderingEyes {
         RunningTest bestTest = null;
         for (RunningTest runningTest : testList) {
 
-            Task task = null;
-
             if (runningTest.getTaskList().isEmpty()) continue;
 
-            task = runningTest.getTaskList().get(0);
+            Task task = runningTest.getTaskList().get(0);
             if (!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck())
                 continue;
 
@@ -185,9 +183,6 @@ public class Eyes implements IRenderingEyes {
                 bestTest = runningTest;
                 bestMark = runningTest.getMark();
             }
-        }
-        if (bestTest == null) {
-            return null;
         }
         return bestTest;
     }

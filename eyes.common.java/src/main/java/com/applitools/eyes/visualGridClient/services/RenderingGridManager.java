@@ -47,6 +47,7 @@ public class RenderingGridManager {
 
                 case OPEN:
                     synchronized (eyesToOpenList) {
+                        logger.verbose("removing task " + task.toString());
                         RenderingGridManager.this.eyesToOpenList.remove(task);
                     }
                     break;
@@ -287,6 +288,7 @@ public class RenderingGridManager {
     private synchronized FutureTask<TestResults> getNextTestToOpen() {
         RunningTest bestTest = null;
         int bestMark = -1;
+        logger.verbose("looking for best test in a list of " + allEyes.size());
         synchronized (allEyes) {
             for (IRenderingEyes eyes : allEyes) {
                 int currentTestMark = eyes.getBestScoreForOpen();
@@ -298,10 +300,14 @@ public class RenderingGridManager {
         }
 
         if (bestTest == null) {
+            logger.verbose("no test found.");
             return null;
         }
 
-        return new FutureTask<>(bestTest.getNextOpenTaskAndRemove());
+        logger.verbose("found test with mark " + bestMark);
+        logger.verbose("calling getNextOpenTaskAndRemove on " + bestTest.toString());
+        Task nextOpenTaskAndRemove = bestTest.getNextOpenTaskAndRemove();
+        return new FutureTask<>(nextOpenTaskAndRemove);
     }
 
     public TestResultSummary getAllTestResults() {

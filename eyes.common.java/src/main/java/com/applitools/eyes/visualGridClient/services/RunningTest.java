@@ -58,26 +58,33 @@ public class RunningTest {
     };
 
     public Task getNextCheckTaskAndRemove() {
+        logger.verbose("enter");
         if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
             if (task.getType() == Task.TaskType.CHECK && task.isTaskReadyToCheck()) {
-                this.getTaskList().remove(task);
+                taskList.remove(task);
+                logger.verbose("removing task " + task.toString() + " and exiting");
+                logger.verbose("tasks in taskList: " + taskList.size());
                 return task;
             }
 
         }
+        logger.verbose("exit with null");
         return null;
     }
 
     public synchronized Task getNextOpenTaskAndRemove() {
+        logger.verbose("enter");
         if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
             if (task.getType() == Task.TaskType.OPEN && !isTestOpen.get()) {
-                this.getTaskList().remove(task);
+                taskList.remove(task);
+                logger.verbose("removing task " + task.toString() + " and exiting");
+                logger.verbose("tasks in taskList: " + taskList.size());
                 return task;
             }
-
         }
+        logger.verbose("exit with null");
         return null;
     }
 
@@ -103,8 +110,6 @@ public class RunningTest {
         this.listener = listener;
         this.logger= logger;
         this.proxy = proxy;
-
-
     }
 
     public boolean isTestOpen() {
@@ -114,7 +119,6 @@ public class RunningTest {
     public void setTestOpen(boolean testOpen) {
         isTestOpen.set(testOpen);
     }
-
 
     public List<Task> getTaskList() {
         return taskList;
@@ -131,11 +135,15 @@ public class RunningTest {
     }
 
     public synchronized FutureTask<TestResults> getNextCloseTask() {
+        logger.verbose("enter");
         if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
             taskList.remove(task);
+            logger.verbose("removing task " + task.toString() + " and exiting");
+            logger.verbose("tasks in taskList: " + taskList.size());
             return taskToFutureMapping.get(task);
         }
+        logger.verbose("exit with null");
         return null;
     }
 
@@ -144,11 +152,14 @@ public class RunningTest {
     }
 
     public void open() {
-        eyes.log("Open task was added");
+        logger.verbose("adding Open task...");
         Task task = new Task(null, eyes, Task.TaskType.OPEN, this.getBrowserInfo(), this.configuration, this.logger, taskListener, null);
         FutureTask<TestResults> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         this.taskList.add(task);
+        logger.verbose("Open task was added: " + task.toString());
+        logger.verbose("tasks in taskList: " + taskList.size());
+        eyes.log("Open task was added");
     }
 
     public FutureTask<TestResults> close() {
@@ -160,18 +171,24 @@ public class RunningTest {
             }
         }
 
+        logger.verbose("adding close task...");
         Task task = new Task(null, eyes, Task.TaskType.CLOSE, this.getBrowserInfo(), this.configuration, this.logger, taskListener, null);
         FutureTask<TestResults> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         this.taskList.add(task);
+        logger.verbose("Close task was added: " + task.toString());
+        logger.verbose("tasks in taskList: " + taskList.size());
         eyes.log("Close Task was added");
         return this.taskToFutureMapping.get(task);
     }
 
     public Task check(ICheckSettings checkSettings) {
+        logger.verbose("adding check task...");
         Task task = new Task(null, eyes, Task.TaskType.CHECK, this.getBrowserInfo(), this.configuration,this.logger, taskListener, checkSettings);
         this.taskList.add(task);
-        eyes.log("Close Task was added");
+        logger.verbose("Check Task was added: " + task.toString());
+        eyes.log("Check Task was added");
+        logger.verbose("tasks in taskList: " + taskList.size());
         this.taskToFutureMapping.get(task);
         return task;
     }

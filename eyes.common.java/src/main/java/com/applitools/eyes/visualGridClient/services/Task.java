@@ -39,9 +39,7 @@ public class Task implements Callable<TestResults> {
         void onTaskFailed(Exception e);
 
         void onRenderComplete();
-
     }
-
 
     public Task(TestResults testResults, IEyesConnector eyesConnector, TaskType type, RenderingConfiguration.RenderBrowserInfo browserInfo,
                 RenderingConfiguration configuration, Logger logger, TaskListener runningTestListener, ICheckSettings checkSettings) {
