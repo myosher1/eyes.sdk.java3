@@ -1743,7 +1743,7 @@ public abstract class EyesBase {
         String domJson = null;
         String domJsonUrl = null;
         try {
-            if (isSendDom) {
+            if (isSendDom()) {
                 domJson = tryCaptureDom();
 
                 if (domJson != null) {
