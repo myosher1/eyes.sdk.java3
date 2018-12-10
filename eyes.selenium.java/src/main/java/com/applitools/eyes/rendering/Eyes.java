@@ -60,6 +60,13 @@ public class Eyes implements IRenderingEyes {
                 Eyes.this.listener.onTaskComplete(task, Eyes.this);
             }
         }
+
+        @Override
+        public void onRenderComplete() {
+            logger.verbose("enter");
+            Eyes.this.listener.onRenderComplete();
+            logger.verbose("exit");
+        }
     };
 
     public Eyes(RenderingGridManager renderingGridManager) {

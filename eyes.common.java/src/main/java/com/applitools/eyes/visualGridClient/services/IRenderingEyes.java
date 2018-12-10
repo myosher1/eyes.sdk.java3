@@ -26,5 +26,7 @@ public interface IRenderingEyes {
     interface EyesListener{
 
         void onTaskComplete(Task task, IRenderingEyes eyes);
+
+        void onRenderComplete();
     }
 }

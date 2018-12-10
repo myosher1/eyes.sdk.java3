@@ -51,7 +51,9 @@ public class RunningTest {
 
         @Override
         public void onRenderComplete() {
-
+            logger.verbose("enter");
+            listener.onRenderComplete();
+            logger.verbose("exit");
         }
     };
 
@@ -90,6 +92,8 @@ public class RunningTest {
     public interface RunningTestListener {
 
         void onTaskComplete(Task task, RunningTest test);
+
+        void onRenderComplete();
     }
 
     public RunningTest(AbstractProxySettings proxy, IEyesConnector eyes, RenderingConfiguration configuration, RenderingConfiguration.RenderBrowserInfo browserInfo,Logger logger, RunningTestListener listener) {
