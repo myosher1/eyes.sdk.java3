@@ -17,21 +17,20 @@ public class Task implements Callable<TestResults> {
     private static AtomicBoolean isThrown = new AtomicBoolean(false);
     private final Logger logger;
     private MatchResult matchResult;
+    private boolean isSent;
 
-
-    public enum TaskType {OPEN, CHECK, CLOSE, ABORT}
-
+    public enum TaskType {OPEN, CHECK, CLOSE, ABORT;}
 
     private TestResults testResults;
-    private IEyesConnector eyesConnector;
 
+    private IEyesConnector eyesConnector;
     private TaskType type;
+
     private RenderStatusResults renderResult;
     private TaskListener runningTestListener;
     private RenderingConfiguration.RenderBrowserInfo browserInfo;
     private RenderingConfiguration configuration;
     private ICheckSettings checkSettings;
-
     interface TaskListener {
 
         void onTaskComplete(Task task);
@@ -39,6 +38,7 @@ public class Task implements Callable<TestResults> {
         void onTaskFailed(Exception e);
 
         void onRenderComplete();
+
     }
 
     public Task(TestResults testResults, IEyesConnector eyesConnector, TaskType type, RenderingConfiguration.RenderBrowserInfo browserInfo,
@@ -61,9 +61,16 @@ public class Task implements Callable<TestResults> {
         return type;
     }
 
+    boolean isSent() {
+        return isSent;
+    }
+
+    void setIsSent() {
+        this.isSent = true;
+    }
 
     @Override
-    public TestResults call() throws Exception {
+    public TestResults call(){
         try {
             testResults = null;
             switch (type) {

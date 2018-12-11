@@ -41,7 +41,7 @@ public class EyesService extends Thread {
         if (this.executor != null) {
             this.executor.shutdown();
         }
-        logger.log("Service '" + this.getName() + "' is dead - R.I.P");
+        logger.log("Service '" + this.getName() + "' is finished");
     }
 
     private void runNextTask() {

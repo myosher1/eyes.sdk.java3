@@ -489,10 +489,10 @@ public class ServerConnector extends RestClient
 
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
         if (renderRequests.length > 1) {
-            target.matrixParam("render-id", renderRequests);
+            target.matrixParam("render-id", (Object[])renderRequests);
         }
         else{
-            target.queryParam("render-id", renderRequests);
+            target.queryParam("render-id", (Object[])renderRequests);
         }
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
@@ -617,10 +617,10 @@ public class ServerConnector extends RestClient
 
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
         if (renderIds.length > 1) {
-            target.matrixParam("render-id", renderIds);
+            target.matrixParam("render-id", (Object[])renderIds);
         }
         else{
-            target.queryParam("render-id", renderIds);
+            target.queryParam("render-id", (Object[])renderIds);
         }
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());

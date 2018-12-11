@@ -170,6 +170,9 @@ public class Eyes implements IRenderingEyes {
                 continue;
 
             ScoreTask scoreTask = runningTest.getScoreTaskObjectByType(Task.TaskType.CHECK);
+
+            if (scoreTask == null) continue;
+
             if (bestScore < scoreTask.getScore()) {
                 currentBest = scoreTask;
                 bestScore = scoreTask.getScore();

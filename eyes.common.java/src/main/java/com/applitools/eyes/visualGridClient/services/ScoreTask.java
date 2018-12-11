@@ -1,17 +1,13 @@
 package com.applitools.eyes.visualGridClient.services;
 
-import java.util.List;
-
 public class ScoreTask {
 
     private Task task;
     private int score;
-    private List<Task> taskList;
 
-    public ScoreTask(Task task, int score, List<Task> taskList) {
+    ScoreTask(Task task, int score) {
         this.task = task;
         this.score = score;
-        this.taskList = taskList;
     }
 
     public int getScore() {
@@ -19,7 +15,7 @@ public class ScoreTask {
     }
 
     Task getTask(){
-        taskList.remove(task);
+        task.setIsSent();
         return task;
     }
 }

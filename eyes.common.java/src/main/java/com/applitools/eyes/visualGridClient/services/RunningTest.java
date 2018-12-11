@@ -38,6 +38,7 @@ public class RunningTest {
         @Override
         public void onTaskComplete(Task task) {
             RunningTest runningTest = RunningTest.this;
+            runningTest.taskList.remove(task);
             switch (task.getType()) {
                 case OPEN:
                     runningTest.setTestOpen(true);
@@ -53,7 +54,7 @@ public class RunningTest {
 
         @Override
         public void onTaskFailed(Exception e) {
-           setTestInExceptionMode(e);
+            setTestInExceptionMode(e);
         }
 
         @Override
@@ -64,12 +65,12 @@ public class RunningTest {
         }
     };
 
-    public RunningTest(AbstractProxySettings proxy, IEyesConnector eyes, RenderingConfiguration configuration, RenderingConfiguration.RenderBrowserInfo browserInfo,Logger logger, RunningTestListener listener) {
+    public RunningTest(AbstractProxySettings proxy, IEyesConnector eyes, RenderingConfiguration configuration, RenderingConfiguration.RenderBrowserInfo browserInfo, Logger logger, RunningTestListener listener) {
         this.eyes = eyes;
         this.browserInfo = browserInfo;
         this.configuration = configuration;
         this.listener = listener;
-        this.logger= logger;
+        this.logger = logger;
         this.proxy = proxy;
     }
 
@@ -92,14 +93,14 @@ public class RunningTest {
                 score++;
             }
         }
-        if(this.taskList.isEmpty())
+        if (this.taskList.isEmpty())
             return null;
 
         Task task = this.taskList.get(0);
-        if(task.getType() != taskType)
+        if (task.getType() != taskType || task.isSent())
             return null;
 
-        return new ScoreTask(task, score, taskList);
+        return new ScoreTask(task, score);
     }
 
     public synchronized FutureTask<TestResults> getNextCloseTask() {
@@ -152,7 +153,7 @@ public class RunningTest {
 
     public Task check(ICheckSettings checkSettings) {
         logger.verbose("adding check task...");
-        Task task = new Task(null, eyes, Task.TaskType.CHECK, this.getBrowserInfo(), this.configuration,this.logger, taskListener, checkSettings);
+        Task task = new Task(null, eyes, Task.TaskType.CHECK, this.getBrowserInfo(), this.configuration, this.logger, taskListener, checkSettings);
         this.taskList.add(task);
         logger.verbose("Check Task was added: " + task.toString());
         eyes.log("Check Task was added");
