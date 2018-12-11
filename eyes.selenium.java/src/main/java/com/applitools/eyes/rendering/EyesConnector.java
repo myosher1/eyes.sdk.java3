@@ -47,11 +47,6 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public RenderStatusResults getRenderStatus() {
-        return null;
-    }
-
-    @Override
     public List<RenderStatusResults> renderStatusById(String... renderIds) {
         return this.serverConnector.renderStatusById(renderIds);
     }

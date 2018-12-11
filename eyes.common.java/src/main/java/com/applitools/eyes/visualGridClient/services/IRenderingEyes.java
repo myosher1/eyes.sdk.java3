@@ -1,5 +1,6 @@
 package com.applitools.eyes.visualGridClient.services;
 
+import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.TestResults;
 
 import java.util.List;
@@ -18,6 +19,8 @@ public interface IRenderingEyes {
     ScoreTask getBestScoreTaskForCheck();
 
     ScoreTask getBestScoreTaskForOpen();
+
+    void setBatch(BatchInfo batchInfo);
 
     interface EyesListener{
 

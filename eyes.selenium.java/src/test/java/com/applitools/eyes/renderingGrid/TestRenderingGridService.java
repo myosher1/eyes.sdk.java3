@@ -1,5 +1,7 @@
 package com.applitools.eyes.renderingGrid;
 
+import com.applitools.eyes.BatchInfo;
+import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.rendering.Eyes;
@@ -28,6 +30,7 @@ public final class TestRenderingGridService {
         renderingManager.setLogHandler(new StdoutLogHandler(true));
 
         Eyes eyes = new Eyes(renderingManager);
+        eyes.setBatch(new BatchInfo("MichaelBatch"));
 
         try {
             webDriver = new ChromeDriver();
@@ -35,12 +38,12 @@ public final class TestRenderingGridService {
 //            webDriver.get("http://applitools-vg-test.surge.sh/test.html");
             System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
-            renderingConfiguration.setTestName("Open Concurrency");
+            renderingConfiguration.setTestName("Open Concurrency with Batch 2");
             renderingConfiguration.setAppName("RenderingGridIntegration");
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
-            //eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);

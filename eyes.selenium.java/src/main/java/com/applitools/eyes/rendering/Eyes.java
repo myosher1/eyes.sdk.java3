@@ -32,6 +32,7 @@ public class Eyes implements IRenderingEyes {
     private JavascriptExecutor jsExecutor;
     private RenderingInfo renderingInfo;
     private IEyesConnector eyesConnector;
+    private BatchInfo batchInfo = new BatchInfo(null);
 
     {
         try {
@@ -83,6 +84,10 @@ public class Eyes implements IRenderingEyes {
 
         initDriver(webDriver);
 
+        if (renderingConfiguration.getBatch() == null){
+            renderingConfiguration.setBatch(batchInfo);
+        }
+
         logger.verbose("getting all browsers info...");
         List<RenderingConfiguration.RenderBrowserInfo> browserInfoList = renderingConfiguration.getBrowsersInfo();
         logger.verbose("creating test descriptors for each browser info...");
@@ -100,6 +105,9 @@ public class Eyes implements IRenderingEyes {
     private IEyesConnector createEyesConnector(RenderingConfiguration.RenderBrowserInfo browserInfo) {
         logger.verbose("creating eyes server connector");
         IEyesConnector eyesConnector = new EyesConnector(browserInfo);
+        eyesConnector.setLogHandler(this.logger.getLogHandler());
+        eyesConnector.setProxy(this.proxy);
+        eyesConnector.setBatch(batchInfo);
 
         if (this.renderingInfo == null) {
             logger.verbose("initializing rendering info...");
@@ -108,8 +116,7 @@ public class Eyes implements IRenderingEyes {
         eyesConnector.setRenderInfo(this.renderingInfo);
 
 
-        eyesConnector.setProxy(this.proxy);
-        eyesConnector.setLogHandler(this.logger.getLogHandler());
+
         if (this.serverUrl != null) {
             try {
                 eyesConnector.setServerUrl(serverUrl);
@@ -197,6 +204,11 @@ public class Eyes implements IRenderingEyes {
             }
         }
         return currentBest;
+    }
+
+    @Override
+    public void setBatch(BatchInfo batchInfo) {
+         this.batchInfo = batchInfo;
     }
 
     public void setServerUrl(String serverUrl) {

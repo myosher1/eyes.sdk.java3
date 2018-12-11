@@ -33,8 +33,6 @@ public interface IEyesConnector {
 
     List<RunningRender> render(RenderRequest... renderRequests);
 
-    RenderStatusResults getRenderStatus();
-
     List<RenderStatusResults> renderStatusById(String... renderIds);
 
     IResourceFuture createResourceFuture(RGridResource rg);
@@ -42,4 +40,6 @@ public interface IEyesConnector {
     MatchResult matchWindow(String resultImageURL, ICheckSettings checkSettings);
 
     void setRenderInfo(RenderingInfo renderingInfo);
+
+    void setBatch(BatchInfo batchInfo);
 }
