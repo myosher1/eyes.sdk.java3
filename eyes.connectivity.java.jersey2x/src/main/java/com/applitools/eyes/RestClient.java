@@ -82,7 +82,6 @@ public class RestClient {
 
         ClientBuilder builder = ClientBuilder.newBuilder().withConfig(cc);
         return disableSSL(builder).build();
-//        return ClientBuilder.newBuilder().withConfig(cc).build();
     }
 
     /***
