@@ -345,9 +345,9 @@ public class RenderingGridManager {
         notifyAllServices();
     }
 
-    public void check(ICheckRGSettings settings, String script, IEyesConnector connector, List<Task> taskList, final RenderListener listener) {
+    public void check(ICheckRGSettings settings, String script, IEyesConnector connector, List<Task> taskList, List<Task> openTasks, final RenderListener listener) {
 
-        RenderingTask renderingTask = new RenderingTask(connector, script, settings, taskList, this.renderingInfo, this.cachedResources, this.putResourceCache, logger, new RenderingTask.RenderTaskListener() {
+        RenderingTask renderingTask = new RenderingTask(connector, script, settings, taskList, openTasks, this.renderingInfo, this.cachedResources, this.putResourceCache, logger, new RenderingTask.RenderTaskListener() {
             @Override
             public void onRenderSuccess() {
                 listener.onRenderSuccess();

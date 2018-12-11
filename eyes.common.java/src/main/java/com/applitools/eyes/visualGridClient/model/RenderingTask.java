@@ -32,6 +32,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private String scriptResult;
     private ICheckRGSettings renderingConfiguration;
     private List<Task> taskList;
+    private List<Task> openTaskList;
     private RenderingInfo renderingInfo;
     private Map<String, IResourceFuture> fetchedCacheMap;
     private Map<String, Future<Boolean>> putResourceCache;
@@ -43,12 +44,13 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         void onRenderFailed(Exception e);
     }
 
-    public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckRGSettings renderingConfiguration, List<Task> taskList, RenderingInfo renderingInfo, Map<String, IResourceFuture> fetchedCacheMap, Map<String, Future<Boolean>> putResourceCache, Logger logger, RenderTaskListener listener) {
+    public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckRGSettings renderingConfiguration, List<Task> taskList, List<Task> openTasks, RenderingInfo renderingInfo, Map<String, IResourceFuture> fetchedCacheMap, Map<String, Future<Boolean>> putResourceCache, Logger logger, RenderTaskListener listener) {
 
         this.eyesConnector = eyesConnector;
         this.scriptResult = scriptResult;
         this.renderingConfiguration = renderingConfiguration;
         this.taskList = taskList;
+        this.openTaskList = openTasks;
         this.renderingInfo = renderingInfo;
         this.fetchedCacheMap = fetchedCacheMap;
         this.putResourceCache = putResourceCache;
@@ -177,6 +179,14 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                         for (RunningRender renderedRender : runningRenders.keySet()) {
                             if (renderedRender.getRenderId().equalsIgnoreCase(removed)) {
                                 Task task = runningRenders.get(renderedRender).getTask();
+                                Iterator<Task> iterator = openTaskList.iterator();
+                                while (iterator.hasNext()) {
+                                    Task openTask =  iterator.next();
+                                    if(openTask.getRunningTest() == task.getRunningTest()){
+                                        openTask.setRenderResult(renderStatusResults);
+                                        iterator.remove();
+                                    }
+                                }
                                 task.setRenderResult(renderStatusResults);
                                 break;
                             }

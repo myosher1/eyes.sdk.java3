@@ -239,7 +239,7 @@ public class Eyes implements IRenderingEyes {
 
     public void check(ICheckRGSettings settings) {
 
-        addOpenTaskToAllRunningTest();
+        List<Task> openTasks = addOpenTaskToAllRunningTest();
 
         List<Task> taskList = new ArrayList<>();
 
@@ -252,7 +252,7 @@ public class Eyes implements IRenderingEyes {
             taskList.add(checkTask);
 
         }
-        this.renderingGridManager.check(settings, scriptResult, this.eyesConnector, taskList, new RenderingGridManager.RenderListener() {
+        this.renderingGridManager.check(settings, scriptResult, this.eyesConnector, taskList, openTasks, new RenderingGridManager.RenderListener() {
             @Override
             public void onRenderSuccess() {
 
@@ -265,14 +265,17 @@ public class Eyes implements IRenderingEyes {
         });
     }
 
-    private synchronized void addOpenTaskToAllRunningTest() {
+    private synchronized List<Task> addOpenTaskToAllRunningTest() {
+        List<Task> tasks = new ArrayList<>();
         if (!this.isEyesIssuedOpenTasks.get()) {
             for (RunningTest runningTest : testList) {
-                runningTest.open();
+                Task task = runningTest.open();
+                tasks.add(task);
             }
             logger.verbose("calling addOpenTaskToAllRunningTest.open");
             this.isEyesIssuedOpenTasks.set(true);
         }
+        return tasks;
     }
 
     public Logger getLogger() {

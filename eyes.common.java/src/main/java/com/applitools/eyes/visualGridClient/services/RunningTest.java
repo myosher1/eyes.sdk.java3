@@ -5,6 +5,7 @@ import com.applitools.ICheckSettings;
 import com.applitools.eyes.AbstractProxySettings;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
+import com.applitools.eyes.config.Configuration;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 
 import java.util.ArrayList;
@@ -32,8 +33,8 @@ public class RunningTest {
         void onTaskComplete(Task task, RunningTest test);
 
         void onRenderComplete();
-    }
 
+    }
     private Task.TaskListener taskListener = new Task.TaskListener() {
         @Override
         public void onTaskComplete(Task task) {
@@ -97,7 +98,7 @@ public class RunningTest {
             return null;
 
         Task task = this.taskList.get(0);
-        if (task.getType() != taskType || task.isSent())
+        if (task.getType() != taskType || task.isSent() || (taskType == Task.TaskType.OPEN && !task.isTaskReadyToCheck()))
             return null;
 
         return new ScoreTask(task, score);
@@ -120,15 +121,16 @@ public class RunningTest {
         return browserInfo;
     }
 
-    public void open() {
+    public Task open() {
         logger.verbose("adding Open task...");
-        Task task = new Task(null, eyes, Task.TaskType.OPEN, this.getBrowserInfo(), this.configuration, this.logger, taskListener, null);
+        Task task = new Task(null, eyes, Task.TaskType.OPEN, taskListener, null, this);
         FutureTask<TestResults> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         this.taskList.add(task);
         logger.verbose("Open task was added: " + task.toString());
         logger.verbose("tasks in taskList: " + taskList.size());
         eyes.log("Open task was added");
+        return task;
     }
 
     public FutureTask<TestResults> close() {
@@ -141,7 +143,7 @@ public class RunningTest {
         }
 
         logger.verbose("adding close task...");
-        Task task = new Task(null, eyes, Task.TaskType.CLOSE, this.getBrowserInfo(), this.configuration, this.logger, taskListener, null);
+        Task task = new Task(null, eyes, Task.TaskType.CLOSE, taskListener, null, this);
         FutureTask<TestResults> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         this.taskList.add(task);
@@ -153,7 +155,7 @@ public class RunningTest {
 
     public Task check(ICheckSettings checkSettings) {
         logger.verbose("adding check task...");
-        Task task = new Task(null, eyes, Task.TaskType.CHECK, this.getBrowserInfo(), this.configuration, this.logger, taskListener, checkSettings);
+        Task task = new Task(null, eyes, Task.TaskType.CHECK, taskListener, checkSettings, this);
         this.taskList.add(task);
         logger.verbose("Check Task was added: " + task.toString());
         eyes.log("Check Task was added");
@@ -184,5 +186,13 @@ public class RunningTest {
         exception = e;
         this.isTestInExceptionMode.set(true);
         //TODO abort if not closed - create new result object containing the exception.
+    }
+
+    Logger getLogger() {
+        return logger;
+    }
+
+    RenderingConfiguration getConfiguration() {
+        return configuration;
     }
 }

@@ -19,7 +19,7 @@ public class Task implements Callable<TestResults> {
     private MatchResult matchResult;
     private boolean isSent;
 
-    public enum TaskType {OPEN, CHECK, CLOSE, ABORT;}
+    public enum TaskType {OPEN, CHECK, CLOSE, ABORT }
 
     private TestResults testResults;
 
@@ -28,9 +28,10 @@ public class Task implements Callable<TestResults> {
 
     private RenderStatusResults renderResult;
     private TaskListener runningTestListener;
-    private RenderingConfiguration.RenderBrowserInfo browserInfo;
-    private RenderingConfiguration configuration;
     private ICheckSettings checkSettings;
+
+    private RunningTest runningTest;
+
     interface TaskListener {
 
         void onTaskComplete(Task task);
@@ -41,20 +42,19 @@ public class Task implements Callable<TestResults> {
 
     }
 
-    public Task(TestResults testResults, IEyesConnector eyesConnector, TaskType type, RenderingConfiguration.RenderBrowserInfo browserInfo,
-                RenderingConfiguration configuration, Logger logger, TaskListener runningTestListener, ICheckSettings checkSettings) {
+    public Task(TestResults testResults, IEyesConnector eyesConnector, TaskType type, TaskListener runningTestListener,
+                ICheckSettings checkSettings, RunningTest runningTest) {
         this.testResults = testResults;
         this.eyesConnector = eyesConnector;
         this.type = type;
         this.runningTestListener = runningTestListener;
-        this.browserInfo = browserInfo;
-        this.configuration = configuration;
-        this.logger = logger;
+        this.logger = runningTest.getLogger();
         this.checkSettings = checkSettings;
+        this.runningTest = runningTest;
     }
 
     public RenderingConfiguration.RenderBrowserInfo getBrowserInfo() {
-        return browserInfo;
+        return runningTest.getBrowserInfo();
     }
 
     public TaskType getType() {
@@ -76,19 +76,19 @@ public class Task implements Callable<TestResults> {
             switch (type) {
                 case OPEN:
                     logger.log("Task.run opening task");
-                    eyesConnector.open(configuration);
+                    String userAgent = renderResult.getUserAgent();
+                    eyesConnector.setUserAgent(userAgent);
+                    eyesConnector.open(runningTest.getConfiguration());
                     break;
 
                 case CHECK:
                     logger.log("Task.run check task");
-                    String userAgent = renderResult.getUserAgent();
-                    eyesConnector.setUserAgent(userAgent);
                     matchResult = eyesConnector.matchWindow(renderResult.getImageLocation(), checkSettings);
                     break;
 
                 case CLOSE:
                     logger.log("Task.run close task");
-                    testResults = eyesConnector.close(configuration.isThrowExceptionOn());
+                    testResults = eyesConnector.close(runningTest.getConfiguration().isThrowExceptionOn());
                     break;
 
                 case ABORT:
@@ -126,6 +126,10 @@ public class Task implements Callable<TestResults> {
 
     public MatchResult getMatchResult() {
         return matchResult;
+    }
+
+    public RunningTest getRunningTest() {
+        return runningTest;
     }
 }
 
