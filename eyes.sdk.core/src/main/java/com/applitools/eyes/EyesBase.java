@@ -258,7 +258,7 @@ public abstract class EyesBase {
     /**
      * Sets the proxy settings to be used by the rest client.
      * @param abstractProxySettings The proxy settings to be used by the rest client.
-     *                      If {@code null} then no proxy is set.
+     *                              If {@code null} then no proxy is set.
      */
     public void setProxy(AbstractProxySettings abstractProxySettings) {
         if (serverConnector == null) {
@@ -1173,7 +1173,7 @@ public abstract class EyesBase {
     }
 
     protected MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
-                                    ICheckSettings checkSettings) {
+                                      ICheckSettings checkSettings) {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
@@ -1385,9 +1385,10 @@ public abstract class EyesBase {
 
             beforeOpen();
 
-            viewportSizeHandler.set(config.getViewportSize());
+            RectangleSize viewportSize = config.getViewportSize();
+            viewportSizeHandler.set(viewportSize);
 
-            if (config.getViewportSize() != null) {
+            if (viewportSize != null) {
                 ensureRunningSession();
             }
 
@@ -1652,11 +1653,10 @@ public abstract class EyesBase {
         BatchInfo testBatch = config.getBatch();
         if (testBatch == null) {
             logger.verbose("No batch set");
-            testBatch = new BatchInfo(null);
+            config.setBatch(new BatchInfo(null));
         } else {
             logger.verbose("Batch is " + testBatch);
         }
-
 
         AppEnvironment appEnv = getAppEnvironment();
 
@@ -1749,7 +1749,7 @@ public abstract class EyesBase {
                 if (domJson != null) {
                     long start = System.currentTimeMillis();
                     domJsonUrl = tryPostDomSnapshot(domJson);
-                    logger.verbose("Send JSON to SERVER in "+(System.currentTimeMillis() - start)/ 1000);
+                    logger.verbose("Send JSON to SERVER in " + (System.currentTimeMillis() - start) / 1000);
                 }
             }
         } catch (Exception e) {
@@ -1815,7 +1815,7 @@ public abstract class EyesBase {
         return isSendDom;
     }
 
-    public void setOnDomCapture(IDomCaptureListener listener){
+    public void setOnDomCapture(IDomCaptureListener listener) {
         this.domCaptureListener = listener;
     }
 
@@ -1823,7 +1823,7 @@ public abstract class EyesBase {
         this.isSendDom = isSendDom;
     }
 
-    public RenderingInfo getRenderingInfo(){
+    public RenderingInfo getRenderingInfo() {
         if (this.renderInfo != null) {
             return this.renderInfo;
         }

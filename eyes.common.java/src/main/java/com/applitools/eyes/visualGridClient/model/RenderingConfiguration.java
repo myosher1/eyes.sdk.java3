@@ -10,7 +10,14 @@ public class RenderingConfiguration extends Configuration {
 
 
     public RenderingConfiguration() {
+    }
 
+    private RenderingConfiguration(RenderingConfiguration configuration) {
+        super(configuration);
+        this.browsersInfo = configuration.browsersInfo;
+        this.concurrentSessions = configuration.concurrentSessions;
+        this.isThrowExceptionOn = configuration.isThrowExceptionOn;
+        this.testName = configuration.testName;
     }
 
     public enum BrowserType {CHROME, FIREFOX}
@@ -126,5 +133,10 @@ public class RenderingConfiguration extends Configuration {
     @Override
     public void setTestName(String testName) {
         this.testName = testName;
+    }
+
+    @Override
+    public RenderingConfiguration cloneConfig() {
+        return new RenderingConfiguration(this);
     }
 }

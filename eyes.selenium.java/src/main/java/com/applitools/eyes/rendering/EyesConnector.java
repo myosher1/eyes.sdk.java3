@@ -25,8 +25,9 @@ class EyesConnector extends EyesBase implements IEyesConnector {
      * ﻿Starts a new test without setting the viewport size of the AUT.
      */
     public void open(Configuration config) {
-        config.setViewportSize(browserInfo.getViewportSize());
-        this.config = config;
+        logger.verbose("opening EyesConnector with viewport size: " + browserInfo.getViewportSize());
+        this.config = config.cloneConfig();
+        this.config.setViewportSize(browserInfo.getViewportSize());
         openBase();
     }
 
