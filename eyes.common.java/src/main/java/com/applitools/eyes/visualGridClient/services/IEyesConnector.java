@@ -42,4 +42,6 @@ public interface IEyesConnector {
     void setRenderInfo(RenderingInfo renderingInfo);
 
     void setBatch(BatchInfo batchInfo);
+
+    void setUserAgent(String userAgent);
 }

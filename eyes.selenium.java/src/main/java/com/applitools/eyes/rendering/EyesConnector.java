@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 class EyesConnector extends EyesBase implements IEyesConnector {
 
     private RenderingConfiguration.RenderBrowserInfo browserInfo;
+    private String userAgent;
 
     public EyesConnector(RenderingConfiguration.RenderBrowserInfo browserInfo) {
         this.browserInfo = browserInfo;
@@ -112,7 +113,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
     @Override
     protected String getInferredEnvironment() {
-        return null;
+        return "useragent:" + userAgent;
     }
 
     @Override
@@ -133,6 +134,11 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     public void setRenderInfo(RenderingInfo renderInfo) {
         this.renderInfo = renderInfo;
         this.serverConnector.setRenderingInfo(renderInfo);
+    }
+
+    @Override
+    public void setUserAgent(String userAgent) {
+        this.userAgent = userAgent;
     }
 
 

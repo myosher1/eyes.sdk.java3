@@ -75,12 +75,14 @@ public class Task implements Callable<TestResults> {
             testResults = null;
             switch (type) {
                 case OPEN:
-                    System.out.println("Task.run opening task");
+                    logger.log("Task.run opening task");
                     eyesConnector.open(configuration);
                     break;
 
                 case CHECK:
                     logger.log("Task.run check task");
+                    String userAgent = renderResult.getUserAgent();
+                    eyesConnector.setUserAgent(userAgent);
                     matchResult = eyesConnector.matchWindow(renderResult.getImageLocation(), checkSettings);
                     break;
 
