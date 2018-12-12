@@ -145,7 +145,7 @@ public class IOSTest {
         try {
             driver.get("https://www.applitools.com/customers");
             eyes.open(driver, "Eyes Selenium SDK - iOS Safari Cropping", testName);
-            eyes.check("Initial view", Target.region(By.cssSelector(".horizontal-page")).fully(fully));
+            eyes.check("Initial view", Target.region(By.cssSelector("body")).fully(fully));
             eyes.close();
         } finally {
             eyes.abortIfNotClosed();

@@ -1357,6 +1357,7 @@ public abstract class EyesBase {
                 testName, viewportSize));
 
         config.setSessionType(sessionType != null ? sessionType : SessionType.SEQUENTIAL);
+        config.setViewportSize(viewportSize);
 
         openBase();
     }
@@ -1742,7 +1743,7 @@ public abstract class EyesBase {
         String domJson = null;
         String domJsonUrl = null;
         try {
-            if (isSendDom) {
+            if (isSendDom()) {
                 domJson = tryCaptureDom();
 
                 if (domJson != null) {

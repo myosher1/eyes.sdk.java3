@@ -8,12 +8,18 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.RequestEntityProcessing;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 /**
@@ -74,7 +80,8 @@ public class RestClient {
         // does not support proxy settings.
         cc.connectorProvider(new ApacheConnectorProvider());
 
-        return ClientBuilder.newBuilder().withConfig(cc).build();
+        ClientBuilder builder = ClientBuilder.newBuilder().withConfig(cc);
+        return disableSSL(builder).build();
     }
 
     /***
@@ -294,5 +301,34 @@ public class RestClient {
         }
 
         return resultObject;
+    }
+
+    private static ClientBuilder disableSSL(ClientBuilder builder) {
+        TrustManager[] trustManagers = new TrustManager[]{
+                new X509TrustManager() {
+
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    @Override
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+
+                    @Override
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+        try {
+            SSLContext sslContext = SSLContext.getInstance("ssl");
+            sslContext.init(null, trustManagers, null);
+            builder.sslContext(sslContext);
+        } catch (NoSuchAlgorithmException | KeyManagementException ignored) {
+        }
+
+        return builder;
     }
 }

@@ -46,7 +46,10 @@ public class Eyes extends EyesBase {
      */
     public void open(String appName, String testName,
                      RectangleSize dimensions) {
-        openBase(appName, testName, dimensions, null);
+        config.setAppName(appName);
+        config.setTestName(testName);
+        config.setViewportSize(dimensions);
+        openBase();
     }
 
     /**
@@ -56,7 +59,9 @@ public class Eyes extends EyesBase {
      * @see #open(String, String, RectangleSize)
      */
     public void open(String appName, String testName) {
-        open(appName, testName, null);
+        config.setAppName(appName);
+        config.setTestName(testName);
+        openBase();
     }
 
     public boolean check(String name, ICheckSettings checkSettings) {
