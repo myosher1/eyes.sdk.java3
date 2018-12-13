@@ -59,7 +59,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     }
 
     @Override
-    public RenderStatusResults call() {
+    public RenderStatusResults call() throws Exception {
 
         try {
 
@@ -91,7 +91,10 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                     Thread.sleep(1500);
                     logger.verbose("/render throws exception... sleeping for 1.5s");
                     GeneralUtils.logExceptionStackTrace(logger, e);
-                    continue;
+                    //TODO fix this bug : still resources are missing but another render request fired
+                    if(!e.getMessage().contains("second request, yet still some resources were not PUT in renderId")){
+                        continue;
+                    }
                 }
 
                 for (int i = 0; i < requests.length; i++) {
@@ -120,6 +123,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
             listener.onRenderFailed(e);
+            throw new Exception(e);
         }
         return null;
     }
@@ -149,67 +153,6 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             }
         }
         return worstStatus;
-    }
-
-    private void startPollingStatus(Map<RunningRender, RenderRequest> runningRenders) {
-
-        List<String> ids = getRenderIds(runningRenders.keySet());
-
-        try {
-            do {
-
-                List<RenderStatusResults> renderStatusResultsList = this.eyesConnector.renderStatusById(ids.toArray(new String[0]));
-                if (renderStatusResultsList == null || renderStatusResultsList.isEmpty() || renderStatusResultsList.get(0) == null) {
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        GeneralUtils.logExceptionStackTrace(logger, e);
-                    }
-                    continue;
-                }
-
-                logger.verbose("render status result received ");
-
-                for (int i = 0, j = 0; i < renderStatusResultsList.size(); i++) {
-                    RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
-                    if (renderStatusResults.getStatus() == RenderStatus.RENDERED) {
-
-                        String removed = ids.remove(j);
-
-                        for (RunningRender renderedRender : runningRenders.keySet()) {
-                            if (renderedRender.getRenderId().equalsIgnoreCase(removed)) {
-                                Task task = runningRenders.get(renderedRender).getTask();
-                                Iterator<Task> iterator = openTaskList.iterator();
-                                while (iterator.hasNext()) {
-                                    Task openTask =  iterator.next();
-                                    if(openTask.getRunningTest() == task.getRunningTest()){
-                                        openTask.setRenderResult(renderStatusResults);
-                                        iterator.remove();
-                                    }
-                                }
-                                task.setRenderResult(renderStatusResults);
-                                break;
-                            }
-                        }
-                    } else {
-                        j++;
-                    }
-                }
-
-                if (ids.size() > 0) {
-                    try {
-                        Thread.sleep(1500);
-                    } catch (InterruptedException e) {
-                        GeneralUtils.logExceptionStackTrace(logger, e);
-                    }
-                }
-
-
-            } while (ids.size() > 0);
-            listener.onRenderSuccess();
-        } catch (Exception e) {
-            GeneralUtils.logExceptionStackTrace(logger, e);
-        }
     }
 
     private List<String> getRenderIds(Collection<RunningRender> runningRenders) {
@@ -518,7 +461,10 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         final Iterator<URL> iterator = resourceUrls.iterator();
         while (iterator.hasNext()) {
             URL link = iterator.next();
-            if (fetchedCacheMap.containsKey(link.toString())) continue;
+            if (fetchedCacheMap.containsKey(link.toString())){
+                iterator.remove();
+                continue;
+            }
 
             IEyesConnector eyesConnector = this.taskList.get(0).getEyesConnector();
             IResourceFuture future = eyesConnector.getResource(link, null);
@@ -557,5 +503,66 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         }
     }
 
+
+    private void startPollingStatus(Map<RunningRender, RenderRequest> runningRenders) {
+
+        List<String> ids = getRenderIds(runningRenders.keySet());
+
+        try {
+            do {
+
+                List<RenderStatusResults> renderStatusResultsList = this.eyesConnector.renderStatusById(ids.toArray(new String[0]));
+                if (renderStatusResultsList == null || renderStatusResultsList.isEmpty() || renderStatusResultsList.get(0) == null) {
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        GeneralUtils.logExceptionStackTrace(logger, e);
+                    }
+                    continue;
+                }
+
+                logger.verbose("render status result received  for renderTask = "+ this);
+
+                for (int i = 0, j = 0; i < renderStatusResultsList.size(); i++) {
+                    RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
+                    if (renderStatusResults.getStatus() == RenderStatus.RENDERED) {
+
+                        String removed = ids.remove(j);
+
+                        for (RunningRender renderedRender : runningRenders.keySet()) {
+                            if (renderedRender.getRenderId().equalsIgnoreCase(removed)) {
+                                Task task = runningRenders.get(renderedRender).getTask();
+                                Iterator<Task> iterator = openTaskList.iterator();
+                                while (iterator.hasNext()) {
+                                    Task openTask =  iterator.next();
+                                    if(openTask.getRunningTest() == task.getRunningTest()){
+                                        openTask.setRenderResult(renderStatusResults);
+                                        iterator.remove();
+                                    }
+                                }
+                                task.setRenderResult(renderStatusResults);
+                                break;
+                            }
+                        }
+                    } else {
+                        j++;
+                    }
+                }
+
+                if (ids.size() > 0) {
+                    try {
+                        Thread.sleep(1500);
+                    } catch (InterruptedException e) {
+                        GeneralUtils.logExceptionStackTrace(logger, e);
+                    }
+                }
+
+
+            } while (ids.size() > 0);
+            listener.onRenderSuccess();
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
+    }
 }
 

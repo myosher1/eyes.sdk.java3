@@ -24,7 +24,7 @@ public class RenderingGridService extends Thread{
     public RenderingGridService(String serviceName, ThreadGroup servicesGroup, Logger logger, int threadPoolSize, RGServiceListener listener) {
         super(servicesGroup, serviceName);
         this.threadPoolSize = threadPoolSize;
-        this.executor = new ThreadPoolExecutor(this.threadPoolSize, threadPoolSize, 1, TimeUnit.DAYS, new ArrayBlockingQueue<Runnable>(1));
+        this.executor = new ThreadPoolExecutor(this.threadPoolSize, 1, 1, TimeUnit.DAYS, new ArrayBlockingQueue<Runnable>(20));
         this.listener = listener;
         this.logger = logger;
     }
@@ -37,7 +37,7 @@ public class RenderingGridService extends Thread{
         if (this.executor != null) {
             this.executor.shutdown();
         }
-        logger.log("Service '" + this.getName() + "' is dead - R.I.P");
+        logger.log("Service '" + this.getName() + "' is finished");
     }
 
     private void runNextTask() {

@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RunningTest {
     private final AbstractProxySettings proxy;
-    private List<Task> taskList = new ArrayList<>();
+    private final List<Task> taskList = new ArrayList<>();
     private IEyesConnector eyes;
     private RenderingConfiguration.RenderBrowserInfo browserInfo;
     private AtomicBoolean isTestOpen = new AtomicBoolean(false);
@@ -54,8 +54,9 @@ public class RunningTest {
         }
 
         @Override
-        public void onTaskFailed(Exception e) {
+        public void onTaskFailed(Exception e, Task task) {
             setTestInExceptionMode(e);
+            listener.onTaskComplete(task,RunningTest.this);
         }
 
         @Override
@@ -89,9 +90,11 @@ public class RunningTest {
 
     public ScoreTask getScoreTaskObjectByType(Task.TaskType taskType) {
         int score = 0;
-        for (Task task : this.getTaskList()) {
-            if (task.isTaskReadyToCheck()) {
-                score++;
+        synchronized (this.taskList) {
+            for (Task task : this.taskList) {
+                if (task.isTaskReadyToCheck() && task.getType() == Task.TaskType.CHECK) {
+                    score++;
+                }
             }
         }
         if (this.taskList.isEmpty())

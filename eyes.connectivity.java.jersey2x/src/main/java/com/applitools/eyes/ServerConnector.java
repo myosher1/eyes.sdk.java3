@@ -478,7 +478,8 @@ public class ServerConnector extends RestClient
     @Override
     public RenderingInfo getRenderInfo() {
 
-        WebTarget target = restClient.target(serverUrl).path((RENDER_INFO_PATH)).queryParam("apiKey", getApiKey());
+        String apiKey = getApiKey();
+        WebTarget target = restClient.target(serverUrl).path((RENDER_INFO_PATH)).queryParam("apiKey", apiKey);
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
 
         // Ok, let's create the running session from the response

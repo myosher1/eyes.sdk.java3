@@ -20,7 +20,7 @@ public class Eyes implements IRenderingEyes {
 
     private final Logger logger;
     private String serverUrl;
-    private RenderingGridManager renderingGridManager;
+    private final RenderingGridManager renderingGridManager;
     private List<RunningTest> testList = new ArrayList<>();
     private final List<RunningTest> testsInCloseProcess = new ArrayList<>();
     private AtomicBoolean isEyesClosed = new AtomicBoolean(false);
@@ -252,17 +252,19 @@ public class Eyes implements IRenderingEyes {
             taskList.add(checkTask);
 
         }
-        this.renderingGridManager.check(settings, scriptResult, this.eyesConnector, taskList, openTasks, new RenderingGridManager.RenderListener() {
-            @Override
-            public void onRenderSuccess() {
+        synchronized (this.renderingGridManager) {
+            this.renderingGridManager.check(settings, scriptResult, this.eyesConnector, taskList, openTasks, new RenderingGridManager.RenderListener() {
+                @Override
+                public void onRenderSuccess() {
 
-            }
+                }
 
-            @Override
-            public void onRenderFailed(Exception e) {
+                @Override
+                public void onRenderFailed(Exception e) {
 
-            }
-        });
+                }
+            });
+        }
     }
 
     private synchronized List<Task> addOpenTaskToAllRunningTest() {

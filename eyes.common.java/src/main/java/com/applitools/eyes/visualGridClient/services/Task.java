@@ -36,7 +36,7 @@ public class Task implements Callable<TestResults> {
 
         void onTaskComplete(Task task);
 
-        void onTaskFailed(Exception e);
+        void onTaskFailed(Exception e, Task task);
 
         void onRenderComplete();
 
@@ -95,12 +95,14 @@ public class Task implements Callable<TestResults> {
                     logger.log("Task.run abort task");
                     eyesConnector.abortIfNotClosed();
             }
-            //call the callback
-            this.runningTestListener.onTaskComplete(this);
             return testResults;
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
-            this.runningTestListener.onTaskFailed(e);
+            this.runningTestListener.onTaskFailed(e, this);
+        }
+        finally {
+            //call the callback
+            this.runningTestListener.onTaskComplete(this);
         }
         return null;
     }
@@ -122,10 +124,6 @@ public class Task implements Callable<TestResults> {
 
     public boolean isTaskReadyToCheck() {
         return this.renderResult != null;
-    }
-
-    public MatchResult getMatchResult() {
-        return matchResult;
     }
 
     public RunningTest getRunningTest() {

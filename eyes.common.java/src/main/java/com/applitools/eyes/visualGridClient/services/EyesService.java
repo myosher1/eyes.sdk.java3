@@ -4,17 +4,17 @@ import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
 
 import java.util.concurrent.*;
-// Needs to be refactored to join on jobRequest and on 
 
 public class EyesService extends Thread {
 
-    private final int threadPoolSize;
-    private final EyesService.EyesServiceListener listener;
-    private final Tasker tasker;
-    private boolean isServiceOn = true;
-    private ExecutorService executor;
-    protected Logger logger;
+    protected final int threadPoolSize;
+    protected ExecutorService executor;
+    protected final EyesService.EyesServiceListener listener;
+    protected final Tasker tasker;
+    protected boolean isServiceOn = true;
 
+
+    protected Logger logger;
 
     interface Tasker {
         FutureTask<TestResults> getOrWaitForNextTask();
@@ -27,7 +27,7 @@ public class EyesService extends Thread {
     public EyesService(String serviceName, ThreadGroup servicesGroup, Logger logger, int threadPoolSize, EyesServiceListener listener, Tasker tasker) {
         super(servicesGroup, serviceName);
         this.threadPoolSize = threadPoolSize;
-        this.executor = new ThreadPoolExecutor(this.threadPoolSize, threadPoolSize, 1, TimeUnit.DAYS, new ArrayBlockingQueue<Runnable>(1));
+        this.executor = new ThreadPoolExecutor(this.threadPoolSize, threadPoolSize, 1, TimeUnit.DAYS, new ArrayBlockingQueue<Runnable>(20 ));
         this.listener = listener;
         this.logger = logger;
         this.tasker = tasker;
@@ -44,7 +44,7 @@ public class EyesService extends Thread {
         logger.log("Service '" + this.getName() + "' is finished");
     }
 
-    private void runNextTask() {
+    void runNextTask() {
         if (!isServiceOn) return;
         final FutureTask<TestResults> task = this.listener.getNextTask(tasker);
         if (task != null) {
@@ -52,7 +52,7 @@ public class EyesService extends Thread {
         }
     }
 
-    public void stopService() {
+    void stopService() {
         this.isServiceOn = false;
     }
 }
