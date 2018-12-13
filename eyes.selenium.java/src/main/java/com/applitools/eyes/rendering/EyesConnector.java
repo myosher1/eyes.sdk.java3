@@ -15,10 +15,10 @@ import java.util.concurrent.Future;
 
 class EyesConnector extends EyesBase implements IEyesConnector {
 
-    private RenderingConfiguration.RenderBrowserInfo browserInfo;
+    private RenderBrowserInfo browserInfo;
     private String userAgent;
 
-    public EyesConnector(RenderingConfiguration.RenderBrowserInfo browserInfo) {
+    public EyesConnector(RenderBrowserInfo browserInfo) {
         this.browserInfo = browserInfo;
     }
 

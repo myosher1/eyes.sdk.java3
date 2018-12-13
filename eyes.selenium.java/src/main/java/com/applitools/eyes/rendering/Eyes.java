@@ -89,9 +89,9 @@ public class Eyes implements IRenderingEyes {
         }
 
         logger.verbose("getting all browsers info...");
-        List<RenderingConfiguration.RenderBrowserInfo> browserInfoList = renderingConfiguration.getBrowsersInfo();
+        List<RenderBrowserInfo> browserInfoList = renderingConfiguration.getBrowsersInfo();
         logger.verbose("creating test descriptors for each browser info...");
-        for (RenderingConfiguration.RenderBrowserInfo browserInfo : browserInfoList) {
+        for (RenderBrowserInfo browserInfo : browserInfoList) {
             logger.verbose("creating test descriptor");
             RunningTest test = new RunningTest(this.proxy, createEyesConnector(browserInfo), renderingConfiguration, browserInfo, logger, testListener);
             this.testList.add(test);
@@ -102,7 +102,7 @@ public class Eyes implements IRenderingEyes {
         logger.verbose("done");
     }
 
-    private IEyesConnector createEyesConnector(RenderingConfiguration.RenderBrowserInfo browserInfo) {
+    private IEyesConnector createEyesConnector(RenderBrowserInfo browserInfo) {
         logger.verbose("creating eyes server connector");
         IEyesConnector eyesConnector = new EyesConnector(browserInfo);
         eyesConnector.setLogHandler(this.logger.getLogHandler());

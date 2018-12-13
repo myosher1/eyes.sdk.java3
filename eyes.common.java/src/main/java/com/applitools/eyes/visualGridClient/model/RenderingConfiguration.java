@@ -2,8 +2,10 @@ package com.applitools.eyes.visualGridClient.model;
 
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.config.Configuration;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class RenderingConfiguration extends Configuration {
@@ -35,79 +37,25 @@ public class RenderingConfiguration extends Configuration {
         this.testName = testName;
     }
 
+    public RenderingConfiguration addBrowsers(RenderBrowserInfo... browsersInfo) {
+        this.browsersInfo.addAll(Arrays.asList(browsersInfo));
+        return this;
+    }
+
+    public RenderingConfiguration addBrowser(RenderBrowserInfo browserInfo) {
+        browsersInfo.add(browserInfo);
+        return this;
+    }
+
     public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType) {
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType);
-        browsersInfo.add(browserInfo);
+        addBrowser(browserInfo);
         return this;
     }
 
     public int getConcurrentSessions() {
         return concurrentSessions;
     }
-
-    public class RenderBrowserInfo {
-
-        private RectangleSize viewportSize;
-        private BrowserType browserType;
-        private String platform = "linux";
-        private EmulationInfo emulationInfo = null;
-        private String sizeMode = "full-page";
-
-        public RenderBrowserInfo(int width, int height, BrowserType browserType, EmulationInfo emulationInfo) {
-            this.viewportSize = new RectangleSize(width, height);
-            this.browserType = browserType;
-            this.emulationInfo = emulationInfo;
-        }
-
-        public RenderBrowserInfo(int width, int height, BrowserType browserType) {
-            this.viewportSize = new RectangleSize(width, height);
-            this.browserType = browserType;
-        }
-
-        public int getWidth() {
-            return viewportSize.getWidth();
-        }
-
-        public int getHeight() {
-            return viewportSize.getHeight();
-        }
-
-        public RectangleSize getViewportSize() {
-            return viewportSize;
-        }
-
-        public String getBrowserType() {
-            switch (this.browserType) {
-                case CHROME:
-                    return "chrome";
-                case FIREFOX:
-                    return "firefox";
-            }
-            return "";
-        }
-
-        public void setBrowserType(BrowserType browserType) {
-            this.browserType = browserType;
-        }
-
-        public String getPlatform() {
-            return platform;
-        }
-
-        public void setPlatform(String platform) {
-            this.platform = platform;
-        }
-
-        public EmulationInfo getEmulationInfo() {
-            return emulationInfo;
-        }
-
-        public String getSizeMode() {
-            return this.sizeMode;
-        }
-
-    }
-
 
     public List<RenderBrowserInfo> getBrowsersInfo() {
         return browsersInfo;

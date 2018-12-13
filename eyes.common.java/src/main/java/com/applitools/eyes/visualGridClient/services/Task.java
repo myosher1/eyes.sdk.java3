@@ -4,6 +4,7 @@ import com.applitools.ICheckSettings;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.MatchResult;
 import com.applitools.eyes.TestResults;
+import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderStatusResults;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.utils.GeneralUtils;
@@ -53,7 +54,7 @@ public class Task implements Callable<TestResults> {
         this.runningTest = runningTest;
     }
 
-    public RenderingConfiguration.RenderBrowserInfo getBrowserInfo() {
+    public RenderBrowserInfo getBrowserInfo() {
         return runningTest.getBrowserInfo();
     }
 

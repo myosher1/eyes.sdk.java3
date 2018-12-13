@@ -5,7 +5,7 @@ import com.applitools.ICheckSettings;
 import com.applitools.eyes.AbstractProxySettings;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.config.Configuration;
+import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 
 import java.util.ArrayList;
@@ -18,7 +18,7 @@ public class RunningTest {
     private final AbstractProxySettings proxy;
     private final List<Task> taskList = new ArrayList<>();
     private IEyesConnector eyes;
-    private RenderingConfiguration.RenderBrowserInfo browserInfo;
+    private RenderBrowserInfo browserInfo;
     private AtomicBoolean isTestOpen = new AtomicBoolean(false);
     private AtomicBoolean isTestClose = new AtomicBoolean(false);
     private AtomicBoolean isTestInExceptionMode = new AtomicBoolean(false);
@@ -67,7 +67,7 @@ public class RunningTest {
         }
     };
 
-    public RunningTest(AbstractProxySettings proxy, IEyesConnector eyes, RenderingConfiguration configuration, RenderingConfiguration.RenderBrowserInfo browserInfo, Logger logger, RunningTestListener listener) {
+    public RunningTest(AbstractProxySettings proxy, IEyesConnector eyes, RenderingConfiguration configuration, RenderBrowserInfo browserInfo, Logger logger, RunningTestListener listener) {
         this.eyes = eyes;
         this.browserInfo = browserInfo;
         this.configuration = configuration;
@@ -120,7 +120,7 @@ public class RunningTest {
         return null;
     }
 
-    public RenderingConfiguration.RenderBrowserInfo getBrowserInfo() {
+    public RenderBrowserInfo getBrowserInfo() {
         return browserInfo;
     }
 

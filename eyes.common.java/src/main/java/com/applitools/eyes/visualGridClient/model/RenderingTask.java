@@ -92,7 +92,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                     logger.verbose("/render throws exception... sleeping for 1.5s");
                     GeneralUtils.logExceptionStackTrace(logger, e);
                     //TODO fix this bug : still resources are missing but another render request fired
-                    if (!e.getMessage().contains("second request, yet still some resources were not PUT in renderId")) {
+                    if (!e.getMessage().contains("Second request, yet still some resources were not PUT in renderId")) {
                         continue;
                     } else {
                         logger.log("ERROR " + e.getMessage());
@@ -451,7 +451,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         for (Task task : this.taskList) {
 
-            RenderingConfiguration.RenderBrowserInfo browserInfo = task.getBrowserInfo();
+            RenderBrowserInfo browserInfo = task.getBrowserInfo();
             RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), browserInfo.getSizeMode(), rcInternal.getRegion(), browserInfo.getEmulationInfo());
 
             RenderRequest request = new RenderRequest(this.renderingInfo.getResultsUrl(), (String) result.get("url"), dom,
