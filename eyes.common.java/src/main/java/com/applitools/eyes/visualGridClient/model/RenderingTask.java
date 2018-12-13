@@ -35,7 +35,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private List<Task> openTaskList;
     private RenderingInfo renderingInfo;
     private Map<String, IResourceFuture> fetchedCacheMap;
-    private Map<String, Future<Boolean>> putResourceCache;
+    private final Map<String, Future<Boolean>> putResourceCache;
     private Logger logger;
 
     public interface RenderTaskListener {
@@ -92,9 +92,16 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                     logger.verbose("/render throws exception... sleeping for 1.5s");
                     GeneralUtils.logExceptionStackTrace(logger, e);
                     //TODO fix this bug : still resources are missing but another render request fired
-                    if(!e.getMessage().contains("second request, yet still some resources were not PUT in renderId")){
+                    if (!e.getMessage().contains("second request, yet still some resources were not PUT in renderId")) {
                         continue;
+                    } else {
+                        logger.log("ERROR " + e.getMessage());
                     }
+                }
+
+                if (runningRenders == null) {
+                    logger.log("ERROR - runningRenders is null.");
+                    continue;
                 }
 
                 for (int i = 0; i < requests.length; i++) {
@@ -316,6 +323,8 @@ public class RenderingTask implements Callable<RenderStatusResults> {
             GeneralUtils.logExceptionStackTrace(logger, e);
 
         }
+
+        @SuppressWarnings("UnnecessaryLocalVariable")
         RGridResource resource = new RGridResource(urlAsString, (String) blobAsMap.get("type"), content);
         return resource;
     }
@@ -461,7 +470,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         final Iterator<URL> iterator = resourceUrls.iterator();
         while (iterator.hasNext()) {
             URL link = iterator.next();
-            if (fetchedCacheMap.containsKey(link.toString())){
+            if (fetchedCacheMap.containsKey(link.toString())) {
                 iterator.remove();
                 continue;
             }
@@ -521,7 +530,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                     continue;
                 }
 
-                logger.verbose("render status result received  for renderTask = "+ this);
+                logger.verbose("render status result received  for renderTask = " + this);
 
                 for (int i = 0, j = 0; i < renderStatusResultsList.size(); i++) {
                     RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
@@ -534,8 +543,8 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                                 Task task = runningRenders.get(renderedRender).getTask();
                                 Iterator<Task> iterator = openTaskList.iterator();
                                 while (iterator.hasNext()) {
-                                    Task openTask =  iterator.next();
-                                    if(openTask.getRunningTest() == task.getRunningTest()){
+                                    Task openTask = iterator.next();
+                                    if (openTask.getRunningTest() == task.getRunningTest()) {
                                         openTask.setRenderResult(renderStatusResults);
                                         iterator.remove();
                                     }

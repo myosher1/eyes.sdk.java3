@@ -3,7 +3,6 @@ package com.applitools.eyes.visualGridClient.services;
 import com.applitools.ICheckRGSettings;
 import com.applitools.eyes.LogHandler;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualGridClient.model.*;
 import com.applitools.utils.GeneralUtils;
@@ -53,7 +52,7 @@ public class RenderingGridManager {
                 case OPEN:
                     synchronized (eyesToOpenList) {
                         logger.verbose("removing task " + task.toString());
-                        RenderingGridManager.this.eyesToOpenList.remove(task);
+                        eyesToOpenList.remove(eyes);
                     }
                     break;
                 case CLOSE:
@@ -117,7 +116,7 @@ public class RenderingGridManager {
     private void init() {
         this.eyesOpenerService = new OpenerService("eyesOpenerService", servicesGroup, logger, this.concurrentOpenSessions, openerServiceConcurrencyLock, new EyesService.EyesServiceListener() {
             @Override
-            public FutureTask<TestResults> getNextTask(EyesService.Tasker tasker) {
+            public FutureTask<TestResults> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker) {
 
                 return getOrWaitForTask(openerServiceLock, tasker, "eyesOpenerService");
             }
@@ -131,7 +130,7 @@ public class RenderingGridManager {
 
         this.eyesCloserService = new EyesService("eyesCloserService", servicesGroup, logger, concurrentOpenSessions, new EyesService.EyesServiceListener() {
             @Override
-            public FutureTask<TestResults> getNextTask(EyesService.Tasker tasker) {
+            public FutureTask<TestResults> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker) {
 
                 return getOrWaitForTask(closerServiceLock, tasker, "eyesCloserService");
             }
@@ -168,7 +167,7 @@ public class RenderingGridManager {
 
         this.eyesCheckerService = new EyesService("eyesCheckerService", servicesGroup, logger, this.concurrentOpenSessions, new EyesService.EyesServiceListener() {
             @Override
-            public FutureTask<TestResults> getNextTask(EyesService.Tasker tasker) {
+            public FutureTask<TestResults> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker) {
 
                 return getOrWaitForTask(checkerServiceLock, tasker, "eyesCheckerService");
             }
@@ -181,7 +180,8 @@ public class RenderingGridManager {
         });
     }
 
-    private FutureTask<TestResults> getOrWaitForTask(Object lock, EyesService.Tasker tasker, String serviceName) {
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    private FutureTask<TestResults> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, String serviceName) {
         FutureTask<TestResults> nextTestToOpen = tasker.getOrWaitForNextTask();
         if (nextTestToOpen == null) {
             synchronized (lock) {
@@ -242,7 +242,7 @@ public class RenderingGridManager {
     }
 
     private FutureTask<TestResults> getNextTestToClose() {
-        RunningTest runningTest = null;
+        RunningTest runningTest;
         synchronized (eyesToCloseList) {
             for (IRenderingEyes eyes : eyesToCloseList) {
                 runningTest = eyes.getNextTestToClose();
@@ -365,7 +365,7 @@ public class RenderingGridManager {
         notifyAllServices();
     }
 
-    void notifyAllServices() {
+    private void notifyAllServices() {
         logger.verbose("enter");
         synchronized (openerServiceLock) {
             openerServiceLock.notify();
