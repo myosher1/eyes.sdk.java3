@@ -563,13 +563,14 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(resource, "resource");
         ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
 
-        this.logger.verbose("called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
+        logger.verbose("resource hash:" + resource.getSha256() + " ; url: " + resource.getUrl() + " ; render id: " + runningRender.getRenderId());
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
         Invocation.Builder request = target.request(MediaType.TEXT_PLAIN);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
 
-
         Future<Response> future = request.async().put(Entity.entity(ArrayUtils.toPrimitive(resource.getContent()), resource.getContentType() ));
+
+        @SuppressWarnings("UnnecessaryLocalVariable")
         PutFuture putFuture = new PutFuture(future);
         return putFuture;
     }
@@ -585,7 +586,7 @@ public class ServerConnector extends RestClient
 
         try {
             ArgumentGuard.notNull(renderIds, "renderIds");
-            this.logger.verbose("ServerConnector.renderStatus called for render: " + renderIds);
+            this.logger.verbose("called for render: " + renderIds);
 
 
             WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));

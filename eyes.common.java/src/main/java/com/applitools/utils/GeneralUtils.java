@@ -256,7 +256,7 @@ public class GeneralUtils {
     public static String getSha256hash(Byte[] content) {
         byte[] buffer = new byte[8192];
         int count;
-        MessageDigest digest = null;
+        MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-256");
             BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(ArrayUtils.toPrimitive(content)));

@@ -470,8 +470,11 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         final Iterator<URL> iterator = resourceUrls.iterator();
         while (iterator.hasNext()) {
             URL link = iterator.next();
-            if (fetchedCacheMap.containsKey(link.toString())) {
+            String url = link.toString();
+            IResourceFuture fetch = fetchedCacheMap.get(url);
+            if (fetch != null) {
                 iterator.remove();
+                allFetches.add(fetch);
                 continue;
             }
 

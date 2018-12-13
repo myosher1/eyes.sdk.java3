@@ -9,16 +9,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class RGridResource {
 
     @JsonIgnore
-    private String url = null;
+    private String url;
 
     @JsonInclude
-    private String contentType = null;
+    private String contentType;
 
     @JsonIgnore
-    private Byte[] content = null;
+    private Byte[] content;
 
     @JsonInclude
-    private String sha256 = null;
+    private String sha256;
 
     @JsonInclude
     private String hashFormat = "sha256";
@@ -33,7 +33,6 @@ public class RGridResource {
         this.contentType = contentType;
         this.content = content;
         this.sha256 = getSha256();
-
     }
 
     public void setUrl(String url) {
