@@ -22,28 +22,35 @@ import java.util.concurrent.Future;
 
 public final class TestRenderingGridService {
 
+    private RenderingGridManager renderingManager;
+    private WebDriver webDriver;
+
+    @BeforeMethod
+    public void Before(ITestContext testContext){
+        renderingManager = new RenderingGridManager(3);
+        renderingManager.setLogHandler(new StdoutLogHandler(true));
+
+        webDriver = new ChromeDriver();
+        webDriver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage");
+        //webDriver.get("http://applitools-vg-test.surge.sh/test.html");
+
+        System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
+    }
+
     @Test
     public void test() {
-        WebDriver webDriver = null;
-
-        RenderingGridManager renderingManager = new RenderingGridManager(3);
-        renderingManager.setLogHandler(new StdoutLogHandler(true));
 
         Eyes eyes = new Eyes(renderingManager);
         eyes.setBatch(new BatchInfo("MichaelBatch"));
 
         try {
-            webDriver = new ChromeDriver();
-            webDriver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage");
-//            webDriver.get("http://applitools-vg-test.surge.sh/test.html");
-            System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
             renderingConfiguration.setTestName("Open Concurrency with Batch 2");
             renderingConfiguration.setAppName("RenderingGridIntegration");
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
-            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+            //eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
@@ -65,13 +72,9 @@ public final class TestRenderingGridService {
         }
     }
 
-    @BeforeMethod
-    public void Before(ITestContext testContext){
-        int x = 0;
-    }
-
     @AfterMethod
-    public void After(ITestContext testContext){
-        int x = 0;
+    public void After(ITestContext testContext) {
+        renderingManager.getLogger().log(renderingManager.getAllTestResults().toString());
+        webDriver.quit();
     }
 }
