@@ -283,4 +283,8 @@ public class Eyes implements IRenderingEyes {
     public Logger getLogger() {
         return logger;
     }
+
+    public List<RunningTest> getAllRunningTests() {
+        return testList;
+    }
 }
