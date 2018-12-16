@@ -14,8 +14,10 @@ import com.helger.css.ECSSVersion;
 import com.helger.css.decl.*;
 import com.helger.css.reader.CSSReader;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -185,8 +187,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, boolean isNeedMoreDom) {
+        String renderingGridDebug = System.getenv("RenderingGridDebug");
         for (RunningRender runningRender : runningRenders) {
-            if (isNeedMoreDom) {
+            if (!renderingGridDebug.isEmpty() || isNeedMoreDom) {
                 Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
                 synchronized (putResourceCache) {
                     putResourceCache.put("dom", future);
@@ -195,7 +198,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             List<String> needMoreResources = runningRender.getNeedMoreResources();
             for (String url : needMoreResources) {
 
-                if (putResourceCache.containsKey(url)) continue;
+                if (renderingGridDebug.isEmpty() && putResourceCache.containsKey(url)) continue;
 
                 try {
                     logger.log("trying to get url from map - " + url);
@@ -246,6 +249,20 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
         @SuppressWarnings("UnnecessaryLocalVariable")
         RenderRequest[] asArray = allRequestsForRG.toArray(new RenderRequest[0]);
+
+        for (RenderRequest renderRequest : asArray) {
+            for (RGridResource value : renderRequest.getResources().values()) {
+                String url = value.getUrl();
+                if (url.contains("applitools.github.io/demo/TestPages/VisualGridTestPage/AbrilFatface-Regular.woff2")) {
+                    try {
+                        String substring = url.substring(url.lastIndexOf("/") + 1);
+                        FileUtils.writeByteArrayToFile(new File("~/" + substring), ArrayUtils.toPrimitive(value.getContent()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
         return asArray;
     }
 
