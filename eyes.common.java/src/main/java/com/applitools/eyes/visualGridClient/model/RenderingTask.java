@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class RenderingTask implements Callable<RenderStatusResults> , CompletableTask {
+public class RenderingTask implements Callable<RenderStatusResults>, CompletableTask {
 
     private final List<RenderTaskListener> listeners = new ArrayList<>();
     private IEyesConnector eyesConnector;
@@ -116,7 +116,7 @@ public class RenderingTask implements Callable<RenderStatusResults> , Completabl
 
                 worstStatus = calcWorstStatus(runningRenders, worstStatus);
 
-                boolean isNeedMoreDom = runningRender. isNeedMoreDom();
+                boolean isNeedMoreDom = runningRender.isNeedMoreDom();
 
                 stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom;
                 if (stillRunning) {
@@ -507,7 +507,7 @@ public class RenderingTask implements Callable<RenderStatusResults> , Completabl
                 removeUrlFromList(urlAsUrl, resourceUrls);
                 allBlobs.add(resource);
                 String contentType = resource.getContentType();
-                 String css = getCss(resource.getContent(), contentType);
+                String css = getCss(resource.getContent(), contentType);
                 if (css == null || css.isEmpty() || !contentType.contains("text/css")) continue;
 
                 parseCSS(css, new URL(urlAsUrl), resourceUrls);
@@ -595,7 +595,7 @@ public class RenderingTask implements Callable<RenderStatusResults> , Completabl
         return isTaskComplete.get();
     }
 
-    public void addListener(RenderTaskListener listener){
+    public void addListener(RenderTaskListener listener) {
         this.listeners.add(listener);
     }
 }
