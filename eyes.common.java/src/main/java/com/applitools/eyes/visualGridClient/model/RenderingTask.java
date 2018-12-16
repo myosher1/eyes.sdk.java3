@@ -187,7 +187,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, boolean isNeedMoreDom) {
-        String renderingGridDebug = System.getenv("RenderingGridDebug");
+        String renderingGridDebug = System.getenv("APPLITOOLS_RENDERING_GRID_FORCE_PUT");
         for (RunningRender runningRender : runningRenders) {
             if (!renderingGridDebug.isEmpty() || isNeedMoreDom) {
                 Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
