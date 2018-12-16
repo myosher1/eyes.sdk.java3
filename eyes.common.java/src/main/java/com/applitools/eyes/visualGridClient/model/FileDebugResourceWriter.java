@@ -45,6 +45,7 @@ public class FileDebugResourceWriter implements IDebugResourceWriter {
         if (filter == null || filter.isEmpty() || url.toUpperCase().contains(filter.toUpperCase())) {
             try {
                 String substring = url.substring(url.lastIndexOf("/") + 1);
+                substring = substring.replaceAll("\\?","_");
                 FileUtils.writeByteArrayToFile(new File(path + prefix + substring), ArrayUtils.toPrimitive(resource.getContent()));
             } catch (IOException e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);

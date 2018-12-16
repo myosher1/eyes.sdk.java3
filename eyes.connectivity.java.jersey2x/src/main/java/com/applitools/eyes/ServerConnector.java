@@ -406,6 +406,7 @@ public class ServerConnector extends RestClient
             }
         });
 
+        @SuppressWarnings("UnnecessaryLocalVariable")
         IResourceFuture newFuture = new ResourceFuture(future, url.toString(), logger);
         return newFuture;
     }
@@ -531,7 +532,6 @@ public class ServerConnector extends RestClient
         // eslint-disable-next-line max-len
         this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
 
-
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
@@ -540,7 +540,6 @@ public class ServerConnector extends RestClient
         List<Integer> validStatusCodes = new ArrayList<>();
         validStatusCodes.add(Response.Status.OK.getStatusCode());
         validStatusCodes.add(Response.Status.NOT_FOUND.getStatusCode());
-
 
         Response response = request.head();
         if (validStatusCodes.contains(response.getStatus())) {

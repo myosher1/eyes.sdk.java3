@@ -18,6 +18,9 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -27,14 +30,15 @@ public final class TestRenderingGridService {
     private WebDriver webDriver;
 
     private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
-    private FileDebugResourceWriter fileDebugResourceWriter;
 
     @BeforeMethod
     public void Before(ITestContext testContext){
         renderingManager = new RenderingGridManager(3);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
 
-        fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), logsPath, null, null);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
+        String path = logsPath + File.separator + "java" + File.separator + "TestRenderingGridService" + dateFormat.format(Calendar.getInstance().getTime());
+        FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
         renderingManager.setDebugResourceWriter(fileDebugResourceWriter);
 
         webDriver = new ChromeDriver();

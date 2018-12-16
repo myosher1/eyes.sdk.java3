@@ -6,6 +6,7 @@ import com.applitools.utils.GeneralUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import javax.ws.rs.core.Response;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
@@ -48,54 +49,44 @@ public class ResourceFuture implements IResourceFuture {
 
     @Override
     public RGridResource get() throws InterruptedException, ExecutionException {
-
         if (this.rgResource == null) {
-
             Response response = future.get();
-
-            byte[] bytes;
-            InputStream inputStream = response.readEntity(InputStream.class);
-            int available = response.getLength();
-
-            if (available < 1) {
-                try {
-                    available = inputStream.available();
-                } catch (IOException e) {
-                    GeneralUtils.logExceptionStackTrace(logger, e);
-                }
-            }
-            bytes = new byte[available];
-            try {
-                inputStream.read(bytes);
-            } catch (IOException e) {
-                GeneralUtils.logExceptionStackTrace(logger, e);
-            }
-
+            ByteArrayOutputStream outputStream = downloadFile(response);
             String contentType = Utils.getResponseContentType(response);
-
-            rgResource = new RGridResource(url, contentType, ArrayUtils.toObject(bytes));
+            rgResource = new RGridResource(url, contentType, ArrayUtils.toObject(outputStream.toByteArray()));
         }
         return rgResource;
     }
-
 
     @Override
     public RGridResource get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         if (this.rgResource == null) {
             Response response = future.get(timeout, unit);
-            byte[] bytes = new byte[response.getLength()];
-            try {
-                response.readEntity(InputStream.class).read(bytes);
-                rgResource = new RGridResource(url, response.getHeaderString("contentType"), ArrayUtils.toObject(bytes));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            ByteArrayOutputStream outputStream = downloadFile(response);
+            String contentType = Utils.getResponseContentType(response);
+            rgResource = new RGridResource(url, contentType, ArrayUtils.toObject(outputStream.toByteArray()));
         }
         return rgResource;
     }
 
+    private ByteArrayOutputStream downloadFile(Response response) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream(1024);
+        InputStream inputStream = response.readEntity(InputStream.class);
+        byte[] bytes = new byte[1024];
+        try {
+            int readBytes = inputStream.read(bytes);
+            while (readBytes > 0) {
+                outputStream.write(bytes, 0, readBytes);
+                readBytes = inputStream.read(bytes);
+            }
+        } catch (IOException e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
+        return outputStream;
+    }
+
     @Override
     public String getUrl() {
-        return this.url.toString();
+        return this.url;
     }
 }
