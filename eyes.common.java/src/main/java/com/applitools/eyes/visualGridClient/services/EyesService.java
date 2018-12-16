@@ -14,6 +14,7 @@ public class EyesService extends Thread {
     private final Object debugLock;
     protected final Tasker tasker;
     protected boolean isServiceOn = true;
+    private boolean isPaused;
 
 
     protected Logger logger;
@@ -34,20 +35,23 @@ public class EyesService extends Thread {
         this.logger = logger;
         this.debugLock = debugLock;
         this.tasker = tasker;
+        this.isPaused = debugLock != null;
 }
 
     @Override
     public void run() {
-        if (debugLock != null) {
-            synchronized (debugLock) {
-                try {
-                    debugLock.wait();
-                } catch (InterruptedException e) {
-                    GeneralUtils.logExceptionStackTrace(logger, e);
+        debugNotify();
+        while (isServiceOn) {
+            if (isPaused) {
+                synchronized (debugLock) {
+                    try {
+                        debugLock.wait();
+                        this.isPaused = false;
+                    } catch (InterruptedException e) {
+                        GeneralUtils.logExceptionStackTrace(logger, e);
+                    }
                 }
             }
-        }
-        while (isServiceOn) {
             runNextTask();
         }
         if (this.executor != null) {
@@ -80,9 +84,19 @@ public class EyesService extends Thread {
     }
 
     private void debugNotify() {
-        synchronized (debugLock) {
-            debugLock.notify();
+        if (debugLock != null) {
+            synchronized (debugLock) {
+                try {
+                    debugLock.wait();
+                } catch (InterruptedException e) {
+                    GeneralUtils.logExceptionStackTrace(logger, e);
+                }
+            }
         }
+    }
+
+    public void debugPauseService() {
+        this.isPaused = true;
     }
 
     void stopService() {

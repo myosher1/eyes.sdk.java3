@@ -17,6 +17,7 @@ public class RenderingGridService extends Thread {
     private boolean isServiceOn = true;
     private ExecutorService executor;
     protected Logger logger;
+    private boolean isPaused;
 
 
     public interface RGServiceListener {
@@ -29,20 +30,22 @@ public class RenderingGridService extends Thread {
         this.debugLock = debugLock;
         this.listener = listener;
         this.logger = logger;
+        this.isPaused = debugLock != null;
     }
 
     @Override
     public void run() {
-        if (debugLock != null) {
-            synchronized (debugLock) {
-                try {
-                    debugLock.wait();
-                } catch (InterruptedException e) {
-                    GeneralUtils.logExceptionStackTrace(logger, e);
+        while (isServiceOn) {
+            if (isPaused) {
+                synchronized (debugLock) {
+                    try {
+                        debugLock.wait();
+                        this.isPaused = false;
+                    } catch (InterruptedException e) {
+                        GeneralUtils.logExceptionStackTrace(logger, e);
+                    }
                 }
             }
-        }
-        while (isServiceOn) {
             runNextTask();
         }
         if (this.executor != null) {
@@ -70,9 +73,15 @@ public class RenderingGridService extends Thread {
     }
 
     private void debugNotify() {
-        synchronized (debugLock) {
-            debugLock.notify();
+        if (debugLock != null) {
+            synchronized (debugLock) {
+                debugLock.notify();
+            }
         }
+    }
+
+    public void debugPauseService() {
+      this.isPaused = true;
     }
 
     public void stopService() {

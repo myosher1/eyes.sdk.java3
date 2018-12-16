@@ -50,7 +50,7 @@ public final class TestRenderingGridService {
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
-            //eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);

@@ -565,7 +565,7 @@ public class ServerConnector extends RestClient
 
         logger.verbose("resource hash:" + resource.getSha256() + " ; url: " + resource.getUrl() + " ; render id: " + runningRender.getRenderId());
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
-        Invocation.Builder request = target.request(MediaType.TEXT_PLAIN);
+        Invocation.Builder request = target.request(resource.getContentType());
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
 
         Future<Response> future = request.async().put(Entity.entity(ArrayUtils.toPrimitive(resource.getContent()), resource.getContentType() ));

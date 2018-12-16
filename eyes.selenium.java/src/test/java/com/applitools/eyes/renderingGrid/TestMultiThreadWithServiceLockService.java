@@ -14,6 +14,7 @@ import com.applitools.eyes.visualGridClient.services.Task;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -113,12 +114,17 @@ public final class TestMultiThreadWithServiceLockService {
             renderLock.wait();
             renderLock.wait();
         }
-        int openedTask = openServiceAndCountCompletedTasks(allOpenTasks, openerLock);
+        int openedTask = startServiceAndCountCompletedTasks(allOpenTasks, openerLock);
 
-        int checkedTasks = openServiceAndCountCompletedTasks(allCheckTasks, checkerLock);
+        Assert.assertEquals(openedTask, concurrentOpenSessions, "Completed opened tasks are not equal to concurrency");
+
+        int checkedTasks = startServiceAndCountCompletedTasks(allCheckTasks, checkerLock);
+
+        Assert.assertEquals(checkedTasks, concurrentOpenSessions, "Completed checked tasks are not equal to concurrency");
+
+        closeAllServices();
 
         if (openedTask > this.concurrentOpenSessions) throw new Exception("More Open sessions then concurrency");
-
 
 
         try {
@@ -131,7 +137,11 @@ public final class TestMultiThreadWithServiceLockService {
 
     }
 
-    private int openServiceAndCountCompletedTasks(List<CompletableTask> allOpenTasks, Object debugLock) throws InterruptedException {
+    private void closeAllServices() {
+        this.renderingManager.pauseAllService();
+    }
+
+    private int startServiceAndCountCompletedTasks(List<CompletableTask> allOpenTasks, Object debugLock) throws InterruptedException {
         //Start Opener and wait for 5 open tasks
         synchronized (debugLock) {
             debugLock.notify();
@@ -147,12 +157,13 @@ public final class TestMultiThreadWithServiceLockService {
         for (CompletableTask openTask : allOpenTasks) {
             if (openTask.getIsTaskComplete()) completedTasks++;
         }
+
         return completedTasks;
     }
 
     private void checkAllTaskAreNotComplete(List<CompletableTask> allOpenTasks, String type) throws Exception {
         for (CompletableTask task : allOpenTasks) {
-            if (task.getIsTaskComplete()) throw new Exception(type + " Task is complete without notify openerService");
+            Assert.assertFalse(task.getIsTaskComplete(), type + " Task is complete without notify openerService");
         }
     }
 

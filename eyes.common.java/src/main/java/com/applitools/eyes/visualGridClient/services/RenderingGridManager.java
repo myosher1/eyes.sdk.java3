@@ -15,10 +15,10 @@ public class RenderingGridManager {
     private int concurrentOpenSessions;
 
     //For Testing...
-    private Object openerServiceDebugLock;
-    private Object checkerServiceDebugLock;
-    private Object closerServiceDebugLock;
-    private Object renderServiceDebugLock;
+    private final Object openerServiceDebugLock;
+    private final Object checkerServiceDebugLock;
+    private final Object closerServiceDebugLock;
+    private final Object renderServiceDebugLock;
 
     private OpenerService eyesOpenerService;
     private EyesService eyesCloserService;
@@ -41,8 +41,15 @@ public class RenderingGridManager {
     private final List<RenderingTask> renderingTaskList = Collections.synchronizedList(new ArrayList<RenderingTask>());
     private RenderingInfo renderingInfo;
 
-    public interface RenderListener {
+    public void pauseAllService() {
+        eyesOpenerService.debugPauseService();
+        eyesCloserService.debugPauseService();
+        eyesCheckerService.debugPauseService();
+        renderingGridService.debugPauseService();
 
+    }
+
+    public interface RenderListener {
 
         void onRenderSuccess();
 
@@ -101,10 +108,8 @@ public class RenderingGridManager {
     };
 
     public RenderingGridManager(int concurrentOpenSessions) {
-        this.concurrentOpenSessions = concurrentOpenSessions;
-        init();
-        startServices();
-        logger.verbose("rendering grid manager is built");
+        this(concurrentOpenSessions, null, null, null, null);
+
     }
 
     public RenderingGridManager(int concurrentOpenSessions,
@@ -112,6 +117,7 @@ public class RenderingGridManager {
                                 Object checkerServiceDebugLock,
                                 Object closerServiceDebugLock,
                                 Object renderServiceDebugLock) {
+
         this.concurrentOpenSessions = concurrentOpenSessions;
         this.openerServiceDebugLock = openerServiceDebugLock;
         this.checkerServiceDebugLock = checkerServiceDebugLock;
@@ -140,7 +146,7 @@ public class RenderingGridManager {
             @Override
             public FutureTask<TestResults> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener) {
 
-                return getOrWaitForTask(openerServiceLock, tasker, taskListener,"eyesOpenerService");
+                return getOrWaitForTask(openerServiceLock, tasker, taskListener, "eyesOpenerService");
             }
 
         }, openerServiceDebugLock, new EyesService.Tasker() {
@@ -164,7 +170,7 @@ public class RenderingGridManager {
             }
         });
 
-        this.renderingGridService = new RenderingGridService("renderingGridService", servicesGroup, logger, this.concurrentOpenSessions, renderServiceDebugLock,new RenderingGridService.RGServiceListener() {
+        this.renderingGridService = new RenderingGridService("renderingGridService", servicesGroup, logger, this.concurrentOpenSessions, renderServiceDebugLock, new RenderingGridService.RGServiceListener() {
             @Override
             public RenderingTask getNextTask() {
                 RenderingTask nextTestToRender = getNextRenderingTask();
@@ -424,7 +430,7 @@ public class RenderingGridManager {
         return allTasks;
     }
 
-    public List<? extends CompletableTask> getAllRenderingTasks(){
+    public List<? extends CompletableTask> getAllRenderingTasks() {
         return this.renderingTaskList;
     }
 }
