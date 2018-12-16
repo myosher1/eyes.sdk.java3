@@ -1,7 +1,6 @@
 package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.BatchInfo;
-import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.rendering.Eyes;

@@ -51,7 +51,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckRGSettings renderingConfiguration,
                          List<Task> taskList, List<Task> openTasks, RenderingGridManager renderingGridManager,
-                         RenderTaskListener listener) {
+                         IDebugResourceWriter debugResourceWriter, RenderTaskListener listener) {
 
         this.eyesConnector = eyesConnector;
         this.scriptResult = scriptResult;
@@ -62,7 +62,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         this.fetchedCacheMap = renderingGridManager.getCachedResources();
         this.putResourceCache = renderingGridManager.getPutResourceCache();
         this.logger = renderingGridManager.getLogger();
-        this.debugResourceWriter = renderingGridManager.getDebugResourceWriter();
+        this.debugResourceWriter = debugResourceWriter;
         this.listeners.add(listener);
 
         String renderingGridForcePut = System.getenv("APPLITOOLS_RENDERING_GRID_FORCE_PUT");

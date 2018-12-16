@@ -9,7 +9,6 @@ import com.applitools.eyes.rendering.Target;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
-import com.applitools.eyes.visualGridClient.services.Task;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;

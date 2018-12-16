@@ -34,6 +34,8 @@ public class Eyes implements IRenderingEyes {
     private IEyesConnector eyesConnector;
     private BatchInfo batchInfo = new BatchInfo(null);
 
+    private IDebugResourceWriter debugResourceWriter;
+
     {
         try {
             PROCESS_RESOURCES = GeneralUtils.readToEnd(Eyes.class.getResourceAsStream("/processResources.js"));
@@ -253,7 +255,7 @@ public class Eyes implements IRenderingEyes {
 
         }
         synchronized (this.renderingGridManager) {
-            this.renderingGridManager.check(settings, scriptResult, this.eyesConnector, taskList, openTasks, new RenderingGridManager.RenderListener() {
+            this.renderingGridManager.check(settings, debugResourceWriter, scriptResult, this.eyesConnector, taskList, openTasks, new RenderingGridManager.RenderListener() {
                 @Override
                 public void onRenderSuccess() {
 
@@ -287,4 +289,9 @@ public class Eyes implements IRenderingEyes {
     public List<RunningTest> getAllRunningTests() {
         return testList;
     }
+
+    public void setDebugResourceWriter(IDebugResourceWriter debugResourceWriter) {
+        this.debugResourceWriter = debugResourceWriter;
+    }
+
 }

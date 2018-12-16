@@ -386,9 +386,13 @@ public class RenderingGridManager {
         notifyAllServices();
     }
 
-    public synchronized void check(ICheckRGSettings settings, String script, IEyesConnector connector, List<Task> taskList, List<Task> openTasks, final RenderListener listener) {
+    public synchronized void check(ICheckRGSettings settings, IDebugResourceWriter debugResourceWriter, String script,
+                                   IEyesConnector connector, List<Task> taskList, List<Task> openTasks, final RenderListener listener) {
 
-        RenderingTask renderingTask = new RenderingTask(connector, script, settings, taskList, openTasks, this, new RenderingTask.RenderTaskListener() {
+        if (debugResourceWriter == null){
+            debugResourceWriter = this.debugResourceWriter;
+        }
+        RenderingTask renderingTask = new RenderingTask(connector, script, settings, taskList, openTasks, this, debugResourceWriter, new RenderingTask.RenderTaskListener() {
             @Override
             public void onRenderSuccess() {
                 listener.onRenderSuccess();
