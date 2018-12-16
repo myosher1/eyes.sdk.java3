@@ -107,6 +107,11 @@ public class FileLogger implements LogHandler {
         fileWriter = null;
     }
 
+    @Override
+    public boolean isOpen() {
+        return fileWriter != null;
+    }
+
     private String getFormattedTimeStamp(){
         return dateFormat.format(Calendar.getInstance().getTime());
     }

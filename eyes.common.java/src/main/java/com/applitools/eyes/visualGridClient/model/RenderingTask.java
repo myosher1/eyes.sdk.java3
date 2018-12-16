@@ -253,10 +253,11 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         }
 
         synchronized (putResourceCache) {
-            for (Future<Boolean> future : putResourceCache.values()) {
+            for (Map.Entry<String, Future<Boolean>> urlFutureEntry : putResourceCache.entrySet()) {
                 try {
-                    future.get();
+                    urlFutureEntry.getValue().get();
                 } catch (InterruptedException | ExecutionException e) {
+                    logger.log("Error getting resource. url: " + urlFutureEntry.getKey());
                     GeneralUtils.logExceptionStackTrace(logger, e);
                 }
             }

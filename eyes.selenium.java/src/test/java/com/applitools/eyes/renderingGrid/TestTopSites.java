@@ -1,8 +1,6 @@
 package com.applitools.eyes.renderingGrid;
 
-import com.applitools.eyes.BatchInfo;
-import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.TestResults;
+import com.applitools.eyes.*;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
 import com.applitools.eyes.visualGridClient.model.FileDebugResourceWriter;
@@ -60,7 +58,10 @@ public class TestTopSites {
         String testName = testedUrl.substring(8);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
         String path = logsPath + File.separator + "java" + File.separator + "TestTopSites_" + testName + dateFormat.format(Calendar.getInstance().getTime());
+
         FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
+        FileLogger eyesLogger = new FileLogger(path + File.separator + "log.log", false, true);
+        eyes.setLogHandler(eyesLogger);
         eyes.setDebugResourceWriter(fileDebugResourceWriter);
 
         WebDriver webDriver = new ChromeDriver();
@@ -81,6 +82,7 @@ public class TestTopSites {
             eyes.check(Target.window().withName(testedUrl).sendDom(false));
             List<Future<TestResults>> close = eyes.close();
             for (Future<TestResults> future : close) {
+                eyes.getLogger().log("calling future.get()");
                 future.get();
             }
 
@@ -100,7 +102,7 @@ public class TestTopSites {
     }
 
     @AfterClass
-    public void afterClass(){
+    public void afterClass() {
         renderingManager.getLogger().log(renderingManager.getAllTestResults().toString());
     }
 }

@@ -46,4 +46,9 @@ public class StdoutLogHandler implements LogHandler {
      * Does nothing.
      */
     public void close() {}
+
+    @Override
+    public boolean isOpen() {
+        return true;
+    }
 }
