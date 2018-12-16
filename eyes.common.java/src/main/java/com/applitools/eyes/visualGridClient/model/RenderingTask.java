@@ -215,7 +215,6 @@ public class RenderingTask implements Callable<RenderStatusResults> , Completabl
                     GeneralUtils.logExceptionStackTrace(logger, e);
                 }
             }
-
         }
 
         synchronized (putResourceCache) {
@@ -223,7 +222,7 @@ public class RenderingTask implements Callable<RenderStatusResults> , Completabl
                 try {
                     future.get();
                 } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
+                    GeneralUtils.logExceptionStackTrace(logger, e);
                 }
             }
         }
