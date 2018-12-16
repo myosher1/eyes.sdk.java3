@@ -1,6 +1,7 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.ICheckSettings;
+import com.applitools.eyes.CoordinatesType;
 import com.applitools.eyes.FloatingMatchSettings;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.selenium.fluent.Target;
@@ -113,6 +114,13 @@ public class TestFluentApi extends TestSetup {
                 .fully()
                 .layout()
                 .floating(25, new Region(200, 200, 150, 150)));
+    }
+
+    @Test
+    public void TestCheckRegionByCoordinateInFrame_Fluent() {
+        eyes.check("Fluent - Inner frame coordinates", Target.frame("frame1")
+                .region(new Region(30,40, 400, 1200, CoordinatesType.CONTEXT_RELATIVE))
+                .fully());
     }
 
     @Test
