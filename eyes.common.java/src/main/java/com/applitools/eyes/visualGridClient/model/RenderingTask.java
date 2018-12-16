@@ -102,7 +102,6 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     Thread.sleep(1500);
                     logger.verbose("/render throws exception... sleeping for 1.5s");
                     GeneralUtils.logExceptionStackTrace(logger, e);
-                    //TODO fix this bug : still resources are missing but another render request fired
                     if (!e.getMessage().contains("Second request, yet still some resources were not PUT in renderId")) {
                         continue;
                     } else {

@@ -53,9 +53,6 @@ public final class TestMultiThreadWithServiceLockService {
     @Test
     public void test() throws Exception {
 
-        final Eyes eyes = new Eyes(renderingManager);
-        eyes.setBatch(new BatchInfo("MichaelBatchThreads"));
-
         Thread threadA = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -114,9 +111,14 @@ public final class TestMultiThreadWithServiceLockService {
             renderLock.wait();
             renderLock.wait();
         }
+
         int openedTask = startServiceAndCountCompletedTasks(allOpenTasks, openerLock);
 
         Assert.assertEquals(openedTask, concurrentOpenSessions, "Completed opened tasks are not equal to concurrency");
+
+        int closeTasks = startServiceAndCountCompletedTasks(allCloseTasks, closerLock);
+
+        Assert.assertEquals(closeTasks, 0, "Close tasks are completed before check tasks");
 
         int checkedTasks = startServiceAndCountCompletedTasks(allCheckTasks, checkerLock);
 
@@ -124,19 +126,19 @@ public final class TestMultiThreadWithServiceLockService {
 
         pauseAllServices();
 
-        int closeTasks = startServiceAndCountCompletedTasks(allCloseTasks, closerLock);
+        closeTasks = startServiceAndCountCompletedTasks(allCloseTasks, closerLock);
 
-        Assert.assertTrue(closeTasks == concurrentOpenSessions);
+        Assert.assertEquals(concurrentOpenSessions, closeTasks);
 
+        pauseAllServices();
 
+        openedTask = startServiceAndCountCompletedTasks(allOpenTasks, openerLock);
 
-        try {
-            threadA.join();
-            threadB.join();
-        } catch (InterruptedException e) {
-            GeneralUtils.logExceptionStackTrace(renderingManager.getLogger(), e);
-        }
+        Assert.assertEquals(openedTask, 5, "Completed opened tasks are not equal to concurrency");
 
+        closeTasks = startServiceAndCountCompletedTasks(allCloseTasks, closerLock);
+
+        Assert.assertEquals(closeTasks, 5, "Close tasks are completed before check tasks");
 
     }
 
@@ -145,6 +147,7 @@ public final class TestMultiThreadWithServiceLockService {
     }
 
     private int startServiceAndCountCompletedTasks(List<CompletableTask> allOpenTasks, Object debugLock) throws InterruptedException {
+
         //Start Opener and wait for 5 open tasks
         synchronized (debugLock) {
             debugLock.notify();
@@ -178,7 +181,7 @@ public final class TestMultiThreadWithServiceLockService {
             renderingConfiguration.setTestName("Open Concurrency with Batch 3");
             renderingConfiguration.setAppName("RenderingGridIntegration");
             renderingConfiguration.addBrowsers(browsersInfo);
-            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888));
             eyes.open(webDriver, renderingConfiguration);
             eyes.check(Target.window().withName("test").sendDom(false));
             List<Future<TestResults>> close = eyes.close();
@@ -195,6 +198,7 @@ public final class TestMultiThreadWithServiceLockService {
 
     @AfterMethod
     public void After(ITestContext testContext) {
+        renderingManager.getAllTestResults();
         renderingManager.getLogger().log(renderingManager.getAllTestResults().toString());
         webDriver.quit();
     }

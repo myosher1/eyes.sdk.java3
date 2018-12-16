@@ -40,7 +40,6 @@ public class EyesService extends Thread {
 
     @Override
     public void run() {
-        debugNotify();
         while (isServiceOn) {
             if (isPaused) {
                 synchronized (debugLock) {
