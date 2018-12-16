@@ -41,7 +41,6 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private final Map<String, Future<Boolean>> putResourceCache;
     private Logger logger;
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
-    private final String RENDERING_GRID_DEBUG = System.getenv("APPLITOOLS_RENDERING_GRID_FORCE_PUT");
     private AtomicBoolean isForcePutNeeded;
 
     public interface RenderTaskListener {
@@ -62,6 +61,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         this.putResourceCache = putResourceCache;
         this.logger = logger;
         this.listeners.add(listener);
+
+        String renderingGridForcePut = System.getenv("APPLITOOLS_RENDERING_GRID_FORCE_PUT");
+        this.isForcePutNeeded = new AtomicBoolean(renderingGridForcePut != null && renderingGridForcePut.equalsIgnoreCase("true"));
     }
 
     @Override
@@ -122,11 +124,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
                 boolean isNeedMoreDom = runningRender.isNeedMoreDom();
 
-                if (isForcePutNeeded == null && RENDERING_GRID_DEBUG != null) {
-                    isForcePutNeeded = !RENDERING_GRID_DEBUG.isEmpty() ? new AtomicBoolean(true) : new AtomicBoolean(false);
-                    if (isForcePutNeeded.get()){
-                        forcePutAllResources(requests[0].getResources(), runningRender);
-                    }
+                if (isForcePutNeeded.get()){
+                    forcePutAllResources(requests[0].getResources(), runningRender);
                 }
 
                 stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom;
