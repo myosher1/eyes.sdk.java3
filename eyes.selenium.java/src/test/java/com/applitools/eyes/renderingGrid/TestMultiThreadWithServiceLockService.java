@@ -122,9 +122,12 @@ public final class TestMultiThreadWithServiceLockService {
 
         Assert.assertEquals(checkedTasks, concurrentOpenSessions, "Completed checked tasks are not equal to concurrency");
 
-        closeAllServices();
+        pauseAllServices();
 
-        if (openedTask > this.concurrentOpenSessions) throw new Exception("More Open sessions then concurrency");
+        int closeTasks = startServiceAndCountCompletedTasks(allCloseTasks, closerLock);
+
+        Assert.assertTrue(closeTasks == concurrentOpenSessions);
+
 
 
         try {
@@ -137,7 +140,7 @@ public final class TestMultiThreadWithServiceLockService {
 
     }
 
-    private void closeAllServices() {
+    private void pauseAllServices() {
         this.renderingManager.pauseAllService();
     }
 

@@ -41,6 +41,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private final Map<String, Future<Boolean>> putResourceCache;
     private Logger logger;
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
+    private final String RENDERING_GRID_DEBUG = System.getenv("APPLITOOLS_RENDERING_GRID_FORCE_PUT");
+    private AtomicBoolean isForcePutNeeded;
 
     public interface RenderTaskListener {
         void onRenderSuccess();
@@ -120,6 +122,13 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
                 boolean isNeedMoreDom = runningRender.isNeedMoreDom();
 
+                if (isForcePutNeeded == null && RENDERING_GRID_DEBUG != null) {
+                    isForcePutNeeded = !RENDERING_GRID_DEBUG.isEmpty() ? new AtomicBoolean(true) : new AtomicBoolean(false);
+                    if (isForcePutNeeded.get()){
+                        forcePutAllResources(requests[0].getResources(), runningRender);
+                    }
+                }
+
                 stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom;
                 if (stillRunning) {
                     sendMissingResources(runningRenders, requests[0].getDom(), isNeedMoreDom);
@@ -137,6 +146,30 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             throw new Exception(e);
         }
         return null;
+    }
+
+    private void forcePutAllResources(Map<String, RGridResource> resources, RunningRender runningRender) {
+        for (String url : resources.keySet()) {
+            if (putResourceCache.containsKey(url)) continue;
+
+            try {
+                logger.log("trying to get url from map - " + url);
+                IResourceFuture resourceFuture = fetchedCacheMap.get(url);
+                if (resourceFuture == null) {
+                    logger.log("fetchedCacheMap.get(url) == null - " + url);
+                } else {
+                    RGridResource resource = resourceFuture.get();
+                    Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, resource);
+                    if (!putResourceCache.containsKey(url)) {
+                        synchronized (putResourceCache) {
+                            putResourceCache.put(url, future);
+                        }
+                    }
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
+        }
     }
 
     private void notifyFailureAllListeners(Exception e) {
@@ -187,9 +220,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, boolean isNeedMoreDom) {
-        String renderingGridDebug = System.getenv("APPLITOOLS_RENDERING_GRID_FORCE_PUT");
         for (RunningRender runningRender : runningRenders) {
-            if (!renderingGridDebug.isEmpty() || isNeedMoreDom) {
+            if (isNeedMoreDom) {
                 Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
                 synchronized (putResourceCache) {
                     putResourceCache.put("dom", future);
@@ -197,8 +229,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
             List<String> needMoreResources = runningRender.getNeedMoreResources();
             for (String url : needMoreResources) {
-
-                if (renderingGridDebug.isEmpty() && putResourceCache.containsKey(url)) continue;
+                if (putResourceCache.containsKey(url)) continue;
 
                 try {
                     logger.log("trying to get url from map - " + url);

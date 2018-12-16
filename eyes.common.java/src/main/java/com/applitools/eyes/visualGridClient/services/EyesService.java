@@ -86,11 +86,7 @@ public class EyesService extends Thread {
     private void debugNotify() {
         if (debugLock != null) {
             synchronized (debugLock) {
-                try {
-                    debugLock.wait();
-                } catch (InterruptedException e) {
-                    GeneralUtils.logExceptionStackTrace(logger, e);
-                }
+                debugLock.notify();
             }
         }
     }
