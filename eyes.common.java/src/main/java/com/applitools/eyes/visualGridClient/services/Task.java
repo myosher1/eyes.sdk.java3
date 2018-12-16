@@ -4,15 +4,17 @@ import com.applitools.ICheckSettings;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.MatchResult;
 import com.applitools.eyes.TestResults;
+import com.applitools.eyes.visualGridClient.model.CompletableTask;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderStatusResults;
-import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.utils.GeneralUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Task implements Callable<TestResults> {
+public class Task implements Callable<TestResults>, CompletableTask {
 
 
     private static AtomicBoolean isThrown = new AtomicBoolean(false);
@@ -20,7 +22,7 @@ public class Task implements Callable<TestResults> {
     private MatchResult matchResult;
     private boolean isSent;
 
-    public enum TaskType {OPEN, CHECK, CLOSE, ABORT }
+    public enum TaskType {OPEN, CHECK, CLOSE, ABORT}
 
     private TestResults testResults;
 
@@ -28,10 +30,12 @@ public class Task implements Callable<TestResults> {
     private TaskType type;
 
     private RenderStatusResults renderResult;
-    private TaskListener runningTestListener;
+    private List<TaskListener> listeners = new ArrayList<>();
     private ICheckSettings checkSettings;
 
     private RunningTest runningTest;
+
+    private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
 
     interface TaskListener {
 
@@ -48,7 +52,7 @@ public class Task implements Callable<TestResults> {
         this.testResults = testResults;
         this.eyesConnector = eyesConnector;
         this.type = type;
-        this.runningTestListener = runningTestListener;
+        this.listeners .add(runningTestListener);
         this.logger = runningTest.getLogger();
         this.checkSettings = checkSettings;
         this.runningTest = runningTest;
@@ -71,7 +75,7 @@ public class Task implements Callable<TestResults> {
     }
 
     @Override
-    public TestResults call(){
+    public TestResults call() {
         try {
             testResults = null;
             switch (type) {
@@ -99,13 +103,30 @@ public class Task implements Callable<TestResults> {
             return testResults;
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
-            this.runningTestListener.onTaskFailed(e, this);
-        }
-        finally {
+            notifyFailureAllListeners(e);
+        } finally {
+            this.isTaskComplete.set(true);
             //call the callback
-            this.runningTestListener.onTaskComplete(this);
+            notifySuccessAllListeners();
         }
         return null;
+    }
+
+    private void notifySuccessAllListeners() {
+        for (TaskListener listener : listeners) {
+            listener.onTaskComplete(this);
+        }
+    }
+
+    private void notifyFailureAllListeners(Exception e) {
+        for (TaskListener listener : listeners) {
+            listener.onTaskFailed(e, this);
+        }
+    }
+    private void notifyRenderCompleteAllListeners(){
+        for (TaskListener listener : listeners) {
+            listener.onRenderComplete();
+        }
     }
 
     public IEyesConnector getEyesConnector() {
@@ -119,7 +140,7 @@ public class Task implements Callable<TestResults> {
     public void setRenderResult(RenderStatusResults renderResult) {
         logger.verbose("enter");
         this.renderResult = renderResult;
-        this.runningTestListener.onRenderComplete();
+        notifyRenderCompleteAllListeners();
         logger.verbose("exit");
     }
 
@@ -129,6 +150,14 @@ public class Task implements Callable<TestResults> {
 
     public RunningTest getRunningTest() {
         return runningTest;
+    }
+
+    public boolean getIsTaskComplete() {
+        return isTaskComplete.get();
+    }
+
+    public void addListener(TaskListener listener){
+        this.listeners.add(listener);
     }
 }
 

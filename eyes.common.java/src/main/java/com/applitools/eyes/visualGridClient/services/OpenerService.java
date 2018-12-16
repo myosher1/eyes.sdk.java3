@@ -12,15 +12,27 @@ public class OpenerService extends EyesService{
     private AtomicInteger concurrentSession = new AtomicInteger();
     final Object concurrencyLock;
 
-    public OpenerService(String serviceName, ThreadGroup servicesGroup, Logger logger, int threadPoolSize, Object openerServiceLock,EyesServiceListener listener, Tasker tasker) {
-        super(serviceName, servicesGroup, logger, threadPoolSize, listener, tasker);
+    public OpenerService(String serviceName, ThreadGroup servicesGroup, Logger logger, int threadPoolSize, Object openerServiceLock, EyesServiceListener listener, Object debugLock, Tasker tasker) {
+        super(serviceName, servicesGroup, logger, threadPoolSize, debugLock, listener, tasker);
         this.concurrencyLock = openerServiceLock;
     }
 
     void runNextTask() {
         if (!isServiceOn) return;
         if (this.threadPoolSize > concurrentSession.get()) {
-            final FutureTask<TestResults> task = this.listener.getNextTask(tasker);
+            final FutureTask<TestResults> task = this.listener.getNextTask(tasker, new Task.TaskListener() {
+                @Override
+                public void onTaskComplete(Task task) {
+                }
+
+                @Override
+                public void onTaskFailed(Exception e, Task task) {
+                }
+
+                @Override
+                public void onRenderComplete() {
+                }
+            });
             if (task != null) {
                 this.concurrentSession.incrementAndGet();
                 this.executor.submit(task);

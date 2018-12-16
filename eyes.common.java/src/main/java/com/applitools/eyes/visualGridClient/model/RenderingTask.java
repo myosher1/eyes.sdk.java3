@@ -24,10 +24,11 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-public class RenderingTask implements Callable<RenderStatusResults> {
+public class RenderingTask implements Callable<RenderStatusResults> , CompletableTask {
 
-    private final RenderTaskListener listener;
+    private final List<RenderTaskListener> listeners = new ArrayList<>();
     private IEyesConnector eyesConnector;
     private String scriptResult;
     private ICheckRGSettings renderingConfiguration;
@@ -37,6 +38,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
     private Map<String, IResourceFuture> fetchedCacheMap;
     private final Map<String, Future<Boolean>> putResourceCache;
     private Logger logger;
+    private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
 
     public interface RenderTaskListener {
         void onRenderSuccess();
@@ -55,7 +57,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
         this.fetchedCacheMap = fetchedCacheMap;
         this.putResourceCache = putResourceCache;
         this.logger = logger;
-        this.listener = listener;
+        this.listeners.add(listener);
     }
 
     @Override
@@ -114,7 +116,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
                 worstStatus = calcWorstStatus(runningRenders, worstStatus);
 
-                boolean isNeedMoreDom = runningRender.isNeedMoreDom();
+                boolean isNeedMoreDom = runningRender. isNeedMoreDom();
 
                 stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom;
                 if (stillRunning) {
@@ -129,10 +131,22 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
-            listener.onRenderFailed(e);
+            notifyFailureAllListeners(e);
             throw new Exception(e);
         }
         return null;
+    }
+
+    private void notifyFailureAllListeners(Exception e) {
+        for (RenderTaskListener listener : listeners) {
+            listener.onRenderFailed(e);
+        }
+    }
+
+    private void notifySuccessAllListeners() {
+        for (RenderTaskListener listener : listeners) {
+            listener.onRenderSuccess();
+        }
     }
 
     private Map<RunningRender, RenderRequest> mapRequestToRunningRender(List<RunningRender> runningRenders, RenderRequest[] requests) {
@@ -494,7 +508,7 @@ public class RenderingTask implements Callable<RenderStatusResults> {
                 removeUrlFromList(urlAsUrl, resourceUrls);
                 allBlobs.add(resource);
                 String contentType = resource.getContentType();
-                String css = getCss(resource.getContent(), contentType);
+                 String css = getCss(resource.getContent(), contentType);
                 if (css == null || css.isEmpty() || !contentType.contains("text/css")) continue;
 
                 parseCSS(css, new URL(urlAsUrl), resourceUrls);
@@ -571,10 +585,19 @@ public class RenderingTask implements Callable<RenderStatusResults> {
 
 
             } while (ids.size() > 0);
-            listener.onRenderSuccess();
+            this.isTaskComplete.set(true);
+            this.notifySuccessAllListeners();
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
+    }
+
+    public boolean getIsTaskComplete() {
+        return isTaskComplete.get();
+    }
+
+    public void addListener(RenderTaskListener listener){
+        this.listeners.add(listener);
     }
 }
 

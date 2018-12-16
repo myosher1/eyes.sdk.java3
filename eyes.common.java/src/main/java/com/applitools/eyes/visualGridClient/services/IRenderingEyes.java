@@ -28,4 +28,6 @@ public interface IRenderingEyes {
 
         void onRenderComplete();
     }
+
+    List<RunningTest> getAllRunningTests();
 }
