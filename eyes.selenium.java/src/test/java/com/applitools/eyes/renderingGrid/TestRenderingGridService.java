@@ -6,6 +6,7 @@ import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
+import com.applitools.eyes.visualGridClient.model.FileDebugResourceWriter;
 import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
@@ -25,10 +26,16 @@ public final class TestRenderingGridService {
     private RenderingGridManager renderingManager;
     private WebDriver webDriver;
 
+    private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
+    private FileDebugResourceWriter fileDebugResourceWriter;
+
     @BeforeMethod
     public void Before(ITestContext testContext){
         renderingManager = new RenderingGridManager(3);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
+
+        fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), logsPath, null, null);
+        renderingManager.setDebugResourceWriter(fileDebugResourceWriter);
 
         webDriver = new ChromeDriver();
         webDriver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage");
@@ -50,7 +57,7 @@ public final class TestRenderingGridService {
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
-            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+            //eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);

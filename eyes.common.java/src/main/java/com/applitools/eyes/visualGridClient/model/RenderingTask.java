@@ -5,6 +5,7 @@ import com.applitools.ICheckRGSettingsInternal;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.services.IEyesConnector;
 import com.applitools.eyes.visualGridClient.services.IResourceFuture;
+import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
 import com.applitools.eyes.visualGridClient.services.Task;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -14,10 +15,8 @@ import com.helger.css.ECSSVersion;
 import com.helger.css.decl.*;
 import com.helger.css.reader.CSSReader;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -42,6 +41,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private Logger logger;
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
     private AtomicBoolean isForcePutNeeded;
+    private IDebugResourceWriter debugResourceWriter;
 
     public interface RenderTaskListener {
         void onRenderSuccess();
@@ -49,17 +49,20 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         void onRenderFailed(Exception e);
     }
 
-    public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckRGSettings renderingConfiguration, List<Task> taskList, List<Task> openTasks, RenderingInfo renderingInfo, Map<String, IResourceFuture> fetchedCacheMap, Map<String, Future<Boolean>> putResourceCache, Logger logger, RenderTaskListener listener) {
+    public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckRGSettings renderingConfiguration,
+                         List<Task> taskList, List<Task> openTasks, RenderingGridManager renderingGridManager,
+                         RenderTaskListener listener) {
 
         this.eyesConnector = eyesConnector;
         this.scriptResult = scriptResult;
         this.renderingConfiguration = renderingConfiguration;
         this.taskList = taskList;
         this.openTaskList = openTasks;
-        this.renderingInfo = renderingInfo;
-        this.fetchedCacheMap = fetchedCacheMap;
-        this.putResourceCache = putResourceCache;
-        this.logger = logger;
+        this.renderingInfo = renderingGridManager.getRenderingInfo();
+        this.fetchedCacheMap = renderingGridManager.getCachedResources();
+        this.putResourceCache = renderingGridManager.getPutResourceCache();
+        this.logger = renderingGridManager.getLogger();
+        this.debugResourceWriter = renderingGridManager.getDebugResourceWriter();
         this.listeners.add(listener);
 
         String renderingGridForcePut = System.getenv("APPLITOOLS_RENDERING_GRID_FORCE_PUT");
@@ -280,19 +283,14 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         @SuppressWarnings("UnnecessaryLocalVariable")
         RenderRequest[] asArray = allRequestsForRG.toArray(new RenderRequest[0]);
 
-        for (RenderRequest renderRequest : asArray) {
-            for (RGridResource value : renderRequest.getResources().values()) {
-                String url = value.getUrl();
-                if (url.contains("applitools.github.io/demo/TestPages/VisualGridTestPage/AbrilFatface-Regular.woff2")) {
-                    try {
-                        String substring = url.substring(url.lastIndexOf("/") + 1);
-                        FileUtils.writeByteArrayToFile(new File("~/" + substring), ArrayUtils.toPrimitive(value.getContent()));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+        if (debugResourceWriter != null) {
+            for (RenderRequest renderRequest : asArray) {
+                for (RGridResource value : renderRequest.getResources().values()) {
+                    this.debugResourceWriter.write(value);
                 }
             }
         }
+
         return asArray;
     }
 

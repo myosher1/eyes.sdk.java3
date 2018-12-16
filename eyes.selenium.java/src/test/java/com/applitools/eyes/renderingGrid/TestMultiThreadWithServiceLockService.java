@@ -89,9 +89,9 @@ public final class TestMultiThreadWithServiceLockService {
 
 
         //Get all tasks
-        List<CompletableTask> allOpenTasks = renderingManager.getAllTaksByType(Task.TaskType.OPEN);
-        List<CompletableTask> allCheckTasks = renderingManager.getAllTaksByType(Task.TaskType.CHECK);
-        List<CompletableTask> allCloseTasks = renderingManager.getAllTaksByType(Task.TaskType.CLOSE);
+        List<CompletableTask> allOpenTasks = renderingManager.getAllTasksByType(Task.TaskType.OPEN);
+        List<CompletableTask> allCheckTasks = renderingManager.getAllTasksByType(Task.TaskType.CHECK);
+        List<CompletableTask> allCloseTasks = renderingManager.getAllTasksByType(Task.TaskType.CLOSE);
         List<CompletableTask> allRenderingTasks = (List<CompletableTask>) renderingManager.getAllRenderingTasks();
 
 

@@ -39,14 +39,15 @@ public class RenderingGridManager {
     private final Object closerServiceLock = new Object();
     private final Object renderingServiceLock = new Object();
     private final List<RenderingTask> renderingTaskList = Collections.synchronizedList(new ArrayList<RenderingTask>());
+
     private RenderingInfo renderingInfo;
+    private IDebugResourceWriter debugResourceWriter;
 
     public void pauseAllService() {
         eyesOpenerService.debugPauseService();
         eyesCloserService.debugPauseService();
         eyesCheckerService.debugPauseService();
         renderingGridService.debugPauseService();
-
     }
 
     public interface RenderListener {
@@ -139,6 +140,18 @@ public class RenderingGridManager {
 
     public Logger getLogger() {
         return logger;
+    }
+
+    public Map<String, IResourceFuture> getCachedResources() {
+        return cachedResources;
+    }
+
+    public Map<String, Future<Boolean>> getPutResourceCache() {
+        return putResourceCache;
+    }
+
+    public RenderingInfo getRenderingInfo() {
+        return renderingInfo;
     }
 
     private void init() {
@@ -375,7 +388,7 @@ public class RenderingGridManager {
 
     public synchronized void check(ICheckRGSettings settings, String script, IEyesConnector connector, List<Task> taskList, List<Task> openTasks, final RenderListener listener) {
 
-        RenderingTask renderingTask = new RenderingTask(connector, script, settings, taskList, openTasks, this.renderingInfo, this.cachedResources, this.putResourceCache, logger, new RenderingTask.RenderTaskListener() {
+        RenderingTask renderingTask = new RenderingTask(connector, script, settings, taskList, openTasks, this, new RenderingTask.RenderTaskListener() {
             @Override
             public void onRenderSuccess() {
                 listener.onRenderSuccess();
@@ -416,7 +429,7 @@ public class RenderingGridManager {
         logger.verbose("exit");
     }
 
-    public List<CompletableTask> getAllTaksByType(Task.TaskType type) {
+    public List<CompletableTask> getAllTasksByType(Task.TaskType type) {
         List<CompletableTask> allTasks = new ArrayList<>();
         for (IRenderingEyes eyes : allEyes) {
             for (RunningTest runningTest : eyes.getAllRunningTests()) {
@@ -433,4 +446,13 @@ public class RenderingGridManager {
     public List<? extends CompletableTask> getAllRenderingTasks() {
         return this.renderingTaskList;
     }
+
+    public void setDebugResourceWriter(IDebugResourceWriter debugResourceWriter) {
+        this.debugResourceWriter = debugResourceWriter;
+    }
+
+    public IDebugResourceWriter getDebugResourceWriter() {
+        return this.debugResourceWriter;
+    }
+
 }
