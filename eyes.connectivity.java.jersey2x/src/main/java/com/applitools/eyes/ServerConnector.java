@@ -70,7 +70,6 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the API key of your applitools Eyes account.
-     *
      * @param apiKey The api key to set.
      */
     public void setApiKey(String apiKey) {
@@ -87,7 +86,6 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the proxy settings to be used by the rest client.
-     *
      * @param abstractProxySettings The proxy settings to be used by the rest client.
      *                              If {@code null} then no proxy is set.
      */
@@ -110,7 +108,6 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the current server URL used by the rest client.
-     *
      * @param serverUrl The URI of the rest server.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -133,7 +130,6 @@ public class ServerConnector extends RestClient
      * Starts a new running session in the agent. Based on the given parameters,
      * this running session will either be linked to an existing session, or to
      * a completely new session.
-     *
      * @param sessionStartInfo The start parameters for the session.
      * @return RunningSession object which represents the current running
      * session
@@ -193,7 +189,6 @@ public class ServerConnector extends RestClient
 
     /**
      * Stops the running session.
-     *
      * @param runningSession The running session to be stopped.
      * @return TestResults object for the stopped running session
      * @throws EyesException For invalid status codes, or if response parsing
@@ -261,7 +256,6 @@ public class ServerConnector extends RestClient
     /**
      * Matches the current window (held by the WebDriver) to the expected
      * window.
-     *
      * @param runningSession The current agent's running session.
      * @param matchData      Encapsulation of a capture taken from the application.
      * @return The results of the window matching.
@@ -521,7 +515,7 @@ public class ServerConnector extends RestClient
                 RunningRender[] runningRenders = parseResponseWithJsonData(response, validStatusCodes, RunningRender[].class);
                 return Arrays.asList(runningRenders);
             }
-            throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + "), msg ("+response.readEntity(String.class)+")");
+            throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + "), msg (" + response.readEntity(String.class) + ")");
         } catch (JsonProcessingException e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
@@ -561,14 +555,23 @@ public class ServerConnector extends RestClient
     public Future<Boolean> renderPutResource(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
-        ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
+        Byte[] content = resource.getContent();
+        ArgumentGuard.notNull(content, "resource.getContent()");
 
-        logger.verbose("resource hash:" + resource.getSha256() + " ; url: " + resource.getUrl() + " ; render id: " + runningRender.getRenderId());
-        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
-        Invocation.Builder request = target.request(resource.getContentType());
+        String hash = resource.getSha256();
+        String renderId = runningRender.getRenderId();
+        logger.verbose("resource hash:" + hash + " ; url: " + resource.getUrl() + " ; render id: " + renderId);
+
+        WebTarget target = restClient.target(renderingInfo.getServiceUrl())
+                .path(RESOURCES_SHA_256 + hash)
+                .queryParam("render-id", renderId);
+
+        String contentType = resource.getContentType();
+        Invocation.Builder request = target.request(contentType);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
-
-        Future<Response> future = request.async().put(Entity.entity(ArrayUtils.toPrimitive(resource.getContent()), resource.getContentType() ));
+        byte[] bytes = ArrayUtils.toPrimitive(content);
+        Entity entity = Entity.entity(bytes, contentType);
+        Future<Response> future = request.async().put(entity);
 
         @SuppressWarnings("UnnecessaryLocalVariable")
         PutFuture putFuture = new PutFuture(future);
