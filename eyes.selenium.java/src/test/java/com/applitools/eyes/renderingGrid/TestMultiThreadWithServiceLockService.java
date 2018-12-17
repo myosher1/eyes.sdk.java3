@@ -3,12 +3,12 @@ package com.applitools.eyes.renderingGrid;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.TestResults;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
 import com.applitools.eyes.visualGridClient.model.CompletableTask;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
+import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
 import com.applitools.eyes.visualGridClient.services.Task;
 import com.applitools.utils.GeneralUtils;
@@ -186,11 +186,11 @@ public final class TestMultiThreadWithServiceLockService {
             eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888));
             eyes.open(webDriver, renderingConfiguration);
             eyes.check(Target.window().withName("test").sendDom(false));
-            List<Future<TestResults>> close = eyes.close();
+            List<Future<TestResultContainer>> close = eyes.close();
             synchronized (lock) {
                 lock.notify();
             }
-            for (Future<TestResults> future : close) {
+            for (Future<TestResultContainer> future : close) {
                 future.get();
             }
         } catch (InterruptedException | ExecutionException e) {

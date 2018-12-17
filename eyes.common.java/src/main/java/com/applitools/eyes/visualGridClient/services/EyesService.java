@@ -1,7 +1,7 @@
 package com.applitools.eyes.visualGridClient.services;
 
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.TestResults;
+import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.utils.GeneralUtils;
 
 import java.util.concurrent.*;
@@ -20,11 +20,11 @@ public class EyesService extends Thread {
     protected Logger logger;
 
     interface Tasker {
-        FutureTask<TestResults> getOrWaitForNextTask(Task.TaskListener taskListener);
+        FutureTask<TestResultContainer> getOrWaitForNextTask(Task.TaskListener taskListener);
     }
 
     public interface EyesServiceListener {
-        FutureTask<TestResults> getNextTask(Tasker tasker, Task.TaskListener taskListener);
+        FutureTask<TestResultContainer> getNextTask(Tasker tasker, Task.TaskListener taskListener);
     }
 
     public EyesService(String serviceName, ThreadGroup servicesGroup, Logger logger, int threadPoolSize, Object debugLock, EyesServiceListener listener, Tasker tasker) {
@@ -65,7 +65,7 @@ public class EyesService extends Thread {
 
     void runNextTask() {
         if (!isServiceOn) return;
-        final FutureTask<TestResults> task = this.listener.getNextTask(tasker, new Task.TaskListener() {
+        final FutureTask<TestResultContainer> task = this.listener.getNextTask(tasker, new Task.TaskListener() {
             @Override
             public void onTaskComplete(Task task) {
                 debugNotify();

@@ -894,11 +894,11 @@ public abstract class EyesBase {
     /**
      * If a test is running, aborts it. Otherwise, does nothing.
      */
-    public void abortIfNotClosed() {
+    public TestResults abortIfNotClosed() {
         try {
             if (isDisabled) {
                 logger.verbose("Ignored");
-                return;
+                return null;
             }
 
             isOpen = false;
@@ -908,14 +908,15 @@ public abstract class EyesBase {
 
             if (null == runningSession) {
                 logger.verbose("Closed");
-                return;
+                return null;
             }
 
             logger.verbose("Aborting server session...");
             try {
                 // When aborting we do not save the test.
-                serverConnector.stopSession(runningSession, true, false);
+                TestResults results = serverConnector.stopSession(runningSession, true, false);
                 logger.log("--- Test aborted.");
+                return results;
             } catch (EyesException ex) {
                 logger.log(
                         "Failed to abort server session: " + ex.getMessage());
@@ -924,6 +925,7 @@ public abstract class EyesBase {
             runningSession = null;
             logger.getLogHandler().close();
         }
+        return null;
     }
 
     /**

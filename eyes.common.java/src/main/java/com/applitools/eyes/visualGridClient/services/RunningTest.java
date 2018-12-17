@@ -2,30 +2,29 @@ package com.applitools.eyes.visualGridClient.services;
 
 
 import com.applitools.ICheckSettings;
-import com.applitools.eyes.AbstractProxySettings;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
+import com.applitools.eyes.visualGridClient.model.TestResultContainer;
+import com.sun.corba.se.impl.orb.ParserTable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RunningTest {
-    private final AbstractProxySettings proxy;
     private final List<Task> taskList = new ArrayList<>();
     private IEyesConnector eyes;
     private RenderBrowserInfo browserInfo;
     private AtomicBoolean isTestOpen = new AtomicBoolean(false);
     private AtomicBoolean isTestClose = new AtomicBoolean(false);
     private AtomicBoolean isTestInExceptionMode = new AtomicBoolean(false);
-    private Exception exception = null;
     private RunningTestListener listener;
     private RenderingConfiguration configuration;
-    private HashMap<Task, FutureTask<TestResults>> taskToFutureMapping = new HashMap<>();
+    private HashMap<Task, FutureTask<TestResultContainer>> taskToFutureMapping = new HashMap<>();
     private Logger logger;
 
     public interface RunningTestListener {
@@ -67,13 +66,12 @@ public class RunningTest {
         }
     };
 
-    public RunningTest(AbstractProxySettings proxy, IEyesConnector eyes, RenderingConfiguration configuration, RenderBrowserInfo browserInfo, Logger logger, RunningTestListener listener) {
+    public RunningTest(IEyesConnector eyes, RenderingConfiguration configuration, RenderBrowserInfo browserInfo, Logger logger, RunningTestListener listener) {
         this.eyes = eyes;
         this.browserInfo = browserInfo;
         this.configuration = configuration;
         this.listener = listener;
         this.logger = logger;
-        this.proxy = proxy;
     }
 
     public boolean isTestOpen() {
@@ -107,7 +105,7 @@ public class RunningTest {
         return new ScoreTask(task, score);
     }
 
-    public synchronized FutureTask<TestResults> getNextCloseTask() {
+    public synchronized FutureTask<TestResultContainer> getNextCloseTask() {
         logger.verbose("enter");
         if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
@@ -127,16 +125,15 @@ public class RunningTest {
     public Task open() {
         logger.verbose("adding Open task...");
         Task task = new Task(null, eyes, Task.TaskType.OPEN, taskListener, null, this);
-        FutureTask<TestResults> futureTask = new FutureTask<>(task);
+        FutureTask<TestResultContainer> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         this.taskList.add(task);
         logger.verbose("Open task was added: " + task.toString());
         logger.verbose("tasks in taskList: " + taskList.size());
-        eyes.log("Open task was added");
         return task;
     }
 
-    public FutureTask<TestResults> close() {
+    public FutureTask<TestResultContainer> close() {
         Task lastTask;
         if (!this.taskList.isEmpty()) {
             lastTask = this.taskList.get(taskList.size() - 1);
@@ -147,12 +144,11 @@ public class RunningTest {
 
         logger.verbose("adding close task...");
         Task task = new Task(null, eyes, Task.TaskType.CLOSE, taskListener, null, this);
-        FutureTask<TestResults> futureTask = new FutureTask<>(task);
+        FutureTask<TestResultContainer> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         this.taskList.add(task);
         logger.verbose("Close task was added: " + task.toString());
         logger.verbose("tasks in taskList: " + taskList.size());
-        eyes.log("Close Task was added");
         return this.taskToFutureMapping.get(task);
     }
 
@@ -161,7 +157,6 @@ public class RunningTest {
         Task task = new Task(null, eyes, Task.TaskType.CHECK, taskListener, checkSettings, this);
         this.taskList.add(task);
         logger.verbose("Check Task was added: " + task.toString());
-        eyes.log("Check Task was added");
         logger.verbose("tasks in taskList: " + taskList.size());
         this.taskToFutureMapping.get(task);
         return task;
@@ -185,10 +180,19 @@ public class RunningTest {
         return eyes;
     }
 
-    public void setTestInExceptionMode(Exception e) {
-        exception = e;
+    private void setTestInExceptionMode(Exception e) {
         this.isTestInExceptionMode.set(true);
-        //TODO abort if not closed - create new result object containing the exception.
+
+        Iterator<Task> iterator = this.taskList.iterator();
+        while (iterator.hasNext()) {
+            Task next =  iterator.next();
+            Task.TaskType type = next.getType();
+            if (type == Task.TaskType.CHECK || type == Task.TaskType.OPEN){
+                iterator.remove();
+            } else if (type == Task.TaskType.CLOSE){
+                next.setException(e);
+            }
+        }
     }
 
     Logger getLogger() {

@@ -6,6 +6,7 @@ import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualGridClient.model.CompletableTask;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderStatusResults;
+import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.utils.GeneralUtils;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Task implements Callable<TestResults>, CompletableTask {
+public class Task implements Callable<TestResultContainer>, CompletableTask {
 
 
     private static AtomicBoolean isThrown = new AtomicBoolean(false);
@@ -32,6 +33,7 @@ public class Task implements Callable<TestResults>, CompletableTask {
     private ICheckSettings checkSettings;
 
     private RunningTest runningTest;
+    private Exception exception;
 
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
 
@@ -73,7 +75,7 @@ public class Task implements Callable<TestResults>, CompletableTask {
     }
 
     @Override
-    public TestResults call() {
+    public TestResultContainer call() {
         try {
             testResults = null;
             switch (type) {
@@ -96,9 +98,13 @@ public class Task implements Callable<TestResults>, CompletableTask {
 
                 case ABORT:
                     logger.log("Task.run abort task");
-                    eyesConnector.abortIfNotClosed();
+                    if (runningTest.isTestOpen()) {
+                        testResults = eyesConnector.abortIfNotClosed();
+                    }
             }
-            return testResults;
+            @SuppressWarnings("UnnecessaryLocalVariable")
+            TestResultContainer testResultContainer = new TestResultContainer(testResults, this.exception);
+            return testResultContainer;
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
             notifyFailureAllListeners(e);
@@ -159,10 +165,21 @@ public class Task implements Callable<TestResults>, CompletableTask {
         this.listeners.add(listener);
     }
 
-    public void setRenderError(){
+    public void setRenderError() {
         for (TaskListener listener : listeners) {
-            listener.onTaskFailed(new Exception("Render Failed for "+this.getBrowserInfo()), this);
+            listener.onTaskFailed(new Exception("Render Failed for " + this.getBrowserInfo()), this);
         }
     }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    public void setException(Exception exception) {
+        logger.verbose("aborting task with exception");
+        this.exception = exception;
+        this.type = TaskType.ABORT;
+    }
+
 }
 

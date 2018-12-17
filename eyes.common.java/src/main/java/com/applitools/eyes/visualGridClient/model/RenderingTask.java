@@ -639,13 +639,15 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
                 numOfIterations++;
 
-            } while (!ids.isEmpty() && numOfIterations < 25);
+            } while (!ids.isEmpty() && numOfIterations < 15);
 
             for (String id : ids) {
                 for (RunningRender renderedRender : runningRenders.keySet()) {
                     if (renderedRender.getRenderId().equalsIgnoreCase(id)) {
                         Task task = runningRenders.get(renderedRender).getTask();
                         task.setRenderError();
+                        logger.verbose("removing failed render id: " + id);
+                        break;
                     }
                 }
             }

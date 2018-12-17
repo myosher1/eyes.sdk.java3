@@ -27,6 +27,11 @@ public class TestImageUtils {
         @Override
         public void close() {}
 
+        @Override
+        public boolean isOpen() {
+            return true;
+        }
+
         public boolean contains (String message) {
             return messages.contains(message);
         }

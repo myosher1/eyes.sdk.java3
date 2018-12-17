@@ -3,7 +3,6 @@ package com.applitools.eyes.visualGridClient.services;
 import com.applitools.ICheckRGSettings;
 import com.applitools.eyes.LogHandler;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualGridClient.model.*;
 import com.applitools.utils.GeneralUtils;
 
@@ -158,28 +157,28 @@ public class RenderingGridManager {
     private void init() {
         this.eyesOpenerService = new OpenerService("eyesOpenerService", servicesGroup, logger, this.concurrentOpenSessions, openerServiceConcurrencyLock, new EyesService.EyesServiceListener() {
             @Override
-            public FutureTask<TestResults> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener) {
+            public FutureTask<TestResultContainer> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener) {
 
                 return getOrWaitForTask(openerServiceLock, tasker, taskListener, "eyesOpenerService");
             }
 
         }, openerServiceDebugLock, new EyesService.Tasker() {
             @Override
-            public FutureTask<TestResults> getOrWaitForNextTask(Task.TaskListener taskListener) {
+            public FutureTask<TestResultContainer> getOrWaitForNextTask(Task.TaskListener taskListener) {
                 return getNextTestToOpen();
             }
         });
 
         this.eyesCloserService = new EyesService("eyesCloserService", servicesGroup, logger, concurrentOpenSessions, closerServiceDebugLock, new EyesService.EyesServiceListener() {
             @Override
-            public FutureTask<TestResults> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener) {
+            public FutureTask<TestResultContainer> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener) {
 
                 return getOrWaitForTask(closerServiceLock, tasker, taskListener, "eyesCloserService");
             }
 
         }, new EyesService.Tasker() {
             @Override
-            public FutureTask<TestResults> getOrWaitForNextTask(Task.TaskListener taskListener) {
+            public FutureTask<TestResultContainer> getOrWaitForNextTask(Task.TaskListener taskListener) {
                 return getNextTestToClose();
             }
         });
@@ -209,22 +208,22 @@ public class RenderingGridManager {
 
         this.eyesCheckerService = new EyesService("eyesCheckerService", servicesGroup, logger, this.concurrentOpenSessions, checkerServiceDebugLock, new EyesService.EyesServiceListener() {
             @Override
-            public FutureTask<TestResults> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener) {
+            public FutureTask<TestResultContainer> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener) {
 
                 return getOrWaitForTask(checkerServiceLock, tasker, taskListener, "eyesCheckerService");
             }
 
         }, new EyesService.Tasker() {
             @Override
-            public FutureTask<TestResults> getOrWaitForNextTask(Task.TaskListener taskListener) {
+            public FutureTask<TestResultContainer> getOrWaitForNextTask(Task.TaskListener taskListener) {
                 return getNextCheckTask(taskListener);
             }
         });
     }
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-    private FutureTask<TestResults> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener, String serviceName) {
-        FutureTask<TestResults> nextTestToOpen = tasker.getOrWaitForNextTask(taskListener);
+    private FutureTask<TestResultContainer> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener, String serviceName) {
+        FutureTask<TestResultContainer> nextTestToOpen = tasker.getOrWaitForNextTask(taskListener);
         if (nextTestToOpen == null) {
             synchronized (lock) {
                 try {
@@ -245,7 +244,7 @@ public class RenderingGridManager {
         return nextTestToOpen;
     }
 
-    private FutureTask<TestResults> getNextCheckTask(Task.TaskListener listener) {
+    private FutureTask<TestResultContainer> getNextCheckTask(Task.TaskListener listener) {
         ScoreTask bestScoreTask = null;
         int bestScore = -1;
         synchronized (allEyes) {
@@ -285,7 +284,7 @@ public class RenderingGridManager {
         return renderingTask;
     }
 
-    private FutureTask<TestResults> getNextTestToClose() {
+    private FutureTask<TestResultContainer> getNextTestToClose() {
         RunningTest runningTest;
         synchronized (eyesToCloseList) {
             for (IRenderingEyes eyes : eyesToCloseList) {
@@ -330,7 +329,7 @@ public class RenderingGridManager {
         this.eyesCheckerService.stopService();
     }
 
-    private synchronized FutureTask<TestResults> getNextTestToOpen() {
+    private synchronized FutureTask<TestResultContainer> getNextTestToOpen() {
         ScoreTask bestScoreTask = null;
         int bestMark = -1;
         logger.verbose("looking for best test in a list of " + allEyes.size());
@@ -358,18 +357,23 @@ public class RenderingGridManager {
     }
 
     public TestResultSummary getAllTestResults() {
-        List<Future<TestResults>> allFutures = new ArrayList<>();
+        logger.verbose("enter");
+        List<Future<TestResultContainer>> allFutures = new ArrayList<>();
         for (IRenderingEyes eyes : allEyes) {
             allFutures.addAll(eyes.close());
             synchronized (this.eyesToCloseList) {
                 this.eyesToCloseList.add(eyes);
             }
         }
+
+        logger.verbose("eyesToCloseList.size: " + eyesToCloseList.size());
+
         notifyAllServices();
-        List<TestResults> allResults = new ArrayList<>();
-        for (Future<TestResults> future : allFutures) {
+        List<TestResultContainer> allResults = new ArrayList<>();
+        logger.verbose("trying to call future.get on " + allFutures.size() +" futures.");
+        for (Future<TestResultContainer> future : allFutures) {
             try {
-                TestResults obj = future.get();
+                TestResultContainer obj = future.get();
                 allResults.add(obj);
             } catch (InterruptedException | ExecutionException e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
@@ -377,6 +381,7 @@ public class RenderingGridManager {
         }
         stopServices();
         notifyAllServices();
+        logger.verbose("exit");
         return new TestResultSummary(allResults);
     }
 

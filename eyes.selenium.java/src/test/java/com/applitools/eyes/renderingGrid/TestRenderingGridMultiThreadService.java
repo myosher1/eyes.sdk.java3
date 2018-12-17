@@ -8,6 +8,7 @@ import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
+import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
@@ -85,8 +86,8 @@ public final class TestRenderingGridMultiThreadService {
             eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             eyes.open(webDriver, renderingConfiguration);
             eyes.check(Target.window().withName("test").sendDom(false));
-            List<Future<TestResults>> close = eyes.close();
-            for (Future<TestResults> future : close) {
+            List<Future<TestResultContainer>> close = eyes.close();
+            for (Future<TestResultContainer> future : close) {
                 future.get();
             }
         } catch (InterruptedException | ExecutionException e) {

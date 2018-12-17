@@ -1,7 +1,7 @@
 package com.applitools.eyes.visualGridClient.services;
 
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.TestResults;
+import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.utils.GeneralUtils;
 
 import java.util.concurrent.FutureTask;
@@ -20,7 +20,7 @@ public class OpenerService extends EyesService{
     void runNextTask() {
         if (!isServiceOn) return;
         if (this.threadPoolSize > concurrentSession.get()) {
-            final FutureTask<TestResults> task = this.listener.getNextTask(tasker, new Task.TaskListener() {
+            final FutureTask<TestResultContainer> task = this.listener.getNextTask(tasker, new Task.TaskListener() {
                 @Override
                 public void onTaskComplete(Task task) {
                 }

@@ -109,7 +109,7 @@ public class Eyes implements IRenderingEyes {
         logger.verbose("creating test descriptors for each browser info...");
         for (RenderBrowserInfo browserInfo : browserInfoList) {
             logger.verbose("creating test descriptor");
-            RunningTest test = new RunningTest(this.proxy, createEyesConnector(browserInfo), renderingConfiguration, browserInfo, logger, testListener);
+            RunningTest test = new RunningTest(createEyesConnector(browserInfo), renderingConfiguration, browserInfo, logger, testListener);
             this.testList.add(test);
         }
 
@@ -164,8 +164,8 @@ public class Eyes implements IRenderingEyes {
         return test;
     }
 
-    public List<Future<TestResults>> close() {
-        List<Future<TestResults>> futureList = new ArrayList<>();
+    public List<Future<TestResultContainer>> close() {
+        List<Future<TestResultContainer>> futureList = new ArrayList<>();
         for (RunningTest runningTest : testList) {
             if (!runningTest.isTestClose()) {
                 futureList.add(runningTest.close());

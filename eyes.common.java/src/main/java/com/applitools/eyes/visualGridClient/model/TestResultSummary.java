@@ -5,7 +5,7 @@ import com.applitools.eyes.TestResults;
 import java.util.List;
 
 public class TestResultSummary {
-    private List<TestResults> allResults;
+    private List<TestResultContainer> allResults;
     private int passed = 0;
     private int unresolved = 0;
     private int failed = 0;
@@ -14,9 +14,14 @@ public class TestResultSummary {
     private int missing = 0;
     private int matches = 0;
 
-    public TestResultSummary(List<TestResults> allResults) {
+    public TestResultSummary(List<TestResultContainer> allResults) {
         this.allResults = allResults;
-        for (TestResults result : allResults) {
+        for (TestResultContainer resultContainer : allResults) {
+            if (resultContainer.getException() != null){
+                this.exceptions++;
+            }
+            TestResults result = resultContainer.getTestResults();
+            if (result == null) continue;
             if (result.getStatus() != null) {
                 switch (result.getStatus()) {
                     case Failed:
@@ -36,8 +41,8 @@ public class TestResultSummary {
         }
     }
 
-    public TestResults[] getAllResults() {
-        return allResults.toArray(new TestResults[0]);
+    public TestResultContainer[] getAllResults() {
+        return allResults.toArray(new TestResultContainer[0]);
     }
 
     @Override

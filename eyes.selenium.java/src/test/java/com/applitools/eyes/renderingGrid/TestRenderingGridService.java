@@ -2,10 +2,10 @@ package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.TestResults;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
 import com.applitools.eyes.visualGridClient.model.FileDebugResourceWriter;
+import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
@@ -65,8 +65,8 @@ public final class TestRenderingGridService {
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             eyes.check(Target.window().withName("test").sendDom(false));
-            List<Future<TestResults>> close = eyes.close();
-            for (Future<TestResults> future : close) {
+            List<Future<TestResultContainer>> close = eyes.close();
+            for (Future<TestResultContainer> future : close) {
                 future.get();
             }
 

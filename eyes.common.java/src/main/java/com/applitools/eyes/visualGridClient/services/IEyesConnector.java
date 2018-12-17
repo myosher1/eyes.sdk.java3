@@ -23,7 +23,7 @@ public interface IEyesConnector {
 
     TestResults close(boolean throwExceptionOn);
 
-    void abortIfNotClosed();
+    TestResults abortIfNotClosed();
 
     IResourceFuture getResource(URL url, IDownloadListener<Byte[]> iDownloadListener);
 

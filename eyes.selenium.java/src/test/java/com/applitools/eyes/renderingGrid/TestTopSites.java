@@ -5,6 +5,7 @@ import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
 import com.applitools.eyes.visualGridClient.model.FileDebugResourceWriter;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
+import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
 import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
 import com.applitools.utils.GeneralUtils;
@@ -73,18 +74,18 @@ public class TestTopSites {
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             eyes.check(Target.window().withName(testedUrl).sendDom(false));
-            List<Future<TestResults>> close = eyes.close();
-            for (Future<TestResults> future : close) {
-                eyes.getLogger().log("calling future.get()");
-                future.get();
-            }
+            List<Future<TestResultContainer>> close = eyes.close();
+//            for (Future<TestResultContainer> future : close) {
+//                eyes.getLogger().log("calling future.get()");
+//                future.get();
+//            }
 
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(eyes.getLogger(), e);
         } finally {
             webDriver.quit();
             TestResultSummary allTestResults = renderingManager.getAllTestResults();
-            System.out.println(allTestResults);
+            eyes.getLogger().log(allTestResults.toString());
             // End the test.
         }
     }
@@ -103,10 +104,5 @@ public class TestTopSites {
     @AfterMethod
     public void afterMethod(ITestContext testContext) {
         renderingManager.getLogger().log("enter");
-    }
-
-    @AfterClass
-    public void afterClass() {
-        renderingManager.getLogger().log(renderingManager.getAllTestResults().toString());
     }
 }

@@ -2,6 +2,7 @@ package com.applitools.eyes.visualGridClient.services;
 
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.TestResults;
+import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 
 import java.util.List;
 import java.util.concurrent.Future;
@@ -14,7 +15,7 @@ public interface IRenderingEyes {
 
     void setListener(EyesListener listener);
 
-    List<Future<TestResults>> close();
+    List<Future<TestResultContainer>> close();
 
     ScoreTask getBestScoreTaskForCheck();
 
