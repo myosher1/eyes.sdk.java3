@@ -35,16 +35,16 @@ public class TestTopSites {
     @DataProvider(name = "dp", parallel = true)
     public static Object[][] dp() {
         return new Object[][]{
-                {"https://google.com"},
-                {"https://facebook.com"},
-                {"https://youtube.com"},
-                {"https://amazon.com"},
-                {"https://yahoo.com"},
+//                {"https://google.com"},
+//                {"https://facebook.com"},
+//                {"https://youtube.com"},
+//                {"https://amazon.com"},
+//                {"https://yahoo.com"},
                 {"https://ebay.com"},
-                {"https://twitter.com"},
-                {"https://wikipedia.org"},
-                {"https://instagram.com"},
-                {"https://reddit.com"},
+//                {"https://twitter.com"},
+//                {"https://wikipedia.org"},
+//                {"https://instagram.com"},
+//                {"https://reddit.com"},
         };
     }
 
@@ -55,14 +55,7 @@ public class TestTopSites {
         Eyes eyes = new Eyes(renderingManager);
         eyes.setBatch(new BatchInfo(testedUrl));
 
-        String testName = testedUrl.substring(8);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
-        String path = logsPath + File.separator + "java" + File.separator + "TestTopSites_" + testName + dateFormat.format(Calendar.getInstance().getTime());
-
-        FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
-        FileLogger eyesLogger = new FileLogger(path + File.separator + "log.log", false, true);
-        eyes.setLogHandler(eyesLogger);
-        eyes.setDebugResourceWriter(fileDebugResourceWriter);
+        //initLogging(testedUrl, eyes);
 
         WebDriver webDriver = new ChromeDriver();
         webDriver.get(testedUrl);
@@ -94,6 +87,17 @@ public class TestTopSites {
             System.out.println(allTestResults);
             // End the test.
         }
+    }
+
+    private void initLogging(String testedUrl, Eyes eyes) {
+        String testName = testedUrl.substring(8);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
+        String path = logsPath + File.separator + "java" + File.separator + "TestTopSites_" + testName + dateFormat.format(Calendar.getInstance().getTime());
+
+        FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
+        FileLogger eyesLogger = new FileLogger(path + File.separator + "log.log", true, true);
+        eyes.setLogHandler(eyesLogger);
+        eyes.setDebugResourceWriter(fileDebugResourceWriter);
     }
 
     @AfterMethod

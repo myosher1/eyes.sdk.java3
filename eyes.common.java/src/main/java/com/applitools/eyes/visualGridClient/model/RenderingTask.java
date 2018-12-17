@@ -365,7 +365,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         }
         addBlobsToCache(allBlobs);
 
-        parseAndCollectCSSResources(allBlobs, baseUrl, resourceUrls);
+        //parseAndCollectCSSResources(allBlobs, baseUrl, resourceUrls);
     }
 
     private RGridResource parseBlobToGridResource(Base64 codec, URL baseUrl, Map blobAsMap) {
@@ -472,7 +472,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             ICommonsList<CSSExpressionMemberTermURI> allUriExpressions = allExpressionMembers.getAllInstanceOf(CSSExpressionMemberTermURI.class);
             for (CSSExpressionMemberTermURI uriExpression : allUriExpressions) {
                 try {
-                    URL url = new URL(baseUrl, uriExpression.getURIString());
+                    String uri = uriExpression.getURIString();
+                    if (uri.toLowerCase().startsWith("data:")) continue;
+                    URL url = new URL(baseUrl, uri);
                     allResourceUris.add(url);
                 } catch (MalformedURLException e) {
                     GeneralUtils.logExceptionStackTrace(logger, e);
