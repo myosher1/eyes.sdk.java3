@@ -41,22 +41,26 @@ public class EyesService extends Thread {
     @Override
     public void run() {
         while (isServiceOn) {
-            if (isPaused) {
-                synchronized (debugLock) {
-                    try {
-                        debugLock.wait();
-                        this.isPaused = false;
-                    } catch (InterruptedException e) {
-                        GeneralUtils.logExceptionStackTrace(logger, e);
-                    }
-                }
-            }
+            pauseIfNeeded();
             runNextTask();
         }
         if (this.executor != null) {
             this.executor.shutdown();
         }
         logger.log("Service '" + this.getName() + "' is finished");
+    }
+
+    protected void pauseIfNeeded() {
+        if (isPaused) {
+            synchronized (debugLock) {
+                try {
+                    debugLock.wait();
+                    this.isPaused = false;
+                } catch (InterruptedException e) {
+                    GeneralUtils.logExceptionStackTrace(logger, e);
+                }
+            }
+        }
     }
 
     void runNextTask() {
@@ -78,6 +82,7 @@ public class EyesService extends Thread {
             }
         });
         if (task != null) {
+            pauseIfNeeded();
             this.executor.submit(task);
         }
     }

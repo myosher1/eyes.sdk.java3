@@ -35,6 +35,7 @@ public class OpenerService extends EyesService{
             });
             if (task != null) {
                 this.concurrentSession.incrementAndGet();
+                pauseIfNeeded();
                 this.executor.submit(task);
             }
         }
