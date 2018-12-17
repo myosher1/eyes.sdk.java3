@@ -70,7 +70,6 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the API key of your applitools Eyes account.
-     *
      * @param apiKey The api key to set.
      */
     public void setApiKey(String apiKey) {
@@ -87,9 +86,8 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the proxy settings to be used by the rest client.
-     *
      * @param abstractProxySettings The proxy settings to be used by the rest client.
-     *                      If {@code null} then no proxy is set.
+     *                              If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void setProxy(AbstractProxySettings abstractProxySettings) {
@@ -110,7 +108,6 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the current server URL used by the rest client.
-     *
      * @param serverUrl The URI of the rest server.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -133,7 +130,6 @@ public class ServerConnector extends RestClient
      * Starts a new running session in the agent. Based on the given parameters,
      * this running session will either be linked to an existing session, or to
      * a completely new session.
-     *
      * @param sessionStartInfo The start parameters for the session.
      * @return RunningSession object which represents the current running
      * session
@@ -195,7 +191,6 @@ public class ServerConnector extends RestClient
 
     /**
      * Stops the running session.
-     *
      * @param runningSession The running session to be stopped.
      * @return TestResults object for the stopped running session
      * @throws EyesException For invalid status codes, or if response parsing
@@ -263,7 +258,6 @@ public class ServerConnector extends RestClient
     /**
      * Matches the current window (held by the WebDriver) to the expected
      * window.
-     *
      * @param runningSession The current agent's running session.
      * @param matchData      Encapsulation of a capture taken from the application.
      * @return The results of the window matching.
@@ -382,7 +376,7 @@ public class ServerConnector extends RestClient
 
                 } catch (Exception e) {
                     GeneralUtils.logExceptionStackTrace(logger, e);
-                    logger.verbose("Failed to parse request(status= " + status + ") = "+ clientResponse.getEntity(String.class));
+                    logger.verbose("Failed to parse request(status= " + status + ") = " + clientResponse.getEntity(String.class));
                     listener.onDownloadFailed();
 
                 }
@@ -418,7 +412,7 @@ public class ServerConnector extends RestClient
 
                 } catch (Exception e) {
                     GeneralUtils.logExceptionStackTrace(logger, e);
-                    logger.verbose("Failed to parse request(status= " + status + ") = "+ (clientResponse != null ? clientResponse.getEntity(String.class) : null));
+                    logger.verbose("Failed to parse request(status= " + status + ") = " + (clientResponse != null ? clientResponse.getEntity(String.class) : null));
                     listener.onDownloadFailed();
 
                 }
@@ -453,7 +447,7 @@ public class ServerConnector extends RestClient
 
     @Override
     public RenderingInfo getRenderInfo() {
-        this.logger.verbose("ServerConnector.getRenderInfo called.");
+        this.logger.verbose("enter");
         WebResource target = restClient.resource(serverUrl).path(RENDER_INFO_PATH).queryParam("apiKey", getApiKey());
 
 
@@ -474,7 +468,7 @@ public class ServerConnector extends RestClient
     public List<RunningRender> render(RenderRequest... renderRequests) {
 
         ArgumentGuard.notNull(renderRequests, "renderRequests");
-        this.logger.verbose("ServerConnector.render called for render: " + renderRequests);
+        this.logger.verbose("called for render: " + renderRequests);
 
         WebResource target = restClient.resource(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
 
@@ -493,11 +487,10 @@ public class ServerConnector extends RestClient
         validStatusCodes.add(ClientResponse.Status.NOT_FOUND.getStatusCode());
 
         ClientResponse response = request.head();
-        if(validStatusCodes.contains(response.getStatus()))
-        {
+        if (validStatusCodes.contains(response.getStatus())) {
             return Arrays.asList(response.getEntity(RunningRender[].class));
         }
-        throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+        throw new EyesException("Jersey1 ServerConnector.render - unexpected status (" + response.getStatus() + ")");
     }
 
     @Override
@@ -506,9 +499,8 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
         // eslint-disable-next-line max-len
-        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
+        this.logger.verbose("called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
 
-        this.logger.verbose("ServerConnector.getRenderInfo called.");
         WebResource target = restClient.resource(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
 
 
@@ -531,7 +523,7 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(resource, "resource");
         ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
 
-        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
+        this.logger.verbose("called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
 
         AsyncWebResource target = restClient.asyncResource(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
         target.entity(resource.getContent(), MediaType.APPLICATION_OCTET_STREAM_TYPE);
@@ -581,7 +573,7 @@ public class ServerConnector extends RestClient
     @Override
     public List<RenderStatusResults> renderStatusById(String... renderIds) {
         ArgumentGuard.notNull(renderIds, "renderIds");
-        this.logger.verbose("ServerConnector.renderStatus called for render: " + renderIds);
+        this.logger.verbose("called for render: " + renderIds);
 
         WebResource target = restClient.resource(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
 
@@ -605,7 +597,7 @@ public class ServerConnector extends RestClient
 
     @Override
     public IResourceFuture createResourceFuture(RGridResource gridResource) {
-        return new ResourceFuture(gridResource);
+        return new ResourceFuture(gridResource, logger);
     }
 
     @Override

@@ -61,13 +61,12 @@ public class ServerConnector extends RestClient
         this(null, serverUrl);
     }
 
-    public ServerConnector(){
-        this((Logger)null);
+    public ServerConnector() {
+        this((Logger) null);
     }
 
     /**
      * Sets the API key of your applitools Eyes account.
-     *
      * @param apiKey The api key to set.
      */
     public void setApiKey(String apiKey) {
@@ -85,7 +84,7 @@ public class ServerConnector extends RestClient
     /**
      * Sets the proxy settings to be used by the rest client.
      * @param abstractProxySettings The proxy settings to be used by the rest client.
-     * If {@code null} then no proxy is set.
+     *                              If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void setProxy(AbstractProxySettings abstractProxySettings) {
@@ -96,7 +95,6 @@ public class ServerConnector extends RestClient
     }
 
     /**
-     *
      * @return The current proxy settings used by the rest client,
      * or {@code null} if no proxy is set.
      */
@@ -129,12 +127,11 @@ public class ServerConnector extends RestClient
      * Starts a new running session in the agent. Based on the given parameters,
      * this running session will either be linked to an existing session, or to
      * a completely new session.
-     *
      * @param sessionStartInfo The start parameters for the session.
      * @return RunningSession object which represents the current running
-     *         session
+     * session
      * @throws EyesException For invalid status codes, or if response parsing
-     *          failed.
+     *                       failed.
      */
     public RunningSession startSession(SessionStartInfo sessionStartInfo)
             throws EyesException {
@@ -190,11 +187,10 @@ public class ServerConnector extends RestClient
 
     /**
      * Stops the running session.
-     *
      * @param runningSession The running session to be stopped.
      * @return TestResults object for the stopped running session
      * @throws EyesException For invalid status codes, or if response parsing
-     *          failed.
+     *                       failed.
      */
     public TestResults stopSession(final RunningSession runningSession,
                                    final boolean isAborted, final boolean save)
@@ -257,12 +253,11 @@ public class ServerConnector extends RestClient
     /**
      * Matches the current window (held by the WebDriver) to the expected
      * window.
-     *
      * @param runningSession The current agent's running session.
-     * @param matchData Encapsulation of a capture taken from the application.
+     * @param matchData      Encapsulation of a capture taken from the application.
      * @return The results of the window matching.
      * @throws EyesException For invalid status codes, or response parsing
-     * failed.
+     *                       failed.
      */
     public MatchResult matchWindow(RunningSession runningSession,
                                    MatchWindowData matchData)
@@ -287,7 +282,7 @@ public class ServerConnector extends RestClient
             jsonData = jsonMapper.writeValueAsString(matchData);
         } catch (IOException e) {
             throw new EyesException("Failed to serialize model for matchWindow!",
-                                    e);
+                    e);
         }
 
         // Convert the JSON to binary.
@@ -366,8 +361,7 @@ public class ServerConnector extends RestClient
                 if (!isSecondRetry) {
                     logger.verbose("Entering retry");
                     downloadString(uri, true, listener);
-                }
-                else {
+                } else {
                     listener.onDownloadFailed();
                 }
             }
@@ -485,14 +479,13 @@ public class ServerConnector extends RestClient
     public List<RunningRender> render(RenderRequest... renderRequests) {
 
         ArgumentGuard.notNull(renderRequests, "renderRequests");
-        this.logger.verbose("ServerConnector.render called with "+renderRequests);
+        this.logger.verbose("called with " + renderRequests);
 
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
         if (renderRequests.length > 1) {
-            target.matrixParam("render-id", (Object[])renderRequests);
-        }
-        else{
-            target.queryParam("render-id", (Object[])renderRequests);
+            target.matrixParam("render-id", (Object[]) renderRequests);
+        } else {
+            target.queryParam("render-id", (Object[]) renderRequests);
         }
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
@@ -504,11 +497,11 @@ public class ServerConnector extends RestClient
 
         Response response = request.head();
         if (validStatusCodes.contains(response.getStatus())) {
-            this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
+            this.logger.verbose("request succeeded");
             return Arrays.asList(response.readEntity(RunningRender[].class));
         }
 
-        throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+        throw new EyesException("JBoss ServerConnector.render - unexpected status (" + response.getStatus() + ")");
     }
 
     @Override
@@ -516,7 +509,7 @@ public class ServerConnector extends RestClient
 
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
-        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
+        this.logger.verbose("called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
 
 
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
@@ -531,11 +524,11 @@ public class ServerConnector extends RestClient
 
         Response response = request.head();
         if (validStatusCodes.contains(response.getStatus())) {
-            this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
+            this.logger.verbose("request succeeded");
             return response.getStatus() == Response.Status.OK.getStatusCode();
         }
 
-        throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+        throw new EyesException("JBoss ServerConnector.renderCheckResource - unexpected status (" + response.getStatus() + ")");
     }
 
 
@@ -545,7 +538,7 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(resource, "resource");
         ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
 
-        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
+        this.logger.verbose("called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
 
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
@@ -593,7 +586,7 @@ public class ServerConnector extends RestClient
 
             @Override
             public Boolean get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                Response response = responseFuture.get(timeout,unit);
+                Response response = responseFuture.get(timeout, unit);
                 return true;
             }
         };
@@ -603,7 +596,7 @@ public class ServerConnector extends RestClient
     @Override
     public RenderStatusResults renderStatus(RunningRender runningRender) {
         List<RenderStatusResults> renderStatusResults = renderStatusById(runningRender.getRenderId());
-        if(!renderStatusResults.isEmpty()){
+        if (!renderStatusResults.isEmpty()) {
             return renderStatusResults.get(0);
         }
         return null;
@@ -613,14 +606,13 @@ public class ServerConnector extends RestClient
     public List<RenderStatusResults> renderStatusById(String... renderIds) {
 
         ArgumentGuard.notNull(renderIds, "renderIds");
-        this.logger.verbose("ServerConnector.renderStatus called for render: " + renderIds);
+        this.logger.verbose("called for render: " + renderIds);
 
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
         if (renderIds.length > 1) {
-            target.matrixParam("render-id", (Object[])renderIds);
-        }
-        else{
-            target.queryParam("render-id", (Object[])renderIds);
+            target.matrixParam("render-id", (Object[]) renderIds);
+        } else {
+            target.queryParam("render-id", (Object[]) renderIds);
         }
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
@@ -632,11 +624,11 @@ public class ServerConnector extends RestClient
 
         Response response = request.head();
         if (validStatusCodes.contains(response.getStatus())) {
-            this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
+            this.logger.verbose("request succeeded");
             return Arrays.asList(response.readEntity(RenderStatusResults[].class));
         }
 
-        throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+        throw new EyesException("JBoss ServerConnector.renderStatusById - unexpected status (" + response.getStatus() + ")");
     }
 
     @Override

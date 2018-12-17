@@ -489,7 +489,7 @@ public class ServerConnector extends RestClient
     @Override
     public List<RunningRender> render(RenderRequest... renderRequests) {
         ArgumentGuard.notNull(renderRequests, "renderRequests");
-        this.logger.verbose("ServerConnector.render called with " + renderRequests);
+        this.logger.verbose("called with " + renderRequests);
 
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER));
         if (renderRequests.length > 1) {
@@ -512,11 +512,11 @@ public class ServerConnector extends RestClient
             String json = objectMapper.writeValueAsString(renderRequests);
             Response response = request.post(Entity.json(json));
             if (validStatusCodes.contains(response.getStatus())) {
-                this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
+                this.logger.verbose("request succeeded");
                 RunningRender[] runningRenders = parseResponseWithJsonData(response, validStatusCodes, RunningRender[].class);
                 return Arrays.asList(runningRenders);
             }
-            throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + "), msg (" + response.readEntity(String.class) + ")");
+            throw new EyesException("Jersey2 ServerConnector.render - unexpected status (" + response.getStatus() + "), msg (" + response.readEntity(String.class) + ")");
         } catch (JsonProcessingException e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
@@ -530,7 +530,7 @@ public class ServerConnector extends RestClient
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
         // eslint-disable-next-line max-len
-        this.logger.verbose("ServerConnector.checkResourceExists called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
+        this.logger.verbose("called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
 
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
@@ -543,11 +543,11 @@ public class ServerConnector extends RestClient
 
         Response response = request.head();
         if (validStatusCodes.contains(response.getStatus())) {
-            this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
+            this.logger.verbose("request succeeded");
             return response.getStatus() == Response.Status.OK.getStatusCode();
         }
 
-        throw new EyesException("ServerConnector.checkResourceExists - unexpected status (" + response.getStatus() + ")");
+        throw new EyesException("Jersey2 ServerConnector.renderCheckResource - unexpected status (" + response.getStatus() + ")");
     }
 
     @Override
@@ -610,7 +610,7 @@ public class ServerConnector extends RestClient
                 Entity<String> entity = Entity.entity(json, MediaType.APPLICATION_JSON);
                 Response response = request.post(entity);
                 if (validStatusCodes.contains(response.getStatus())) {
-                    this.logger.verbose("ServerConnector.checkResourceExists - request succeeded");
+                    this.logger.verbose("request succeeded");
                     RenderStatusResults[] renderStatusResults = parseResponseWithJsonData(response, validStatusCodes, RenderStatusResults[].class);
                     return Arrays.asList(renderStatusResults);
                 }
