@@ -112,33 +112,35 @@ public final class TestMultiThreadWithServiceLockService {
             renderLock.wait();
         }
 
-        int openedTask = startServiceAndCountCompletedTasks(allOpenTasks, openerLock);
+        int openedTaskCount = startServiceAndCountCompletedTasks(allOpenTasks, openerLock);
 
-        Assert.assertEquals(openedTask, concurrentOpenSessions, "Completed opened tasks are not equal to concurrency");
+        Assert.assertEquals(openedTaskCount, concurrentOpenSessions, "Completed opened tasks are not equal to concurrency");
 
-        int closeTasks = startServiceAndCountCompletedTasks(allCloseTasks, closerLock);
+        int closeTasksCount = startServiceAndCountCompletedTasks(allCloseTasks, closerLock);
 
-        Assert.assertEquals(closeTasks, 0, "Close tasks are completed before check tasks");
+        Assert.assertEquals(closeTasksCount, 0, "Close tasks are completed before check tasks");
 
-        int checkedTasks = startServiceAndCountCompletedTasks(allCheckTasks, checkerLock);
+        int checkedTasksCount = startServiceAndCountCompletedTasks(allCheckTasks, checkerLock);
 
-        Assert.assertEquals(checkedTasks, concurrentOpenSessions, "Completed checked tasks are not equal to concurrency");
-
-        pauseAllServices();
-
-        closeTasks = startServiceAndCountCompletedTasks(allCloseTasks, closerLock);
-
-        Assert.assertEquals(concurrentOpenSessions, closeTasks);
+        Assert.assertEquals(checkedTasksCount, concurrentOpenSessions, "Completed checked tasks are not equal to concurrency");
 
         pauseAllServices();
 
-        openedTask = startServiceAndCountCompletedTasks(allOpenTasks, openerLock);
+        closeTasksCount = startServiceAndCountCompletedTasks(allCloseTasks, closerLock);
 
-        Assert.assertEquals(openedTask, 5, "Completed opened tasks are not equal to concurrency");
+        Assert.assertEquals(closeTasksCount, concurrentOpenSessions);
 
-        closeTasks = startServiceAndCountCompletedTasks(allCloseTasks, closerLock);
+        openedTaskCount = startServiceAndCountCompletedTasks(allOpenTasks, openerLock);
 
-        Assert.assertEquals(closeTasks, 5, "Close tasks are completed before check tasks");
+        Assert.assertEquals(openedTaskCount, 5, "Completed opened tasks are not equal to concurrency");
+
+        checkedTasksCount = startServiceAndCountCompletedTasks(allCheckTasks, checkerLock);
+
+        Assert.assertEquals(checkedTasksCount, 5, "Completed checked tasks are not equal to concurrency");
+
+        closeTasksCount = startServiceAndCountCompletedTasks(allCloseTasks, closerLock);
+
+        Assert.assertEquals(closeTasksCount, 5, "Close tasks are completed before check tasks");
 
     }
 
@@ -151,13 +153,13 @@ public final class TestMultiThreadWithServiceLockService {
         //Start Opener and wait for 5 open tasks
         synchronized (debugLock) {
             debugLock.notify();
-            debugLock.wait(1000);
-            debugLock.wait(1000);
-            debugLock.wait(1000);
-            debugLock.wait(1000);
-            debugLock.wait(1000);
         }
 
+        for (int i = 0; i < 5; i++) {
+            synchronized (debugLock) {
+                debugLock.wait(1000);
+            }
+        }
 
         int completedTasks = 0;
         for (CompletableTask openTask : allOpenTasks) {
