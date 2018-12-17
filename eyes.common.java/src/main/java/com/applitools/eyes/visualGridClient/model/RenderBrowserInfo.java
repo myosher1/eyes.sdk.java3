@@ -63,4 +63,14 @@ public class RenderBrowserInfo {
         return this.sizeMode;
     }
 
+    @Override
+    public String toString() {
+        return "RenderBrowserInfo{" +
+                "viewportSize=" + viewportSize +
+                ", browserType=" + browserType +
+                ", platform='" + platform + '\'' +
+                ", emulationInfo=" + emulationInfo +
+                ", sizeMode='" + sizeMode + '\'' +
+                '}';
+    }
 }

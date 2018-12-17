@@ -94,6 +94,7 @@ public class RenderingGridManager {
                     }
                     break;
                 case CHECK:
+                    logger.verbose("Check complete.");
             }
 
             notifyAllServices();
@@ -192,7 +193,7 @@ public class RenderingGridManager {
                         try {
                             nextTestToRender = getNextRenderingTask();
                             if (nextTestToRender == null) {
-                                renderingServiceLock.wait(2000);
+                                renderingServiceLock.wait();
                                 logger.log("Rendering service woke up");
                                 nextTestToRender = getNextRenderingTask();
                             }
@@ -231,7 +232,7 @@ public class RenderingGridManager {
                     if (nextTestToOpen == null) {
 
                         logger.log(serviceName + " going to sleep");
-                        lock.wait(2000);
+                        lock.wait();
                         logger.log(serviceName + " woke up");
                         nextTestToOpen = tasker.getOrWaitForNextTask(taskListener);
                     }

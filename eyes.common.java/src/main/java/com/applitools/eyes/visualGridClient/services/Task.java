@@ -2,7 +2,6 @@ package com.applitools.eyes.visualGridClient.services;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.MatchResult;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualGridClient.model.CompletableTask;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
@@ -19,7 +18,6 @@ public class Task implements Callable<TestResults>, CompletableTask {
 
     private static AtomicBoolean isThrown = new AtomicBoolean(false);
     private final Logger logger;
-    private MatchResult matchResult;
     private boolean isSent;
 
     public enum TaskType {OPEN, CHECK, CLOSE, ABORT}
@@ -52,7 +50,7 @@ public class Task implements Callable<TestResults>, CompletableTask {
         this.testResults = testResults;
         this.eyesConnector = eyesConnector;
         this.type = type;
-        this.listeners .add(runningTestListener);
+        this.listeners.add(runningTestListener);
         this.logger = runningTest.getLogger();
         this.checkSettings = checkSettings;
         this.runningTest = runningTest;
@@ -88,7 +86,7 @@ public class Task implements Callable<TestResults>, CompletableTask {
 
                 case CHECK:
                     logger.log("Task.run check task");
-                    matchResult = eyesConnector.matchWindow(renderResult.getImageLocation(), checkSettings);
+                    eyesConnector.matchWindow(renderResult.getImageLocation(), checkSettings);
                     break;
 
                 case CLOSE:
@@ -123,7 +121,8 @@ public class Task implements Callable<TestResults>, CompletableTask {
             listener.onTaskFailed(e, this);
         }
     }
-    private void notifyRenderCompleteAllListeners(){
+
+    private void notifyRenderCompleteAllListeners() {
         for (TaskListener listener : listeners) {
             listener.onRenderComplete();
         }
@@ -133,7 +132,7 @@ public class Task implements Callable<TestResults>, CompletableTask {
         return eyesConnector;
     }
 
-    private static boolean isThrown() {
+    static boolean isThrown() {
         return Task.isThrown.get();
     }
 
@@ -156,8 +155,14 @@ public class Task implements Callable<TestResults>, CompletableTask {
         return isTaskComplete.get();
     }
 
-    public void addListener(TaskListener listener){
+    public void addListener(TaskListener listener) {
         this.listeners.add(listener);
+    }
+
+    public void setRenderError(){
+        for (TaskListener listener : listeners) {
+            listener.onTaskFailed(new Exception("Render Failed for "+this.getBrowserInfo()), this);
+        }
     }
 }
 

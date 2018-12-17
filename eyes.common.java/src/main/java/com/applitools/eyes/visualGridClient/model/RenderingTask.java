@@ -126,7 +126,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
                 boolean isNeedMoreDom = runningRender.isNeedMoreDom();
 
-                if (isForcePutNeeded.get()){
+                if (isForcePutNeeded.get()) {
                     forcePutAllResources(requests[0].getResources(), runningRender);
                 }
 
@@ -579,6 +579,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private void startPollingStatus(Map<RunningRender, RenderRequest> runningRenders) {
 
         List<String> ids = getRenderIds(runningRenders.keySet());
+        int numOfIterations = 0;
 
         try {
             do {
@@ -597,7 +598,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
                 for (int i = 0, j = 0; i < renderStatusResultsList.size(); i++) {
                     RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
-                    if (renderStatusResults.getStatus() == RenderStatus.RENDERED) {
+                    boolean isRenderedStatus = renderStatusResults.getStatus() == RenderStatus.RENDERED;
+                    boolean isErrorStatus = renderStatusResults.getStatus() == RenderStatus.ERROR;
+                    if (isRenderedStatus || isErrorStatus) {
 
                         String removed = ids.remove(j);
 
@@ -608,7 +611,12 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                                 while (iterator.hasNext()) {
                                     Task openTask = iterator.next();
                                     if (openTask.getRunningTest() == task.getRunningTest()) {
-                                        openTask.setRenderResult(renderStatusResults);
+                                        if (isRenderedStatus) {
+                                            openTask.setRenderResult(renderStatusResults);
+                                        }
+                                        if (isErrorStatus) {
+                                            openTask.setRenderError();
+                                        }
                                         iterator.remove();
                                     }
                                 }
@@ -629,14 +637,26 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     }
                 }
 
+                numOfIterations++;
 
-            } while (ids.size() > 0);
+            } while (!ids.isEmpty() && numOfIterations < 25);
+
+            for (String id : ids) {
+                for (RunningRender renderedRender : runningRenders.keySet()) {
+                    if (renderedRender.getRenderId().equalsIgnoreCase(id)) {
+                        Task task = runningRenders.get(renderedRender).getTask();
+                        task.setRenderError();
+                    }
+                }
+            }
+
             this.isTaskComplete.set(true);
             this.notifySuccessAllListeners();
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
     }
+
 
     public boolean getIsTaskComplete() {
         return isTaskComplete.get();
