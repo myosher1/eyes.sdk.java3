@@ -15,11 +15,18 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClient;
 import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient4Engine;
 
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -63,7 +70,7 @@ public class RestClient {
                 .socketTimeout(timeout, TimeUnit.MILLISECONDS);
 
         if (abstractProxySettings == null) {
-            return builder.build();
+            return builder.disableTrustManager().build();
         }
 
         // Setting the proxy configuration
@@ -92,7 +99,7 @@ public class RestClient {
             }
         }
 
-        ResteasyClient client = builder.defaultProxy(hostName, port, scheme).build();
+        ResteasyClient client = builder.defaultProxy(hostName, port, scheme).disableTrustManager().build();
 
         if (abstractProxySettings.getUsername() != null) {
             Credentials credentials = new UsernamePasswordCredentials(abstractProxySettings.getUsername(),
@@ -328,5 +335,34 @@ public class RestClient {
         }
 
         return resultObject;
+    }
+
+    private static ClientBuilder disableSSL(ClientBuilder builder) {
+        TrustManager[] trustManagers = new TrustManager[]{
+                new X509TrustManager() {
+
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    @Override
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+
+                    @Override
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+        try {
+            SSLContext sslContext = SSLContext.getInstance("ssl");
+            sslContext.init(null, trustManagers, null);
+            builder.sslContext(sslContext);
+        } catch (NoSuchAlgorithmException | KeyManagementException ignored) {
+        }
+
+        return builder;
     }
 }

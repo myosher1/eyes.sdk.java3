@@ -7,12 +7,23 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.client.apache4.ApacheHttpClient4;
+import com.sun.jersey.client.apache4.ApacheHttpClient4Handler;
 import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
 import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
+import com.sun.jersey.client.urlconnection.HTTPSProperties;
+import com.sun.jersey.client.urlconnection.URLConnectionClientHandler;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 
+import javax.net.ssl.*;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 /**
@@ -72,11 +83,33 @@ public class RestClient {
             cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_USERNAME, abstractProxySettings.getUsername());
             cc.getProperties().put(ApacheHttpClient4Config.PROPERTY_PROXY_PASSWORD, abstractProxySettings.getPassword());
 
-            ApacheHttpClient4 client = ApacheHttpClient4.create(cc);
-            return client;
+            HttpClientBuilder builder = HttpClients.custom();
+            SSLContext sslContext = getSslContext();
+            if (sslContext != null) {
+                builder.setSSLContext(sslContext);
+            }
+
+            HttpClient httpClient = builder.build();
+
+            ApacheHttpClient4Handler handler = new ApacheHttpClient4Handler(httpClient, new BasicCookieStore(), false);
+
+            return new ApacheHttpClient4(handler, cc);
         } else {
             // We ignore the proxy settings
-            return Client.create(cc);
+            URLConnectionClientHandler handler = new URLConnectionClientHandler(new NoProxyConnectionFactory());
+
+            SSLContext sslContext = getSslContext();
+            if (sslContext != null) {
+                HTTPSProperties httpsProperties = new HTTPSProperties(new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String s, SSLSession sslSession) {
+                        return true;
+                    }
+                }, sslContext);
+                cc.getProperties().put(HTTPSProperties.PROPERTY_HTTPS_PROPERTIES, httpsProperties);
+            }
+
+            return new Client(handler, cc);
         }
     }
 
@@ -297,5 +330,32 @@ public class RestClient {
         }
 
         return resultObject;
+    }
+
+    private static SSLContext getSslContext() {
+        TrustManager[] trustManagers = new TrustManager[]{
+                new X509TrustManager() {
+
+                    @Override
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    @Override
+                    public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+
+                    @Override
+                    public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+        try {
+            SSLContext sslContext = SSLContext.getInstance("ssl");
+            sslContext.init(null, trustManagers, null);
+            return sslContext;
+        } catch (NoSuchAlgorithmException | KeyManagementException ignored) {
+            return null;
+        }
     }
 }
