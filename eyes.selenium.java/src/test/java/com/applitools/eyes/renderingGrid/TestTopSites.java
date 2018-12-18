@@ -79,6 +79,7 @@ public class TestTopSites {
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             eyes.getLogger().log("running check for url " + testedUrl);
             eyes.check(Target.window().withName(testedUrl).sendDom(false));
+            eyes.check(Target.window().fully(false).withName(testedUrl).sendDom(false));
             eyes.getLogger().log("calling eyes.close() for url " + testedUrl);
             List<Future<TestResultContainer>> close = eyes.close();
 //            for (Future<TestResultContainer> future : close) {

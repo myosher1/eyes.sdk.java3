@@ -20,19 +20,7 @@ public class OpenerService extends EyesService{
     void runNextTask() {
         if (!isServiceOn) return;
         if (this.threadPoolSize > concurrentSession.get()) {
-            final FutureTask<TestResultContainer> task = this.listener.getNextTask(tasker, new Task.TaskListener() {
-                @Override
-                public void onTaskComplete(Task task) {
-                }
-
-                @Override
-                public void onTaskFailed(Exception e, Task task) {
-                }
-
-                @Override
-                public void onRenderComplete() {
-                }
-            });
+            final FutureTask<TestResultContainer> task = this.listener.getNextTask(tasker);
             if (task != null) {
                 this.concurrentSession.incrementAndGet();
                 pauseIfNeeded();

@@ -160,9 +160,9 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
         this.listeners.add(listener);
     }
 
-    public void setRenderError() {
+    public void setRenderError(String renderId) {
         for (TaskListener listener : listeners) {
-            listener.onTaskFailed(new Exception("Render Failed for " + this.getBrowserInfo()), this);
+            listener.onTaskFailed(new Exception("Render Failed for " + this.getBrowserInfo() + " (renderId: " + renderId + ")"), this);
         }
     }
 

@@ -60,6 +60,7 @@ public class RenderingGridManager {
     private IRenderingEyes.EyesListener eyesListener = new IRenderingEyes.EyesListener() {
         @Override
         public void onTaskComplete(Task task, IRenderingEyes eyes) {
+            logger.verbose("Enter with :" +task.getType());
             Task.TaskType type = task.getType();
             try {
                 switch (type) {
@@ -171,27 +172,27 @@ public class RenderingGridManager {
         this.eyesOpenerService = new OpenerService("eyesOpenerService", servicesGroup,
                 logger, this.concurrentOpenSessions, openerServiceConcurrencyLock, new EyesService.EyesServiceListener() {
             @Override
-            public FutureTask<TestResultContainer> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener) {
-                return getOrWaitForTask(openerServiceLock, tasker, taskListener, "eyesOpenerService");
+            public FutureTask<TestResultContainer> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker) {
+                return getOrWaitForTask(openerServiceLock, tasker, "eyesOpenerService");
             }
 
         }, openerServiceDebugLock, new EyesService.Tasker() {
             @Override
-            public FutureTask<TestResultContainer> getNextTask(Task.TaskListener taskListener) {
+            public FutureTask<TestResultContainer> getNextTask() {
                 return getNextTestToOpen();
             }
         });
 
         this.eyesCloserService = new EyesService("eyesCloserService", servicesGroup, logger, concurrentOpenSessions, closerServiceDebugLock, new EyesService.EyesServiceListener() {
             @Override
-            public FutureTask<TestResultContainer> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener) {
+            public FutureTask<TestResultContainer> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker) {
 
-                return getOrWaitForTask(closerServiceLock, tasker, taskListener, "eyesCloserService");
+                return getOrWaitForTask(closerServiceLock, tasker, "eyesCloserService");
             }
 
         }, new EyesService.Tasker() {
             @Override
-            public FutureTask<TestResultContainer> getNextTask(Task.TaskListener taskListener) {
+            public FutureTask<TestResultContainer> getNextTask() {
                 return getNextTestToClose();
             }
         });
@@ -221,35 +222,32 @@ public class RenderingGridManager {
 
         this.eyesCheckerService = new EyesService("eyesCheckerService", servicesGroup, logger, this.concurrentOpenSessions, checkerServiceDebugLock, new EyesService.EyesServiceListener() {
             @Override
-            public FutureTask<TestResultContainer> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener) {
+            public FutureTask<TestResultContainer> getNextTask(@SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker) {
 
-                return getOrWaitForTask(checkerServiceLock, tasker, taskListener, "eyesCheckerService");
+                return getOrWaitForTask(checkerServiceLock, tasker, "eyesCheckerService");
             }
 
         }, new EyesService.Tasker() {
             @Override
-            public FutureTask<TestResultContainer> getNextTask(Task.TaskListener taskListener) {
-                return getNextCheckTask(taskListener);
+            public FutureTask<TestResultContainer> getNextTask() {
+                return getNextCheckTask();
             }
         });
     }
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-    private FutureTask<TestResultContainer> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker, Task.TaskListener taskListener, String serviceName) {
-        FutureTask<TestResultContainer> nextTestToOpen = tasker.getNextTask(taskListener);
+    private FutureTask<TestResultContainer> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker,
+                                                             String serviceName) {
+        FutureTask<TestResultContainer> nextTestToOpen = tasker.getNextTask();
         if (nextTestToOpen == null) {
-            nextTestToOpen = tasker.getNextTask(taskListener);
             try {
-                if (nextTestToOpen == null) {
-                    logger.verbose("locking " + serviceName);
-                    synchronized (lock) {
-                        lock.wait();
-                    }
-                    logger.verbose("releasing " + serviceName);
-                    nextTestToOpen = tasker.getNextTask(taskListener);
-                    logger.verbose(serviceName + " tasker returned " + nextTestToOpen);
+                logger.verbose("locking " + serviceName);
+                synchronized (lock) {
+                    lock.wait();
                 }
-
+                logger.verbose("releasing " + serviceName);
+                nextTestToOpen = tasker.getNextTask();
+                logger.verbose(serviceName + " tasker returned " + nextTestToOpen);
             } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
@@ -257,7 +255,7 @@ public class RenderingGridManager {
         return nextTestToOpen;
     }
 
-    private FutureTask<TestResultContainer> getNextCheckTask(Task.TaskListener listener) {
+    private FutureTask<TestResultContainer> getNextCheckTask() {
         ScoreTask bestScoreTask = null;
         int bestScore = -1;
         synchronized (allEyes) {
@@ -276,9 +274,6 @@ public class RenderingGridManager {
             return null;
         }
         Task task = bestScoreTask.getTask();
-
-        //Service listener
-        task.addListener(listener);
         return new FutureTask<>(task);
     }
 

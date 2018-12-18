@@ -20,11 +20,11 @@ public class EyesService extends Thread {
     protected Logger logger;
 
     interface Tasker {
-        FutureTask<TestResultContainer> getNextTask(Task.TaskListener taskListener);
+        FutureTask<TestResultContainer> getNextTask();
     }
 
     public interface EyesServiceListener {
-        FutureTask<TestResultContainer> getNextTask(Tasker tasker, Task.TaskListener taskListener);
+        FutureTask<TestResultContainer> getNextTask(Tasker tasker);
     }
 
     public EyesService(String serviceName, ThreadGroup servicesGroup, Logger logger, int threadPoolSize, Object debugLock, EyesServiceListener listener, Tasker tasker) {
@@ -65,22 +65,7 @@ public class EyesService extends Thread {
 
     void runNextTask() {
         if (!isServiceOn) return;
-        final FutureTask<TestResultContainer> task = this.listener.getNextTask(tasker, new Task.TaskListener() {
-            @Override
-            public void onTaskComplete(Task task) {
-                debugNotify();
-            }
-
-            @Override
-            public void onTaskFailed(Exception e, Task task) {
-                debugNotify();
-            }
-
-            @Override
-            public void onRenderComplete() {
-                debugNotify();
-            }
-        });
+        final FutureTask<TestResultContainer> task = this.listener.getNextTask(tasker);
         if (task != null) {
             pauseIfNeeded();
             this.executor.submit(task);

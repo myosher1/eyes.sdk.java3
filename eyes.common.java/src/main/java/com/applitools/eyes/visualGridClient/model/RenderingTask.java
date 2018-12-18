@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RenderingTask implements Callable<RenderStatusResults>, CompletableTask {
 
     private static final int MAX_FETCH_FAILS = 3;
+    private static final int MAX_ITERATIONS = 30;
 
     private final List<RenderTaskListener> listeners = new ArrayList<>();
     private IEyesConnector eyesConnector;
@@ -610,10 +611,10 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     boolean isErrorStatus = renderStatusResults.getStatus() == RenderStatus.ERROR;
                     if (isRenderedStatus || isErrorStatus) {
 
-                        String removed = ids.remove(j);
+                        String removedId = ids.remove(j);
 
                         for (RunningRender renderedRender : runningRenders.keySet()) {
-                            if (renderedRender.getRenderId().equalsIgnoreCase(removed)) {
+                            if (renderedRender.getRenderId().equalsIgnoreCase(removedId)) {
                                 Task task = runningRenders.get(renderedRender).getTask();
                                 Iterator<Task> iterator = openTaskList.iterator();
                                 while (iterator.hasNext()) {
@@ -623,7 +624,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                                             openTask.setRenderResult(renderStatusResults);
                                         }
                                         if (isErrorStatus) {
-                                            openTask.setRenderError();
+                                            openTask.setRenderError(removedId);
                                         }
                                         iterator.remove();
                                     }
@@ -647,13 +648,13 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
                 numOfIterations++;
 
-            } while (!ids.isEmpty() && numOfIterations < 15);
+            } while (!ids.isEmpty() && numOfIterations < MAX_ITERATIONS);
 
             for (String id : ids) {
                 for (RunningRender renderedRender : runningRenders.keySet()) {
                     if (renderedRender.getRenderId().equalsIgnoreCase(id)) {
                         Task task = runningRenders.get(renderedRender).getTask();
-                        task.setRenderError();
+                        task.setRenderError(id);
                         logger.verbose("removing failed render id: " + id);
                         break;
                     }
