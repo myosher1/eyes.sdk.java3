@@ -1,6 +1,7 @@
 package com.applitools.eyes.visualGridClient.model;
 
 import com.applitools.eyes.TestResults;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 
@@ -47,15 +48,15 @@ public class TestResultSummary {
 
     @Override
     public String toString() {
-        return "result summary{" +
-                "all results=" + allResults +
-                ", passed=" + passed +
-                ", unresolved=" + unresolved +
-                ", failed=" + failed +
-                ", exceptions=" + exceptions +
-                ", mismatches=" + mismatches +
-                ", missing=" + missing +
-                ", matches=" + matches +
-                '}';
+        return "result summary {" +
+                "\n\tall results=\n\t\t" + StringUtils.join(allResults,"\n\t\t") +
+                "\n\tpassed=" + passed +
+                "\n\tunresolved=" + unresolved +
+                "\n\tfailed=" + failed +
+                "\n\texceptions=" + exceptions +
+                "\n\tmismatches=" + mismatches +
+                "\n\tmissing=" + missing +
+                "\n\tmatches=" + matches +
+                "\n}";
     }
 }

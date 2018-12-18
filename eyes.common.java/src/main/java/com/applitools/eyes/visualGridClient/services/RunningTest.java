@@ -6,17 +6,13 @@ import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultContainer;
-import com.sun.corba.se.impl.orb.ParserTable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RunningTest {
-    private final List<Task> taskList = new ArrayList<>();
+    private final List<Task> taskList = Collections.synchronizedList(new ArrayList<Task>());
     private IEyesConnector eyes;
     private RenderBrowserInfo browserInfo;
     private AtomicBoolean isTestOpen = new AtomicBoolean(false);
@@ -34,11 +30,16 @@ public class RunningTest {
         void onRenderComplete();
 
     }
+
     private Task.TaskListener taskListener = new Task.TaskListener() {
         @Override
         public void onTaskComplete(Task task) {
             RunningTest runningTest = RunningTest.this;
-            runningTest.taskList.remove(task);
+            logger.verbose("locking runningTest.taskList");
+            synchronized (runningTest.taskList) {
+                runningTest.taskList.remove(task);
+            }
+            logger.verbose("releasing runningTest.taskList");
             switch (task.getType()) {
                 case OPEN:
                     runningTest.setTestOpen(true);
@@ -55,7 +56,7 @@ public class RunningTest {
         @Override
         public void onTaskFailed(Exception e, Task task) {
             setTestInExceptionMode(e);
-            listener.onTaskComplete(task,RunningTest.this);
+            listener.onTaskComplete(task, RunningTest.this);
         }
 
         @Override
@@ -109,9 +110,13 @@ public class RunningTest {
         logger.verbose("enter");
         if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
-            taskList.remove(task);
-            logger.verbose("removing task " + task.toString() + " and exiting");
-            logger.verbose("tasks in taskList: " + taskList.size());
+            logger.verbose("locking taskList");
+            synchronized (taskList) {
+                logger.verbose("removing task " + task.toString() + " and exiting");
+                taskList.remove(task);
+                logger.verbose("tasks in taskList: " + taskList.size());
+            }
+            logger.verbose("releasing taskList");
             return taskToFutureMapping.get(task);
         }
         logger.verbose("exit with null");
@@ -127,9 +132,13 @@ public class RunningTest {
         Task task = new Task(null, eyes, Task.TaskType.OPEN, taskListener, null, this);
         FutureTask<TestResultContainer> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
-        this.taskList.add(task);
-        logger.verbose("Open task was added: " + task.toString());
-        logger.verbose("tasks in taskList: " + taskList.size());
+        logger.verbose("locking taskList");
+        synchronized (this.taskList) {
+            this.taskList.add(task);
+            logger.verbose("Open task was added: " + task.toString());
+            logger.verbose("tasks in taskList: " + taskList.size());
+        }
+        logger.verbose("releasing taskList");
         return task;
     }
 
@@ -146,18 +155,26 @@ public class RunningTest {
         Task task = new Task(null, eyes, Task.TaskType.CLOSE, taskListener, null, this);
         FutureTask<TestResultContainer> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
-        this.taskList.add(task);
-        logger.verbose("Close task was added: " + task.toString());
-        logger.verbose("tasks in taskList: " + taskList.size());
+        logger.verbose("locking taskList");
+        synchronized (taskList) {
+            this.taskList.add(task);
+            logger.verbose("Close task was added: " + task.toString());
+            logger.verbose("tasks in taskList: " + taskList.size());
+        }
+        logger.verbose("releasing taskList");
         return this.taskToFutureMapping.get(task);
     }
 
     public Task check(ICheckSettings checkSettings) {
         logger.verbose("adding check task...");
         Task task = new Task(null, eyes, Task.TaskType.CHECK, taskListener, checkSettings, this);
-        this.taskList.add(task);
-        logger.verbose("Check Task was added: " + task.toString());
-        logger.verbose("tasks in taskList: " + taskList.size());
+        logger.verbose("locking taskList");
+        synchronized (taskList) {
+            this.taskList.add(task);
+            logger.verbose("Check Task was added: " + task.toString());
+            logger.verbose("tasks in taskList: " + taskList.size());
+        }
+        logger.verbose("releasing taskList");
         this.taskToFutureMapping.get(task);
         return task;
     }
@@ -165,7 +182,7 @@ public class RunningTest {
     /**
      * @return true if the only task left is CLOSE task
      */
-    public boolean isTestIsReadyToClose() {
+    public boolean isTestReadyToClose() {
         for (Task task : taskList) {
             if (task.getType() == Task.TaskType.CHECK || task.getType() == Task.TaskType.OPEN) return false;
         }
@@ -183,16 +200,21 @@ public class RunningTest {
     private void setTestInExceptionMode(Exception e) {
         this.isTestInExceptionMode.set(true);
 
-        Iterator<Task> iterator = this.taskList.iterator();
-        while (iterator.hasNext()) {
-            Task next =  iterator.next();
-            Task.TaskType type = next.getType();
-            if (type == Task.TaskType.CHECK || type == Task.TaskType.OPEN){
-                iterator.remove();
-            } else if (type == Task.TaskType.CLOSE){
-                next.setException(e);
+        logger.verbose("locking taskList.");
+        synchronized (taskList) {
+            Iterator<Task> iterator = this.taskList.iterator();
+            while (iterator.hasNext()) {
+                Task next = iterator.next();
+                Task.TaskType type = next.getType();
+                if (type == Task.TaskType.CHECK || type == Task.TaskType.OPEN) {
+                    logger.verbose("removing element from taskList.");
+                    iterator.remove();
+                } else if (type == Task.TaskType.CLOSE) {
+                    next.setException(e);
+                }
             }
         }
+        logger.verbose("releasing taskList.");
     }
 
     Logger getLogger() {

@@ -36,29 +36,32 @@ public class TestTopSites {
     @DataProvider(name = "dp", parallel = true)
     public static Object[][] dp() {
         return new Object[][]{
-//                {"https://google.com"},
-//                {"https://facebook.com"},
-//                {"https://youtube.com"},
-//                {"https://amazon.com"},
-//                {"https://yahoo.com"},
+                {"https://google.com"},
+                {"https://facebook.com"},
+                {"https://youtube.com"},
+                {"https://amazon.com"},
+                {"https://yahoo.com"},
                 {"https://ebay.com"},
-//                {"https://twitter.com"},
-//                {"https://wikipedia.org"},
-//                {"https://instagram.com"},
-//                {"https://reddit.com"},
+                {"https://twitter.com"},
+                {"https://wikipedia.org"},
+                {"https://instagram.com"},
+                {"https://reddit.com"},
         };
     }
 
     @Test(dataProvider = "dp")
     public void test(String testedUrl) {
-        renderingManager.getLogger().log("enter");
+        renderingManager.getLogger().log("entering with url " + testedUrl);
 
         Eyes eyes = new Eyes(renderingManager);
         eyes.setBatch(new BatchInfo(testedUrl));
 
         //initLogging(testedUrl, eyes);
 
+
+        eyes.getLogger().log("creating WebDriver: " + testedUrl);
         WebDriver webDriver = new ChromeDriver();
+        eyes.getLogger().log("navigating to " + testedUrl);
         webDriver.get(testedUrl);
 
         try {
@@ -69,23 +72,27 @@ public class TestTopSites {
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.FIREFOX);
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.FIREFOX);
-            //eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+            eyes.getLogger().log("created configurations for url " + testedUrl);
+            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
+            eyes.getLogger().log("running check for url " + testedUrl);
             eyes.check(Target.window().withName(testedUrl).sendDom(false));
+            eyes.getLogger().log("calling eyes.close() for url " + testedUrl);
             List<Future<TestResultContainer>> close = eyes.close();
 //            for (Future<TestResultContainer> future : close) {
-//                eyes.getLogger().log("calling future.get()");
+//                eyes.getLogger().log("calling future.get() for url " + testedUrl);
 //                future.get();
 //            }
+            eyes.getLogger().log("end of `try` block for url " + testedUrl);
 
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(eyes.getLogger(), e);
         } finally {
+            eyes.getLogger().log("closing WebDriver for url " + testedUrl);
             webDriver.quit();
-            TestResultSummary allTestResults = renderingManager.getAllTestResults();
-            eyes.getLogger().log(allTestResults.toString());
+
             // End the test.
         }
     }
@@ -104,5 +111,11 @@ public class TestTopSites {
     @AfterMethod
     public void afterMethod(ITestContext testContext) {
         renderingManager.getLogger().log("enter");
+    }
+
+    @AfterClass
+    public void afterClass(ITestContext testContext){
+        TestResultSummary allTestResults = renderingManager.getAllTestResults();
+        renderingManager.getLogger().log(allTestResults.toString());
     }
 }

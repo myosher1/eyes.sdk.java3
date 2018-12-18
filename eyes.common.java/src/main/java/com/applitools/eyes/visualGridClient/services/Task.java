@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Task implements Callable<TestResultContainer>, CompletableTask {
 
 
-    private static AtomicBoolean isThrown = new AtomicBoolean(false);
     private final Logger logger;
     private boolean isSent;
 
@@ -138,10 +137,6 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
         return eyesConnector;
     }
 
-    static boolean isThrown() {
-        return Task.isThrown.get();
-    }
-
     public void setRenderResult(RenderStatusResults renderResult) {
         logger.verbose("enter");
         this.renderResult = renderResult;
@@ -181,5 +176,9 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
         this.type = TaskType.ABORT;
     }
 
+    @Override
+    public String toString() {
+        return "Task - Type: " + type + " ; Browser Info: " + getBrowserInfo();
+    }
 }
 

@@ -20,7 +20,7 @@ public class EyesService extends Thread {
     protected Logger logger;
 
     interface Tasker {
-        FutureTask<TestResultContainer> getOrWaitForNextTask(Task.TaskListener taskListener);
+        FutureTask<TestResultContainer> getNextTask(Task.TaskListener taskListener);
     }
 
     public interface EyesServiceListener {

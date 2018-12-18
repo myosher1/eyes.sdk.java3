@@ -29,6 +29,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RenderingTask implements Callable<RenderStatusResults>, CompletableTask {
 
+    private static final int MAX_FETCH_FAILS = 3;
+
     private final List<RenderTaskListener> listeners = new ArrayList<>();
     private IEyesConnector eyesConnector;
     private String scriptResult;
@@ -90,7 +92,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
 
             boolean stillRunning = true;
-
+            int fetchFails = 0;
             List<RunningRender> runningRenders = null;
             do {
 
@@ -106,6 +108,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                         continue;
                     } else {
                         logger.log("ERROR " + e.getMessage());
+                        fetchFails++;
                     }
                 }
 
@@ -130,7 +133,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     forcePutAllResources(requests[0].getResources(), runningRender);
                 }
 
-                stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom;
+                stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom || fetchFails > MAX_FETCH_FAILS;
                 if (stillRunning) {
                     sendMissingResources(runningRenders, requests[0].getDom(), isNeedMoreDom);
                 }
@@ -369,6 +372,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private RGridResource parseBlobToGridResource(Base64 codec, URL baseUrl, Map blobAsMap) {
+        // TODO - handle non-string values (probably empty json objects)
         String contentAsString = (String) blobAsMap.get("value");
         byte[] decode = codec.decode(contentAsString);
         Byte[] content = ArrayUtils.toObject(decode);
@@ -598,6 +602,10 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
                 for (int i = 0, j = 0; i < renderStatusResultsList.size(); i++) {
                     RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
+                    if (renderStatusResults == null) {
+                        continue;
+                    }
+
                     boolean isRenderedStatus = renderStatusResults.getStatus() == RenderStatus.RENDERED;
                     boolean isErrorStatus = renderStatusResults.getStatus() == RenderStatus.ERROR;
                     if (isRenderedStatus || isErrorStatus) {

@@ -14,6 +14,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Eyes implements IRenderingEyes {
@@ -35,6 +36,7 @@ public class Eyes implements IRenderingEyes {
     private BatchInfo batchInfo = new BatchInfo(null);
 
     private IDebugResourceWriter debugResourceWriter;
+    private String url;
 
     {
         try {
@@ -148,12 +150,13 @@ public class Eyes implements IRenderingEyes {
         if (webDriver instanceof JavascriptExecutor) {
             this.jsExecutor = (JavascriptExecutor) webDriver;
         }
+        this.url  = webDriver.getCurrentUrl();
     }
 
     public RunningTest getNextTestToClose() {
         RunningTest test = null;
         for (RunningTest runningTest : testList) {
-            if (!runningTest.isTestClose() && runningTest.isTestIsReadyToClose() && !this.testsInCloseProcess.contains(runningTest)) {
+            if (!runningTest.isTestClose() && runningTest.isTestReadyToClose() && !this.testsInCloseProcess.contains(runningTest)) {
                 test = runningTest;
 
             }
@@ -165,13 +168,24 @@ public class Eyes implements IRenderingEyes {
     }
 
     public List<Future<TestResultContainer>> close() {
+        logger.verbose("enter " + batchInfo);
         List<Future<TestResultContainer>> futureList = new ArrayList<>();
-        for (RunningTest runningTest : testList) {
-            if (!runningTest.isTestClose()) {
-                futureList.add(runningTest.close());
+        try {
+            for (RunningTest runningTest : testList) {
+                logger.verbose("is current running test open: " + runningTest.isTestOpen());
+                logger.verbose("is current running test ready to close: " + runningTest.isTestReadyToClose());
+                logger.verbose("is current running test closed: " + runningTest.isTestClose());
+                if (!runningTest.isTestClose()) {
+                    logger.verbose("closing current running test");
+                    FutureTask<TestResultContainer> closeFuture = runningTest.close();
+                    logger.verbose("adding closeFuture to futureList");
+                    futureList.add(closeFuture);
+                }
             }
+            this.renderingGridManager.close(this);
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
-        this.renderingGridManager.close(this);
         return futureList;
     }
 
@@ -306,4 +320,8 @@ public class Eyes implements IRenderingEyes {
         this.debugResourceWriter = debugResourceWriter;
     }
 
+    @Override
+    public String toString() {
+        return "Eyes - url: " + url;
+    }
 }
