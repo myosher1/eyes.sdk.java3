@@ -11,7 +11,6 @@ import com.applitools.eyes.visualGridClient.model.*;
 
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.Future;
 
 class EyesConnector extends EyesBase implements IEyesConnector {
 
@@ -38,8 +37,8 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public IPutFuture renderPutResource(RunningRender runningRender, RGridResource resource) {
-        return this.serverConnector.renderPutResource(runningRender, resource, true, null);
+    public PutFuture renderPutResource(RunningRender runningRender, RGridResource resource) {
+        return this.serverConnector.renderPutResource(runningRender, resource, null);
     }
 
 

@@ -518,7 +518,7 @@ public class ServerConnector extends RestClient
 
 
     @Override
-    public IPutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
+    public PutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final IResourceUploadListener listener) {
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
         ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
@@ -529,34 +529,7 @@ public class ServerConnector extends RestClient
         target.entity(resource.getContent(), MediaType.APPLICATION_OCTET_STREAM_TYPE);
 
 
-        target.put(new TypeListener<ClientResponse>(ClientResponse.class) {
-
-            public void onComplete(Future<ClientResponse> f) {
-                int status = 0;
-                ClientResponse clientResponse = null;
-                try {
-                    clientResponse = f.get();
-                    status = clientResponse.getStatus();
-                    if (status > 300) {
-                        logger.verbose("Got response status code - " + status);
-                        listener.onUploadFailed();
-                        return;
-                    }
-
-                    listener.onUploadComplete(clientResponse.getStatus() == ClientResponse.Status.OK.getStatusCode());
-
-                } catch (Exception e) {
-                    if (isRetryOn) {
-                        renderPutResource(runningRender, resource, false, listener);
-                    } else {
-                        GeneralUtils.logExceptionStackTrace(logger, e);
-                        logger.verbose("Failed to parse request(status= " + status + ") = " + clientResponse.getEntity(String.class));
-                        listener.onUploadFailed();
-                    }
-                }
-            }
-
-        });
+//        Future<?> future = target.put();
 
         return null;
     }

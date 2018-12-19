@@ -107,19 +107,19 @@ public class RunningTest {
     }
 
     public synchronized FutureTask<TestResultContainer> getNextCloseTask() {
-        logger.verbose("enter");
+//        logger.verbose("enter");
         if (!taskList.isEmpty()) {
             Task task = taskList.get(0);
-            logger.verbose("locking taskList");
+//            logger.verbose("locking taskList");
             synchronized (taskList) {
-                logger.verbose("removing task " + task.toString() + " and exiting");
+//                logger.verbose("removing task " + task.toString() + " and exiting");
                 taskList.remove(task);
-                logger.verbose("tasks in taskList: " + taskList.size());
+//                logger.verbose("tasks in taskList: " + taskList.size());
             }
-            logger.verbose("releasing taskList");
+//            logger.verbose("releasing taskList");
             return taskToFutureMapping.get(task);
         }
-        logger.verbose("exit with null");
+//        logger.verbose("exit with null");
         return null;
     }
 

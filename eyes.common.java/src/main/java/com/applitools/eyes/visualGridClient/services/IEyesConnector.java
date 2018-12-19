@@ -29,7 +29,7 @@ public interface IEyesConnector {
 
     RenderingInfo getRenderingInfo();
 
-    IPutFuture renderPutResource(RunningRender runningRender, RGridResource resource);
+    PutFuture renderPutResource(RunningRender runningRender, RGridResource resource);
 
     List<RunningRender> render(RenderRequest... renderRequests);
 

@@ -10,6 +10,7 @@ import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.*;
@@ -530,36 +531,27 @@ public class ServerConnector extends RestClient
 
 
     @Override
-    public IPutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
+    public PutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final IResourceUploadListener listener) {
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
-        ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
+        Byte[] content = resource.getContent();
+        ArgumentGuard.notNull(content, "resource.getContent()");
 
-        this.logger.verbose("called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
+        String hash = resource.getSha256();
+        String renderId = runningRender.getRenderId();
+        logger.verbose("resource hash:" + hash + " ; url: " + resource.getUrl() + " ; render id: " + renderId);
 
-        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
-        Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
-        target.request(MediaType.APPLICATION_OCTET_STREAM_TYPE);
+        WebTarget target = restClient.target(renderingInfo.getServiceUrl())
+                .path(RESOURCES_SHA_256 + hash)
+                .queryParam("render-id", renderId);
 
-        final Future<Response> responseFuture = request.async().get(new InvocationCallback<Response>() {
-            @Override
-            public void completed(Response response) {
-                // on complete
-                listener.onUploadComplete(response.getStatus() == Response.Status.OK.getStatusCode());
-            }
-
-            @Override
-            public void failed(Throwable throwable) {
-                // on fail
-                if (isRetryOn) {
-                    logger.verbose("Async GET failed - entering retry");
-                    renderPutResource(runningRender, resource, false, listener);
-                } else {
-                    listener.onUploadFailed();
-                }
-            }
-        });
-        return new PutFuture(responseFuture, resource);
+        String contentType = resource.getContentType();
+        Invocation.Builder request = target.request(contentType);
+        request.header("X-Auth-Token", renderingInfo.getAccessToken());
+        byte[] bytes = ArrayUtils.toPrimitive(content);
+        Entity entity = Entity.entity(bytes, contentType);
+        final Future<Response> future = request.async().put(entity);
+        return new PutFuture(future, resource, runningRender, this, logger);
 
     }
 

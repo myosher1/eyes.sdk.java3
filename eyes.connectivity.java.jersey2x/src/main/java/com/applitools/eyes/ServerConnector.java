@@ -551,7 +551,7 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public IPutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
+    public PutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final IResourceUploadListener listener) {
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
         Byte[] content = resource.getContent();
@@ -570,11 +570,8 @@ public class ServerConnector extends RestClient
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
         byte[] bytes = ArrayUtils.toPrimitive(content);
         Entity entity = Entity.entity(bytes, contentType);
-        Future<Response> future = request.async().put(entity);
-
-        @SuppressWarnings("UnnecessaryLocalVariable")
-        PutFuture putFuture = new PutFuture(future, resource);
-        return putFuture;
+        final Future<Response> future = request.async().put(entity);
+        return new PutFuture(future, resource, runningRender, this, logger);
     }
 
 

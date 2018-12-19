@@ -28,7 +28,7 @@ public class RenderingGridManager {
     private final List<IRenderingEyes> eyesToCloseList = Collections.synchronizedList(new ArrayList<IRenderingEyes>(200));
     private final List<IRenderingEyes> allEyes = Collections.synchronizedList(new ArrayList<IRenderingEyes>(200));
     private Map<String, IResourceFuture> cachedResources = Collections.synchronizedMap(new HashMap<String, IResourceFuture>());
-    private Map<String, IPutFuture> putResourceCache = Collections.synchronizedMap(new HashMap<String, IPutFuture>());
+    private Map<String, PutFuture> putResourceCache = Collections.synchronizedMap(new HashMap<String, PutFuture>());
 
     private final Logger logger = new Logger();
 
@@ -160,7 +160,7 @@ public class RenderingGridManager {
         return cachedResources;
     }
 
-    public Map<String, IPutFuture> getPutResourceCache() {
+    public Map<String, PutFuture> getPutResourceCache() {
         return putResourceCache;
     }
 
@@ -241,13 +241,13 @@ public class RenderingGridManager {
         FutureTask<TestResultContainer> nextTestToOpen = tasker.getNextTask();
         if (nextTestToOpen == null) {
             try {
-                logger.verbose("locking " + serviceName);
+//                logger.verbose("locking " + serviceName);
                 synchronized (lock) {
-                    lock.wait();
+                    lock.wait(500);
                 }
-                logger.verbose("releasing " + serviceName);
+//                logger.verbose("releasing " + serviceName);
                 nextTestToOpen = tasker.getNextTask();
-                logger.verbose(serviceName + " tasker returned " + nextTestToOpen);
+//                logger.verbose(serviceName + " tasker returned " + nextTestToOpen);
             } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
@@ -288,7 +288,7 @@ public class RenderingGridManager {
                 this.renderingTaskList.remove(renderingTask);
             }
         }
-        logger.log("Starting to renderTask - " + renderingTask);
+//        logger.log("Starting to renderTask - " + renderingTask);
         return renderingTask;
     }
 
@@ -310,12 +310,12 @@ public class RenderingGridManager {
         if (this.renderingInfo == null) {
             this.renderingInfo = renderingInfo;
         }
-        logger.verbose("locking eyesToOpenList");
+//        logger.verbose("locking eyesToOpenList");
         synchronized (eyesToOpenList) {
             eyesToOpenList.add(eyes);
         }
-        logger.verbose("releasing eyesToOpenList");
-        logger.verbose("locking allEyes");
+//        logger.verbose("releasing eyesToOpenList");
+//        logger.verbose("locking allEyes");
         synchronized (allEyes) {
             allEyes.add(eyes);
         }
@@ -344,7 +344,7 @@ public class RenderingGridManager {
     private synchronized FutureTask<TestResultContainer> getNextTestToOpen() {
         ScoreTask bestScoreTask = null;
         int bestMark = -1;
-        logger.verbose("looking for best test in a list of " + allEyes.size());
+//        logger.verbose("looking for best test in a list of " + allEyes.size());
         for (IRenderingEyes eyes : allEyes) {
             ScoreTask currentTestMark = eyes.getBestScoreTaskForOpen();
             if (currentTestMark == null) continue;
@@ -356,7 +356,7 @@ public class RenderingGridManager {
         }
 
         if (bestScoreTask == null) {
-            logger.verbose("no test found.");
+//            logger.verbose("no test found.");
             return null;
         }
 
@@ -430,34 +430,34 @@ public class RenderingGridManager {
                 listener.onRenderFailed(e);
             }
         });
-        logger.verbose("locking renderingTaskList");
+//        logger.verbose("locking renderingTaskList");
         synchronized (renderingTaskList) {
             this.renderingTaskList.add(renderingTask);
         }
-        logger.verbose("releasing renderingTaskList");
+//        logger.verbose("releasing renderingTaskList");
         notifyAllServices();
-        logger.verbose("exit");
+//        logger.verbose("exit");
     }
 
     private void notifyAllServices() {
-        logger.verbose("enter");
+//        logger.verbose("enter");
         synchronized (openerServiceLock) {
             openerServiceLock.notifyAll();
         }
-        logger.verbose("openerLockFree");
+//        logger.verbose("openerLockFree");
         synchronized (closerServiceLock) {
             closerServiceLock.notifyAll();
         }
-        logger.verbose("closerLockFree");
+//        logger.verbose("closerLockFree");
         synchronized (checkerServiceLock) {
             checkerServiceLock.notifyAll();
         }
-        logger.verbose("checkerLockFree");
+//        logger.verbose("checkerLockFree");
         synchronized (renderingServiceLock) {
             renderingServiceLock.notifyAll();
         }
-        logger.verbose("renderingLockFree");
-        logger.verbose("exit");
+//        logger.verbose("renderingLockFree");
+//        logger.verbose("exit");
     }
 
     public List<CompletableTask> getAllTasksByType(Task.TaskType type) {

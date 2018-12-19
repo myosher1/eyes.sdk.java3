@@ -87,7 +87,17 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
 
                 case CHECK:
                     logger.log("Task.run check task");
-                    eyesConnector.matchWindow(renderResult.getImageLocation(), checkSettings);
+                    try {
+                        String imageLocation = renderResult.getImageLocation();
+                        if (imageLocation == null) {
+                            logger.verbose("CHECKING IMAGE WITH NULL LOCATION - ");
+                            logger.verbose(renderResult.toString());
+                        }
+                        eyesConnector.matchWindow(imageLocation, checkSettings);
+                    } catch (Exception e) {
+
+                        GeneralUtils.logExceptionStackTrace(logger,e);
+                    }
                     break;
 
                 case CLOSE:
