@@ -9,9 +9,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-class RateLimiter {
+public class RateLimiter {
     private final Logger logger;
-    private Map<String, IPutFuture> allTasks = Collections.synchronizedMap(new HashMap<String, IPutFuture>());
+    private Map<String, PutFuture> allTasks = Collections.synchronizedMap(new HashMap<String, PutFuture>());
     private Map<String, Future> runningTasks = Collections.synchronizedMap(new HashMap<String, Future>());
 
     private int maxConcurrentTasks;
@@ -31,9 +31,9 @@ class RateLimiter {
 
         private void executeTasks() {
             logger.verbose("enter");
-            Iterator<Map.Entry<String, IPutFuture>> iterator = allTasks.entrySet().iterator();
+            Iterator<Map.Entry<String, PutFuture>> iterator = allTasks.entrySet().iterator();
             while (iterator.hasNext()) {
-                Map.Entry<String, IPutFuture> taskEntry = iterator.next();
+                Map.Entry<String, PutFuture> taskEntry = iterator.next();
                 if (runningTasks.size() >= maxConcurrentTasks) {
                     logger.verbose("throttling level reached.");
                     break;
@@ -42,11 +42,11 @@ class RateLimiter {
                 if (runningTasks.containsKey(key)) {
                     continue;
                 }
-                IPutFuture putFuture = taskEntry.getValue();
+                PutFuture putFuture = taskEntry.getValue();
                 if (!putFuture.isDone()) {
-                    Future future = putFuture.run();
+                    //Future future = putFuture.run();
                     logger.verbose("executing task " + key);
-                    runningTasks.put(key, future);
+                    runningTasks.put(key, putFuture);
                 } else {
                     logger.verbose("removing marked as done task " + key);
                     iterator.remove();
@@ -74,7 +74,7 @@ class RateLimiter {
 
     private Thread pollingThread = new Thread(new RateLimiterRunnable(), "PutThrottler");
 
-    public RateLimiter(Logger logger, Map<String, IPutFuture> allTasks, int maxConcurrentTasks) {
+    public RateLimiter(Logger logger, Map<String, PutFuture> allTasks, int maxConcurrentTasks) {
         this.logger = logger;
         this.allTasks.putAll(allTasks);
         this.maxConcurrentTasks = maxConcurrentTasks;
