@@ -489,7 +489,7 @@ public class ServerConnector extends RestClient
     @Override
     public List<RunningRender> render(RenderRequest... renderRequests) {
         ArgumentGuard.notNull(renderRequests, "renderRequests");
-        this.logger.verbose("called with " + renderRequests);
+        this.logger.verbose("called with " + Arrays.toString(renderRequests));
 
         WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER));
         if (renderRequests.length > 1) {
@@ -588,7 +588,7 @@ public class ServerConnector extends RestClient
 
         try {
             ArgumentGuard.notNull(renderIds, "renderIds");
-            this.logger.verbose("called for render: " + renderIds);
+            this.logger.verbose("called for render: " + Arrays.toString(renderIds));
 
 
             WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
