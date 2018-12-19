@@ -38,7 +38,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public Future<Boolean> renderPutResource(RunningRender runningRender, RGridResource resource) {
+    public IPutFuture renderPutResource(RunningRender runningRender, RGridResource resource) {
         return this.serverConnector.renderPutResource(runningRender, resource, true, null);
     }
 

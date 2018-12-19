@@ -40,7 +40,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private List<Task> openTaskList;
     private RenderingInfo renderingInfo;
     private Map<String, IResourceFuture> fetchedCacheMap;
-    private final Map<String, Future<Boolean>> putResourceCache;
+    private final Map<String, IPutFuture> putResourceCache;
     private Logger logger;
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
     private AtomicBoolean isForcePutNeeded;
@@ -164,7 +164,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     logger.log("fetchedCacheMap.get(url) == null - " + url);
                 } else {
                     RGridResource resource = resourceFuture.get();
-                    Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, resource);
+                    IPutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
                     if (!putResourceCache.containsKey(url)) {
                         synchronized (putResourceCache) {
                             putResourceCache.put(url, future);
@@ -225,16 +225,17 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, boolean isNeedMoreDom) {
+        Map<Future<Boolean>, RGridResource> futureResource = new HashMap();
         for (RunningRender runningRender : runningRenders) {
             if (isNeedMoreDom) {
-                Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
+                IPutFuture future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
                 synchronized (putResourceCache) {
                     putResourceCache.put("dom", future);
                 }
             }
             List<String> needMoreResources = runningRender.getNeedMoreResources();
             for (String url : needMoreResources) {
-                if (putResourceCache.containsKey(url)) continue;
+                if (putResourceCache.containsKey(url) && !isForcePutNeeded.get()) continue;
 
                 try {
                     logger.log("trying to get url from map - " + url);
@@ -243,9 +244,11 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                         logger.log("fetchedCacheMap.get(url) == null - " + url);
                     } else {
                         RGridResource resource = resourceFuture.get();
-                        Future<Boolean> future = this.eyesConnector.renderPutResource(runningRender, resource);
-                        if (!putResourceCache.containsKey(url)) {
+                        logger.log("resource("+resource.getUrl()+") hash : "+resource.getSha256());
+                        IPutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
+                        if (!putResourceCache.containsKey(url) || isForcePutNeeded.get()) {
                             synchronized (putResourceCache) {
+                                futureResource.put(future, resource);
                                 putResourceCache.put(url, future);
                             }
                         }
@@ -257,10 +260,17 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         }
 
         synchronized (putResourceCache) {
-            for (Map.Entry<String, Future<Boolean>> urlFutureEntry : putResourceCache.entrySet()) {
+            for (Map.Entry<String, IPutFuture> urlFutureEntry : putResourceCache.entrySet()) {
+                IPutFuture future = null;
                 try {
-                    urlFutureEntry.getValue().get();
+                    future = urlFutureEntry.getValue();
+                    future.get();
                 } catch (InterruptedException | ExecutionException e) {
+                    RGridResource rGridResource = futureResource.get(future);
+                    if (rGridResource != null) {
+
+                        logger.log("Error getting resource. url: " + urlFutureEntry.getKey() + " with hash: " + rGridResource.getSha256());
+                    }
                     logger.log("Error getting resource. url: " + urlFutureEntry.getKey());
                     GeneralUtils.logExceptionStackTrace(logger, e);
                 }

@@ -551,7 +551,7 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public Future<Boolean> renderPutResource(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
+    public IPutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
         Byte[] content = resource.getContent();
@@ -573,7 +573,7 @@ public class ServerConnector extends RestClient
         Future<Response> future = request.async().put(entity);
 
         @SuppressWarnings("UnnecessaryLocalVariable")
-        PutFuture putFuture = new PutFuture(future);
+        PutFuture putFuture = new PutFuture(future, resource);
         return putFuture;
     }
 

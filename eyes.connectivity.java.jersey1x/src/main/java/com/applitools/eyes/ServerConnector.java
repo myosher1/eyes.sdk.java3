@@ -518,7 +518,7 @@ public class ServerConnector extends RestClient
 
 
     @Override
-    public Future<Boolean> renderPutResource(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
+    public IPutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final boolean isRetryOn, final IResourceUploadListener listener) {
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
         ArgumentGuard.notNull(resource.getContent(), "resource.getContent()");
