@@ -150,7 +150,7 @@ public interface IServerConnector {
      * @param resource The resource to upload
      * @return true if resource was uploaded
      */
-    Future<Boolean> renderPutResource(RunningRender runningRender, RGridResource resource, boolean isRetryOn, IResourceUploadListener listener);
+    IPutFuture renderPutResource(RunningRender runningRender, RGridResource resource, boolean isRetryOn, IResourceUploadListener listener);
 
 
     /**

@@ -1,19 +1,24 @@
 package com.applitools.eyes;
 
+import com.applitools.eyes.visualGridClient.model.IPutFuture;
+import com.applitools.eyes.visualGridClient.model.RGridResource;
+
 import javax.ws.rs.core.Response;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class PutFuture implements Future<Boolean> {
+public class PutFuture implements IPutFuture {
 
     private Future<Response> putFuture;
+    private RGridResource rGridResource;
 
     private boolean isSentAlready = false;
 
-    public PutFuture(Future<Response> putFuture) {
+    public PutFuture(Future putFuture, RGridResource rGridResource) {
         this.putFuture = putFuture;
+        this.rGridResource = rGridResource;
     }
 
     @Override
@@ -33,9 +38,8 @@ public class PutFuture implements Future<Boolean> {
 
     @Override
     public Boolean get() throws InterruptedException, ExecutionException {
-        Response response;
         if (!this.isSentAlready) {
-            response = this.putFuture.get();
+            this.putFuture.get();
         }
         this.isSentAlready = true;
         return true;
@@ -48,5 +52,10 @@ public class PutFuture implements Future<Boolean> {
         }
         this.isSentAlready = true;
         return true;
+    }
+
+    @Override
+    public RGridResource getResource() {
+        return this.rGridResource;
     }
 }

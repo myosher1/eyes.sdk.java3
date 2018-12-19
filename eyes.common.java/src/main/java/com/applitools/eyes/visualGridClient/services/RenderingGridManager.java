@@ -28,7 +28,7 @@ public class RenderingGridManager {
     private final List<IRenderingEyes> eyesToCloseList = Collections.synchronizedList(new ArrayList<IRenderingEyes>(200));
     private final List<IRenderingEyes> allEyes = Collections.synchronizedList(new ArrayList<IRenderingEyes>(200));
     private Map<String, IResourceFuture> cachedResources = Collections.synchronizedMap(new HashMap<String, IResourceFuture>());
-    private Map<String, Future<Boolean>> putResourceCache = Collections.synchronizedMap(new HashMap<String, Future<Boolean>>());
+    private Map<String, IPutFuture> putResourceCache = Collections.synchronizedMap(new HashMap<String, IPutFuture>());
 
     private final Logger logger = new Logger();
 
@@ -160,7 +160,7 @@ public class RenderingGridManager {
         return cachedResources;
     }
 
-    public Map<String, Future<Boolean>> getPutResourceCache() {
+    public Map<String, IPutFuture> getPutResourceCache() {
         return putResourceCache;
     }
 
