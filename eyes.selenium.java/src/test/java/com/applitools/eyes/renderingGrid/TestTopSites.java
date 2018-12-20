@@ -24,6 +24,8 @@ public class TestTopSites {
     private RenderingGridManager renderingManager;
 
     private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
+    private String dateTimeString = dateFormat.format(Calendar.getInstance().getTime());
 
     @BeforeClass
     public void beforeClass() {
@@ -105,9 +107,7 @@ public class TestTopSites {
 
     private void initLogging(String testedUrl, Eyes eyes) {
         String testName = testedUrl.substring(8);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
-        String path = logsPath + File.separator + "java" + File.separator + "TestTopSites_" + testName + dateFormat.format(Calendar.getInstance().getTime());
-
+        String path = logsPath + File.separator + "java" + File.separator + "TestTopSites_" + dateTimeString;
         FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
         eyes.setDebugResourceWriter(fileDebugResourceWriter);
 
