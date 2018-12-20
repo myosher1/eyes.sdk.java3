@@ -124,4 +124,11 @@ public class CheckRGSettings extends CheckSettings implements ICheckRGSettings, 
         clone.isSendDom = this.isSendDom;
         return clone;
     }
+
+    @Override
+    public String toString() {
+        return "CheckRGSettings{" +
+                "name='" + name + '\'' +
+                '}';
+    }
 }

@@ -7,11 +7,14 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 
 public class FileDebugResourceWriter implements IDebugResourceWriter {
 
     private static final String DEFAULT_PREFIX = "resource_";
     private static final String DEFAULT_PATH = "";
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
     private Logger logger;
     private String path;
@@ -45,11 +48,28 @@ public class FileDebugResourceWriter implements IDebugResourceWriter {
         if (filter == null || filter.isEmpty() || url.toUpperCase().contains(filter.toUpperCase())) {
             try {
                 String substring = url.substring(url.lastIndexOf("/") + 1);
-                substring = substring.replaceAll("\\?","_");
-                FileUtils.writeByteArrayToFile(new File(path + prefix + substring), ArrayUtils.toPrimitive(resource.getContent()));
-            } catch (IOException e) {
+                if (substring.length() > 40) {
+                    substring = substring.substring(0, 40);
+                }
+                String pathname = path + prefix + substring + "_" + resource.getSha256();
+                pathname =  pathname.replaceAll("[\\?\\.]","_");
+                File file = new File(pathname);
+                ensureFilePath(file);
+                byte[] data = ArrayUtils.toPrimitive(resource.getContent());
+                FileUtils.writeByteArrayToFile(file, data);
+                int x = 0;
+            } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
+        }
+    }
+
+    private void ensureFilePath(File file) {
+        File path = file.getParentFile();
+        if (path != null && !path.exists()) {
+            System.out.println("No Folder");
+            boolean success = path.mkdirs();
+            System.out.println("Folder created");
         }
     }
 }

@@ -18,7 +18,7 @@ public class PutFuture implements Future {
     private Logger logger;
 
     private boolean isSentAlready = false;
-    private int retryCount = 3;
+    private int retryCount = 5;
 
     public PutFuture(RGridResource resource, RunningRender runningRender, IServerConnector serverConnector, Logger logger) {
         this.resource = resource;

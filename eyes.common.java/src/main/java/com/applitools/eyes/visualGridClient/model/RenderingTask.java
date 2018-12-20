@@ -45,6 +45,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
     private AtomicBoolean isForcePutNeeded;
     private IDebugResourceWriter debugResourceWriter;
+    private HashMap<String, Object> result = null;
 
     public interface RenderTaskListener {
         void onRenderSuccess();
@@ -74,10 +75,10 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     @Override
     public RenderStatusResults call() throws Exception {
+
         boolean isSecondRequestAlreadyHappened = false;
         try {
 
-            HashMap<String, Object> result;
             RenderRequest[] requests = new RenderRequest[0];
 
             try {
@@ -105,19 +106,15 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
                     Thread.sleep(1500);
                     logger.verbose("/render throws exception... sleeping for 1.5s");
-//                    GeneralUtils.logExceptionStackTrace(logger, e);
+                    GeneralUtils.logExceptionStackTrace(logger, e);
                     if (e.getMessage().contains("Second request, yet still some resources were not PUT in renderId")) {
-                        if(isSecondRequestAlreadyHappened) {
+                        if (isSecondRequestAlreadyHappened) {
                             logger.verbose("Second request already happened");
                         }
                         isSecondRequestAlreadyHappened = true;
                     }
-
-//                        continue;
-//                    } else {
                     logger.verbose("ERROR " + e.getMessage());
                     fetchFails++;
-//                    }
                 }
 
                 if (runningRenders == null) {
@@ -173,9 +170,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     RGridResource resource = resourceFuture.get();
                     PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
                     if (!putResourceCache.containsKey(url)) {
-                        synchronized (putResourceCache) {
-                            putResourceCache.put(url, future);
-                        }
+                        putResourceCache.put(url, future);
                     }
                 }
             } catch (InterruptedException | ExecutionException e) {
@@ -233,14 +228,16 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, boolean isNeedMoreDom) throws Exception {
         List<PutFuture> allPuts = new ArrayList<>();
-        for (RunningRender runningRender : runningRenders) {
-            if (isNeedMoreDom) {
-                PutFuture future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
-                synchronized (putResourceCache) {
-                    putResourceCache.put(dom.getSha256() + " - dom", future);
-                    allPuts.add(future);
-                }
+        if (isNeedMoreDom) {
+            RunningRender runningRender = runningRenders.get(0);
+            PutFuture future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
+            synchronized (putResourceCache) {
+                putResourceCache.put(dom.getUrl(), future);
+                allPuts.add(future);
             }
+        }
+        for (RunningRender runningRender : runningRenders) {
+
             createPutFutures(allPuts, runningRender);
         }
 
@@ -252,7 +249,13 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private void createPutFutures(List<PutFuture> allPuts, RunningRender runningRender) throws Exception {
         List<String> needMoreResources = runningRender.getNeedMoreResources();
         for (String url : needMoreResources) {
-            if (putResourceCache.containsKey(url) && !isForcePutNeeded.get()) continue;
+            if (putResourceCache.containsKey(url) && !isForcePutNeeded.get()) {
+                PutFuture putFuture = putResourceCache.get(url);
+                if (!allPuts.contains(putFuture)) {
+                    allPuts.add(putFuture);
+                }
+                continue;
+            }
 
             try {
 //                    logger.verbose("trying to get url from map - " + url);
@@ -555,7 +558,14 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             IEyesConnector eyesConnector = this.taskList.get(0).getEyesConnector();
             IResourceFuture future = eyesConnector.getResource(link, null);
             allFetches.add(future);
-            this.fetchedCacheMap.put(link.toString(), future);
+            synchronized (fetchedCacheMap) {
+                if (!this.fetchedCacheMap.containsKey(link.toString())) {
+                    this.fetchedCacheMap.put(link.toString(), future);
+                }
+                else{
+                    logger.log("this.fetchedCacheMap.containsKey(link.toString())");
+                }
+            }
         }
 
         for (IResourceFuture future : allFetches) {
@@ -563,6 +573,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             try {
 
                 RGridResource resource = future.get();
+                this.debugResourceWriter.write(resource);
+
                 String urlAsUrl = resource.getUrl();
 
                 removeUrlFromList(urlAsUrl, resourceUrls);

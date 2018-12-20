@@ -512,7 +512,6 @@ public class ServerConnector extends RestClient
             String json = objectMapper.writeValueAsString(renderRequests);
             Response response = request.post(Entity.json(json));
             if (validStatusCodes.contains(response.getStatus())) {
-                this.logger.verbose("request succeeded");
                 RunningRender[] runningRenders = parseResponseWithJsonData(response, validStatusCodes, RunningRender[].class);
                 return Arrays.asList(runningRenders);
             }

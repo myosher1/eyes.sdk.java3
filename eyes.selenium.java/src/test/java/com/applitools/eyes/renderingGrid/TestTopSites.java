@@ -27,25 +27,25 @@ public class TestTopSites {
 
     @BeforeClass
     public void beforeClass() {
-        renderingManager = new RenderingGridManager(3);
+        renderingManager = new RenderingGridManager(10);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
         renderingManager.getLogger().log("enter");
-        System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
+//        System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
     }
 
     @DataProvider(name = "dp", parallel = true)
     public static Object[][] dp() {
         return new Object[][]{
-                {"https://google.com"},
+//                {"https://google.com"},
                 {"https://facebook.com"},
                 {"https://youtube.com"},
-                {"https://amazon.com"},
-                {"https://yahoo.com"},
+//                {"https://amazon.com"},
+//                {"https://yahoo.com"},
                 {"https://ebay.com"},
                 {"https://twitter.com"},
-                {"https://wikipedia.org"},
-                {"https://instagram.com"},
-                {"https://reddit.com"},
+//                {"https://wikipedia.org"},
+//                {"https://instagram.com"},
+//                {"https://reddit.com"},
         };
     }
 
@@ -56,7 +56,7 @@ public class TestTopSites {
         Eyes eyes = new Eyes(renderingManager);
         eyes.setBatch(new BatchInfo(testedUrl));
 
-        //initLogging(testedUrl, eyes);
+        initLogging(testedUrl, eyes);
 
 
         eyes.getLogger().log("creating WebDriver: " + testedUrl);
@@ -70,16 +70,20 @@ public class TestTopSites {
             renderingConfiguration.setAppName("RenderingGridIntegration");
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
-            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.FIREFOX);
-            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.FIREFOX);
+            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME);
+            renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME);
             eyes.getLogger().log("created configurations for url " + testedUrl);
             eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             eyes.getLogger().log("running check for url " + testedUrl);
-            eyes.check(Target.window().withName(testedUrl).sendDom(false));
-            eyes.check(Target.window().fully(false).withName(testedUrl).sendDom(false));
+            try {
+                eyes.check(Target.window().withName("Step1 - "+testedUrl).sendDom(false));
+                eyes.check(Target.window().fully(false).withName("Step2 - " + testedUrl).sendDom(false));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             eyes.getLogger().log("calling eyes.close() for url " + testedUrl);
             List<Future<TestResultContainer>> close = eyes.close();
 //            for (Future<TestResultContainer> future : close) {
@@ -104,9 +108,10 @@ public class TestTopSites {
         String path = logsPath + File.separator + "java" + File.separator + "TestTopSites_" + testName + dateFormat.format(Calendar.getInstance().getTime());
 
         FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
-        FileLogger eyesLogger = new FileLogger(path + File.separator + "log.log", true, true);
-        eyes.setLogHandler(eyesLogger);
         eyes.setDebugResourceWriter(fileDebugResourceWriter);
+
+        //FileLogger eyesLogger = new FileLogger(path + File.separator + "log.log", true, true);
+        //eyes.setLogHandler(eyesLogger);
     }
 
     @AfterMethod

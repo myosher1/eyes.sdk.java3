@@ -22,7 +22,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     private List<GetRegion> contentRegions = new ArrayList<>();
     private List<GetFloatingRegion> floatingRegions = new ArrayList<>();
     private int timeout = -1;
-    private String name;
+    protected String name;
 
     protected CheckSettings() { }
 
