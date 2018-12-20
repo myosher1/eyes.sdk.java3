@@ -808,7 +808,7 @@ public abstract class EyesBase {
             // Making sure that we reset the running session even if an
             // exception was thrown during close.
             runningSession = null;
-            logger.getLogHandler().close();
+//            logger.getLogHandler().close();
         }
     }
 
@@ -923,7 +923,7 @@ public abstract class EyesBase {
             }
         } finally {
             runningSession = null;
-            logger.getLogHandler().close();
+            //logger.getLogHandler().close();
         }
         return null;
     }
@@ -1365,7 +1365,7 @@ public abstract class EyesBase {
     }
 
     protected void openBase() {
-        logger.getLogHandler().open();
+        //logger.getLogHandler().open();
 
         try {
             if (isDisabled) {

@@ -6,6 +6,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -59,8 +60,12 @@ public class FileDebugResourceWriter implements IDebugResourceWriter {
                 pathname = pathname.replaceAll("\\?", "_");
                 File file = new File(pathname);
                 ensureFilePath(file);
-                byte[] data = ArrayUtils.toPrimitive(resource.getContent());
-                FileUtils.writeByteArrayToFile(file, data);
+                byte[] data = resource.getContent();
+                try (FileOutputStream stream = new FileOutputStream(file)) {
+                    stream.write(data);
+                    stream.flush();
+                    stream.close();
+                }
             } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }

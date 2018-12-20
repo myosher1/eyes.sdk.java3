@@ -1,5 +1,6 @@
 package com.applitools.eyes.visualGridClient.model;
 
+import com.applitools.eyes.Logger;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -31,6 +32,15 @@ public class RGridDom {
 
     @JsonIgnore
     private String url;
+    @JsonIgnore
+    private Logger logger;
+
+    public RGridDom() {
+    }
+
+    public RGridDom(Logger logger) {
+        this.logger = logger;
+    }
 
     public void addResource(RGridResource resource) {
         this.resources.put(resource.getUrl(), resource);
@@ -88,7 +98,7 @@ public class RGridDom {
 
     public RGridResource asResource() {
 
-        RGridResource gridResource = new RGridResource(this.url, CONTENT_TYPE, ArrayUtils.toObject(getStringObjectMap().getBytes()));
+        RGridResource gridResource = new RGridResource(this.url, CONTENT_TYPE, getStringObjectMap().getBytes(), logger);
 
         return gridResource;
     }

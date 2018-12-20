@@ -82,14 +82,16 @@ public class FileLogger implements LogHandler {
      * @param logString The string to log.
      */
     public void onMessage(boolean verbose, String logString) {
-        if (fileWriter != null && (!verbose || this.isVerbose)) {
 
-            try {
-                fileWriter.write(getFormattedTimeStamp() + " Eyes: " + logString);
-                fileWriter.newLine();
-                fileWriter.flush();
-            } catch (IOException e) {
-                throw new EyesException("Failed to write log to file!", e);
+            if (fileWriter != null && (!verbose || this.isVerbose)) {
+                synchronized (fileWriter) {
+                try {
+                    fileWriter.write(getFormattedTimeStamp() + " Eyes: " + logString);
+                    fileWriter.newLine();
+                    fileWriter.flush();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

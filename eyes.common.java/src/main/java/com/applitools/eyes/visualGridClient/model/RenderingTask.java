@@ -24,7 +24,6 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RenderingTask implements Callable<RenderStatusResults>, CompletableTask {
@@ -107,7 +106,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     Thread.sleep(1500);
                     logger.verbose("/render throws exception... sleeping for 1.5s");
                     GeneralUtils.logExceptionStackTrace(logger, e);
-                    if (e.getMessage().contains("Second request, yet still some resources were not PUT in renderId")) {
+                   if (e.getMessage().contains("Second request, yet still some resources were not PUT in renderId")) {
                         if (isSecondRequestAlreadyHappened) {
                             logger.verbose("Second request already happened");
                         }
@@ -337,7 +336,10 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     List<String> list = (List<String>) value;
                     for (String url : list) {
                         try {
-                            if (this.fetchedCacheMap.containsKey(url)) continue;
+                            if (this.fetchedCacheMap.containsKey(url)){
+                                logger.log("Cache hit for " +url);
+                                continue;
+                            }
                             resourceUrls.add(new URL(baseUrl, url));
                         } catch (MalformedURLException e) {
                             GeneralUtils.logExceptionStackTrace(logger, e);
@@ -348,7 +350,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 case "frames":
                     List<Map<String, Object>> allObjects = (List) value;
                     for (Map<String, Object> frameObj : allObjects) {
-                        RGridDom frame = new RGridDom();
+                        RGridDom frame = new RGridDom(logger);
                         try {
                             String url = (String) frameObj.get("url");
                             frame.setUrl(url);
@@ -387,8 +389,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private RGridResource parseBlobToGridResource(Base64 codec, URL baseUrl, Map blobAsMap) {
         // TODO - handle non-string values (probably empty json objects)
         String contentAsString = (String) blobAsMap.get("value");
-        byte[] decode = codec.decode(contentAsString);
-        Byte[] content = ArrayUtils.toObject(decode);
+        byte[] content = codec.decode(contentAsString);
         String urlAsString = (String) blobAsMap.get("url");
         try {
 
@@ -400,7 +401,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         }
 
         @SuppressWarnings("UnnecessaryLocalVariable")
-        RGridResource resource = new RGridResource(urlAsString, (String) blobAsMap.get("type"), content);
+        RGridResource resource = new RGridResource(urlAsString, (String) blobAsMap.get("type"), content, logger);
         return resource;
     }
 
@@ -413,7 +414,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         }
     }
 
-    private String getCss(Byte[] contentBytes, String contentTypeStr) {
+    private String getCss(byte[] contentBytes, String contentTypeStr) {
         String[] parts = contentTypeStr.split(";");
         String charset = "UTF-8";
         for (String part : parts) {
@@ -435,7 +436,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         String css = null;
         if (charset != null) {
             try {
-                css = new String(ArrayUtils.toPrimitive(contentBytes), charset);
+                css = new String(contentBytes, charset);
             } catch (UnsupportedEncodingException e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
@@ -504,7 +505,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         for (RGridResource blob : allBlobs) {
             String url = blob.getUrl();
             if (!this.fetchedCacheMap.containsKey(url)) {
-                this.fetchedCacheMap.put(url, this.eyesConnector.createResourceFuture(blob));
+                IResourceFuture resourceFuture = this.eyesConnector.createResourceFuture(blob);
+                logger.log("Cache write for url - "+url+ " hash:("+resourceFuture+")");
+                this.fetchedCacheMap.put(url, resourceFuture);
             }
         }
     }
@@ -515,7 +518,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         Object cdt;
         Map<String, RGridResource> resourceMapping = new HashMap<>();
         cdt = result.get("cdt");
-        RGridDom dom = new RGridDom();
+        RGridDom dom = new RGridDom(logger);
         dom.setDomNodes((List) cdt);
         for (RGridResource blob : allBlobs) {
             resourceMapping.put(blob.getUrl(), blob);
@@ -550,6 +553,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             String url = link.toString();
             IResourceFuture fetch = fetchedCacheMap.get(url);
             if (fetch != null) {
+                logger.log("cache hit for url "+ url);
                 iterator.remove();
                 allFetches.add(fetch);
                 continue;

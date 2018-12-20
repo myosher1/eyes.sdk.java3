@@ -154,6 +154,9 @@ public class RenderingGridManager {
      */
     public void setLogHandler(LogHandler logHandler) {
         logger.setLogHandler(logHandler);
+        if (!logHandler.isOpen()) {
+            logHandler.open();
+        }
     }
 
     public Logger getLogger() {

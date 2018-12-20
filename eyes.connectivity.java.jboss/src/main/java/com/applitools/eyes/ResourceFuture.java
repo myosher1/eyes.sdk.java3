@@ -53,7 +53,7 @@ public class ResourceFuture implements IResourceFuture {
             Response response = future.get();
             ByteArrayOutputStream outputStream = downloadFile(response);
             String contentType = Utils.getResponseContentType(response);
-            rgResource = new RGridResource(url, contentType, ArrayUtils.toObject(outputStream.toByteArray()));
+            rgResource = new RGridResource(url, contentType, outputStream.toByteArray(), logger);
         }
         return rgResource;
     }
@@ -64,7 +64,7 @@ public class ResourceFuture implements IResourceFuture {
             Response response = future.get(timeout, unit);
             ByteArrayOutputStream outputStream = downloadFile(response);
             String contentType = Utils.getResponseContentType(response);
-            rgResource = new RGridResource(url, contentType, ArrayUtils.toObject(outputStream.toByteArray()));
+            rgResource = new RGridResource(url, contentType, outputStream.toByteArray(), logger);
         }
         return rgResource;
     }

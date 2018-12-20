@@ -1,10 +1,15 @@
 package com.applitools.eyes.visualGridClient.model;
 
+import com.applitools.eyes.Logger;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.io.*;
 
 public class RGridResource {
 
@@ -15,7 +20,7 @@ public class RGridResource {
     private String contentType;
 
     @JsonIgnore
-    private Byte[] content;
+    private byte[] content;
 
     @JsonInclude
     private String sha256;
@@ -23,15 +28,19 @@ public class RGridResource {
     @JsonInclude
     private String hashFormat = "sha256";
 
+    @JsonIgnore
+    private Logger logger;
+
 
     public String getUrl() {
         return url;
     }
 
-    public RGridResource(String url, String contentType, Byte[] content) {
+    public RGridResource(String url, String contentType, byte[] content, Logger logger) {
         this.url = url;
         this.contentType = contentType;
         this.content = content;
+        this.logger = logger;
         this.sha256 = getSha256();
     }
 
@@ -49,11 +58,11 @@ public class RGridResource {
         this.contentType = contentType;
     }
 
-    public Byte[] getContent() {
+    public byte[] getContent() {
         return content;
     }
 
-    public void setContent(Byte[] content) {
+    public void setContent(byte[] content) {
         ArgumentGuard.notNull(contentType, "content");
         this.content = content;
     }
@@ -62,6 +71,7 @@ public class RGridResource {
     public String getSha256() {
         if (sha256 == null) {
             this.sha256 = GeneralUtils.getSha256hash(content);
+            this.logger.log("Computed hash(" + this.sha256 + ") for url - " + this.url + " content length: " + this.content.length);
         }
         return sha256;
     }

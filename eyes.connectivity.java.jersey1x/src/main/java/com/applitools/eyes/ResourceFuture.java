@@ -56,7 +56,7 @@ public class ResourceFuture implements IResourceFuture {
         @SuppressWarnings("UnnecessaryLocalVariable")
         RGridResource gridResource = new RGridResource(url,
                 (String) response.getMetadata().get("contentType").get(0),
-                ArrayUtils.toObject(outputStream.toByteArray()));
+                ArrayUtils.toObject(outputStream.toByteArray()), logger);
 
         return gridResource;
     }
@@ -69,7 +69,7 @@ public class ResourceFuture implements IResourceFuture {
         @SuppressWarnings("UnnecessaryLocalVariable")
         RGridResource gridResource = new RGridResource(url,
                 (String) response.getMetadata().get("contentType").get(0),
-                ArrayUtils.toObject(outputStream.toByteArray()));
+                ArrayUtils.toObject(outputStream.toByteArray()), logger);
 
         return gridResource;
     }

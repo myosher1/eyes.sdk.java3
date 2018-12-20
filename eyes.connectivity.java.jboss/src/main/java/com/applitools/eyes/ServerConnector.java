@@ -534,7 +534,7 @@ public class ServerConnector extends RestClient
     public PutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final IResourceUploadListener listener) {
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
-        Byte[] content = resource.getContent();
+        byte[] content = resource.getContent();
         ArgumentGuard.notNull(content, "resource.getContent()");
 
         String hash = resource.getSha256();
@@ -548,8 +548,7 @@ public class ServerConnector extends RestClient
         String contentType = resource.getContentType();
         Invocation.Builder request = target.request(contentType);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
-        byte[] bytes = ArrayUtils.toPrimitive(content);
-        Entity entity = Entity.entity(bytes, contentType);
+        Entity entity = Entity.entity(content, contentType);
         final Future<Response> future = request.async().put(entity);
         return new PutFuture(future, resource, runningRender, this, logger);
 
