@@ -17,8 +17,9 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     private RenderBrowserInfo browserInfo;
     private String userAgent;
 
-    public EyesConnector(RenderBrowserInfo browserInfo) {
+    public EyesConnector(RenderBrowserInfo browserInfo, RateLimiter rateLimiter) {
         this.browserInfo = browserInfo;
+        this.setServerConnector(new ThrottlingServerConnector(this.serverConnector, rateLimiter));
     }
 
     /**

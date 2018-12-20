@@ -122,7 +122,7 @@ public class Eyes implements IRenderingEyes {
 
     private IEyesConnector createEyesConnector(RenderBrowserInfo browserInfo) {
         logger.verbose("creating eyes server connector");
-        IEyesConnector eyesConnector = new EyesConnector(browserInfo);
+        IEyesConnector eyesConnector = new EyesConnector(browserInfo, renderingGridManager.getRateLimiter());
         eyesConnector.setLogHandler(this.logger.getLogHandler());
         eyesConnector.setProxy(this.proxy);
         eyesConnector.setBatch(batchInfo);

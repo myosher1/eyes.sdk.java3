@@ -41,7 +41,7 @@ public interface IServerConnector {
     Logger getLogger();
 
 
-    void setProxy(AbstractProxySettings abstractProxySettings);
+    void setProxy(AbstractProxySettings proxySettings);
     AbstractProxySettings getProxy();
 
     /**
@@ -150,7 +150,6 @@ public interface IServerConnector {
      * @return true if resource was uploaded
      */
     PutFuture renderPutResource(RunningRender runningRender, RGridResource resource, IResourceUploadListener listener);
-
 
     /**
      * Get the rendering status for current render

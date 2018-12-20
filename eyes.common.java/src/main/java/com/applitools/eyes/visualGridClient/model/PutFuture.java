@@ -20,14 +20,17 @@ public class PutFuture implements Future {
     private boolean isSentAlready = false;
     private int retryCount = 3;
 
-    public PutFuture(Future putFuture, RGridResource resource, RunningRender runningRender, IServerConnector serverConnector, Logger logger) {
-        this.putFuture = putFuture;
+    public PutFuture(RGridResource resource, RunningRender runningRender, IServerConnector serverConnector, Logger logger) {
         this.resource = resource;
         this.runningRender = runningRender;
         this.serverConnector = serverConnector;
         this.logger = logger;
     }
 
+    public PutFuture(Future putFuture, RGridResource resource, RunningRender runningRender, IServerConnector serverConnector, Logger logger) {
+        this(resource, runningRender, serverConnector, logger);
+        this.putFuture = putFuture;
+    }
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
@@ -46,6 +49,10 @@ public class PutFuture implements Future {
 
     @Override
     public Boolean get() {
+        if (this.putFuture == null){
+            PutFuture newFuture = serverConnector.renderPutResource(runningRender, resource, null);
+            this.putFuture = newFuture.putFuture;
+        }
         if (!this.isSentAlready) {
             while (retryCount != 0) {
                 try {
@@ -83,4 +90,8 @@ public class PutFuture implements Future {
         return this.resource;
     }
 
+    @Override
+    public String toString() {
+        return this.resource.getUrl();
+    }
 }

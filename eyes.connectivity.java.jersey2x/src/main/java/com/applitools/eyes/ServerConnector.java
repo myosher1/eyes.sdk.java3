@@ -86,12 +86,12 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the proxy settings to be used by the rest client.
-     * @param abstractProxySettings The proxy settings to be used by the rest client.
+     * @param proxySettings The proxy settings to be used by the rest client.
      *                              If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public void setProxy(AbstractProxySettings abstractProxySettings) {
-        setProxyBase(abstractProxySettings);
+    public void setProxy(AbstractProxySettings proxySettings) {
+        setProxyBase(proxySettings);
         // After the server is updated we must make sure the endpoint refers
         // to the correct path.
         endPoint = endPoint.path(API_PATH);

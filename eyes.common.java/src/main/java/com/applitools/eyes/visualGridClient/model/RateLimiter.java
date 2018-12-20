@@ -3,69 +3,69 @@ package com.applitools.eyes.visualGridClient.model;
 import com.applitools.eyes.Logger;
 import com.applitools.utils.GeneralUtils;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.*;
 
 public class RateLimiter {
     private final Logger logger;
-    private Map<String, PutFuture> allTasks = Collections.synchronizedMap(new HashMap<String, PutFuture>());
-    private Map<String, Future> runningTasks = Collections.synchronizedMap(new HashMap<String, Future>());
+    private List<PutFuture> awaitingTasks = Collections.synchronizedList(new ArrayList<PutFuture>());
+    private List<PutFuture> runningTasks = Collections.synchronizedList(new ArrayList<PutFuture>());
 
     private int maxConcurrentTasks;
+    private final Object lock = new Object();
+
+    public void handle(PutFuture putFuture) {
+        synchronized (lock) {
+            awaitingTasks.add(putFuture);
+            if (!pollingThread.isAlive()) {
+                pollingThread.start();
+            }
+        }
+    }
+
+    public boolean isSlotAvailable() {
+        return runningTasks.size() < maxConcurrentTasks;
+    }
 
     class RateLimiterRunnable implements Runnable {
         @Override
         public void run() {
             logger.verbose("enter");
             do {
-                executeTasks();
+
+                while (!isSlotAvailable()){
+                    GeneralUtils.sleep(250);
+                }
+
+                executeTask();
+
                 removeCompletedTasks();
 
-                GeneralUtils.sleep(250);
-            } while (!allTasks.isEmpty());
+            } while (!awaitingTasks.isEmpty() || !runningTasks.isEmpty());
             logger.verbose("exit");
         }
 
-        private void executeTasks() {
+        private void executeTask() {
             logger.verbose("enter");
-            Iterator<Map.Entry<String, PutFuture>> iterator = allTasks.entrySet().iterator();
-            while (iterator.hasNext()) {
-                Map.Entry<String, PutFuture> taskEntry = iterator.next();
-                if (runningTasks.size() >= maxConcurrentTasks) {
-                    logger.verbose("throttling level reached.");
-                    break;
-                }
-                String key = taskEntry.getKey();
-                if (runningTasks.containsKey(key)) {
-                    continue;
-                }
-                PutFuture putFuture = taskEntry.getValue();
-                if (!putFuture.isDone()) {
-                    //Future future = putFuture.run();
-                    logger.verbose("executing task " + key);
-                    runningTasks.put(key, putFuture);
-                } else {
-                    logger.verbose("removing marked as done task " + key);
-                    iterator.remove();
-                }
+            if (awaitingTasks.isEmpty()) return;
+            PutFuture putFuture;
+            synchronized (lock) {
+                putFuture = awaitingTasks.get(0);
+                logger.verbose("executing task " + putFuture);
+                runningTasks.add(putFuture);
+                awaitingTasks.remove(putFuture);
             }
+            putFuture.get();
             logger.verbose("exit");
         }
 
         private void removeCompletedTasks() {
             logger.verbose("enter");
-            Iterator<Map.Entry<String, Future>> iterator = runningTasks.entrySet().iterator();
+            Iterator<PutFuture> iterator = runningTasks.iterator();
             while (iterator.hasNext()) {
-                Map.Entry<String, Future> next = iterator.next();
-                Future future = next.getValue();
-                String key = next.getKey();
+                PutFuture future = iterator.next();
                 if (future.isDone()) {
-                    logger.verbose("removing done task " + key);
+                    logger.verbose("removing done task " + future);
                     iterator.remove();
-                    allTasks.remove(key);
                 }
             }
             logger.verbose("exit");
@@ -74,9 +74,8 @@ public class RateLimiter {
 
     private Thread pollingThread = new Thread(new RateLimiterRunnable(), "PutThrottler");
 
-    public RateLimiter(Logger logger, Map<String, PutFuture> allTasks, int maxConcurrentTasks) {
+    public RateLimiter(Logger logger, int maxConcurrentTasks) {
         this.logger = logger;
-        this.allTasks.putAll(allTasks);
         this.maxConcurrentTasks = maxConcurrentTasks;
     }
 

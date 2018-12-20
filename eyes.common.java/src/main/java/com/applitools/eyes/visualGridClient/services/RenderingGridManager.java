@@ -42,6 +42,8 @@ public class RenderingGridManager {
     private RenderingInfo renderingInfo;
     private IDebugResourceWriter debugResourceWriter;
 
+    private RateLimiter rateLimiter;
+
     public void pauseAllService() {
         eyesOpenerService.debugPauseService();
         eyesCloserService.debugPauseService();
@@ -139,6 +141,7 @@ public class RenderingGridManager {
         this.checkerServiceDebugLock = checkerServiceDebugLock;
         this.closerServiceDebugLock = closerServiceDebugLock;
         this.renderServiceDebugLock = renderServiceDebugLock;
+        this.rateLimiter = new RateLimiter(logger, 20);
         init();
         startServices();
         logger.verbose("rendering grid manager is built");
@@ -486,4 +489,7 @@ public class RenderingGridManager {
         return this.debugResourceWriter;
     }
 
+    public RateLimiter getRateLimiter() {
+        return rateLimiter;
+    }
 }
