@@ -28,7 +28,9 @@ public class TestTopSites {
     @BeforeClass
     public void beforeClass() {
         renderingManager = new RenderingGridManager(10);
-        renderingManager.setLogHandler(new StdoutLogHandler(true));
+        //renderingManager.setLogHandler(new StdoutLogHandler(true));
+        FileLogger logHandler = new FileLogger("eyes.log", false, true);
+        renderingManager.setLogHandler(logHandler);
         renderingManager.getLogger().log("enter");
 //        System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
     }
@@ -57,7 +59,6 @@ public class TestTopSites {
         eyes.setBatch(new BatchInfo(testedUrl));
 
         initLogging(testedUrl, eyes);
-
 
         eyes.getLogger().log("creating WebDriver: " + testedUrl);
         WebDriver webDriver = new ChromeDriver();
@@ -110,7 +111,7 @@ public class TestTopSites {
         FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
         eyes.setDebugResourceWriter(fileDebugResourceWriter);
 
-        //FileLogger eyesLogger = new FileLogger(path + File.separator + "log.log", true, true);
+        //FileLogger eyesLogger = new FileLogger("TopTenSites.log", true, true);
         //eyes.setLogHandler(eyesLogger);
     }
 
