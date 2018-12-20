@@ -254,12 +254,17 @@ public class GeneralUtils {
     }
 
     public static String getSha256hash(Byte[] content) {
+        byte[] bytes = ArrayUtils.toPrimitive(content);
+        return getSha256hash(bytes);
+    }
+
+    public static String getSha256hash(byte[] content) {
         byte[] buffer = new byte[8192];
         int count;
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-256");
-            BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(ArrayUtils.toPrimitive(content)));
+            BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(content));
             while ((count = bis.read(buffer)) > 0) {
                 digest.update(buffer, 0, count);
             }

@@ -47,17 +47,20 @@ public class FileDebugResourceWriter implements IDebugResourceWriter {
         String url = resource.getUrl();
         if (filter == null || filter.isEmpty() || url.toUpperCase().contains(filter.toUpperCase())) {
             try {
-                String substring = url.substring(url.lastIndexOf("/") + 1);
-                if (substring.length() > 40) {
-                    substring = substring.substring(0, 40);
+                String urlHash = GeneralUtils.getSha256hash(url.getBytes());
+                String ext = resource.getContentType();
+                int slash = ext.indexOf("/");
+                ext = ext.substring(slash + 1);
+                int semicolon = ext.indexOf(";");
+                if (semicolon > -1) {
+                    ext = ext.substring(0, semicolon);
                 }
-                String pathname = path + prefix + substring + "_" + resource.getSha256();
-                pathname =  pathname.replaceAll("[\\?\\.]","_");
+                String pathname = path + prefix + urlHash + "_" + resource.getSha256() + "." + ext;
+                pathname = pathname.replaceAll("\\?", "_");
                 File file = new File(pathname);
                 ensureFilePath(file);
                 byte[] data = ArrayUtils.toPrimitive(resource.getContent());
                 FileUtils.writeByteArrayToFile(file, data);
-                int x = 0;
             } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
