@@ -44,13 +44,32 @@ public class RenderingGridManager {
 
     private RateLimiter rateLimiter;
 
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    private FutureTask<TestResultContainer> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker,
+                                                             String serviceName) {
+        FutureTask<TestResultContainer> nextTestToOpen = tasker.getNextTask();
+        if (nextTestToOpen == null) {
+            try {
+                logger.verbose("locking " + serviceName);
+                synchronized (lock) {
+                    lock.wait(500);
+                }
+                logger.verbose("releasing " + serviceName);
+                nextTestToOpen = tasker.getNextTask();
+                logger.verbose(serviceName + " tasker returned " + nextTestToOpen);
+            } catch (Exception e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
+        }
+        return nextTestToOpen;
+    }
+
     public void pauseAllService() {
         eyesOpenerService.debugPauseService();
         eyesCloserService.debugPauseService();
         eyesCheckerService.debugPauseService();
         renderingGridService.debugPauseService();
     }
-
     public interface RenderListener {
 
         void onRenderSuccess();
@@ -82,6 +101,7 @@ public class RenderingGridManager {
                         synchronized (eyesToCloseList) {
                             if (eyes.isEyesClosed()) {
                                 eyesToCloseList.remove(eyes);
+                                allEyes.remove(eyes);
                             }
                         }
                         logger.verbose("releasing eyesToCloseList");
@@ -213,7 +233,7 @@ public class RenderingGridManager {
                         try {
                             nextTestToRender = getNextRenderingTask();
                             if (nextTestToRender == null) {
-                                renderingServiceLock.wait();
+                                renderingServiceLock.wait(300);
                                 logger.log("Rendering service woke up");
                                 nextTestToRender = getNextRenderingTask();
                             }
@@ -242,26 +262,6 @@ public class RenderingGridManager {
         });
     }
 
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-    private FutureTask<TestResultContainer> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker,
-                                                             String serviceName) {
-        FutureTask<TestResultContainer> nextTestToOpen = tasker.getNextTask();
-        if (nextTestToOpen == null) {
-            try {
-//                logger.verbose("locking " + serviceName);
-                synchronized (lock) {
-                    lock.wait(500);
-                }
-//                logger.verbose("releasing " + serviceName);
-                nextTestToOpen = tasker.getNextTask();
-//                logger.verbose(serviceName + " tasker returned " + nextTestToOpen);
-            } catch (Exception e) {
-                GeneralUtils.logExceptionStackTrace(logger, e);
-            }
-        }
-        return nextTestToOpen;
-    }
-
     private FutureTask<TestResultContainer> getNextCheckTask() {
         ScoreTask bestScoreTask = null;
         int bestScore = -1;
@@ -284,7 +284,7 @@ public class RenderingGridManager {
         return new FutureTask<>(task);
     }
 
-    private synchronized RenderingTask getNextRenderingTask() {
+    private RenderingTask getNextRenderingTask() {
         if (this.renderingTaskList.isEmpty()) {
             return null;
         }
@@ -425,11 +425,7 @@ public class RenderingGridManager {
             public void onRenderSuccess() {
                 logger.verbose("enter");
                 listener.onRenderSuccess();
-                logger.verbose("locking checkerServiceLock");
-                synchronized (checkerServiceLock) {
-                    notifyAllServices();
-                }
-                logger.verbose("releasing checkerServiceLock");
+                notifyAllServices();
             }
 
             @Override
@@ -448,23 +444,43 @@ public class RenderingGridManager {
 
     private void notifyAllServices() {
         logger.verbose("enter");
-        synchronized (openerServiceLock) {
-            openerServiceLock.notifyAll();
+        notifyOpenerService();
+        notifyCloserService();
+        notifyCheckerService();
+        notifyRenderingService();
+        logger.verbose("exit");
+    }
+
+    private void notifyRenderingService() {
+        logger.log("trying to notify rendering service");
+        synchronized (renderingServiceLock) {
+            renderingServiceLock.notify();
         }
-        logger.verbose("openerLockFree");
+        logger.verbose("renderingLockFree");
+    }
+
+    private void notifyCloserService() {
+        logger.log("trying to notify closer service");
         synchronized (closerServiceLock) {
             closerServiceLock.notifyAll();
         }
         logger.verbose("closerLockFree");
+    }
+
+    private void notifyOpenerService() {
+        logger.log("trying to notify opener service");
+        synchronized (openerServiceLock) {
+            openerServiceLock.notifyAll();
+            logger.verbose("openerLockFree");
+        }
+    }
+
+    private void notifyCheckerService() {
+        logger.log("trying to notify checker service");
         synchronized (checkerServiceLock) {
             checkerServiceLock.notifyAll();
+            logger.verbose("checkerLockFree");
         }
-        logger.verbose("checkerLockFree");
-        synchronized (renderingServiceLock) {
-            renderingServiceLock.notifyAll();
-        }
-        logger.verbose("renderingLockFree");
-        logger.verbose("exit");
     }
 
     public List<CompletableTask> getAllTasksByType(Task.TaskType type) {

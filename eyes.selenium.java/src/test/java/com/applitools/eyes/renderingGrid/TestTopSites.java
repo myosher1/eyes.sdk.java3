@@ -30,9 +30,9 @@ public class TestTopSites {
     @BeforeClass
     public void beforeClass() {
         renderingManager = new RenderingGridManager(10);
-        //renderingManager.setLogHandler(new StdoutLogHandler(true));
-        FileLogger logHandler = new FileLogger("eyes.log", false, true);
-        renderingManager.setLogHandler(logHandler);
+        renderingManager.setLogHandler(new StdoutLogHandler(true));
+//        FileLogger logHandler = new FileLogger("eyes.log", false, true);
+//        renderingManager.setLogHandler(logHandler);
         renderingManager.getLogger().log("enter");
 //        System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
     }
@@ -40,16 +40,16 @@ public class TestTopSites {
     @DataProvider(name = "dp", parallel = true)
     public static Object[][] dp() {
         return new Object[][]{
-//                {"https://google.com"},
+                {"https://google.com"},
                 {"https://facebook.com"},
                 {"https://youtube.com"},
-//                {"https://amazon.com"},
-//                {"https://yahoo.com"},
+                {"https://amazon.com"},
+                {"https://yahoo.com"},
                 {"https://ebay.com"},
                 {"https://twitter.com"},
-//                {"https://wikipedia.org"},
-//                {"https://instagram.com"},
-//                {"https://reddit.com"},
+                {"https://wikipedia.org"},
+                {"https://instagram.com"},
+                {"https://reddit.com"},
         };
     }
 
