@@ -3,7 +3,6 @@ package com.applitools.eyes;
 import com.applitools.eyes.visualGridClient.services.IResourceFuture;
 import com.applitools.eyes.visualGridClient.model.RGridResource;
 import com.applitools.utils.GeneralUtils;
-import org.apache.commons.lang3.ArrayUtils;
 
 import javax.ws.rs.core.Response;
 import java.io.*;
@@ -51,7 +50,7 @@ public class ResourceFuture implements IResourceFuture {
             Response response = future.get();
             ByteArrayOutputStream outputStream = downloadFile(response);
             String contentType = Utils.getResponseContentType(response);
-            rgResource = new RGridResource(url, contentType, ArrayUtils.toObject(outputStream.toByteArray()), logger);
+            rgResource = new RGridResource(url, contentType, outputStream.toByteArray(), logger);
         }
         return rgResource;
     }
@@ -62,7 +61,7 @@ public class ResourceFuture implements IResourceFuture {
             Response response = future.get(timeout, unit);
             ByteArrayOutputStream outputStream = downloadFile(response);
             String contentType = Utils.getResponseContentType(response);
-            rgResource = new RGridResource(url, contentType, ArrayUtils.toObject(outputStream.toByteArray()), logger);
+            rgResource = new RGridResource(url, contentType, outputStream.toByteArray(), logger);
         }
         return rgResource;
     }

@@ -3,7 +3,6 @@ package com.applitools.eyes;
 import com.applitools.eyes.visualGridClient.services.IResourceFuture;
 import com.applitools.eyes.visualGridClient.model.RGridResource;
 import com.applitools.utils.GeneralUtils;
-import org.apache.commons.lang3.ArrayUtils;
 
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
@@ -19,7 +18,6 @@ public class ResourceFuture implements IResourceFuture {
     private Future<Response> future;
 
     private String url = null;
-    private RGridResource resource;
     private Logger logger;
 
     public ResourceFuture(Future<Response> future, Logger logger) {
@@ -28,7 +26,6 @@ public class ResourceFuture implements IResourceFuture {
     }
 
     public ResourceFuture(RGridResource resource, Logger logger) {
-        this.resource = resource;
         this.url = resource.getUrl();
         this.logger = logger;
     }
@@ -56,7 +53,7 @@ public class ResourceFuture implements IResourceFuture {
         @SuppressWarnings("UnnecessaryLocalVariable")
         RGridResource gridResource = new RGridResource(url,
                 (String) response.getMetadata().get("contentType").get(0),
-                ArrayUtils.toObject(outputStream.toByteArray()), logger);
+                outputStream.toByteArray(), logger);
 
         return gridResource;
     }
@@ -69,7 +66,7 @@ public class ResourceFuture implements IResourceFuture {
         @SuppressWarnings("UnnecessaryLocalVariable")
         RGridResource gridResource = new RGridResource(url,
                 (String) response.getMetadata().get("contentType").get(0),
-                ArrayUtils.toObject(outputStream.toByteArray()), logger);
+                outputStream.toByteArray(), logger);
 
         return gridResource;
     }
