@@ -81,7 +81,7 @@ public class FileLogger implements LogHandler {
      * @param verbose Whether this message is flagged as verbose or not.
      * @param logString The string to log.
      */
-    public void onMessage(boolean verbose, String logString) {
+    public synchronized void onMessage(boolean verbose, String logString) {
 
             if (fileWriter != null && (!verbose || this.isVerbose)) {
                 synchronized (fileWriter) {

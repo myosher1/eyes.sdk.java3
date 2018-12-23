@@ -33,7 +33,7 @@ public class StdoutLogHandler implements LogHandler {
         this(false);
     }
 
-    public void onMessage(boolean verbose, String message) {
+    public synchronized void onMessage(boolean verbose, String message) {
         if (!verbose || this.isVerbose) {
             String currentTime = GeneralUtils.toISO8601DateTime(
                     Calendar.getInstance(TimeZone.getTimeZone("UTC")));
