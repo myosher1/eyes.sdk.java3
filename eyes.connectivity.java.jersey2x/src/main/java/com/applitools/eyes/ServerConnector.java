@@ -87,7 +87,7 @@ public class ServerConnector extends RestClient
     /**
      * Sets the proxy settings to be used by the rest client.
      * @param proxySettings The proxy settings to be used by the rest client.
-     *                              If {@code null} then no proxy is set.
+     *                      If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void setProxy(AbstractProxySettings proxySettings) {
@@ -398,16 +398,14 @@ public class ServerConnector extends RestClient
                 if (!isSecondRetry) {
                     logger.verbose("Entering retry");
                     downloadResource(url, true, listener);
-                } else {
-                    if (null != listener) {
-                        listener.onDownloadFailed();
-                    }
+                } else if (null != listener) {
+                    listener.onDownloadFailed();
                 }
             }
         });
 
         @SuppressWarnings("UnnecessaryLocalVariable")
-        IResourceFuture newFuture = new ResourceFuture(future, url.toString(), logger);
+        IResourceFuture newFuture = new ResourceFuture(future, url.toString(), logger, this);
         return newFuture;
     }
 
@@ -622,7 +620,7 @@ public class ServerConnector extends RestClient
 
     @Override
     public IResourceFuture createResourceFuture(RGridResource gridResource) {
-        return new ResourceFuture(gridResource);
+        return new ResourceFuture(gridResource, logger, this);
 
     }
 

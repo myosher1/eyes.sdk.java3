@@ -33,8 +33,8 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public IResourceFuture getResource(URL url, IDownloadListener<Byte[]> iDownloadListener) {
-        return this.serverConnector.downloadResource(url, false, iDownloadListener);
+    public IResourceFuture getResource(URL url) {
+        return this.serverConnector.downloadResource(url, true, null);
     }
 
     @Override

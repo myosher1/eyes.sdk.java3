@@ -369,34 +369,39 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public IResourceFuture downloadResource(final URL uri, final boolean isSecondRetry, final IDownloadListener<Byte[]> listener) {
-
+    public IResourceFuture downloadResource(final URL url, final boolean isSecondRetry, final IDownloadListener<Byte[]> listener) {
         Client client = ClientBuilder.newBuilder().build();
 
-        WebTarget target = client.target(uri.toString());
+        WebTarget target = client.target(url.toString());
 
         Invocation.Builder request = target.request(MediaType.WILDCARD);
 
-        request.async().get(new InvocationCallback<Response>() {
+        Future<Response> future = request.async().get(new InvocationCallback<Response>() {
             @Override
             public void completed(Response response) {
-                logger.verbose(uri + " - completed");
-                listener.onDownloadComplete((Byte[]) response.getEntity(), null);
+                logger.verbose(url + " - completed");
+                if (null != listener) {
+                    listener.onDownloadComplete(null, null);
+                }
             }
 
             @Override
             public void failed(Throwable throwable) {
                 GeneralUtils.logExceptionStackTrace(logger, throwable);
                 if (!isSecondRetry) {
-                    logger.verbose("Entring retry");
-                    downloadResource(uri, true, listener);
+                    logger.verbose("Entering retry");
+                    downloadResource(url, true, listener);
                 } else {
-                    listener.onDownloadFailed();
+                    if (null != listener) {
+                        listener.onDownloadFailed();
+                    }
                 }
             }
         });
 
-        return null;
+        @SuppressWarnings("UnnecessaryLocalVariable")
+        IResourceFuture newFuture = new ResourceFuture(future, url.toString(), logger, this);
+        return newFuture;
     }
 
     @Override
@@ -594,7 +599,7 @@ public class ServerConnector extends RestClient
 
     @Override
     public IResourceFuture createResourceFuture(RGridResource gridResource) {
-        return new ResourceFuture(gridResource);
+        return new ResourceFuture(gridResource, logger, this);
     }
 
     @Override

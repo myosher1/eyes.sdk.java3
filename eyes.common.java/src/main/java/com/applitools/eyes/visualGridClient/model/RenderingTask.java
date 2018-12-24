@@ -169,7 +169,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                         putResourceCache.put(url, future);
                     }
                 }
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
@@ -595,7 +595,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
 
             IEyesConnector eyesConnector = this.taskList.get(0).getEyesConnector();
-            IResourceFuture future = eyesConnector.getResource(link, null);
+            IResourceFuture future = eyesConnector.getResource(link);
             allFetches.add(future);
             synchronized (fetchedCacheMap) {
                 if (!this.fetchedCacheMap.containsKey(link.toString())) {
