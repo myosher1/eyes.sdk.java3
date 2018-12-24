@@ -31,8 +31,8 @@ public class TestTopSites {
     public void beforeClass() {
         renderingManager = new RenderingGridManager(10);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
-//        FileLogger logHandler = new FileLogger("eyes.log", false, true);
-//        renderingManager.setLogHandler(logHandler);
+        FileLogger logHandler = new FileLogger("eyes.log", false, true);
+        renderingManager.setLogHandler(logHandler);
         renderingManager.getLogger().log("enter");
 //        System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
     }
@@ -45,7 +45,7 @@ public class TestTopSites {
                 {"https://youtube.com"},
                 {"https://amazon.com"},
                 {"https://yahoo.com"},
-                {"https://ebay.com"},
+//                {"https://ebay.com"},
                 {"https://twitter.com"},
                 {"https://wikipedia.org"},
                 {"https://instagram.com"},
@@ -108,8 +108,8 @@ public class TestTopSites {
     private void initLogging(String testedUrl, Eyes eyes) {
         String testName = testedUrl.substring(8);
         String path = logsPath + File.separator + "java" + File.separator + "TestTopSites_" + dateTimeString;
-        FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
-        eyes.setDebugResourceWriter(fileDebugResourceWriter);
+//        FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
+//        eyes.setDebugResourceWriter(fileDebugResourceWriter);
 
         //FileLogger eyesLogger = new FileLogger("TopTenSites.log", true, true);
         //eyes.setLogHandler(eyesLogger);

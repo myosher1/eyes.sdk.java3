@@ -34,6 +34,7 @@ public class RGridDom {
     private String url;
     @JsonIgnore
     private Logger logger;
+    private RGridResource gridResource;
 
     public RGridDom() {
     }
@@ -71,11 +72,9 @@ public class RGridDom {
     }
 
     private String getStringObjectMap() {
-
         Map<String, Object> map = new HashMap<>();
         map.put("domNodes", this.domNodes);
         map.put("resources", this.resources);
-
 
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
@@ -83,9 +82,9 @@ public class RGridDom {
         try {
             return objectMapper.writeValueAsString(map);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
-        return null;
+        return "{}";
     }
 
     public void setSha256(String sha256) {
@@ -97,9 +96,9 @@ public class RGridDom {
     }
 
     public RGridResource asResource() {
-
-        RGridResource gridResource = new RGridResource(this.url, CONTENT_TYPE, getStringObjectMap().getBytes(), logger);
-
+        if (gridResource == null) {
+            gridResource = new RGridResource(this.url, CONTENT_TYPE, getStringObjectMap().getBytes(), logger);
+        }
         return gridResource;
     }
 

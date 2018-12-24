@@ -15,9 +15,7 @@ import com.helger.css.ECSSVersion;
 import com.helger.css.decl.*;
 import com.helger.css.reader.CSSReader;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.ArrayUtils;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -25,6 +23,7 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RenderingTask implements Callable<RenderStatusResults>, CompletableTask {
 
@@ -38,13 +37,14 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private List<Task> taskList;
     private List<Task> openTaskList;
     private RenderingInfo renderingInfo;
-    private Map<String, IResourceFuture> fetchedCacheMap;
+    private final Map<String, IResourceFuture> fetchedCacheMap;
     private final Map<String, PutFuture> putResourceCache;
     private Logger logger;
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
     private AtomicBoolean isForcePutNeeded;
     private IDebugResourceWriter debugResourceWriter;
     private HashMap<String, Object> result = null;
+    private AtomicInteger framesLevel = new AtomicInteger();
 
     public interface RenderTaskListener {
         void onRenderSuccess();
@@ -75,19 +75,18 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     @Override
     public RenderStatusResults call() throws Exception {
 
-        logger.log("Enter");
+        logger.verbose("enter");
 
         boolean isSecondRequestAlreadyHappened = false;
 
-        RenderRequest[] requests = new RenderRequest[0];
-        logger.log("step 1");
+        logger.verbose("step 1");
         //Parse to Map
         result = GeneralUtils.parseJsonToObject(scriptResult);
-        logger.log("step 2");
+        logger.verbose("step 2");
         //Build RenderRequests
-        requests = prepareDataForRG(result);
+        RenderRequest[] requests = prepareDataForRG(result);
 
-        logger.log("step 3");
+        logger.verbose("step 3");
         boolean stillRunning = true;
         int fetchFails = 0;
         List<RunningRender> runningRenders = null;
@@ -111,7 +110,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 logger.verbose("ERROR " + e.getMessage());
                 fetchFails++;
             }
-            logger.log("step 4.1");
+            logger.verbose("step 4.1");
             if (runningRenders == null) {
                 logger.verbose("ERROR - runningRenders is null.");
                 continue;
@@ -121,7 +120,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 RenderRequest request = requests[i];
                 request.setRenderId(runningRenders.get(i).getRenderId());
             }
-            logger.log("step 4.2");
+            logger.verbose("step 4.2");
 
             RunningRender runningRender = runningRenders.get(0);
             RenderStatus worstStatus = runningRender.getRenderStatus();
@@ -134,22 +133,22 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 forcePutAllResources(requests[0].getResources(), runningRender);
             }
 
-            logger.log("step 4.3");
+            logger.verbose("step 4.3");
             stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom || fetchFails > MAX_FETCH_FAILS;
             if (stillRunning) {
                 sendMissingResources(runningRenders, requests[0].getDom(), isNeedMoreDom);
             }
 
-            logger.log("step 4.4");
+            logger.verbose("step 4.4");
 
         } while (stillRunning);
 
         Map<RunningRender, RenderRequest> mapping = mapRequestToRunningRender(runningRenders, requests);
 
-        logger.log("step 5");
-        startPollingStatus(mapping);
+        logger.verbose("step 5");
+        pollRenderingStatus(mapping);
 
-        logger.log("Exit");
+        logger.verbose("exit");
 
         return null;
     }
@@ -224,23 +223,31 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, boolean isNeedMoreDom) throws Exception {
+        logger.verbose("enter");
         List<PutFuture> allPuts = new ArrayList<>();
         if (isNeedMoreDom) {
             RunningRender runningRender = runningRenders.get(0);
             PutFuture future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
+            logger.verbose("locking putResourceCache");
             synchronized (putResourceCache) {
                 putResourceCache.put(dom.getUrl(), future);
                 allPuts.add(future);
             }
+            logger.verbose("releasing putResourceCache");
         }
-        for (RunningRender runningRender : runningRenders) {
 
+        logger.verbose("creating PutFutures for " + runningRenders.size() + " runningRenders");
+
+        for (RunningRender runningRender : runningRenders) {
             createPutFutures(allPuts, runningRender);
         }
 
+        logger.verbose("calling future.get on " + allPuts.size() + " PutFutures");
         for (PutFuture future : allPuts) {
+            logger.verbose("calling future.get on " + future.toString());
             future.get();
         }
+        logger.verbose("exit");
     }
 
     private void createPutFutures(List<PutFuture> allPuts, RunningRender runningRender) throws Exception {
@@ -278,25 +285,29 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private RenderRequest[] prepareDataForRG(HashMap<String, Object> result) throws ExecutionException, InterruptedException, MalformedURLException {
+        logger.verbose("enter");
 
         final List<RGridResource> allBlobs = Collections.synchronizedList(new ArrayList<RGridResource>());
         List<URL> resourceUrls = new ArrayList<>();
 
         parseScriptResult(result, allBlobs, resourceUrls);
 
+        logger.verbose("fetching " + resourceUrls.size() + " resources...");
         //Fetch all resources
         while (!resourceUrls.isEmpty()) {
             fetchAllResources(allBlobs, resourceUrls);
         }
-        addBlobsToCache(allBlobs);
+        logger.verbose("done fetching resources.");
+        int written = addBlobsToCache(allBlobs);
 
+        logger.verbose("written " + written + " blobs to cache.");
         //Create RenderingRequest
         List<RenderRequest> allRequestsForRG = buildRenderRequests(result, allBlobs);
 
         @SuppressWarnings("UnnecessaryLocalVariable")
         RenderRequest[] asArray = allRequestsForRG.toArray(new RenderRequest[0]);
 
-        if (debugResourceWriter != null) {
+        if (debugResourceWriter != null && !(debugResourceWriter instanceof NullDebugResourceWriter)) {
             for (RenderRequest renderRequest : asArray) {
                 for (RGridResource value : renderRequest.getResources().values()) {
                     this.debugResourceWriter.write(value);
@@ -304,11 +315,13 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
         }
 
+        logger.verbose("exit - returning renderRequest array of length: " + asArray.length);
         return asArray;
     }
 
     @SuppressWarnings("unchecked")
     private void parseScriptResult(Map<String, Object> result, List<RGridResource> allBlobs, List<URL> resourceUrls) throws ExecutionException, InterruptedException {
+        logger.verbose("enter");
         org.apache.commons.codec.binary.Base64 codec = new Base64();
         URL baseUrl = null;
         try {
@@ -317,6 +330,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         } catch (MalformedURLException e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
+        logger.verbose("baseUrl: " + baseUrl);
         for (String key : result.keySet()) {
             Object value = result.get(key);
             switch (key) {
@@ -336,7 +350,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     for (String url : list) {
                         try {
                             if (this.fetchedCacheMap.containsKey(url)) {
-                                logger.log("Cache hit for " + url);
+                                logger.verbose("Cache hit for " + url);
                                 continue;
                             }
                             resourceUrls.add(new URL(baseUrl, url));
@@ -347,42 +361,52 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     break;
 
                 case "frames":
+                    logger.verbose("handling 'frames' key (level: " + framesLevel.incrementAndGet() + ")");
                     List<Map<String, Object>> allObjects = (List) value;
                     for (Map<String, Object> frameObj : allObjects) {
-                        RGridDom frame = new RGridDom(logger);
-                        try {
-                            String url = (String) frameObj.get("url");
-                            frame.setUrl(url);
-                            frame.setDomNodes((List) frameObj.get("cdt"));
-                            List blobs = (List<String>) frameObj.get("blobs");
-                            for (Object blob : blobs) {
-                                RGridResource resource = parseBlobToGridResource(codec, baseUrl, (Map) blob);
-                                frame.addResource(resource);
-                            }
-                            List<String> frameResourceUrlsAsStrings = (List<String>) frameObj.get("resourceUrls");
-                            List<URL> frameResourceUrls = new ArrayList<>();
-
-                            URL frameBaseUrl = new URL(url);
-                            for (String frameResourceUrl : frameResourceUrlsAsStrings) {
-                                frameResourceUrls.add(new URL(frameBaseUrl, frameResourceUrl));
-                            }
-                            ArrayList<RGridResource> resourceArrayList = new ArrayList<>();
-                            fetchAllResources(resourceArrayList, frameResourceUrls);
-                            allBlobs.addAll(resourceArrayList);
-                            frame.addResources(resourceArrayList);
-                            allBlobs.add(frame.asResource());
-                        } catch (MalformedURLException e) {
-                            GeneralUtils.logExceptionStackTrace(logger, e);
-                        }
-
-                        parseScriptResult(frameObj, allBlobs, resourceUrls);
+                        handleFrame(allBlobs, resourceUrls, codec, baseUrl, frameObj);
                     }
+                    logger.verbose("done handling 'frames' key (level: " + framesLevel.getAndDecrement() + ")");
                     break;
             }
         }
-        addBlobsToCache(allBlobs);
+        int written = addBlobsToCache(allBlobs);
+        logger.verbose("written " + written + " blobs to cache.");
 
         //parseAndCollectCSSResources(allBlobs, baseUrl, resourceUrls);
+        logger.verbose("exit");
+    }
+
+    private void handleFrame(List<RGridResource> allBlobs, List<URL> resourceUrls, Base64 codec, URL baseUrl, Map<String, Object> frameObj) throws ExecutionException, InterruptedException {
+        logger.verbose("enter - baseUrl: " + baseUrl);
+        RGridDom frame = new RGridDom(logger);
+        try {
+            String url = (String) frameObj.get("url");
+            frame.setUrl(url);
+            frame.setDomNodes((List) frameObj.get("cdt"));
+            List blobs = (List<String>) frameObj.get("blobs");
+            for (Object blob : blobs) {
+                RGridResource resource = parseBlobToGridResource(codec, baseUrl, (Map) blob);
+                frame.addResource(resource);
+            }
+            List<String> frameResourceUrlsAsStrings = (List<String>) frameObj.get("resourceUrls");
+            List<URL> frameResourceUrls = new ArrayList<>();
+
+            URL frameBaseUrl = new URL(url);
+            for (String frameResourceUrl : frameResourceUrlsAsStrings) {
+                frameResourceUrls.add(new URL(frameBaseUrl, frameResourceUrl));
+            }
+            ArrayList<RGridResource> resourceArrayList = new ArrayList<>();
+            fetchAllResources(resourceArrayList, frameResourceUrls);
+            allBlobs.addAll(resourceArrayList);
+            frame.addResources(resourceArrayList);
+            allBlobs.add(frame.asResource());
+        } catch (MalformedURLException e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
+
+        parseScriptResult(frameObj, allBlobs, resourceUrls);
+        logger.verbose("exit - baseUrl: " + baseUrl);
     }
 
     private List<RenderRequest> buildRenderRequests(HashMap<String, Object> result, List<RGridResource> allBlobs) {
@@ -474,31 +498,39 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private void parseCSS(String css, URL baseUrl, List<URL> resourceUrls) {
+        logger.verbose("enter");
         final CascadingStyleSheet cascadingStyleSheet = CSSReader.readFromString(css, ECSSVersion.CSS30);
         if (cascadingStyleSheet == null) {
+            logger.verbose("exit - failed to read CSS string");
             return;
         }
         collectAllImportUris(cascadingStyleSheet, resourceUrls, baseUrl);
         collectAllFontFaceUris(cascadingStyleSheet, resourceUrls, baseUrl);
         collectAllBackgroundImageUris(cascadingStyleSheet, resourceUrls, baseUrl);
+        logger.verbose("exit");
     }
 
     private void collectAllFontFaceUris(CascadingStyleSheet cascadingStyleSheet, List<URL> allResourceUris, URL baseUrl) {
+        logger.verbose("enter");
         ICommonsList<CSSFontFaceRule> allFontFaceRules = cascadingStyleSheet.getAllFontFaceRules();
         for (CSSFontFaceRule fontFaceRule : allFontFaceRules) {
             getAllResourcesUrisFromDeclarations(allResourceUris, fontFaceRule, "src", baseUrl);
         }
+        logger.verbose("exit");
     }
 
     private void collectAllBackgroundImageUris(CascadingStyleSheet cascadingStyleSheet, List<URL> allResourceUris, URL baseUrl) {
+        logger.verbose("enter");
         ICommonsList<CSSStyleRule> allStyleRules = cascadingStyleSheet.getAllStyleRules();
         for (CSSStyleRule styleRule : allStyleRules) {
             getAllResourcesUrisFromDeclarations(allResourceUris, styleRule, "background", baseUrl);
             getAllResourcesUrisFromDeclarations(allResourceUris, styleRule, "background-image", baseUrl);
         }
+        logger.verbose("exit");
     }
 
     private void collectAllImportUris(CascadingStyleSheet cascadingStyleSheet, List<URL> allResourceUris, URL baseUrl) {
+        logger.verbose("enter");
         ICommonsList<CSSImportRule> allImportRules = cascadingStyleSheet.getAllImportRules();
         for (CSSImportRule importRule : allImportRules) {
             String uri = importRule.getLocation().getURI();
@@ -509,6 +541,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
+        logger.verbose("exit");
     }
 
     private <T extends IHasCSSDeclarations<T>> void getAllResourcesUrisFromDeclarations(List<URL> allResourceUris, IHasCSSDeclarations<T> rule, String propertyName, URL baseUrl) {
@@ -530,20 +563,23 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         }
     }
 
-    private void addBlobsToCache(List<RGridResource> allBlobs) {
+    private int addBlobsToCache(List<RGridResource> allBlobs) {
+        int written = 0;
         for (RGridResource blob : allBlobs) {
             String url = blob.getUrl();
             if (!this.fetchedCacheMap.containsKey(url)) {
                 IResourceFuture resourceFuture = this.eyesConnector.createResourceFuture(blob);
-                logger.log("Cache write for url - " + url + " hash:(" + resourceFuture + ")");
+                logger.verbose("Cache write for url - " + url + " hash:(" + resourceFuture + ")");
                 this.fetchedCacheMap.put(url, resourceFuture);
+                written++;
             }
         }
+        return written;
     }
 
     @SuppressWarnings("WhileLoopReplaceableByForEach")
     private void fetchAllResources(final List<RGridResource> allBlobs, List<URL> resourceUrls) throws MalformedURLException, ExecutionException, InterruptedException {
-
+        logger.verbose("enter");
         List<IResourceFuture> allFetches = new ArrayList<>();
 
         final Iterator<URL> iterator = resourceUrls.iterator();
@@ -552,7 +588,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             String url = link.toString();
             IResourceFuture fetch = fetchedCacheMap.get(url);
             if (fetch != null) {
-                logger.log("cache hit for url " + url);
+                logger.verbose("cache hit for url " + url);
                 iterator.remove();
                 allFetches.add(fetch);
                 continue;
@@ -565,28 +601,30 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 if (!this.fetchedCacheMap.containsKey(link.toString())) {
                     this.fetchedCacheMap.put(link.toString(), future);
                 } else {
-                    logger.log("this.fetchedCacheMap.containsKey(link.toString())");
+                    logger.verbose("this.fetchedCacheMap.containsKey(" + link.toString() + ")");
                 }
             }
         }
 
+        logger.verbose("parsing " + allFetches.size() + " fetched resources");
         for (IResourceFuture future : allFetches) {
-
-
+            logger.verbose("finishing future.get() for resource " + future.getUrl() + " ...");
             RGridResource resource = future.get();
+            logger.verbose("done getting resource " + future.getUrl());
             this.debugResourceWriter.write(resource);
 
-            String urlAsUrl = resource.getUrl();
+            String urlAsString = resource.getUrl();
 
-            removeUrlFromList(urlAsUrl, resourceUrls);
+            removeUrlFromList(urlAsString, resourceUrls);
             allBlobs.add(resource);
             String contentType = resource.getContentType();
             String css = getCss(resource.getContent(), contentType);
+            logger.verbose("handling " + contentType + " resource from URL: " + urlAsString);
             if (css == null || css.isEmpty() || !contentType.contains("text/css")) continue;
 
-            parseCSS(css, new URL(urlAsUrl), resourceUrls);
-
+            parseCSS(css, new URL(urlAsString), resourceUrls);
         }
+        logger.verbose("exit");
     }
 
     private void removeUrlFromList(String url, List<URL> resourceUrls) {
@@ -599,9 +637,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         }
     }
 
-
-    private void startPollingStatus(Map<RunningRender, RenderRequest> runningRenders) {
-
+    private void pollRenderingStatus(Map<RunningRender, RenderRequest> runningRenders) {
+        logger.verbose("enter");
         List<String> ids = getRenderIds(runningRenders.keySet());
         int numOfIterations = 0;
 
@@ -617,42 +654,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 continue;
             }
 
-            for (int i = 0, j = 0; i < renderStatusResultsList.size(); i++) {
-                RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
-                if (renderStatusResults == null) {
-                    continue;
-                }
-
-                boolean isRenderedStatus = renderStatusResults.getStatus() == RenderStatus.RENDERED;
-                boolean isErrorStatus = renderStatusResults.getStatus() == RenderStatus.ERROR;
-                if (isRenderedStatus || isErrorStatus) {
-
-                    String removedId = ids.remove(j);
-
-                    for (RunningRender renderedRender : runningRenders.keySet()) {
-                        if (renderedRender.getRenderId().equalsIgnoreCase(removedId)) {
-                            Task task = runningRenders.get(renderedRender).getTask();
-                            Iterator<Task> iterator = openTaskList.iterator();
-                            while (iterator.hasNext()) {
-                                Task openTask = iterator.next();
-                                if (openTask.getRunningTest() == task.getRunningTest()) {
-                                    if (isRenderedStatus) {
-                                        openTask.setRenderResult(renderStatusResults);
-                                    }
-                                    if (isErrorStatus) {
-                                        openTask.setRenderError(removedId);
-                                    }
-                                    iterator.remove();
-                                }
-                            }
-                            task.setRenderResult(renderStatusResults);
-                            break;
-                        }
-                    }
-                } else {
-                    j++;
-                }
-            }
+            sampleRenderingStatus(runningRenders, ids, renderStatusResultsList);
 
             if (ids.size() > 0) {
                 try {
@@ -679,6 +681,53 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
         this.isTaskComplete.set(true);
         this.notifySuccessAllListeners();
+        logger.verbose("exit");
+    }
+
+    private void sampleRenderingStatus(Map<RunningRender, RenderRequest> runningRenders, List<String> ids, List<RenderStatusResults> renderStatusResultsList) {
+        logger.verbose("enter - renderStatusResultsList.size: " + renderStatusResultsList.size());
+
+        for (int i = 0, j = 0; i < renderStatusResultsList.size(); i++) {
+            RenderStatusResults renderStatusResults = renderStatusResultsList.get(i);
+            if (renderStatusResults == null) {
+                continue;
+            }
+
+            RenderStatus renderStatus = renderStatusResults.getStatus();
+            boolean isRenderedStatus = renderStatus == RenderStatus.RENDERED;
+            boolean isErrorStatus = renderStatus == RenderStatus.ERROR;
+            logger.verbose("renderStatusResults - " + renderStatusResults);
+            if (isRenderedStatus || isErrorStatus) {
+
+                String removedId = ids.remove(j);
+
+                for (RunningRender renderedRender : runningRenders.keySet()) {
+                    if (renderedRender.getRenderId().equalsIgnoreCase(removedId)) {
+                        Task task = runningRenders.get(renderedRender).getTask();
+                        Iterator<Task> iterator = openTaskList.iterator();
+                        while (iterator.hasNext()) {
+                            Task openTask = iterator.next();
+                            if (openTask.getRunningTest() == task.getRunningTest()) {
+                                if (isRenderedStatus) {
+                                    logger.verbose("setting openTask " + openTask + " render result: " + renderStatusResults + " to url " + this.result.get("url"));
+                                    openTask.setRenderResult(renderStatusResults);
+                                } else {
+                                    logger.verbose("setting openTask " + openTask + " render error: " + removedId + " to url " + this.result.get("url"));
+                                    openTask.setRenderError(removedId);
+                                }
+                                iterator.remove();
+                            }
+                        }
+                        logger.verbose("setting task " + task + " render result: " + renderStatusResults + " to url " + this.result.get("url"));
+                        task.setRenderResult(renderStatusResults);
+                        break;
+                    }
+                }
+            } else {
+                j++;
+            }
+        }
+        logger.verbose("exit");
     }
 
 

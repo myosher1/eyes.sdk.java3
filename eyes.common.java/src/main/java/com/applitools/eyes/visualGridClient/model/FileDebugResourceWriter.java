@@ -60,6 +60,7 @@ public class FileDebugResourceWriter implements IDebugResourceWriter {
                 pathname = pathname.replaceAll("\\?", "_");
                 File file = new File(pathname);
                 ensureFilePath(file);
+                logger.verbose("writing resource to file: " + file);
                 byte[] data = resource.getContent();
                 try (FileOutputStream stream = new FileOutputStream(file)) {
                     stream.write(data);
