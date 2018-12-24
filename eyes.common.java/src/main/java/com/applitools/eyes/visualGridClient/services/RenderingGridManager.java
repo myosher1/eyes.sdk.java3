@@ -50,13 +50,13 @@ public class RenderingGridManager {
         FutureTask<TestResultContainer> nextTestToOpen = tasker.getNextTask();
         if (nextTestToOpen == null) {
             try {
-                logger.verbose("locking " + serviceName);
+//                logger.verbose("locking " + serviceName);
                 synchronized (lock) {
                     lock.wait(500);
                 }
-                logger.verbose("releasing " + serviceName);
+//                logger.verbose("releasing " + serviceName);
                 nextTestToOpen = tasker.getNextTask();
-                logger.verbose(serviceName + " tasker returned " + nextTestToOpen);
+//                logger.verbose(serviceName + " tasker returned " + nextTestToOpen);
             } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
@@ -234,7 +234,7 @@ public class RenderingGridManager {
                             nextTestToRender = getNextRenderingTask();
                             if (nextTestToRender == null) {
                                 renderingServiceLock.wait(300);
-                                logger.log("Rendering service woke up");
+//                                logger.log("Rendering service woke up");
                                 nextTestToRender = getNextRenderingTask();
                             }
 
@@ -450,43 +450,43 @@ public class RenderingGridManager {
     }
 
     private void notifyAllServices() {
-        logger.verbose("enter");
+//        logger.verbose("enter");
         notifyOpenerService();
         notifyCloserService();
         notifyCheckerService();
         notifyRenderingService();
-        logger.verbose("exit");
+//        logger.verbose("exit");
     }
 
     private void notifyRenderingService() {
-        logger.log("trying to notify rendering service");
+//        logger.log("trying to notify rendering service");
         synchronized (renderingServiceLock) {
             renderingServiceLock.notify();
         }
-        logger.verbose("renderingLockFree");
+//        logger.verbose("renderingLockFree");
     }
 
     private void notifyCloserService() {
-        logger.log("trying to notify closer service");
+//        logger.log("trying to notify closer service");
         synchronized (closerServiceLock) {
             closerServiceLock.notifyAll();
         }
-        logger.verbose("closerLockFree");
+//        logger.verbose("closerLockFree");
     }
 
     private void notifyOpenerService() {
-        logger.log("trying to notify opener service");
+//        logger.log("trying to notify opener service");
         synchronized (openerServiceLock) {
             openerServiceLock.notifyAll();
-            logger.verbose("openerLockFree");
+//            logger.verbose("openerLockFree");
         }
     }
 
     private void notifyCheckerService() {
-        logger.log("trying to notify checker service");
+//        logger.log("trying to notify checker service");
         synchronized (checkerServiceLock) {
             checkerServiceLock.notifyAll();
-            logger.verbose("checkerLockFree");
+//            logger.verbose("checkerLockFree");
         }
     }
 

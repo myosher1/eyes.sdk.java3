@@ -68,7 +68,11 @@ public class RenderingGridService extends Thread {
                     debugNotify();
                 }
             });
-            this.executor.submit(task);
+            try {
+                this.executor.submit(task);
+            } catch (Exception e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
         }
     }
 

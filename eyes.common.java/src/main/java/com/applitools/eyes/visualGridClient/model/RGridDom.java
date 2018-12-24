@@ -18,6 +18,7 @@ import java.util.Map;
 public class RGridDom {
 
     public static final String CONTENT_TYPE = "x-applitools-html/cdt";
+
     @JsonIgnore
     private List domNodes = null;
 
@@ -34,13 +35,21 @@ public class RGridDom {
     private String url;
     @JsonIgnore
     private Logger logger;
+
+    @JsonIgnore
+    private String msg;
+    @JsonIgnore
     private RGridResource gridResource;
 
     public RGridDom() {
     }
 
-    public RGridDom(Logger logger) {
+    public RGridDom(List domNodes, Map<String, RGridResource> resources, String url, Logger logger, String msg) {
+        this.domNodes = domNodes;
+        this.resources = resources;
+        this.url = url;
         this.logger = logger;
+        this.msg = msg;
     }
 
     public void addResource(RGridResource resource) {
@@ -64,41 +73,32 @@ public class RGridDom {
     }
 
     @JsonProperty("hash")
-    public String getSha256() {
+    public String getSha256() throws JsonProcessingException {
         if (this.sha256 == null) {
             sha256 = GeneralUtils.getSha256hash(ArrayUtils.toObject(getStringObjectMap().getBytes()));
         }
         return sha256;
     }
 
-    private String getStringObjectMap() {
+    private String getStringObjectMap() throws JsonProcessingException {
+
         Map<String, Object> map = new HashMap<>();
         map.put("domNodes", this.domNodes);
         map.put("resources", this.resources);
 
+
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
 
-        try {
-            return objectMapper.writeValueAsString(map);
-        } catch (JsonProcessingException e) {
-            GeneralUtils.logExceptionStackTrace(logger, e);
-        }
-        return "{}";
-    }
-
-    public void setSha256(String sha256) {
-        this.sha256 = sha256;
+        return objectMapper.writeValueAsString(map);
     }
 
     public String getHashFormat() {
         return hashFormat;
     }
 
-    public RGridResource asResource() {
-        if (gridResource == null) {
-            gridResource = new RGridResource(this.url, CONTENT_TYPE, getStringObjectMap().getBytes(), logger);
-        }
+    public RGridResource asResource() throws JsonProcessingException {
+        gridResource =  new RGridResource(this.url, CONTENT_TYPE, getStringObjectMap().getBytes(), logger, "RGridDom - "+msg);
         return gridResource;
     }
 

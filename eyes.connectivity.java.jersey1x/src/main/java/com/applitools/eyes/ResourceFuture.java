@@ -17,6 +17,8 @@ public class ResourceFuture implements IResourceFuture {
 
     private Future<Response> future;
 
+    private RGridResource resource;
+
     private String url = null;
     private Logger logger;
 
@@ -50,12 +52,12 @@ public class ResourceFuture implements IResourceFuture {
         Response response = future.get();
         ByteArrayOutputStream outputStream = downloadFile(response);
 
-        @SuppressWarnings("UnnecessaryLocalVariable")
-        RGridResource gridResource = new RGridResource(url,
-                (String) response.getMetadata().get("contentType").get(0),
-                outputStream.toByteArray(), logger);
-
-        return gridResource;
+        if (resource == null){
+            resource = new RGridResource(url,
+                    (String) response.getMetadata().get("contentType").get(0),
+                    outputStream.toByteArray(), logger, "ResourceFuture");
+        }
+        return resource;
     }
 
     @Override
@@ -66,7 +68,7 @@ public class ResourceFuture implements IResourceFuture {
         @SuppressWarnings("UnnecessaryLocalVariable")
         RGridResource gridResource = new RGridResource(url,
                 (String) response.getMetadata().get("contentType").get(0),
-                outputStream.toByteArray(), logger);
+                outputStream.toByteArray(), logger,"ResourceFuture");
 
         return gridResource;
     }

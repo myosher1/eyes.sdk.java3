@@ -18,11 +18,11 @@ public class RGridResource {
     @JsonIgnore
     private byte[] content;
 
-    @JsonInclude
+    @JsonProperty("hash")
     private String sha256;
 
     @JsonInclude
-    private String hashFormat = "sha256";
+    private final String hashFormat = "sha256";
 
     @JsonIgnore
     private Logger logger;
@@ -32,16 +32,17 @@ public class RGridResource {
         return url;
     }
 
-    public RGridResource(String url, String contentType, byte[] content, Logger logger) {
-        this.url = url;
+    public RGridResource(String url, String contentType, byte[] content, Logger logger, String msg) {
+
         this.contentType = contentType;
         this.content = content;
         this.logger = logger;
-        this.sha256 = getSha256();
-    }
-
-    public void setUrl(String url) {
-        ArgumentGuard.notNull(url, "url");
+        this.sha256 = GeneralUtils.getSha256hash(content);
+//        if (msg.startsWith("RGridDom")) {
+//            logger.log("creating resource - "+url + " from "+msg);
+//            logger.log("contentType - "+this.contentType);
+//            logger.log("content :\n"+new String(content));
+//        }
         this.url = url;
     }
 
@@ -49,32 +50,17 @@ public class RGridResource {
         return contentType;
     }
 
-    public void setContentType(String contentType) {
-        ArgumentGuard.notNull(contentType, "contentType");
-        this.contentType = contentType;
-    }
 
     public byte[] getContent() {
         return content;
-    }
-
-    public void setContent(byte[] content) {
-        ArgumentGuard.notNull(contentType, "content");
-        this.content = content;
-    }
-
-    @JsonProperty("hash")
-    public String getSha256() {
-        if (sha256 == null) {
-            this.sha256 = GeneralUtils.getSha256hash(content);
-            this.logger.log("Computed hash(" + this.sha256 + ") for url - " + this.url + " content length: " + this.content.length);
-        }
-        return sha256;
     }
 
     public String getHashFormat() {
         return hashFormat;
     }
 
+    public String getSha256() {
+        return sha256;
+    }
 }
 

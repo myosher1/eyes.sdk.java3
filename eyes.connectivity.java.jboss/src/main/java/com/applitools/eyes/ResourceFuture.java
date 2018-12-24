@@ -63,7 +63,7 @@ public class ResourceFuture implements IResourceFuture {
                 logger.verbose("response: " + response);
                 ByteArrayOutputStream outputStream = downloadFile(response);
                 String contentType = Utils.getResponseContentType(response);
-                rgResource = new RGridResource(url, contentType, outputStream.toByteArray(), logger);
+                rgResource = new RGridResource(url, contentType, outputStream.toByteArray(), logger, "ResourceFuture");
                 break;
             } catch (InterruptedException | ExecutionException e) {
                 retryCount--;
@@ -87,7 +87,7 @@ public class ResourceFuture implements IResourceFuture {
             Response response = future.get(timeout, unit);
             ByteArrayOutputStream outputStream = downloadFile(response);
             String contentType = Utils.getResponseContentType(response);
-            rgResource = new RGridResource(url, contentType, outputStream.toByteArray(), logger);
+            rgResource = new RGridResource(url, contentType, outputStream.toByteArray(), logger, "resourceFuture");
         }
         return rgResource;
     }

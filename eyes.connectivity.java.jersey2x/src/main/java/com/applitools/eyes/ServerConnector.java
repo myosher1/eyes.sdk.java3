@@ -4,8 +4,8 @@
 package com.applitools.eyes;
 
 import com.applitools.IResourceUploadListener;
-import com.applitools.eyes.visualGridClient.services.IResourceFuture;
 import com.applitools.eyes.visualGridClient.model.*;
+import com.applitools.eyes.visualGridClient.services.IResourceFuture;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -14,7 +14,6 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.ArrayUtils;
 import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.message.GZipEncoder;
 

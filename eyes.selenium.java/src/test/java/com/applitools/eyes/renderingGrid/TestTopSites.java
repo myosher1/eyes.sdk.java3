@@ -34,7 +34,6 @@ public class TestTopSites {
         FileLogger logHandler = new FileLogger("eyes.log", false, true);
         renderingManager.setLogHandler(logHandler);
         renderingManager.getLogger().log("enter");
-//        System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
     }
 
     @DataProvider(name = "dp", parallel = true)
