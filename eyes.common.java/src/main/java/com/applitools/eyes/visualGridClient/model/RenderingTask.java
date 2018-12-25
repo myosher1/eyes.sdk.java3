@@ -292,7 +292,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     private RenderRequest[] prepareDataForRG(HashMap<String, Object> result) throws ExecutionException, InterruptedException, MalformedURLException, JsonProcessingException {
 
-        final List<RGridResource> allBlobs = Collections.synchronizedList(new ArrayList<RGridResource>());
+        final Set<RGridResource> allBlobs = Collections.synchronizedSet(new HashSet<RGridResource>());
         Set<URL>  resourceUrls = new HashSet<>();
 
         parseScriptResult(result, allBlobs, resourceUrls);
@@ -346,6 +346,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 Map<String, RGridResource> mapping = new HashMap<>();
                 for (Map<String, Object> frameObj : allObjects) {
                     List allFramesBlobs = (List) frameObj.get("blobs");
+                    String frameUrl = (String) frameObj.get("url");
+                    URL frameUrlAsObj = new URL(baseUrl, frameUrl);
                     for (Object blob : allFramesBlobs) {
                         Map blobAsMap = (Map) blob;
                         String blobUrl = (String) blobAsMap.get("url");
@@ -354,8 +356,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
                     }
                     List cdt = (List) frameObj.get("cdt");
-                    RGridDom rGridDom = new RGridDom(cdt, mapping, url, logger, "buildAllRGDoms");
-                    resourceMapping.put(url, rGridDom.asResource());
+                    RGridDom rGridDom = new RGridDom(cdt, mapping, frameUrlAsObj.toString(), logger, "buildAllRGDoms");
+                    resourceMapping.put(frameUrlAsObj.toString(), rGridDom.asResource());
                     buildAllRGDoms(resourceMapping, frameObj);
                 }
             }
@@ -363,7 +365,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     @SuppressWarnings("unchecked")
-    private void parseScriptResult(Map<String, Object> result, List<RGridResource> allBlobs, Set<URL> resourceUrls) throws ExecutionException, InterruptedException, JsonProcessingException {
+    private void parseScriptResult(Map<String, Object> result, Set<RGridResource> allBlobs, Set<URL> resourceUrls) throws ExecutionException, InterruptedException, JsonProcessingException {
         org.apache.commons.codec.binary.Base64 codec = new Base64();
         URL baseUrl = null;
         try {
@@ -571,7 +573,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
 
-    private int addBlobsToCache(List<RGridResource> allBlobs) throws ExecutionException, InterruptedException {
+    private int addBlobsToCache(Set<RGridResource> allBlobs) throws ExecutionException, InterruptedException {
         int written = 0;
         for (RGridResource blob : allBlobs) {
             String url = blob.getUrl();
@@ -585,7 +587,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         return written;
     }
 
-    private void fetchAllResources(final List<RGridResource> allBlobs, Set<URL> resourceUrls) throws MalformedURLException, ExecutionException, InterruptedException {
+    private void fetchAllResources(final Set<RGridResource> allBlobs, Set<URL> resourceUrls) throws MalformedURLException, ExecutionException, InterruptedException {
         logger.verbose("enter");
         List<IResourceFuture> allFetches = new ArrayList<>();
 

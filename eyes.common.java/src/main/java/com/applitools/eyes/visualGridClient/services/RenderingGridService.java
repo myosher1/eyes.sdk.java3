@@ -71,6 +71,7 @@ public class RenderingGridService extends Thread {
             try {
                 this.executor.submit(task);
             } catch (Exception e) {
+                e.printStackTrace();
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
