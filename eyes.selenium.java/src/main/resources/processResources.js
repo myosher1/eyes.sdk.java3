@@ -1,4 +1,3 @@
-
 function __processPageAndSerialize() {
   var processPageAndSerialize = (function () {
     'use strict';

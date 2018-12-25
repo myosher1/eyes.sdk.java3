@@ -396,7 +396,7 @@ public class RenderingGridManager {
             for (Future<TestResultContainer> future : entry.getValue()) {
                 try {
                     logger.verbose("calling future.get on " + entry.getKey());
-                    TestResultContainer obj = future.get();
+                    TestResultContainer obj = future.get(10, TimeUnit.MINUTES);
                     logger.verbose("got TestResultContainer: " + obj);
                     allResults.add(obj);
                 } catch (Exception e) {
