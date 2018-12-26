@@ -566,6 +566,7 @@ public class ServerConnector extends RestClient
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
         Entity entity = Entity.entity(content, contentType);
         final Future<Response> future = request.async().put(entity);
+        logger.log("future created.");
         return new PutFuture(future, resource, runningRender, this, logger);
     }
 
@@ -607,6 +608,7 @@ public class ServerConnector extends RestClient
                     return Arrays.asList(renderStatusResults);
                 }
             } catch (JsonProcessingException e) {
+                logger.log("exception in render status");
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
             return null;

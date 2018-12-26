@@ -45,6 +45,7 @@ public class RunningTest {
                     runningTest.setTestOpen(true);
                     break;
                 case CLOSE:
+                case ABORT:
                     RunningTest.this.isTestClose.set(true);
                     break;
             }
@@ -89,21 +90,22 @@ public class RunningTest {
 
     public ScoreTask getScoreTaskObjectByType(Task.TaskType taskType) {
         int score = 0;
+        Task chosenTask;
         synchronized (this.taskList) {
             for (Task task : this.taskList) {
                 if (task.isTaskReadyToCheck() && task.getType() == Task.TaskType.CHECK) {
                     score++;
                 }
             }
+
+            if (this.taskList.isEmpty())
+                return null;
+
+            chosenTask = this.taskList.get(0);
+            if (chosenTask.getType() != taskType || chosenTask.isSent() || (taskType == Task.TaskType.OPEN && !chosenTask.isTaskReadyToCheck()))
+                return null;
         }
-        if (this.taskList.isEmpty())
-            return null;
-
-        Task task = this.taskList.get(0);
-        if (task.getType() != taskType || task.isSent() || (taskType == Task.TaskType.OPEN && !task.isTaskReadyToCheck()))
-            return null;
-
-        return new ScoreTask(task, score);
+        return new ScoreTask(chosenTask, score);
     }
 
     public synchronized FutureTask<TestResultContainer> getNextCloseTask() {

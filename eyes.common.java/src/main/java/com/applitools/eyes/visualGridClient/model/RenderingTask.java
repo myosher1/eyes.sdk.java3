@@ -149,7 +149,11 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         Map<RunningRender, RenderRequest> mapping = mapRequestToRunningRender(runningRenders, requests);
 
         logger.verbose("step 5");
-        pollRenderingStatus(mapping);
+        try {
+            pollRenderingStatus(mapping);
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
 
         logger.verbose("exit");
 
@@ -428,7 +432,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("exit");
     }
 
-    private List<RenderRequest> buildRenderRequests(HashMap<String, Object> result, Map<String, RGridResource> resourceMapping){
+    private List<RenderRequest> buildRenderRequests(HashMap<String, Object> result, Map<String, RGridResource> resourceMapping) {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
         String url = (String) result.get("url");
@@ -580,7 +584,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
 
-    private int addBlobsToCache(Map<String, RGridResource> allBlobs){
+    private int addBlobsToCache(Map<String, RGridResource> allBlobs) {
         int written = 0;
         for (RGridResource blob : allBlobs.values()) {
             String url = blob.getUrl();
@@ -759,7 +763,6 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         }
         logger.verbose("exit");
     }
-
 
     public boolean getIsTaskComplete() {
         return isTaskComplete.get();

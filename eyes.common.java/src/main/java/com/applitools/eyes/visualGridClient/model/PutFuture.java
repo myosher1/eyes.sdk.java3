@@ -68,6 +68,7 @@ public class PutFuture implements Future {
                         GeneralUtils.logExceptionStackTrace(logger, e1);
                     }
                     PutFuture newFuture = serverConnector.renderPutResource(runningRender, resource, null);
+                    logger.log("fired retry");
                     this.putFuture = newFuture.putFuture;
                 }
             }

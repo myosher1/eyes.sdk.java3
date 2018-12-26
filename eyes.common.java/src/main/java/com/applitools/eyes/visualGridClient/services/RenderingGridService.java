@@ -71,6 +71,10 @@ public class RenderingGridService extends Thread {
             try {
                 this.executor.submit(task);
             } catch (Exception e) {
+                logger.verbose("Exception in - this.executor.submit(task); ");
+                if(e.getMessage().contains("Read timed out")){
+                    logger.log("Read timed out");
+                }
                 e.printStackTrace();
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }

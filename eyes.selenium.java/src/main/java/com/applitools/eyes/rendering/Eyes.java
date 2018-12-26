@@ -12,6 +12,7 @@ import org.openqa.selenium.WebDriver;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -23,7 +24,7 @@ public class Eyes implements IRenderingEyes {
     private String serverUrl;
     private final RenderingGridManager renderingGridManager;
     private List<RunningTest> testList = new ArrayList<>();
-    private final List<RunningTest> testsInCloseProcess = new ArrayList<>();
+    private final List<RunningTest> testsInCloseProcess = Collections.synchronizedList(new ArrayList<RunningTest>());
     private AtomicBoolean isEyesClosed = new AtomicBoolean(false);
     private AtomicBoolean isEyesIssuedOpenTasks = new AtomicBoolean(false);
     private IRenderingEyes.EyesListener listener;
@@ -51,6 +52,7 @@ public class Eyes implements IRenderingEyes {
         public void onTaskComplete(Task task, RunningTest test) {
             switch (task.getType()) {
                 case CLOSE:
+                case ABORT:
                     boolean isEyesClosed = true;
                     for (RunningTest runningTest : testList) {
                         isEyesClosed &= runningTest.isTestClose();
@@ -155,17 +157,16 @@ public class Eyes implements IRenderingEyes {
     }
 
     public RunningTest getNextTestToClose() {
-        RunningTest test = null;
-        for (RunningTest runningTest : testList) {
-            if (!runningTest.isTestClose() && runningTest.isTestReadyToClose() && !this.testsInCloseProcess.contains(runningTest)) {
-                test = runningTest;
-
+        synchronized (testsInCloseProcess) {
+            for (RunningTest runningTest : testList) {
+                if (!runningTest.isTestClose() && runningTest.isTestReadyToClose() && !this.testsInCloseProcess.contains(runningTest)) {
+                    RunningTest test = runningTest;
+                    this.testsInCloseProcess.add(test);
+                    return test;
+                }
             }
         }
-        synchronized (testsInCloseProcess) {
-            this.testsInCloseProcess.add(test);
-        }
-        return test;
+        return null;
     }
 
     public List<Future<TestResultContainer>> close() {

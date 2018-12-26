@@ -110,6 +110,10 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
                     if (runningTest.isTestOpen()) {
                         testResults = eyesConnector.abortIfNotClosed();
                     }
+                    else{
+                        this.exception = new Exception("Rendering Failed");
+                        logger.log("Closing a not opened test");
+                    }
             }
             @SuppressWarnings("UnnecessaryLocalVariable")
             TestResultContainer testResultContainer = new TestResultContainer(testResults, this.exception);

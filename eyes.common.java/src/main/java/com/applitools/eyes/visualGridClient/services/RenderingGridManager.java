@@ -118,6 +118,7 @@ public class RenderingGridManager {
                         synchronized (eyesToCloseList) {
                             if (eyes.isEyesClosed()) {
                                 eyesToCloseList.remove(eyes);
+                                allEyes.remove(eyes);
                             }
                         }
                         logger.verbose("releasing eyesToCloseList");
