@@ -1,3 +1,4 @@
+
 function __processPageAndSerialize() {
   var processPageAndSerialize = (function () {
     'use strict';
@@ -184,7 +185,7 @@ function __processPageAndSerialize() {
     domNodesToCdt_1.NODE_TYPES = NODE_TYPES;
 
     function extractFrames(doc = document) {
-      return [...doc.querySelectorAll('iframe[src]')]
+      return [...doc.querySelectorAll('iframe[src]:not([src=""])')]
           .map(srcEl => {
             try {
               const contentDoc = srcEl.contentDocument;

@@ -238,11 +238,15 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
 
             List<Task> taskList = runningTest.getTaskList();
 
-            if (taskList.isEmpty()) continue;
+            Task task;
+            synchronized (taskList) {
+                if (taskList.isEmpty()) continue;
 
-            Task task = taskList.get(0);
-            if (!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck())
-                continue;
+                task = taskList.get(0);
+                if (!runningTest.isTestOpen() || task.getType() != Task.TaskType.CHECK || !task.isTaskReadyToCheck())
+                    continue;
+            }
+
 
             ScoreTask scoreTask = runningTest.getScoreTaskObjectByType(Task.TaskType.CHECK);
 

@@ -1,6 +1,7 @@
 package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.BatchInfo;
+import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
@@ -60,11 +61,11 @@ public final class TestRenderingGridService {
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
-            //eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
-            eyes.check(Target.window().withName("test").sendDom(false));
+            eyes.check(Target.window().withName("test").fully(false).sendDom(false));
             List<Future<TestResultContainer>> close = eyes.closeAndReturnResults();
             for (Future<TestResultContainer> future : close) {
                 future.get();

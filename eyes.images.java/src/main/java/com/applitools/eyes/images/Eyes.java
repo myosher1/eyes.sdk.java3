@@ -45,7 +45,7 @@ public class Eyes extends EyesBase {
      *                   {@code null} will automatically grab the resolution from the image.
      */
     public void open(String appName, String testName,
-                     RectangleSize dimensions) {
+                     RectangleSize dimensions) throws EyesException{
         config.setAppName(appName);
         config.setTestName(testName);
         config.setViewportSize(dimensions);

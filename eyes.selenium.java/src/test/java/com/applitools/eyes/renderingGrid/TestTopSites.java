@@ -30,7 +30,7 @@ public class TestTopSites {
 
     @BeforeClass
     public void beforeClass() {
-        renderingManager = new RenderingGridManager(10);
+        renderingManager = new RenderingGridManager(40);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
         FileLogger logHandler = new FileLogger("eyes.log", false, true);
         renderingManager.setLogHandler(logHandler);

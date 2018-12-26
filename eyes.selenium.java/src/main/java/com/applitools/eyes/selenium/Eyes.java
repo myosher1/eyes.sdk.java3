@@ -314,7 +314,7 @@ public class Eyes extends EyesBase implements IEyes{
         return open(driver);
     }
 
-    protected WebDriver open(WebDriver driver) {
+    protected WebDriver open(WebDriver driver) throws EyesException{
         if (getIsDisabled()) {
             logger.verbose("Ignored");
             return driver;
