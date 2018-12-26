@@ -8,7 +8,6 @@ import com.applitools.eyes.visualGridClient.model.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
-import java.util.concurrent.Future;
 
 public interface IEyesConnector {
     void log(String massage);
@@ -44,4 +43,6 @@ public interface IEyesConnector {
     void setBatch(BatchInfo batchInfo);
 
     void setUserAgent(String userAgent);
+
+    String getApiKey();
 }

@@ -15,7 +15,7 @@ public interface IRenderingEyes {
 
     void setListener(EyesListener listener);
 
-    List<Future<TestResultContainer>> close();
+    List<Future<TestResultContainer>> closeAndReturnResults();
 
     ScoreTask getBestScoreTaskForCheck();
 

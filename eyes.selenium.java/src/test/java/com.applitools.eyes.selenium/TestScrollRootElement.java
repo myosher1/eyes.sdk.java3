@@ -9,6 +9,13 @@ import org.testng.annotations.Test;
 
 @Listeners(TestListener.class)
 public class TestScrollRootElement extends TestSetup {
+    private Eyes eyes;
+
+    @Override
+    public void setEyes(Eyes eyes) {
+        this.eyes = eyes;
+    }
+
 
     @Factory(dataProvider = "dp", dataProviderClass = TestsDataProvider.class)
     public TestScrollRootElement(Capabilities caps, String platform) {

@@ -43,6 +43,7 @@ public class RenderingGridManager {
     private IDebugResourceWriter debugResourceWriter;
 
     private RateLimiter rateLimiter;
+    private String serverUrl;
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     private FutureTask<TestResultContainer> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker,
@@ -71,6 +72,14 @@ public class RenderingGridManager {
         renderingGridService.debugPauseService();
     }
 
+    public void setServerUrl(String serverUrl) {
+        this.serverUrl = serverUrl;
+    }
+
+    public String getServerUrl() {
+        return this.serverUrl;
+    }
+
     public interface RenderListener {
 
         void onRenderSuccess();
@@ -82,7 +91,7 @@ public class RenderingGridManager {
     private IRenderingEyes.EyesListener eyesListener = new IRenderingEyes.EyesListener() {
         @Override
         public void onTaskComplete(Task task, IRenderingEyes eyes) {
-            logger.verbose("Enter with :" + task.getType());
+            logger.verbose("Enter with: " + task.getType());
             Task.TaskType type = task.getType();
             try {
                 switch (type) {
@@ -380,8 +389,8 @@ public class RenderingGridManager {
         logger.verbose("enter");
         Map<IRenderingEyes, List<Future<TestResultContainer>>> allFutures = new HashMap<>();
         for (IRenderingEyes eyes : allEyes) {
-            allFutures.put(eyes, eyes.close());
-            //allFutures.addAll(eyes.close());
+            allFutures.put(eyes, eyes.closeAndReturnResults());
+            //allFutures.addAll(eyes.closeAndReturnResults());
             synchronized (this.eyesToCloseList) {
                 this.eyesToCloseList.add(eyes);
             }

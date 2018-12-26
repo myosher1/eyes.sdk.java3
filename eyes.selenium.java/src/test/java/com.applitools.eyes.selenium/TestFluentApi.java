@@ -188,7 +188,7 @@ public class TestFluentApi extends TestSetup {
 
     @Test
     public void TestCheckMany() {
-        eyes.check(
+        ((Eyes)eyes).check(
                 Target.region(By.id("overflowing-div-image")).withName("overflowing div image"),
                 Target.region(By.id("overflowing-div")).withName("overflowing div"),
                 Target.region(By.id("overflowing-div-image")).fully().withName("overflowing div image (fully)"),

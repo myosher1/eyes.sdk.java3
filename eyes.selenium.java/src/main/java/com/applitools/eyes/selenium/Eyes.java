@@ -45,7 +45,7 @@ import java.util.*;
  * The main API gateway for the SDK.
  */
 @SuppressWarnings("WeakerAccess")
-public class Eyes extends EyesBase {
+public class Eyes extends EyesBase implements IEyes{
 
     public FrameChain getOriginalFC() {
         return originalFC;
@@ -889,6 +889,7 @@ public class Eyes extends EyesBase {
         }
 
         ArgumentGuard.notNull(checkSettings, "checkSettings");
+        ArgumentGuard.notOfType(checkSettings, ISeleniumCheckTarget.class, "checkSettings");
 
         this.regionToCheck = null;
 
