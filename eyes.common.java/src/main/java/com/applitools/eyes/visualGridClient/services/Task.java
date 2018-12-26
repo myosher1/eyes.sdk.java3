@@ -117,6 +117,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
             }
             @SuppressWarnings("UnnecessaryLocalVariable")
             TestResultContainer testResultContainer = new TestResultContainer(testResults, this.exception);
+            notifySuccessAllListeners();
             return testResultContainer;
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
@@ -124,7 +125,6 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
         } finally {
             this.isTaskComplete.set(true);
             //call the callback
-            notifySuccessAllListeners();
         }
         return null;
     }

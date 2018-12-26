@@ -7,5 +7,7 @@ public interface ICheckRGSettingsInternal {
 
     Object getScriptHooks();
 
+    String getSizeMode();
+
     boolean isSendDom();
 }

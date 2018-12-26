@@ -42,6 +42,7 @@ public abstract class EyesBase {
 
     private static final int DEFAULT_MATCH_TIMEOUT = 2000; // Milliseconds
     protected static final int USE_DEFAULT_TIMEOUT = -1;
+    private static final int MAX_ITERATION = 10;
 
     private boolean shouldMatchWindowRunOnceOnTimeout;
 
@@ -1364,46 +1365,58 @@ public abstract class EyesBase {
         openBase();
     }
 
-    protected void openBase() {
-        //logger.getLogHandler().open();
+    protected void openBase() throws EyesException {
+//        logger.getLogHandler().open();
+        int retry = 0;
+        do {
+            try {
+                if (isDisabled) {
+                    logger.verbose("Ignored");
+                    return;
+                }
 
-        try {
-            if (isDisabled) {
-                logger.verbose("Ignored");
+                sessionEventHandlers.testStarted(getAUTSessionId());
+
+                validateApiKey();
+                logOpenBase();
+                validateSessionOpen();
+
+                initProviders();
+
+                this.isViewportSizeSet = false;
+
+                sessionEventHandlers.initStarted();
+
+                beforeOpen();
+
+                RectangleSize viewportSize = config.getViewportSize();
+                viewportSizeHandler.set(viewportSize);
+
+                try {
+                    if (viewportSize != null) {
+                        ensureRunningSession();
+                    }
+                } catch (Exception e) {
+                    GeneralUtils.logExceptionStackTrace(logger, e);
+                    retry++;
+                    continue;
+                }
+
+                this.validationId = -1;
+
+                isOpen = true;
+                afterOpen();
                 return;
+            } catch (EyesException e) {
+                logger.log(e.getMessage());
+                logger.getLogHandler().close();
+                throw e;
             }
 
-            sessionEventHandlers.testStarted(getAUTSessionId());
 
-            validateApiKey();
-            logOpenBase();
-            validateSessionOpen();
+        } while (MAX_ITERATION > retry);
 
-            initProviders();
-
-            this.isViewportSizeSet = false;
-
-            sessionEventHandlers.initStarted();
-
-            beforeOpen();
-
-            RectangleSize viewportSize = config.getViewportSize();
-            viewportSizeHandler.set(viewportSize);
-
-            if (viewportSize != null) {
-                ensureRunningSession();
-            }
-
-            this.validationId = -1;
-
-            isOpen = true;
-            afterOpen();
-
-        } catch (EyesException e) {
-            logger.log(e.getMessage());
-            logger.getLogHandler().close();
-            throw e;
-        }
+        throw new EyesException("eyes.openBase() failed");
     }
 
     protected void ensureRunningSession() {

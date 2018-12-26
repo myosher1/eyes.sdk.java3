@@ -46,7 +46,7 @@ public final class TestMultiThreadWithServiceLockService {
         webDriver.get("https://applitools.github.io/demo/TestPages/VisualGridTestPage");
         //webDriver.get("http://applitools-vg-test.surge.sh/test.html");
 
-        System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
+//        System.setProperty("https.protocols", "TLSv1,TLSv1.1,TLSv1.2");
     }
 
     @SuppressWarnings("unchecked")
