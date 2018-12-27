@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class OpenerService extends EyesService{
 
     private AtomicInteger concurrentSession = new AtomicInteger();
-    final Object concurrencyLock;
+    private final Object concurrencyLock;
 
     public OpenerService(String serviceName, ThreadGroup servicesGroup, Logger logger, int threadPoolSize, Object openerServiceLock, EyesServiceListener listener, Object debugLock, Tasker tasker) {
         super(serviceName, servicesGroup, logger, threadPoolSize, debugLock, listener, tasker);

@@ -212,6 +212,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
         List<Future<TestResultContainer>> futureList = new ArrayList<>();
         try {
             for (RunningTest runningTest : testList) {
+                logger.verbose("running test name: " + runningTest.getConfiguration().getTestName());
                 logger.verbose("is current running test open: " + runningTest.isTestOpen());
                 logger.verbose("is current running test ready to close: " + runningTest.isTestReadyToClose());
                 logger.verbose("is current running test closed: " + runningTest.isTestClose());
@@ -319,6 +320,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
     }
 
     public void check(ICheckSettings checkSettings) {
+        logger.verbose("enter");
 
         ArgumentGuard.notOfType(checkSettings, ICheckRGSettings.class, "checkSettings");
 
@@ -342,22 +344,25 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
 
         ICheckRGSettings rgSettings = (ICheckRGSettings) checkSettings;
 
-        this.renderingGridManager.check(rgSettings, debugResourceWriter, scriptResult, this.eyesConnector, taskList, openTasks, new VisualGridManager.RenderListener() {
-            @Override
-            public void onRenderSuccess() {
+        this.renderingGridManager.check(rgSettings, debugResourceWriter, scriptResult,
+                this.eyesConnector, taskList, openTasks,
+                new VisualGridManager.RenderListener() {
+                    @Override
+                    public void onRenderSuccess() {
 
-            }
+                    }
 
-            @Override
-            public void onRenderFailed(Exception e) {
+                    @Override
+                    public void onRenderFailed(Exception e) {
 
-            }
-        });
+                    }
+                });
 
         logger.verbose(" $$$$$$$$$$    created renderTask  (" + checkSettings.toString() + ")   $$$$$$$$$$$$");
     }
 
     private synchronized List<Task> addOpenTaskToAllRunningTest() {
+        logger.verbose("enter");
         List<Task> tasks = new ArrayList<>();
         if (!this.isEyesIssuedOpenTasks.get()) {
             for (RunningTest runningTest : testList) {
@@ -367,6 +372,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
             logger.verbose("calling addOpenTaskToAllRunningTest.open");
             this.isEyesIssuedOpenTasks.set(true);
         }
+        logger.verbose("exit");
         return tasks;
     }
 

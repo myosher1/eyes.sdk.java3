@@ -109,7 +109,7 @@ public class TestTopSites {
         } finally {
             logger.log("closing WebDriver for url " + testedUrl);
             webDriver.quit();
-
+            logger.log("url " + testedUrl + " - done with browser.");
             // End the test.
         }
     }

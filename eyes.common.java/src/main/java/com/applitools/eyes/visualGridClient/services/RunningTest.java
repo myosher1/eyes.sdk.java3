@@ -223,7 +223,7 @@ public class RunningTest {
         return logger;
     }
 
-    RenderingConfiguration getConfiguration() {
+    public RenderingConfiguration getConfiguration() {
         return configuration;
     }
 }
