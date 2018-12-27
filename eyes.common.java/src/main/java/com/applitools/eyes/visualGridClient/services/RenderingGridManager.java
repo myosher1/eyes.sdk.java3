@@ -402,10 +402,13 @@ public class RenderingGridManager {
         List<TestResultContainer> allResults = new ArrayList<>();
         logger.verbose("trying to call future.get on " + allFutures.size() + " future lists.");
         for (Map.Entry<IRenderingEyes, List<Future<TestResultContainer>>> entry : allFutures.entrySet()) {
-            logger.verbose("trying to call future.get on " + entry.getValue().size() + " futures of " + entry.getKey());
-            for (Future<TestResultContainer> future : entry.getValue()) {
+
+            List<Future<TestResultContainer>> value = entry.getValue();
+            IRenderingEyes key = entry.getKey();
+            logger.verbose("trying to call future.get on " + value.size() + " futures of " + key);
+            for (Future<TestResultContainer> future : value) {
                 try {
-                    logger.verbose("calling future.get on " + entry.getKey());
+                    logger.verbose("calling future.get on " + key);
                     TestResultContainer obj = future.get(10, TimeUnit.MINUTES);
                     logger.verbose("got TestResultContainer: " + obj);
                     allResults.add(obj);
