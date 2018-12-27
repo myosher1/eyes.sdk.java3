@@ -403,49 +403,53 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
         logger.verbose("baseUrl: " + baseUrl);
-        for (String key : result.keySet()) {
-            Object value = result.get(key);
-            switch (key) {
-                case "blobs":
-                    //TODO check if empty
-                    List listOfBlobs = (List) value;
-                    for (Object blob : listOfBlobs) {
-                        RGridResource resource = parseBlobToGridResource(codec, baseUrl, (Map) blob);
-                        if (!allBlobs.containsKey(resource.getUrl())) {
-                            allBlobs.put(resource.getUrl(), resource);
-                        }
-                    }
-                    break;
-
-                case "resourceUrls":
-                    List<String> list = (List<String>) value;
-                    for (String url : list) {
-                        try {
-                            if (this.fetchedCacheMap.containsKey(url)) {
-                                logger.verbose("Cache hit for " + url);
-                                continue;
+        try {
+            for (String key : result.keySet()) {
+                Object value = result.get(key);
+                switch (key) {
+                    case "blobs":
+                        //TODO check if empty
+                        List listOfBlobs = (List) value;
+                        for (Object blob : listOfBlobs) {
+                            RGridResource resource = parseBlobToGridResource(codec, baseUrl, (Map) blob);
+                            if (!allBlobs.containsKey(resource.getUrl())) {
+                                allBlobs.put(resource.getUrl(), resource);
                             }
-                            resourceUrls.add(new URL(baseUrl, url));
-                        } catch (MalformedURLException e) {
-                            GeneralUtils.logExceptionStackTrace(logger, e);
                         }
-                    }
-                    break;
+                        break;
 
-                case "frames":
-                    logger.verbose("handling 'frames' key (level: " + framesLevel.incrementAndGet() + ")");
-                    List<Map<String, Object>> allObjects = (List) value;
-                    for (Map<String, Object> frameObj : allObjects) {
-                        parseScriptResult(frameObj, allBlobs, resourceUrls);
-                    }
-                    logger.verbose("done handling 'frames' key (level: " + framesLevel.getAndDecrement() + ")");
-                    break;
+                    case "resourceUrls":
+                        List<String> list = (List<String>) value;
+                        for (String url : list) {
+                            try {
+                                if (this.fetchedCacheMap.containsKey(url)) {
+                                    logger.verbose("Cache hit for " + url);
+                                    continue;
+                                }
+                                resourceUrls.add(new URL(baseUrl, url));
+                            } catch (MalformedURLException e) {
+                                GeneralUtils.logExceptionStackTrace(logger, e);
+                            }
+                        }
+                        break;
+
+                    case "frames":
+                        logger.verbose("handling 'frames' key (level: " + framesLevel.incrementAndGet() + ")");
+                        List<Map<String, Object>> allObjects = (List) value;
+                        for (Map<String, Object> frameObj : allObjects) {
+                            parseScriptResult(frameObj, allBlobs, resourceUrls);
+                        }
+                        logger.verbose("done handling 'frames' key (level: " + framesLevel.getAndDecrement() + ")");
+                        break;
+                }
             }
+            int written = addBlobsToCache(allBlobs);
+            logger.verbose("written " + written + " blobs to cache.");
+            parseAndCollectCSSResources(allBlobs, baseUrl, resourceUrls);
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
-        int written = addBlobsToCache(allBlobs);
-        logger.verbose("written " + written + " blobs to cache.");
 
-        parseAndCollectCSSResources(allBlobs, baseUrl, resourceUrls);
         logger.verbose("exit");
     }
 

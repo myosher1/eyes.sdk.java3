@@ -392,7 +392,9 @@ public class VisualGridManager {
             allFutures.put(eyes, eyes.closeAndReturnResults());
             //allFutures.addAll(eyes.closeAndReturnResults());
             synchronized (this.eyesToCloseList) {
-                this.eyesToCloseList.add(eyes);
+                if (!this.eyesToCloseList.contains(eyes)) {
+                    this.eyesToCloseList.add(eyes);
+                }
             }
         }
 
@@ -426,7 +428,9 @@ public class VisualGridManager {
     public void close(IRenderingEyes eyes) {
         logger.verbose("adding eyes to close list: " + eyes);
         synchronized (this.eyesToCloseList) {
-            this.eyesToCloseList.add(eyes);
+            if (!this.eyesToCloseList.contains(eyes)) {
+                this.eyesToCloseList.add(eyes);
+            }
         }
         notifyAllServices();
     }
