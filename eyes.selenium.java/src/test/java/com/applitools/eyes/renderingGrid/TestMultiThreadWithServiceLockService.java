@@ -9,7 +9,7 @@ import com.applitools.eyes.visualGridClient.model.CompletableTask;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultContainer;
-import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
+import com.applitools.eyes.visualGridClient.services.VisualGridManager;
 import com.applitools.eyes.visualGridClient.services.Task;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 
 public final class TestMultiThreadWithServiceLockService {
 
-    private RenderingGridManager renderingManager;
+    private VisualGridManager renderingManager;
     private WebDriver webDriver;
     private final Object openerLock = new Object();
     private final Object checkerLock = new Object();
@@ -39,7 +39,7 @@ public final class TestMultiThreadWithServiceLockService {
     @BeforeMethod
     public void Before(ITestContext testContext) {
         concurrentOpenSessions = 3;
-        renderingManager = new RenderingGridManager(concurrentOpenSessions, openerLock, checkerLock, closerLock, renderLock);
+        renderingManager = new VisualGridManager(concurrentOpenSessions, openerLock, checkerLock, closerLock, renderLock);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
 
         webDriver = new ChromeDriver();

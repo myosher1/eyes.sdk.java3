@@ -5,7 +5,7 @@ import com.applitools.ICheckRGSettingsInternal;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.services.IEyesConnector;
 import com.applitools.eyes.visualGridClient.services.IResourceFuture;
-import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
+import com.applitools.eyes.visualGridClient.services.VisualGridManager;
 import com.applitools.eyes.visualGridClient.services.Task;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -55,7 +55,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckRGSettings renderingConfiguration,
-                         List<Task> taskList, List<Task> openTasks, RenderingGridManager renderingGridManager,
+                         List<Task> taskList, List<Task> openTasks, VisualGridManager renderingGridManager,
                          IDebugResourceWriter debugResourceWriter, RenderTaskListener listener) {
 
         this.eyesConnector = eyesConnector;

@@ -9,7 +9,7 @@ import com.applitools.utils.GeneralUtils;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class RenderingGridManager {
+public class VisualGridManager {
 
     private int concurrentOpenSessions;
 
@@ -156,16 +156,16 @@ public class RenderingGridManager {
 
     };
 
-    public RenderingGridManager(int concurrentOpenSessions) {
+    public VisualGridManager(int concurrentOpenSessions) {
         this(concurrentOpenSessions, null, null, null, null);
 
     }
 
-    public RenderingGridManager(int concurrentOpenSessions,
-                                Object openerServiceDebugLock,
-                                Object checkerServiceDebugLock,
-                                Object closerServiceDebugLock,
-                                Object renderServiceDebugLock) {
+    public VisualGridManager(int concurrentOpenSessions,
+                             Object openerServiceDebugLock,
+                             Object checkerServiceDebugLock,
+                             Object closerServiceDebugLock,
+                             Object renderServiceDebugLock) {
 
         this.concurrentOpenSessions = concurrentOpenSessions;
         this.openerServiceDebugLock = openerServiceDebugLock;

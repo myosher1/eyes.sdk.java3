@@ -7,7 +7,7 @@ import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
 import com.applitools.eyes.visualGridClient.model.FileDebugResourceWriter;
 import com.applitools.eyes.visualGridClient.model.TestResultContainer;
-import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
+import com.applitools.eyes.visualGridClient.services.VisualGridManager;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
 import com.applitools.utils.GeneralUtils;
@@ -26,14 +26,14 @@ import java.util.concurrent.Future;
 
 public final class TestRenderingGridService {
 
-    private RenderingGridManager renderingManager;
+    private VisualGridManager renderingManager;
     private WebDriver webDriver;
 
     private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
 
     @BeforeMethod
     public void Before(ITestContext testContext){
-        renderingManager = new RenderingGridManager(3);
+        renderingManager = new VisualGridManager(3);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");

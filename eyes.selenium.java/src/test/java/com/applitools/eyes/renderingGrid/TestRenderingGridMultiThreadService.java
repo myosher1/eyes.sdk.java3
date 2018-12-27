@@ -8,7 +8,7 @@ import com.applitools.eyes.rendering.Target;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultContainer;
-import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
+import com.applitools.eyes.visualGridClient.services.VisualGridManager;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -23,12 +23,12 @@ import java.util.concurrent.Future;
 
 public final class TestRenderingGridMultiThreadService {
 
-    private RenderingGridManager renderingManager;
+    private VisualGridManager renderingManager;
     private WebDriver webDriver;
 
     @BeforeMethod
     public void Before(ITestContext testContext) {
-        renderingManager = new RenderingGridManager(1);
+        renderingManager = new VisualGridManager(1);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
 
         webDriver = new ChromeDriver();

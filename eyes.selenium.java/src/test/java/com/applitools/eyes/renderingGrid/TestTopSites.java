@@ -4,11 +4,9 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
 import com.applitools.eyes.selenium.IEyes;
-import com.applitools.eyes.visualGridClient.model.FileDebugResourceWriter;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
-import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
-import com.applitools.eyes.visualGridClient.services.RenderingGridManager;
+import com.applitools.eyes.visualGridClient.services.VisualGridManager;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -18,11 +16,9 @@ import org.testng.annotations.*;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
-import java.util.concurrent.Future;
 
 public class TestTopSites {
-    private RenderingGridManager renderingManager;
+    private VisualGridManager renderingManager;
 
     private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
@@ -30,7 +26,7 @@ public class TestTopSites {
 
     @BeforeClass
     public void beforeClass() {
-        renderingManager = new RenderingGridManager(40);
+        renderingManager = new VisualGridManager(40);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
         FileLogger logHandler = new FileLogger("eyes.log", false, true);
         renderingManager.setLogHandler(logHandler);
@@ -85,10 +81,10 @@ public class TestTopSites {
     public void test(String testedUrl) {
         renderingManager.getLogger().log("entering with url " + testedUrl);
         WebDriver webDriver = new ChromeDriver();
+        webDriver.get(testedUrl);
         IEyes eyes = initEyes(webDriver, testedUrl);
         Logger logger = eyes.getLogger();
-        logger.log("navigating to " + testedUrl);
-        webDriver.get(testedUrl);
+        logger.log("navigated to " + testedUrl);
 
         try {
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);

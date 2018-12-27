@@ -23,7 +23,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
 
     private Logger logger;
     private String serverUrl;
-    private final RenderingGridManager renderingGridManager;
+    private final VisualGridManager renderingGridManager;
     private List<RunningTest> testList = new ArrayList<>();
     private final List<RunningTest> testsInCloseProcess = Collections.synchronizedList(new ArrayList<RunningTest>());
     private AtomicBoolean isEyesClosed = new AtomicBoolean(false);
@@ -77,7 +77,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
         }
     };
 
-    public Eyes(RenderingGridManager renderingGridManager) {
+    public Eyes(VisualGridManager renderingGridManager) {
         ArgumentGuard.notNull(renderingGridManager, "renderingGridManager");
         this.renderingGridManager = renderingGridManager;
         this.logger = renderingGridManager.getLogger();
@@ -157,7 +157,8 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
         if (webDriver instanceof JavascriptExecutor) {
             this.jsExecutor = (JavascriptExecutor) webDriver;
         }
-        this.url = webDriver.getCurrentUrl();
+        String currentUrl = webDriver.getCurrentUrl();
+        this.url = currentUrl;
     }
 
     public RunningTest getNextTestToClose() {
@@ -341,7 +342,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
 
         ICheckRGSettings rgSettings = (ICheckRGSettings) checkSettings;
 
-        this.renderingGridManager.check(rgSettings, debugResourceWriter, scriptResult, this.eyesConnector, taskList, openTasks, new RenderingGridManager.RenderListener() {
+        this.renderingGridManager.check(rgSettings, debugResourceWriter, scriptResult, this.eyesConnector, taskList, openTasks, new VisualGridManager.RenderListener() {
             @Override
             public void onRenderSuccess() {
 
