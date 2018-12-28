@@ -2,6 +2,7 @@ package com.applitools.eyes.visualGridClient.model;
 
 import com.applitools.ICheckRGSettings;
 import com.applitools.ICheckRGSettingsInternal;
+import com.applitools.ICheckSettingsInternal;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.services.IEyesConnector;
 import com.applitools.eyes.visualGridClient.services.IResourceFuture;
@@ -753,6 +754,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
         }
 
+        ICheckSettingsInternal rcInternal = (ICheckSettingsInternal) renderingConfiguration;
+        logger.verbose("marking task as complete: " + rcInternal.getName());
         this.isTaskComplete.set(true);
         this.notifySuccessAllListeners();
         logger.verbose("exit");

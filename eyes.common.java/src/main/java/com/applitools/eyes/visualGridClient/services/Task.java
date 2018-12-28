@@ -123,6 +123,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
             GeneralUtils.logExceptionStackTrace(logger, e);
             notifyFailureAllListeners(e);
         } finally {
+            logger.verbose("marking task as complete: " + this.runningTest.getConfiguration().getTestName());
             this.isTaskComplete.set(true);
             //call the callback
         }
