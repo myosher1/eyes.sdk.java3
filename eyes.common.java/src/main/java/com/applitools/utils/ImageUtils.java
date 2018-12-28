@@ -496,6 +496,7 @@ public class ImageUtils {
 
     /**
      * Removes a given region from the image.
+     * @param logger The logger to use.
      * @param image The image to crop.
      * @param regionToCrop The region to crop from the image.
      * @return A new image without the cropped region.
@@ -522,6 +523,7 @@ public class ImageUtils {
 
     /**
      * Save image to local file system
+     * @param logger The logger to use.
      * @param image The image to save.
      * @param filename The path to save image
      */

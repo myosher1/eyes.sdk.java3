@@ -12,6 +12,7 @@ public abstract class ScaleProviderFactory {
 
     /**
      *
+     * @param logger The logger to use.
      * @param scaleProviderHandler A handler to update once a {@link ScaleProvider} instance is created.
      */
     public ScaleProviderFactory(Logger logger, PropertyHandler<ScaleProvider> scaleProviderHandler) {

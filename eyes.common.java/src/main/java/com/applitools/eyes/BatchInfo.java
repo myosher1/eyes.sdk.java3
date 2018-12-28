@@ -73,7 +73,9 @@ public class BatchInfo {
      * Sets a unique identifier for the batch and allows chaining of the id
      * with the instance then returns that instance. Sessions with batch
      * info which includes the same ID will be grouped together.
+     *
      * @param id The batch's ID
+     * @return The updated {@link BatchInfo} instance.
      */
     public BatchInfo withBatchId(String id) {
         ArgumentGuard.notNullOrEmpty(id, "id");

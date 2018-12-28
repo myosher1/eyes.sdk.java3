@@ -13,7 +13,9 @@ public class ScaleProviderIdentityFactory extends ScaleProviderFactory {
 
     /**
      *
+     * @param logger The logger to use.
      * @param scaleProvider The {@link ScaleProvider}
+     * @param scaleProviderHandler The handler to set(get) the scale provider on(to).
      */
     public ScaleProviderIdentityFactory(Logger logger, ScaleProvider scaleProvider,
                                         PropertyHandler<ScaleProvider> scaleProviderHandler) {

@@ -325,7 +325,8 @@ public class Region {
     }
 
     /**
-     * See {@link #getSubRegions(RectangleSize, boolean)}.
+     * @see #getSubRegions(RectangleSize, boolean) .
+     *
      * {@code isFixedSize} defaults to {@code false}.
      */
     public Iterable<Region> getSubRegions(RectangleSize subRegionSize) {

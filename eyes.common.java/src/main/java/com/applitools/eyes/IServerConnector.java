@@ -104,10 +104,12 @@ public interface IServerConnector {
      void downloadString(URL uri, boolean isSecondRetry, IDownloadListener<String> listener);
 
     /**
-     * Downloads string from a given Url
-     *  @param uri The URI from which the IServerConnector will download the string
+     * Downloads string from a given Url.
+     *
+     * @param uri The URI from which the IServerConnector will download the string
      * @param isSecondRetry Indicates if a retry is mandatory onFailed - 2 retries per request
      * @param listener the listener will be called when the request will be resolved.
+     * @return A future which will be resolved when the resources is downloaded.
      */
     IResourceFuture downloadResource(URL uri, boolean isSecondRetry, IDownloadListener<Byte[]> listener);
 
@@ -121,7 +123,7 @@ public interface IServerConnector {
 
 
     /**
-     * Gets the render info from the server to be used later on.
+     * @return the render info from the server to be used later on.
      */
     RenderingInfo getRenderInfo();
 
@@ -129,7 +131,7 @@ public interface IServerConnector {
      * Initiate a rendering using RenderingGrid API
      *
      * @param renderRequests renderRequest The current agent's running session.
-     * @return List<RunningRender> The results of the render request
+     * @return {@code List<RunningRender>} The results of the render request
      */
     List<RunningRender> render(RenderRequest... renderRequests);
 
@@ -147,6 +149,7 @@ public interface IServerConnector {
      *
      * @param runningRender The running render (for second request only)
      * @param resource The resource to upload
+     * @param listener The callback wrapper for the upload result.
      * @return true if resource was uploaded
      */
     PutFuture renderPutResource(RunningRender runningRender, RGridResource resource, IResourceUploadListener listener);
