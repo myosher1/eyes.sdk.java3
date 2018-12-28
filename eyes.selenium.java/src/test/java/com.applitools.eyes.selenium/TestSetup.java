@@ -152,7 +152,7 @@ public abstract class TestSetup implements ITest {
         LogHandler logHandler;
 
         if (System.getenv("CI") == null && logsPath != null) {
-            String path = logsPath + File.separator + "java" + File.separator + extendedTestName;
+            String path = logsPath + File.separator + "java" + File.separator + extendedTestName.replaceAll("\\s","_");
             logHandler = new FileLogger(path + File.separator + testName + "_" + platform + ".log", true, true);
             seleniumEyes.setDebugScreenshotsPath(path);
             seleniumEyes.setDebugScreenshotsPrefix(testName + "_");
