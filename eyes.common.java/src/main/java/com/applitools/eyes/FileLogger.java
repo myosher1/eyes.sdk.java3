@@ -81,15 +81,17 @@ public class FileLogger implements LogHandler {
      * @param verbose Whether this message is flagged as verbose or not.
      * @param logString The string to log.
      */
-    public void onMessage(boolean verbose, String logString) {
-        if (fileWriter != null && (!verbose || this.isVerbose)) {
+    public synchronized void onMessage(boolean verbose, String logString) {
 
-            try {
-                fileWriter.write(getFormattedTimeStamp() + " Eyes: " + logString);
-                fileWriter.newLine();
-                fileWriter.flush();
-            } catch (IOException e) {
-                throw new EyesException("Failed to write log to file!", e);
+            if (fileWriter != null && (!verbose || this.isVerbose)) {
+                synchronized (fileWriter) {
+                try {
+                    fileWriter.write(getFormattedTimeStamp() + " Eyes: " + logString);
+                    fileWriter.newLine();
+                    fileWriter.flush();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -105,6 +107,11 @@ public class FileLogger implements LogHandler {
             }
         } catch (IOException e) {}
         fileWriter = null;
+    }
+
+    @Override
+    public boolean isOpen() {
+        return fileWriter != null;
     }
 
     private String getFormattedTimeStamp(){

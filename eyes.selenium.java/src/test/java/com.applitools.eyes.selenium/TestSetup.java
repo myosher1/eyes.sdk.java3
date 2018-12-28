@@ -10,7 +10,6 @@ import org.testng.annotations.BeforeClass;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -19,7 +18,9 @@ import java.util.HashSet;
 
 public abstract class TestSetup implements ITest {
 
-    protected Eyes eyes;
+    private Eyes seleniumEyes;
+
+    protected IEyes eyes;
     protected WebDriver driver;
     protected RemoteWebDriver webDriver;
 
@@ -51,28 +52,33 @@ public abstract class TestSetup implements ITest {
     @BeforeClass(alwaysRun = true)
     public void OneTimeSetUp() {
 
-        // Initialize the eyes SDK and set your private API key.
-        eyes = new Eyes();
-        //eyes.setServerConnector(new ServerConnector());
+        // Initialize the seleniumEyes SDK and set your private API key.
+        seleniumEyes = new Eyes();
+        //seleniumEyes.setServerConnector(new ServerConnector());
 
 //        RemoteSessionEventHandler remoteSessionEventHandler = new RemoteSessionEventHandler(
-//                eyes.getLogger(), URI.create("http://localhost:3000/"), "MyAccessKey");
+//                seleniumEyes.getLogger(), URI.create("http://localhost:3000/"), "MyAccessKey");
 //        remoteSessionEventHandler.setThrowExceptions(false);
-//        eyes.addSessionEventHandler(remoteSessionEventHandler);
+//        seleniumEyes.addSessionEventHandler(remoteSessionEventHandler);
 
         LogHandler logHandler = new StdoutLogHandler(false);
 
-        eyes.setLogHandler(logHandler);
-        eyes.setStitchMode(StitchMode.CSS);
+        seleniumEyes.setLogHandler(logHandler);
+        seleniumEyes.setStitchMode(StitchMode.CSS);
 
-        eyes.setHideScrollbars(true);
+        seleniumEyes.setHideScrollbars(true);
 
         String batchId = System.getenv("APPLITOOLS_BATCH_ID");
         if (batchId != null) {
             batchInfo.setId(batchId);
         }
 
-        eyes.setBatch(batchInfo);
+        seleniumEyes.setBatch(batchInfo);
+        this.setEyes(seleniumEyes);
+    }
+
+    protected void setEyes(Eyes eyes) {
+        this.eyes = eyes;
     }
 
     protected void setExpectedIgnoreRegions(Region... expectedIgnoreRegions) {
@@ -118,12 +124,12 @@ public abstract class TestSetup implements ITest {
             }
 
             desiredCaps.setCapability("platform", platform);
-            desiredCaps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
+            desiredCaps.setCapability("name", testName + " (" + seleniumEyes.getFullAgentId() + ")");
 
         } else if (seleniumServerUrl.equalsIgnoreCase("http://hub-cloud.browserstack.com/wd/hub")) {
             seleniumServerUrl = "http://" + System.getenv("BROWSERSTACK_USERNAME") + ":" + System.getenv("BROWSERSTACK_ACCESS_KEY") + "@hub-cloud.browserstack.com/wd/hub";
             desiredCaps.setCapability("platform", platform);
-            desiredCaps.setCapability("name", testName + " (" + eyes.getFullAgentId() + ")");
+            desiredCaps.setCapability("name", testName + " (" + seleniumEyes.getFullAgentId() + ")");
         }
 
         caps.merge(desiredCaps);
@@ -146,23 +152,23 @@ public abstract class TestSetup implements ITest {
         LogHandler logHandler;
 
         if (System.getenv("CI") == null && logsPath != null) {
-            String path = logsPath + File.separator + "java" + File.separator + extendedTestName;
+            String path = logsPath + File.separator + "java" + File.separator + extendedTestName.replaceAll("\\s","_");
             logHandler = new FileLogger(path + File.separator + testName + "_" + platform + ".log", true, true);
-            eyes.setDebugScreenshotsPath(path);
-            eyes.setDebugScreenshotsPrefix(testName + "_");
-            eyes.setSaveDebugScreenshots(true);
+            seleniumEyes.setDebugScreenshotsPath(path);
+            seleniumEyes.setDebugScreenshotsPrefix(testName + "_");
+            seleniumEyes.setSaveDebugScreenshots(true);
         } else {
             logHandler = new StdoutLogHandler(false);
         }
 
-        eyes.setLogHandler(logHandler);
-        eyes.clearProperties();
-        eyes.addProperty("Selenium Session ID", webDriver.getSessionId().toString());
-        eyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
-        eyes.addProperty("ScaleRatio", "" + eyes.getScaleRatio());
-        eyes.addProperty("Agent ID", eyes.getFullAgentId());
+        seleniumEyes.setLogHandler(logHandler);
+        seleniumEyes.clearProperties();
+        seleniumEyes.addProperty("Selenium Session ID", webDriver.getSessionId().toString());
+        seleniumEyes.addProperty("ForceFPS", forceFPS ? "true" : "false");
+        seleniumEyes.addProperty("ScaleRatio", "" + seleniumEyes.getScaleRatio());
+        seleniumEyes.addProperty("Agent ID", seleniumEyes.getFullAgentId());
         try {
-            driver = eyes.open(webDriver,
+            driver = seleniumEyes.open(webDriver,
                     testSuitName,
                     testName,
                     testedPageSize
@@ -172,7 +178,7 @@ public abstract class TestSetup implements ITest {
                 driver.get(testedPageUrl);
             }
 
-            eyes.setForceFullPageScreenshot(forceFPS);
+            seleniumEyes.setForceFullPageScreenshot(forceFPS);
 
             this.expectedIgnoreRegions.clear();
             this.expectedLayoutRegions.clear();
@@ -180,7 +186,7 @@ public abstract class TestSetup implements ITest {
             this.expectedContentRegions.clear();
             this.expectedFloatingRegions.clear();
         } catch (Exception ex) {
-            eyes.abortIfNotClosed();
+            seleniumEyes.abortIfNotClosed();
             webDriver.quit();
         }
     }

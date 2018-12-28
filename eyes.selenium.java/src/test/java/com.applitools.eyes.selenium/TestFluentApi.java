@@ -1,8 +1,9 @@
 package com.applitools.eyes.selenium;
 
+import com.applitools.ICheckSettings;
+import com.applitools.eyes.CoordinatesType;
 import com.applitools.eyes.FloatingMatchSettings;
 import com.applitools.eyes.Region;
-import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.selenium.fluent.Target;
 
 import org.openqa.selenium.By;
@@ -116,6 +117,13 @@ public class TestFluentApi extends TestSetup {
     }
 
     @Test
+    public void TestCheckRegionByCoordinateInFrame_Fluent() {
+        eyes.check("Fluent - Inner frame coordinates", Target.frame("frame1")
+                .region(new Region(30,40, 400, 1200, CoordinatesType.CONTEXT_RELATIVE))
+                .fully());
+    }
+
+    @Test
     public void TestCheckFrameInFrame_Fully_Fluent2() {
         eyes.check("Fluent - Window", Target.window()
                 .fully()
@@ -180,7 +188,7 @@ public class TestFluentApi extends TestSetup {
 
     @Test
     public void TestCheckMany() {
-        eyes.check(
+        ((Eyes)eyes).check(
                 Target.region(By.id("overflowing-div-image")).withName("overflowing div image"),
                 Target.region(By.id("overflowing-div")).withName("overflowing div"),
                 Target.region(By.id("overflowing-div-image")).fully().withName("overflowing div image (fully)"),

@@ -43,6 +43,7 @@ public class Logger {
                 Thread.currentThread().getStackTrace();
 
         String prefix = "{" + sessionId + "} ";
+        prefix += "[" + Thread.currentThread().getId() + "] ";
         // getStackTrace()<-getPrefix()<-log()/verbose()<-"actual caller"
         if (stackTraceElements.length >= 4) {
             prefix += stackTraceElements[3].getClassName() + "."+ stackTraceElements[3].getMethodName() + "(): ";

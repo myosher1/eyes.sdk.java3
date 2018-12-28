@@ -1,6 +1,8 @@
 package com.applitools.eyes;
 
+import com.applitools.ICheckSettings;
 import com.applitools.IDomCaptureListener;
+import com.applitools.eyes.visualGridClient.model.RenderingInfo;
 import com.applitools.eyes.capture.AppOutputProvider;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.config.Configuration;
@@ -40,10 +42,11 @@ public abstract class EyesBase {
 
     private static final int DEFAULT_MATCH_TIMEOUT = 2000; // Milliseconds
     protected static final int USE_DEFAULT_TIMEOUT = -1;
+    private static final int MAX_ITERATION = 10;
 
     private boolean shouldMatchWindowRunOnceOnTimeout;
 
-    private MatchWindowTask matchWindowTask;
+    protected MatchWindowTask matchWindowTask;
 
     protected IServerConnector serverConnector;
     protected RunningSession runningSession;
@@ -84,6 +87,7 @@ public abstract class EyesBase {
     private int validationId;
     private boolean isSendDom;
     protected IDomCaptureListener domCaptureListener;
+    protected RenderingInfo renderInfo;
 
     public EyesBase() {
 
@@ -255,7 +259,7 @@ public abstract class EyesBase {
     /**
      * Sets the proxy settings to be used by the rest client.
      * @param abstractProxySettings The proxy settings to be used by the rest client.
-     *                      If {@code null} then no proxy is set.
+     *                              If {@code null} then no proxy is set.
      */
     public void setProxy(AbstractProxySettings abstractProxySettings) {
         if (serverConnector == null) {
@@ -805,7 +809,7 @@ public abstract class EyesBase {
             // Making sure that we reset the running session even if an
             // exception was thrown during close.
             runningSession = null;
-            logger.getLogHandler().close();
+//            logger.getLogHandler().close();
         }
     }
 
@@ -891,11 +895,11 @@ public abstract class EyesBase {
     /**
      * If a test is running, aborts it. Otherwise, does nothing.
      */
-    public void abortIfNotClosed() {
+    public TestResults abortIfNotClosed() {
         try {
             if (isDisabled) {
                 logger.verbose("Ignored");
-                return;
+                return null;
             }
 
             isOpen = false;
@@ -905,22 +909,24 @@ public abstract class EyesBase {
 
             if (null == runningSession) {
                 logger.verbose("Closed");
-                return;
+                return null;
             }
 
             logger.verbose("Aborting server session...");
             try {
                 // When aborting we do not save the test.
-                serverConnector.stopSession(runningSession, true, false);
+                TestResults results = serverConnector.stopSession(runningSession, true, false);
                 logger.log("--- Test aborted.");
+                return results;
             } catch (EyesException ex) {
                 logger.log(
                         "Failed to abort server session: " + ex.getMessage());
             }
         } finally {
             runningSession = null;
-            logger.getLogHandler().close();
+            //logger.getLogHandler().close();
         }
+        return null;
     }
 
     /**
@@ -1169,8 +1175,8 @@ public abstract class EyesBase {
         return validationInfo;
     }
 
-    private MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
-                                    ICheckSettings checkSettings) {
+    protected MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
+                                      ICheckSettings checkSettings) {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
@@ -1359,48 +1365,61 @@ public abstract class EyesBase {
         openBase();
     }
 
-    protected void openBase() {
-        logger.getLogHandler().open();
+    protected void openBase() throws EyesException {
+//        logger.getLogHandler().open();
+        int retry = 0;
+        do {
+            try {
+                if (isDisabled) {
+                    logger.verbose("Ignored");
+                    return;
+                }
 
-        try {
-            if (isDisabled) {
-                logger.verbose("Ignored");
+                sessionEventHandlers.testStarted(getAUTSessionId());
+
+                validateApiKey();
+                logOpenBase();
+                validateSessionOpen();
+
+                initProviders();
+
+                this.isViewportSizeSet = false;
+
+                sessionEventHandlers.initStarted();
+
+                beforeOpen();
+
+                RectangleSize viewportSize = config.getViewportSize();
+                viewportSizeHandler.set(viewportSize);
+
+                try {
+                    if (viewportSize != null) {
+                        ensureRunningSession();
+                    }
+                } catch (Exception e) {
+                    GeneralUtils.logExceptionStackTrace(logger, e);
+                    retry++;
+                    continue;
+                }
+
+                this.validationId = -1;
+
+                isOpen = true;
+                afterOpen();
                 return;
+            } catch (EyesException e) {
+                logger.log(e.getMessage());
+                logger.getLogHandler().close();
+                throw e;
             }
 
-            sessionEventHandlers.testStarted(getAUTSessionId());
 
-            validateApiKey();
-            logOpenBase();
-            validateSessionOpen();
+        } while (MAX_ITERATION > retry);
 
-            initProviders();
-
-            this.isViewportSizeSet = false;
-
-            sessionEventHandlers.initStarted();
-
-            beforeOpen();
-
-            viewportSizeHandler.set(config.getViewportSize());
-
-            if (config.getViewportSize() != null) {
-                ensureRunningSession();
-            }
-
-            this.validationId = -1;
-
-            isOpen = true;
-            afterOpen();
-
-        } catch (EyesException e) {
-            logger.log(e.getMessage());
-            logger.getLogHandler().close();
-            throw e;
-        }
+        throw new EyesException("eyes.openBase() failed");
     }
 
-    private void ensureRunningSession() {
+    protected void ensureRunningSession() {
         if (runningSession != null) {
             logger.log("session already running.");
             return;
@@ -1649,11 +1668,10 @@ public abstract class EyesBase {
         BatchInfo testBatch = config.getBatch();
         if (testBatch == null) {
             logger.verbose("No batch set");
-            testBatch = new BatchInfo(null);
+            config.setBatch(new BatchInfo(null));
         } else {
             logger.verbose("Batch is " + testBatch);
         }
-
 
         AppEnvironment appEnv = getAppEnvironment();
 
@@ -1679,7 +1697,7 @@ public abstract class EyesBase {
         }
     }
 
-    protected Object getAgentSetup() {
+    public Object getAgentSetup() {
         return null;
     }
 
@@ -1740,20 +1758,19 @@ public abstract class EyesBase {
         String domJson = null;
         String domJsonUrl = null;
         try {
-            if (isSendDom) {
+            if (isSendDom()) {
                 domJson = tryCaptureDom();
 
                 if (domJson != null) {
                     long start = System.currentTimeMillis();
                     domJsonUrl = tryPostDomSnapshot(domJson);
-                    logger.verbose("Send JSON to SERVER in "+(System.currentTimeMillis() - start)/ 1000);
+                    logger.verbose("Send JSON to SERVER in " + (System.currentTimeMillis() - start) / 1000);
                 }
-
             }
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
-        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl), screenshot);
+        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl, null), screenshot);
         logger.verbose("Done!");
         return result;
     }
@@ -1813,11 +1830,20 @@ public abstract class EyesBase {
         return isSendDom;
     }
 
-    public void setOnDomCapture(IDomCaptureListener listener){
+    public void setOnDomCapture(IDomCaptureListener listener) {
         this.domCaptureListener = listener;
     }
 
     public void setSendDom(boolean isSendDom) {
         this.isSendDom = isSendDom;
     }
+
+    public RenderingInfo getRenderingInfo() {
+        if (this.renderInfo != null) {
+            return this.renderInfo;
+        }
+        this.renderInfo = this.serverConnector.getRenderInfo();
+        return this.renderInfo;
+    }
+
 }

@@ -13,18 +13,20 @@ public class AppOutput {
      */
     private final String title;
     private final String domUrl;
+    private final String screenshotUrl;
     private final String screenshot64;
 
     /**
-     * @param title        The title of the window.
-     * @param screenshot64 Base64 encoding of the screenshot's bytes (the
-     *                     byte can be in either in compressed or
-     *                     uncompressed form)
+     * @param title         The title of the window.
+     * @param screenshot64  Base64 encoding of the screenshot's bytes.
+     * @param domUrl        A URL to a DOM snapshot.
+     * @param screenshotUrl A URL to a screenshot.
      */
-    public AppOutput(String title, String screenshot64, String domUrl) {
+    public AppOutput(String title, String screenshot64, String domUrl, String screenshotUrl) {
         this.title = title;
         this.screenshot64 = screenshot64;
         this.domUrl = domUrl;
+        this.screenshotUrl = screenshotUrl;
     }
 
     public String getTitle() {
@@ -37,5 +39,9 @@ public class AppOutput {
 
     public String getDomUrl() {
         return domUrl;
+    }
+
+    public String getScreenshotUrl() {
+        return screenshotUrl;
     }
 }

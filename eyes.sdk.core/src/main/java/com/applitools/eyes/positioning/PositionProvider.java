@@ -30,7 +30,7 @@ public interface PositionProvider {
     /**
      * Get the current state of the position provider. This is different from
      * {@link #getCurrentPosition()} in that the state of the position provider
-     * might include other data than just the coordinates. For example a CSS
+     * might include other model than just the coordinates. For example a CSS
      * translation based position provider (in WebDriver based SDKs), might
      * save the entire "transform" style value as its state.
      *

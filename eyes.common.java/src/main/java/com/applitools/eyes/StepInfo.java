@@ -1,7 +1,7 @@
 package com.applitools.eyes;
 
 /**
- * Encapsulates step information data received by the tests results.
+ * Encapsulates step information model received by the tests results.
  */
 public class StepInfo {
 

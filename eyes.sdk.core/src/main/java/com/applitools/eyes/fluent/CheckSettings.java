@@ -1,5 +1,6 @@
 package com.applitools.eyes.fluent;
 
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;
 
@@ -21,7 +22,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     private List<GetRegion> contentRegions = new ArrayList<>();
     private List<GetFloatingRegion> floatingRegions = new ArrayList<>();
     private int timeout = -1;
-    private String name;
+    protected String name;
 
     protected CheckSettings() { }
 
@@ -393,4 +394,9 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         clone.strictRegions.addAll(this.strictRegions);
         clone.floatingRegions.addAll(this.floatingRegions);
     }
+
+    public void setStitchContent(boolean stitchContent) {
+        this.stitchContent = stitchContent;
+    }
+
 }

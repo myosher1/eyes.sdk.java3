@@ -1,6 +1,6 @@
 package com.applitools.eyes.images;
 
-import com.applitools.eyes.fluent.ICheckSettings;
+import com.applitools.ICheckSettings;
 
 import java.awt.image.BufferedImage;
 

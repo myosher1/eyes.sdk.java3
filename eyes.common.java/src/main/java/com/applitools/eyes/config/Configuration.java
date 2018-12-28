@@ -19,6 +19,24 @@ public class Configuration {
     private RectangleSize viewportSize;
     private SessionType sessionType;
 
+    public Configuration() {
+    }
+
+    protected Configuration(Configuration configuration) {
+        this.batch = configuration.batch;
+        this.branchName = configuration.branchName;
+        this.parentBranchName = configuration.parentBranchName;
+        this.baselineBranchName = configuration.baselineBranchName;
+        this.agentId = configuration.agentId;
+        this.baselineEnvName = configuration.baselineEnvName;
+        this.environmentName = configuration.environmentName;
+        this.saveDiffs = configuration.saveDiffs;
+        this.appName = configuration.appName;
+        this.testName = configuration.testName;
+        this.viewportSize = configuration.viewportSize;
+        this.sessionType = configuration.sessionType;
+    }
+
     public void setBatch(BatchInfo batch) {
         this.batch = batch;
     }
@@ -113,5 +131,9 @@ public class Configuration {
 
     public void setSessionType(SessionType sessionType) {
         this.sessionType = sessionType;
+    }
+
+    public Configuration cloneConfig() {
+        return new Configuration(this);
     }
 }

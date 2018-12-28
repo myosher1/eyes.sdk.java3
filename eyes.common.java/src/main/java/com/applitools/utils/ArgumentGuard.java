@@ -1,15 +1,19 @@
 package com.applitools.utils;
 
+import com.applitools.ICheckRGSettings;
+import com.applitools.ICheckSettings;
+
 /**
  * Argument validation utilities.
  */
 public class ArgumentGuard {
 
-    private ArgumentGuard() {}
+    private ArgumentGuard() {
+    }
 
     /**
      * Fails if the input parameter is null.
-     * @param param The input parameter.
+     * @param param     The input parameter.
      * @param paramName The input parameter name.
      */
     public static void notNull(Object param, String paramName)
@@ -21,8 +25,8 @@ public class ArgumentGuard {
 
     /**
      * Fails if the input parameter equals the input value.
-     * @param param The input parameter.
-     * @param value The input value.
+     * @param param     The input parameter.
+     * @param value     The input value.
      * @param paramName The input parameter name.
      */
     public static void notEqual(Object param, Object value, String paramName) {
@@ -33,7 +37,7 @@ public class ArgumentGuard {
 
     /**
      * Fails if the input parameter string is null or empty.
-     * @param param The input parameter.
+     * @param param     The input parameter.
      * @param paramName The input parameter name.
      */
     public static void notNullOrEmpty(String param, String paramName)
@@ -46,12 +50,12 @@ public class ArgumentGuard {
 
     /**
      * Fails if the input parameter is not null.
-     * @param param The input parameter.
+     * @param param     The input parameter.
      * @param paramName The input parameter name.
      */
     @SuppressWarnings("UnusedDeclaration")
     public static void isNull(Object param, String paramName)
-            throws IllegalArgumentException{
+            throws IllegalArgumentException {
         if (null != param) {
             throw new IllegalArgumentException(paramName + " is not null");
         }
@@ -59,7 +63,7 @@ public class ArgumentGuard {
 
     /**
      * Fails if the input integer parameter is negative.
-     * @param param The input parameter.
+     * @param param     The input parameter.
      * @param paramName The input parameter name.
      */
     public static void greaterThanOrEqualToZero(long param, String paramName)
@@ -71,7 +75,7 @@ public class ArgumentGuard {
 
     /**
      * Fails if the input integer parameter is smaller than 1.
-     * @param param The input parameter.
+     * @param param     The input parameter.
      * @param paramName The input parameter name.
      */
     public static void greaterThanZero(long param, String paramName)
@@ -83,7 +87,7 @@ public class ArgumentGuard {
 
     /**
      * Fails if the input integer parameter is below or equal to 0.
-     * @param param The input parameter.
+     * @param param     The input parameter.
      * @param paramName The input parameter name.
      */
     public static void greaterThanZero(double param, String paramName)
@@ -95,7 +99,7 @@ public class ArgumentGuard {
 
     /**
      * Fails if the input integer parameter is equal to 0.
-     * @param param The input parameter.
+     * @param param     The input parameter.
      * @param paramName The input parameter name.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -109,12 +113,26 @@ public class ArgumentGuard {
     /**
      * Fails if isValid is false.
      * @param isValid Whether the current state is valid.
-     * @param errMsg A description of the error.
+     * @param errMsg  A description of the error.
      */
     public static void isValidState(boolean isValid, String errMsg)
             throws IllegalStateException {
         if (!isValid) {
             throw new IllegalStateException(errMsg);
+        }
+    }
+
+    /**
+     * Fails if param is not of the expected type.
+     * @param param              The input parameter
+     * @param paramExpectedClass The expected type.
+     * @param paramName          The input parameter name.
+     */
+    @SuppressWarnings("unchecked")
+    public static void notOfType(Object param, Class paramExpectedClass, String paramName)
+            throws IllegalArgumentException {
+        if (!(paramExpectedClass.isAssignableFrom(param.getClass()))) {
+            throw new IllegalArgumentException(paramName + " is must be a " + paramExpectedClass);
         }
     }
 }

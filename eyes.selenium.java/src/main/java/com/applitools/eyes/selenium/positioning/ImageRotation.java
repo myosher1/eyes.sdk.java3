@@ -1,7 +1,7 @@
 package com.applitools.eyes.selenium.positioning;
 
 /**
- * Encapsulates rotation data for images.
+ * Encapsulates rotation model for images.
  */
 public class ImageRotation {
     private final int rotation;

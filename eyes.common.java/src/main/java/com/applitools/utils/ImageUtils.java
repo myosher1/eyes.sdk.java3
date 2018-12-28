@@ -529,6 +529,12 @@ public class ImageUtils {
         try {
             logger.verbose("Saving file: " + filename);
             File file = new File(filename);
+            File path = file.getParentFile();
+            if (path != null && !path.exists()) {
+                logger.log("No Folder " + path.getAbsolutePath());
+                boolean success = path.mkdirs();
+                logger.log("Folder created");
+            }
             ImageIO.write(image, "png", file);
         } catch (IOException e) {
             throw new EyesException("Failed to save image", e);

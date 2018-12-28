@@ -54,4 +54,5 @@ public class Configuration extends com.applitools.eyes.config.Configuration {
     public void setHideCaret(boolean hideCaret) {
         this.hideCaret = hideCaret;
     }
+
 }

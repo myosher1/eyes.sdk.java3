@@ -1,23 +1,47 @@
 package com.applitools.eyes;
 
+import com.applitools.IResourceUploadListener;
+import com.applitools.eyes.visualGridClient.services.IResourceFuture;
+import com.applitools.eyes.visualGridClient.model.*;
+
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 
 /**
  * Defines the interface which should be implemented by a ServerConnector.
  */
 public interface IServerConnector {
+
+    String API_SESSIONS = "api/sessions";
+    String RUNNING_DATA_PATH = API_SESSIONS + "/running/model";
+
+    //Rendering Grid
+    String RENDER_INFO_PATH = API_SESSIONS + "/renderinfo";
+    String RESOURCES_SHA_256 = "/resources/sha256/";
+    String RENDER_STATUS = "/render-status";
+    String RENDER = "/render";
+
+    int TIMEOUT = 1000 * 60 * 5; // 5 Minutes
+    String API_PATH = "/" + API_SESSIONS + "/running";
+    String DEFAULT_CHARSET_NAME = "UTF-8";
+    int THREAD_SLEEP_MILLIS = 3;
+    int NUM_OF_RETRIES = 100;
+
     void setApiKey(String apiKey);
+
     String getApiKey();
 
     void setServerUrl(URI serverUrl);
+
     URI getServerUrl();
 
     void setLogger(Logger logger);
+
     Logger getLogger();
 
 
-    void setProxy(AbstractProxySettings abstractProxySettings);
+    void setProxy(AbstractProxySettings proxySettings);
     AbstractProxySettings getProxy();
 
     /**
@@ -77,8 +101,73 @@ public interface IServerConnector {
      * @param isSecondRetry Indicates if a retry is mandatory onFailed - 2 retries per request
      * @param listener the listener will be called when the request will be resolved.
      */
-    void downloadString(URL uri, boolean isSecondRetry, IDownloadListener listener);
+     void downloadString(URL uri, boolean isSecondRetry, IDownloadListener<String> listener);
+
+    /**
+     * Downloads string from a given Url
+     *  @param uri The URI from which the IServerConnector will download the string
+     * @param isSecondRetry Indicates if a retry is mandatory onFailed - 2 retries per request
+     * @param listener the listener will be called when the request will be resolved.
+     */
+    IResourceFuture downloadResource(URL uri, boolean isSecondRetry, IDownloadListener<Byte[]> listener);
 
 
+    /**
+     * Posting the DOM snapshot to the server and returns
+     * @param domJson JSON as String.
+     * @return URL to the JSON that is stored by the server.
+     */
     String postDomSnapshot(String domJson);
+
+
+    /**
+     * Gets the render info from the server to be used later on.
+     */
+    RenderingInfo getRenderInfo();
+
+    /**
+     * Initiate a rendering using RenderingGrid API
+     *
+     * @param renderRequests renderRequest The current agent's running session.
+     * @return List<RunningRender> The results of the render request
+     */
+    List<RunningRender> render(RenderRequest... renderRequests);
+
+    /**
+     * Check if resource exists on the server
+     *
+     * @param runningRender The running render (for second request only)
+     * @param resource The resource to use
+     * @return Whether resource exists on the server or not
+     */
+    boolean renderCheckResource(RunningRender runningRender, RGridResource resource);
+
+    /**
+     * Upload resource to the server
+     *
+     * @param runningRender The running render (for second request only)
+     * @param resource The resource to upload
+     * @return true if resource was uploaded
+     */
+    PutFuture renderPutResource(RunningRender runningRender, RGridResource resource, IResourceUploadListener listener);
+
+    /**
+     * Get the rendering status for current render
+     *
+     * @param runningRender The running render
+     * @return RenderStatusResults The render's status
+     */
+    RenderStatusResults renderStatus(RunningRender runningRender);
+
+    /**
+     * Get the rendering status for current render
+     *
+     * @param renderIds The running renderId
+     * @return The render's status
+     */
+    List<RenderStatusResults> renderStatusById(String... renderIds);
+
+    IResourceFuture createResourceFuture(RGridResource gridResource);
+
+    void setRenderingInfo(RenderingInfo renderInfo);
 }

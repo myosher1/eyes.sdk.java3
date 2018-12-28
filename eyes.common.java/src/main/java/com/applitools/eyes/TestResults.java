@@ -12,6 +12,7 @@ import java.util.Calendar;
 /**
  * Eyes test results.
  */
+@SuppressWarnings("WeakerAccess")
 @JsonIgnoreProperties({"$id", "isPassed"})
 public class TestResults {
     private int steps;
@@ -291,6 +292,7 @@ public class TestResults {
     /**
      * @param steps The number of visual checkpoints in the test.
      */
+    @SuppressWarnings("UnusedDeclaration")
     void setSteps(int steps) {
         ArgumentGuard.greaterThanOrEqualToZero(steps, "steps");
         this.steps = steps;

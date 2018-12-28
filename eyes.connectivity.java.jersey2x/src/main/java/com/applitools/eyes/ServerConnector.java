@@ -3,12 +3,21 @@
  */
 package com.applitools.eyes;
 
+import com.applitools.IResourceUploadListener;
+import com.applitools.eyes.visualGridClient.model.*;
+import com.applitools.eyes.visualGridClient.services.IResourceFuture;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.codec.binary.Base64;
+import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.message.GZipEncoder;
 
+import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -17,10 +26,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -30,13 +37,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ServerConnector extends RestClient
         implements IServerConnector {
 
-    private static final int TIMEOUT = 1000 * 60 * 5; // 5 Minutes
-    private static final String API_PATH = "/api/sessions/running";
-    private static final String DEFAULT_CHARSET_NAME = "UTF-8";
-    private static final int NUM_OF_RETRIES = 3;
-    private static final int THREAD_SLEEP_MILLIS = 100;
-
     private String apiKey = null;
+    private RenderingInfo renderingInfo;
 
     /***
      * @param logger A logger instance.
@@ -67,7 +69,6 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the API key of your applitools Eyes account.
-     *
      * @param apiKey The api key to set.
      */
     public void setApiKey(String apiKey) {
@@ -84,13 +85,12 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the proxy settings to be used by the rest client.
-     *
-     * @param abstractProxySettings The proxy settings to be used by the rest client.
+     * @param proxySettings The proxy settings to be used by the rest client.
      *                      If {@code null} then no proxy is set.
      */
     @SuppressWarnings("UnusedDeclaration")
-    public void setProxy(AbstractProxySettings abstractProxySettings) {
-        setProxyBase(abstractProxySettings);
+    public void setProxy(AbstractProxySettings proxySettings) {
+        setProxyBase(proxySettings);
         // After the server is updated we must make sure the endpoint refers
         // to the correct path.
         endPoint = endPoint.path(API_PATH);
@@ -107,7 +107,6 @@ public class ServerConnector extends RestClient
 
     /**
      * Sets the current server URL used by the rest client.
-     *
      * @param serverUrl The URI of the rest server.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -130,7 +129,6 @@ public class ServerConnector extends RestClient
      * Starts a new running session in the agent. Based on the given parameters,
      * this running session will either be linked to an existing session, or to
      * a completely new session.
-     *
      * @param sessionStartInfo The start parameters for the session.
      * @return RunningSession object which represents the current running
      * session
@@ -166,7 +164,7 @@ public class ServerConnector extends RestClient
         try {
             Invocation.Builder request = endPoint.queryParam("apiKey", getApiKey()).
                     request(MediaType.APPLICATION_JSON);
-            response = postWithRetry(request, Entity.json(postData), null);
+            response = sendWithRetry(HttpMethod.POST, request, Entity.json(postData), null);
         } catch (RuntimeException e) {
             logger.log("Server request failed: " + e.getMessage());
             throw e;
@@ -190,7 +188,6 @@ public class ServerConnector extends RestClient
 
     /**
      * Stops the running session.
-     *
      * @param runningSession The running session to be stopped.
      * @return TestResults object for the stopped running session
      * @throws EyesException For invalid status codes, or if response parsing
@@ -258,7 +255,6 @@ public class ServerConnector extends RestClient
     /**
      * Matches the current window (held by the WebDriver) to the expected
      * window.
-     *
      * @param runningSession The current agent's running session.
      * @param matchData      Encapsulation of a capture taken from the application.
      * @return The results of the window matching.
@@ -270,7 +266,7 @@ public class ServerConnector extends RestClient
             throws EyesException {
 
         ArgumentGuard.notNull(runningSession, "runningSession");
-        ArgumentGuard.notNull(matchData, "data");
+        ArgumentGuard.notNull(matchData, "model");
 
         Response response;
         List<Integer> validStatusCodes;
@@ -281,13 +277,13 @@ public class ServerConnector extends RestClient
         WebTarget runningSessionsEndpoint =
                 endPoint.path(runningSession.getId());
 
-        // Serializing data into JSON (we'll treat it as binary later).
+        // Serializing model into JSON (we'll treat it as binary later).
         // IMPORTANT This serializes everything EXCEPT for the screenshot (which
         // we'll add later).
         try {
             jsonData = jsonMapper.writeValueAsString(matchData);
         } catch (IOException e) {
-            throw new EyesException("Failed to serialize data for matchWindow!",
+            throw new EyesException("Failed to serialize model for matchWindow!",
                     e);
         }
 
@@ -300,7 +296,7 @@ public class ServerConnector extends RestClient
             jsonToBytesConverter.flush();
             jsonBytes = jsonToBytesConverter.toByteArray();
         } catch (IOException e) {
-            throw new EyesException("Failed create binary data from JSON!", e);
+            throw new EyesException("Failed create binary model from JSON!", e);
         }
 
         // Getting the screenshot's bytes (notice this can be either
@@ -308,7 +304,7 @@ public class ServerConnector extends RestClient
         byte[] screenshot = Base64.decodeBase64(
                 matchData.getAppOutput().getScreenshot64());
 
-        // Ok, let's create the request data
+        // Ok, let's create the request model
         ByteArrayOutputStream requestOutputStream = new ByteArrayOutputStream();
         DataOutputStream requestDos = new DataOutputStream(requestOutputStream);
         byte[] requestData;
@@ -316,10 +312,12 @@ public class ServerConnector extends RestClient
             requestDos.writeInt(jsonBytes.length);
             requestDos.flush();
             requestOutputStream.write(jsonBytes);
-            requestOutputStream.write(screenshot);
+            if (screenshot != null) {
+                requestOutputStream.write(screenshot);
+            }
             requestOutputStream.flush();
 
-            // Ok, get the data bytes
+            // Ok, get the model bytes
             requestData = requestOutputStream.toByteArray();
 
             // Release the streams
@@ -331,7 +329,7 @@ public class ServerConnector extends RestClient
         // Sending the request
         Invocation.Builder request = runningSessionsEndpoint.queryParam("apiKey", getApiKey()).
                 request(MediaType.APPLICATION_JSON);
-        response = postWithRetry(request, Entity.entity(requestData,
+        response = sendWithRetry(HttpMethod.POST, request, Entity.entity(requestData,
                 MediaType.APPLICATION_OCTET_STREAM), null);
 
         // Ok, let's create the running session from the response
@@ -346,7 +344,7 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public void downloadString(final URL uri, final boolean isSecondRetry, final IDownloadListener listener) {
+    public void downloadString(final URL uri, final boolean isSecondRetry, final IDownloadListener<String> listener) {
 
         Client client = ClientBuilder.newBuilder().build();
 
@@ -359,18 +357,16 @@ public class ServerConnector extends RestClient
         request.async().get(new InvocationCallback<String>() {
             @Override
             public void completed(String response) {
-                // on complete
-                listener.onDownloadComplete(response);
+                listener.onDownloadComplete(response, null);
             }
 
             @Override
             public void failed(Throwable throwable) {
                 // on fail
-                if(!isSecondRetry){
+                if (!isSecondRetry) {
                     logger.verbose("Async GET failed - entering retry");
                     downloadString(uri, true, listener);
-                }
-                else{
+                } else {
                     listener.onDownloadFailed();
                 }
             }
@@ -379,32 +375,76 @@ public class ServerConnector extends RestClient
     }
 
     @Override
+    public IResourceFuture downloadResource(final URL url, final boolean isSecondRetry, final IDownloadListener<Byte[]> listener) {
+        Client client = ClientBuilder.newBuilder().build();
+
+        WebTarget target = client.target(url.toString());
+
+        Invocation.Builder request = target.request(MediaType.WILDCARD);
+
+        Future<Response> future = request.async().get(new InvocationCallback<Response>() {
+            @Override
+            public void completed(Response response) {
+
+                if (null != listener) {
+                    listener.onDownloadComplete(null, null);
+                }
+            }
+
+            @Override
+            public void failed(Throwable throwable) {
+                GeneralUtils.logExceptionStackTrace(logger, throwable);
+                if (!isSecondRetry) {
+                    logger.verbose("Entering retry");
+                    downloadResource(url, true, listener);
+                } else if (null != listener) {
+                    listener.onDownloadFailed();
+                }
+            }
+        });
+
+        @SuppressWarnings("UnnecessaryLocalVariable")
+        IResourceFuture newFuture = new ResourceFuture(future, url.toString(), logger, this);
+        return newFuture;
+    }
+
+    @Override
     public String postDomSnapshot(String domJson) {
 
         restClient.register(GZipEncoder.class);
 
-        WebTarget target = restClient.target(serverUrl).path(("api/sessions/running/data")).queryParam("apiKey", getApiKey());
+        WebTarget target = restClient.target(serverUrl).path((RUNNING_DATA_PATH)).queryParam("apiKey", getApiKey());
         Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
 
         byte[] resultStream = GeneralUtils.getGzipByteArrayOutputStream(domJson);
 
-        Response response = postWithRetry(request, Entity.entity(resultStream,
-                MediaType.APPLICATION_OCTET_STREAM), null );
+        Response response = sendWithRetry(HttpMethod.POST, request, Entity.entity(resultStream,
+                MediaType.APPLICATION_OCTET_STREAM), null);
         @SuppressWarnings("UnnecessaryLocalVariable")
         String entity = response.getHeaderString("Location");
         return entity;
     }
 
-    private Response postWithRetry(Invocation.Builder request, Entity entity, AtomicInteger retiresCounter) {
+    private Response sendWithRetry(String method, Invocation.Builder request, Entity entity, AtomicInteger retiresCounter) {
 
         if (retiresCounter == null) {
 
             retiresCounter = new AtomicInteger(0);
 
         }
+
+        Response response = null;
         try {
-            return request.
-                    post(entity);
+            switch (method) {
+
+                case HttpMethod.POST:
+                    response = request.post(entity);
+                    break;
+                case HttpMethod.PUT:
+                    response = request.put(entity);
+            }
+
+            return response;
         } catch (Exception e) {
 
             GeneralUtils.logExceptionStackTrace(logger, e);
@@ -413,18 +453,180 @@ public class ServerConnector extends RestClient
                 Thread.sleep(THREAD_SLEEP_MILLIS);
 
             } catch (InterruptedException e1) {
-                GeneralUtils.logExceptionStackTrace(logger, e);
+                GeneralUtils.logExceptionStackTrace(logger, e1);
             }
 
-            if(retiresCounter.incrementAndGet() < NUM_OF_RETRIES){
+            if (retiresCounter.incrementAndGet() < NUM_OF_RETRIES) {
 
-                return postWithRetry(request, entity, retiresCounter);
-            }
-            else{
+                return sendWithRetry(method, request, entity, retiresCounter);
+            } else {
                 throw e;
             }
         }
 
     }
 
+
+    @Override
+    public RenderingInfo getRenderInfo() {
+
+        String apiKey = getApiKey();
+        WebTarget target = restClient.target(serverUrl).path((RENDER_INFO_PATH)).queryParam("apiKey", apiKey);
+        Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
+
+        // Ok, let's create the running session from the response
+        List<Integer> validStatusCodes = new ArrayList<>();
+        validStatusCodes.add(Response.Status.OK.getStatusCode());
+
+        Response response = request.get();
+        renderingInfo = parseResponseWithJsonData(response, validStatusCodes, RenderingInfo.class);
+        return renderingInfo;
+    }
+
+    @Override
+    public List<RunningRender> render(RenderRequest... renderRequests) {
+        ArgumentGuard.notNull(renderRequests, "renderRequests");
+        this.logger.verbose("called with " + Arrays.toString(renderRequests));
+
+        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER));
+        if (renderRequests.length > 1) {
+            target.matrixParam("render-id", (Object) renderRequests);
+        } else {
+            target.queryParam("render-id", (Object) renderRequests);
+        }
+        Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
+        request.header("X-Auth-Token", renderingInfo.getAccessToken());
+
+        // Ok, let's create the running session from the response
+        List<Integer> validStatusCodes = new ArrayList<>();
+        validStatusCodes.add(Response.Status.OK.getStatusCode());
+        validStatusCodes.add(Response.Status.NOT_FOUND.getStatusCode());
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+            String json = objectMapper.writeValueAsString(renderRequests);
+            Response response = request.post(Entity.json(json));
+            if (validStatusCodes.contains(response.getStatus())) {
+                RunningRender[] runningRenders = parseResponseWithJsonData(response, validStatusCodes, RunningRender[].class);
+                return Arrays.asList(runningRenders);
+            }
+            throw new EyesException("Jersey2 ServerConnector.render - unexpected status (" + response.getStatus() + "), msg (" + response.readEntity(String.class) + ")");
+        } catch (JsonProcessingException e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
+
+        return null;
+    }
+
+    @Override
+    public boolean renderCheckResource(RunningRender runningRender, RGridResource resource) {
+
+        ArgumentGuard.notNull(runningRender, "runningRender");
+        ArgumentGuard.notNull(resource, "resource");
+        // eslint-disable-next-line max-len
+        this.logger.verbose("called with resource#" + resource.getSha256() + " for render: " + runningRender.getRenderId());
+
+        WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RESOURCES_SHA_256) + resource.getSha256()).queryParam("render-id", runningRender.getRenderId());
+        Invocation.Builder request = target.request(MediaType.APPLICATION_JSON);
+        request.header("X-Auth-Token", renderingInfo.getAccessToken());
+
+        // Ok, let's create the running session from the response
+        List<Integer> validStatusCodes = new ArrayList<>();
+        validStatusCodes.add(Response.Status.OK.getStatusCode());
+        validStatusCodes.add(Response.Status.NOT_FOUND.getStatusCode());
+
+        Response response = request.head();
+        if (validStatusCodes.contains(response.getStatus())) {
+            this.logger.verbose("request succeeded");
+            return response.getStatus() == Response.Status.OK.getStatusCode();
+        }
+
+        throw new EyesException("Jersey2 ServerConnector.renderCheckResource - unexpected status (" + response.getStatus() + ")");
+    }
+
+    @Override
+    public PutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final IResourceUploadListener listener) {
+        ArgumentGuard.notNull(runningRender, "runningRender");
+        ArgumentGuard.notNull(resource, "resource");
+        byte[] content = resource.getContent();
+        ArgumentGuard.notNull(content, "resource.getContent()");
+
+        String hash = resource.getSha256();
+        String renderId = runningRender.getRenderId();
+        logger.verbose("resource hash:" + hash + " ; url: " + resource.getUrl() + " ; render id: " + renderId);
+
+        WebTarget target = restClient.target(renderingInfo.getServiceUrl())
+                .path(RESOURCES_SHA_256 + hash)
+                .queryParam("render-id", renderId);
+
+        String contentType = resource.getContentType();
+        Invocation.Builder request = target.request(contentType);
+        request.header("X-Auth-Token", renderingInfo.getAccessToken());
+        Entity entity = Entity.entity(content, contentType);
+        final Future<Response> future = request.async().put(entity);
+        logger.log("future created.");
+        return new PutFuture(future, resource, runningRender, this, logger);
+    }
+
+
+    @Override
+    public RenderStatusResults renderStatus(RunningRender runningRender) {
+        return null;
+    }
+
+    @Override
+    public List<RenderStatusResults> renderStatusById(String... renderIds) {
+
+        try {
+            ArgumentGuard.notNull(renderIds, "renderIds");
+            this.logger.verbose("called for render: " + Arrays.toString(renderIds));
+
+
+            WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
+            target.property(ClientProperties.CONNECT_TIMEOUT, 1000);
+            target.property(ClientProperties.READ_TIMEOUT, 1000);
+            Invocation.Builder request = target.request(MediaType.TEXT_PLAIN);
+            request.header("X-Auth-Token", renderingInfo.getAccessToken());
+
+            // Ok, let's create the running session from the response
+            List<Integer> validStatusCodes = new ArrayList<>();
+            validStatusCodes.add(Response.Status.OK.getStatusCode());
+            validStatusCodes.add(Response.Status.NOT_FOUND.getStatusCode());
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+            objectMapper.configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true);
+            try {
+                String json = objectMapper.writeValueAsString(renderIds);
+                Entity<String> entity = Entity.entity(json, MediaType.APPLICATION_JSON);
+                Response response = request.post(entity);
+                if (validStatusCodes.contains(response.getStatus())) {
+                    this.logger.verbose("request succeeded");
+                    RenderStatusResults[] renderStatusResults = parseResponseWithJsonData(response, validStatusCodes, RenderStatusResults[].class);
+                    return Arrays.asList(renderStatusResults);
+                }
+            } catch (JsonProcessingException e) {
+                logger.log("exception in render status");
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
+            return null;
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
+        return null;
+
+    }
+
+    @Override
+    public IResourceFuture createResourceFuture(RGridResource gridResource) {
+        return new ResourceFuture(gridResource, logger, this);
+
+    }
+
+    @Override
+    public void setRenderingInfo(RenderingInfo renderInfo) {
+        this.renderingInfo = renderInfo;
+    }
 }

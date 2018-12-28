@@ -42,7 +42,7 @@ public class TestCustomerWebsites extends TestSetup {
     public void TestCreditCards() {
         driver.get("https://creditcards.com/v2/zero-interest");
         //noinspection SpellCheckingInspection
-        driver.findElement(By.cssSelector("p[data-tagular-uid='117']")).click();
+        driver.findElement(By.cssSelector("p[model-tagular-uid='117']")).click();
         By selector = By.cssSelector("body > div.boxy > main > div.boxy__product-box.product-list > div:nth-child(2)");
         eyes.check("region", Target.region(selector).fully());
     }

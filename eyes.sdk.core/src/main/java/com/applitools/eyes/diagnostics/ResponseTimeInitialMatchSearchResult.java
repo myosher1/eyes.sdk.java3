@@ -12,10 +12,10 @@ public class ResponseTimeInitialMatchSearchResult {
 
     /**
      *
-     * @param theMatch The match data for which there was a match in the
+     * @param theMatch The match model for which there was a match in the
      *                 initial match search phase, or {@code null} if there
      *                 was no match.
-     * @param lastNonMatch The last match data for which there was no match,
+     * @param lastNonMatch The last match model for which there was no match,
      *                     or {@code null} if there was no failed match.
      */
     public ResponseTimeInitialMatchSearchResult(
@@ -27,7 +27,7 @@ public class ResponseTimeInitialMatchSearchResult {
 
     /**
      *
-     * @return The match data for which there was a match in the initial
+     * @return The match model for which there was a match in the initial
      * match search phase, or {@code null} if there was no match.
      */
     public MatchWindowDataWithScreenshot getTheMatch() {
@@ -36,7 +36,7 @@ public class ResponseTimeInitialMatchSearchResult {
 
     /**
      *
-     * @return The last match data for which there was no match, or {@code
+     * @return The last match model for which there was no match, or {@code
      * null} if there was no failed match.
      */
     public MatchWindowDataWithScreenshot getLastNonMatch() {

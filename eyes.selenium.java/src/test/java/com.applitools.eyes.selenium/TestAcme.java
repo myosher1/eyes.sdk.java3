@@ -43,7 +43,7 @@ public class TestAcme extends TestSetup {
         WebElement password = driver.findElement(By.id("password"));
         username.click();
         password.sendKeys("MySecret123?");
-        eyes.check(
+        ((Eyes)eyes).check(
                 Target.region(username),
                 Target.region(password)
         );

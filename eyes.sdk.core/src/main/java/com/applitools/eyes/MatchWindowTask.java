@@ -20,17 +20,19 @@ import java.util.List;
 public class MatchWindowTask {
 
     private static final int MATCH_INTERVAL = 500; // Milliseconds
-
-    private final Logger logger;
-    private final IServerConnector serverConnector;
-    private final RunningSession runningSession;
-    private final int defaultRetryTimeout;
-    private final AppOutputProvider appOutputProvider;
-
     private EyesScreenshot lastScreenshot = null;
-    private MatchResult matchResult;
     private Region lastScreenshotBounds;
-    private EyesBase eyes;
+    private int defaultRetryTimeout;
+
+    protected Logger logger;
+    protected IServerConnector serverConnector;
+    protected RunningSession runningSession;
+    protected AppOutputProvider appOutputProvider;
+    protected MatchResult matchResult;
+    protected EyesBase eyes;
+
+    protected MatchWindowTask() {
+    }
 
     /**
      * @param logger            A logger instance.
@@ -77,7 +79,7 @@ public class MatchWindowTask {
         this.appOutputProvider = null;
     }
     /**
-     * Creates the match data and calls the server connector matchWindow method.
+     * Creates the match model and calls the server connector matchWindow method.
      * @param userInputs         The user inputs related to the current appOutput.
      * @param appOutput          The application output to be matched.
      * @param tag                Optional tag to be associated with the match (can be {@code null}).
@@ -101,7 +103,7 @@ public class MatchWindowTask {
             }
         }
 
-        // Prepare match data.
+        // Prepare match model.
         MatchWindowData data = new MatchWindowData(
                 userInputs,
                 appOutput.getAppOutput(),
@@ -173,7 +175,7 @@ public class MatchWindowTask {
                 regions.addAll(regionProvider.getRegions(eyes, screenshot, adjustLocation));
             }
             catch (OutOfBoundsException ex){
-                logger.log("WARNING - ignore region was out of bounds.");
+                logger.log("WARNING - region was out of bounds.");
             }
         }
         return regions.toArray(new Region[0]);
@@ -233,7 +235,7 @@ public class MatchWindowTask {
             if (shouldMatchWindowRunOnceOnTimeout) {
                 GeneralUtils.sleep(retryTimeout);
             }
-            screenshot = tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal);
+            screenshot =  tryTakeScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal);
         } else {
             screenshot = retryTakingScreenshot(userInputs, region, tag, ignoreMismatch, checkSettingsInternal,
                     retryTimeout);

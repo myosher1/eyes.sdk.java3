@@ -18,7 +18,7 @@ public class IgnoreRegionByRectangle implements GetRegion {
     @Override
     public List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot, boolean adjustLocation) {
         List<Region> value = new ArrayList<>();
-        if (adjustLocation) {
+        if (adjustLocation && screenshot != null) {
             Region adjustedRegion = screenshot.convertRegionLocation(this.region, CoordinatesType.CONTEXT_RELATIVE, CoordinatesType.SCREENSHOT_AS_IS);
             value.add(adjustedRegion);
         } else {

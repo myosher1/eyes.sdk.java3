@@ -3,6 +3,7 @@
  */
 package com.applitools.eyes.selenium;
 
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.capture.EyesScreenshotFactory;
@@ -12,7 +13,6 @@ import com.applitools.eyes.events.ValidationInfo;
 import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.GetRegion;
-import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.fluent.IgnoreRegionByRectangle;
 import com.applitools.eyes.positioning.*;
@@ -45,7 +45,7 @@ import java.util.*;
  * The main API gateway for the SDK.
  */
 @SuppressWarnings("WeakerAccess")
-public class Eyes extends EyesBase {
+public class Eyes extends EyesBase implements IEyes{
 
     public FrameChain getOriginalFC() {
         return originalFC;
@@ -238,14 +238,14 @@ public class Eyes extends EyesBase {
     }
 
     /**
-     * @return The image rotation data.
+     * @return The image rotation model.
      */
     public ImageRotation getRotation() {
         return rotation;
     }
 
     /**
-     * @param rotation The image rotation data.
+     * @param rotation The image rotation model.
      */
     public void setRotation(ImageRotation rotation) {
         this.rotation = rotation;
@@ -314,7 +314,7 @@ public class Eyes extends EyesBase {
         return open(driver);
     }
 
-    protected WebDriver open(WebDriver driver) {
+    protected WebDriver open(WebDriver driver) throws EyesException{
         if (getIsDisabled()) {
             logger.verbose("Ignored");
             return driver;
@@ -767,7 +767,7 @@ public class Eyes extends EyesBase {
             debugScreenshotsProvider.save(subScreenshot.getImage(), String.format("subscreenshot_%s", name));
 
             ImageMatchSettings ims = mwt.createImageMatchSettings(checkSettingsInternal, subScreenshot);
-            AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()), null);
+            AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()), null, null);
             AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, subScreenshot);
             MatchResult matchResult = mwt.performMatch(
                     new Trigger[0], appOutputWithScreenshot, name, false, ims);
@@ -857,24 +857,30 @@ public class Eyes extends EyesBase {
     @Override
     public String tryCaptureDom() {
         FrameChain fc = driver.getFrameChain().clone();
-        Frame frame = fc.peek();
-        WebElement scrollRootElement = null;
-        if (frame != null) {
-            scrollRootElement = frame.getScrollRootElement();
-        }
-        if (scrollRootElement == null) {
-            scrollRootElement = driver.findElement(By.tagName("html"));
-        }
-        PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
+        String fullWindowDom = "";
+        try {
+            Frame frame = fc.peek();
+            WebElement scrollRootElement = null;
+            if (frame != null) {
+                scrollRootElement = frame.getScrollRootElement();
+            }
+            if (scrollRootElement == null) {
+                scrollRootElement = driver.findElement(By.tagName("html"));
+            }
+            PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
 
-        DomCapture domCapture = new DomCapture(this);
-        String fullWindowDom = domCapture.getFullWindowDom(this.driver, positionProvider);
-        if (this.domCaptureListener != null) {
-            this.domCaptureListener.onDomCaptureComplete(fullWindowDom);
+            DomCapture domCapture = new DomCapture(this);
+            fullWindowDom = domCapture.getFullWindowDom(this.driver, positionProvider);
+            if (this.domCaptureListener != null) {
+                this.domCaptureListener.onDomCaptureComplete(fullWindowDom);
+            }
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        } finally {
+            ((EyesTargetLocator) driver.switchTo()).frames(fc);
         }
         return fullWindowDom;
     }
-
 
     public void check(ICheckSettings checkSettings) {
         if (getIsDisabled()) {
@@ -883,6 +889,7 @@ public class Eyes extends EyesBase {
         }
 
         ArgumentGuard.notNull(checkSettings, "checkSettings");
+        ArgumentGuard.notOfType(checkSettings, ISeleniumCheckTarget.class, "checkSettings");
 
         this.regionToCheck = null;
 
@@ -950,7 +957,9 @@ public class Eyes extends EyesBase {
                     currentFramePositionProvider = createPositionProvider(driver.findElement(By.tagName("html")));
                 }
                 result = this.checkWindowBase(NullRegionProvider.INSTANCE, name, false, checkSettings);
-                switchTo.frames(this.originalFC);
+                if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+                    switchTo.frames(this.originalFC);
+                }
             }
         }
 
@@ -968,13 +977,15 @@ public class Eyes extends EyesBase {
             this.positionMemento = null;
         }
 
-        switchTo.resetScroll();
+        if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+            switchTo.resetScroll();
 
-        if (originalFC != null) {
-            tryRestoreScrollbars(originalFC);
+            if (originalFC != null) {
+                tryRestoreScrollbars(originalFC);
+            }
+
+            trySwitchToFrames(driver, switchTo, this.originalFC);
         }
-
-        trySwitchToFrames(driver, switchTo, this.originalFC);
 
         this.stitchContent = false;
 
@@ -2228,19 +2239,22 @@ public class Eyes extends EyesBase {
             return;
         }
 
-        FrameChain originalFrame = driver.getFrameChain();
-        driver.switchTo().defaultContent();
+        if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+            FrameChain originalFrame = driver.getFrameChain();
+            driver.switchTo().defaultContent();
 
-        try {
-            EyesSeleniumUtils.setViewportSize(logger, driver, size);
-            effectiveViewport = new Region(Location.ZERO, size);
-        } catch (EyesException e) {
-            // Just in case the user catches this error
+            try {
+                EyesSeleniumUtils.setViewportSize(logger, driver, size);
+                effectiveViewport = new Region(Location.ZERO, size);
+            } catch (EyesException e1) {
+                // Just in case the user catches this error
+                ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
+
+                throw new TestFailedException("Failed to set the viewport size", e1);
+            }
             ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
-
-            throw new TestFailedException("Failed to set the viewport size", e);
         }
-        ((EyesTargetLocator) driver.switchTo()).frames(originalFrame);
+
         viewportSizeHandler.set(new RectangleSize(size.getWidth(), size.getHeight()));
     }
 
@@ -2364,6 +2378,14 @@ public class Eyes extends EyesBase {
         FrameChain originalFrameChain = driver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
 
+        switchTo.frames(originalFC);
+        PositionProvider positionProvider = getPositionProvider();
+        PositionMemento originalPosition = null;
+        if (positionProvider != null) {
+            originalPosition = positionProvider.getState();
+        }
+        switchTo.frames(originalFrameChain);
+
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
 
         EyesWebDriverScreenshot result;
@@ -2385,8 +2407,8 @@ public class Eyes extends EyesBase {
             BufferedImage entireFrameOrElement;
             if (elementPositionProvider == null) {
                 WebElement scrollRootElement = driver.findElement(By.tagName("html"));
-                PositionProvider positionProvider = this.getElementPositionProvider(scrollRootElement);
-                entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, positionProvider);
+                PositionProvider elemPositionProvider = this.getElementPositionProvider(scrollRootElement);
+                entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, elemPositionProvider);
             } else {
                 entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, elementPositionProvider);
             }
@@ -2460,9 +2482,8 @@ public class Eyes extends EyesBase {
         }
 
         switchTo.frames(this.originalFC);
-        PositionProvider positionProvider = getPositionProvider();
         if (positionProvider != null) {
-            positionProvider.setPosition(Location.ZERO);
+            positionProvider.restoreState(originalPosition);
         }
         switchTo.frames(originalFrameChain);
 
@@ -2558,16 +2579,19 @@ public class Eyes extends EyesBase {
     }
 
     private WebElement getScrollRootElement(IScrollRootElementContainer scrollRootElementContainer) {
-        if (scrollRootElementContainer == null) {
-            return driver.findElement(By.tagName("html"));
+        if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+            if (scrollRootElementContainer == null) {
+                return driver.findElement(By.tagName("html"));
+            }
+            WebElement scrollRootElement = scrollRootElementContainer.getScrollRootElement();
+            if (scrollRootElement == null) {
+                By scrollRootSelector = scrollRootElementContainer.getScrollRootSelector();
+                scrollRootElement = driver.findElement(scrollRootSelector != null ? scrollRootSelector : By.tagName("html"));
+            }
+            return scrollRootElement;
         }
 
-        WebElement scrollRootElement = scrollRootElementContainer.getScrollRootElement();
-        if (scrollRootElement == null) {
-            By scrollRootSelector = scrollRootElementContainer.getScrollRootSelector();
-            scrollRootElement = driver.findElement(scrollRootSelector != null ? scrollRootSelector : By.tagName("html"));
-        }
-        return scrollRootElement;
+        return null;
     }
 
     private PositionProvider getElementPositionProvider(WebElement scrollRootElement) {
@@ -2651,7 +2675,7 @@ public class Eyes extends EyesBase {
     }
 
     @Override
-    protected Object getAgentSetup() {
+    public Object getAgentSetup() {
         return new EyesSeleniumAgentSetup();
     }
 
@@ -2659,4 +2683,8 @@ public class Eyes extends EyesBase {
         return this.serverConnector;
     }
 
+    @Override
+    public boolean isSendDom() {
+        return !EyesSeleniumUtils.isMobileDevice(driver) && super.isSendDom();
+    }
 }

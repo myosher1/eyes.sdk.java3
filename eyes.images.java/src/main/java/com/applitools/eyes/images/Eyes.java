@@ -3,12 +3,12 @@
  */
 package com.applitools.eyes.images;
 
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
 import com.applitools.eyes.events.ValidationInfo;
 import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.CheckSettings;
-import com.applitools.eyes.fluent.ICheckSettings;
 import com.applitools.eyes.positioning.NullRegionProvider;
 import com.applitools.eyes.positioning.RegionProvider;
 import com.applitools.eyes.triggers.MouseAction;
@@ -45,7 +45,7 @@ public class Eyes extends EyesBase {
      *                   {@code null} will automatically grab the resolution from the image.
      */
     public void open(String appName, String testName,
-                     RectangleSize dimensions) {
+                     RectangleSize dimensions) throws EyesException{
         config.setAppName(appName);
         config.setTestName(testName);
         config.setViewportSize(dimensions);

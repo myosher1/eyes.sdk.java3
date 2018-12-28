@@ -216,13 +216,13 @@ public class RestClient {
 
 
     /**
-     * Builds an error message which includes the response data.
+     * Builds an error message which includes the response model.
      *
      * @param errMsg The error message.
      * @param statusCode The response status code.
      * @param statusPhrase The response status phrase.
      * @param responseBody The response body.
-     * @return An error message which includes the response data.
+     * @return An error message which includes the response model.
      */
     protected String getReadResponseError(
             String errMsg, int statusCode, String statusPhrase,
@@ -241,11 +241,11 @@ public class RestClient {
     }
 
     /**
-     * Generic handling of response with data. Response Handling includes the
+     * Generic handling of response with model. Response Handling includes the
      * following:
-     * 1. Verify that we are able to read response data.
+     * 1. Verify that we are able to read response model.
      * 2. verify that the status code is valid
-     * 3. Parse the response data from JSON to the relevant type.
+     * 3. Parse the response model from JSON to the relevant type.
      *
      * @param response The response to parse.
      * @param validHttpStatusCodes The list of acceptable status codes.
@@ -280,7 +280,7 @@ public class RestClient {
             throw new EyesException(errorMessage);
         }
 
-        // Parse data.
+        // Parse model.
         try {
             resultObject = jsonMapper.readValue(data, resultType);
         } catch (IOException e) {

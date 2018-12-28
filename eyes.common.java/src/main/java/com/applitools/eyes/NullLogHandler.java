@@ -12,4 +12,9 @@ public class NullLogHandler implements LogHandler {
     public void open() {}
 
     public void close() {}
+
+    @Override
+    public boolean isOpen() {
+        return true;
+    }
 }

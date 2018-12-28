@@ -44,14 +44,14 @@ public final class WixExample {
             eyesDriver.switchTo().frame(iFrameID);
 
             //click register button
-            eyesDriver.findElement(By.cssSelector("[data-hook=get-tickets-button]")).click();
+            eyesDriver.findElement(By.cssSelector("[model-hook=get-tickets-button]")).click();
 
             //add one ticket
-            eyesDriver.findElement(By.cssSelector("[data-hook=plus-button]")).click();
+            eyesDriver.findElement(By.cssSelector("[model-hook=plus-button]")).click();
 
             //just an example, where it make us some problems with scrolling to top of the frame.
-            //eyes.checkRegion(By.cssSelector("[data-hook=plus-button]"));
-            eyes.check("", Target.region(By.cssSelector("[data-hook=plus-button]")));
+            //eyes.checkRegion(By.cssSelector("[model-hook=plus-button]"));
+            eyes.check("", Target.region(By.cssSelector("[model-hook=plus-button]")));
             eyes.close();
         } finally {
             // Abort test in case of an unexpected error.
