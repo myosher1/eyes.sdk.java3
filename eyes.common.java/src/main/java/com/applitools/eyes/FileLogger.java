@@ -26,9 +26,9 @@ public class FileLogger implements LogHandler {
 
     /**
      * Creates a new FileHandler instance.
-     * @param filename The file in which to save the logs.
-     * @param append Whether to append the logs if the current file exists,
-     *               or to overwrite the existing file.
+     * @param filename  The file in which to save the logs.
+     * @param append    Whether to append the logs if the current file exists,
+     *                  or to overwrite the existing file.
      * @param isVerbose Whether to handle or ignore verbose log messages.
      */
     public FileLogger(String filename, boolean append, boolean isVerbose) {
@@ -43,7 +43,6 @@ public class FileLogger implements LogHandler {
      * See {@link #FileLogger(String, boolean, boolean)}.
      * {@code filename} defaults to {@code eyes.log}, append defaults to
      * {@code true}.
-     *
      * @param isVerbose Whether to handle or ignore verbose log messages.
      */
     @SuppressWarnings("UnusedDeclaration")
@@ -55,13 +54,11 @@ public class FileLogger implements LogHandler {
      * Open the log file for writing.
      */
     public void open() {
+        if (fileWriter != null) {
+            return;
+        }
+
         try {
-            if (fileWriter != null) {
-                //noinspection EmptyCatchBlock
-                try {
-                    fileWriter.close();
-                } catch (Exception e) {}
-            }
             File file = new File(filename);
             File path = file.getParentFile();
             if (path != null && !path.exists()) {
@@ -78,13 +75,13 @@ public class FileLogger implements LogHandler {
 
     /**
      * Handle a message to be logged.
-     * @param verbose Whether this message is flagged as verbose or not.
+     * @param verbose   Whether this message is flagged as verbose or not.
      * @param logString The string to log.
      */
     public synchronized void onMessage(boolean verbose, String logString) {
 
-            if (fileWriter != null && (!verbose || this.isVerbose)) {
-                synchronized (fileWriter) {
+        if (fileWriter != null && (!verbose || this.isVerbose)) {
+            synchronized (fileWriter) {
                 try {
                     fileWriter.write(getFormattedTimeStamp() + " Eyes: " + logString);
                     fileWriter.newLine();
@@ -102,10 +99,11 @@ public class FileLogger implements LogHandler {
     public void close() {
         //noinspection EmptyCatchBlock
         try {
-            if (fileWriter !=null) {
+            if (fileWriter != null) {
                 fileWriter.close();
             }
-        } catch (IOException e) {}
+        } catch (IOException e) {
+        }
         fileWriter = null;
     }
 
@@ -114,7 +112,7 @@ public class FileLogger implements LogHandler {
         return fileWriter != null;
     }
 
-    private String getFormattedTimeStamp(){
+    private String getFormattedTimeStamp() {
         return dateFormat.format(Calendar.getInstance().getTime());
     }
 
