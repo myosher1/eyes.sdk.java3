@@ -924,9 +924,17 @@ public abstract class EyesBase {
             }
         } finally {
             runningSession = null;
-            //logger.getLogHandler().close();
+            closeLogger();
         }
         return null;
+    }
+
+    protected void openLogger() {
+        logger.getLogHandler().open();
+    }
+
+    protected void closeLogger() {
+        logger.getLogHandler().close();
     }
 
     /**
@@ -1366,7 +1374,7 @@ public abstract class EyesBase {
     }
 
     protected void openBase() throws EyesException {
-//        logger.getLogHandler().open();
+        openLogger();
         int retry = 0;
         do {
             try {

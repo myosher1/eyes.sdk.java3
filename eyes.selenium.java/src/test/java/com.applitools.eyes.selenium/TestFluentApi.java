@@ -3,7 +3,6 @@ package com.applitools.eyes.selenium;
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.CoordinatesType;
 import com.applitools.eyes.FloatingMatchSettings;
-import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.selenium.fluent.Target;
 

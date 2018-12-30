@@ -141,5 +141,14 @@ class EyesConnector extends EyesBase implements IEyesConnector {
         this.userAgent = userAgent;
     }
 
+    @Override
+    protected void openLogger(){
+        // do nothing.
+    }
+
+    @Override
+    protected void closeLogger(){
+        // do nothing.
+    }
 
 }
