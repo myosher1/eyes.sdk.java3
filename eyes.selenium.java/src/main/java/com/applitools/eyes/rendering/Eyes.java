@@ -42,7 +42,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
 
     {
         try {
-            PROCESS_RESOURCES = GeneralUtils.readToEnd(Eyes.class.getResourceAsStream("/processResources.js"));
+            PROCESS_RESOURCES = GeneralUtils.readToEnd(Eyes.class.getResourceAsStream("/processPageAndSerialize.js"));
         } catch (IOException e) {
             e.printStackTrace();
         }

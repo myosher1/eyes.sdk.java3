@@ -1,0 +1,6 @@
+{
+  "name": "node_resources",
+  "dependencies": {
+    "@applitools/dom-capture": "^6.1.3"
+  }
+}
