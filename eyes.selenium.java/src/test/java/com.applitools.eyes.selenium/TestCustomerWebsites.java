@@ -29,7 +29,7 @@ public class TestCustomerWebsites extends TestSetup {
     @Test
     public void TestOrbis() {
         driver.get("https://www.orbis.com/jp/institutional/about-us/press-room");
-        eyes.check("Orbis Full Window", Target.window().fully()
+        getEyes().check("Orbis Full Window", Target.window().fully()
                 .layout(By.cssSelector("div[test-id=press-articles-0] > progressive-display > div"), By.className("carousel-row-wrapper")));
         setExpectedLayoutRegions(
                 new Region(52, 2480, 1162, 44),
@@ -51,13 +51,13 @@ public class TestCustomerWebsites extends TestSetup {
     @Test
     public void TestAwwwards() {
         driver.get("https://www.awwwards.com/websites/single-page/");
-        eyes.check("test", Target.region(By.cssSelector("#content")).fully().ignore(By.cssSelector(".box-photo")).layout());
+        getEyes().check("test", Target.region(By.cssSelector("#content")).fully().ignore(By.cssSelector(".box-photo")).layout());
     }
 
     @Test
     public void TestNicorette() {
         driver.get("https://www.nicorette.es/productos");
-        eyes.check("Nicorette Full Window", Target.window().fully()
+        getEyes().check("Nicorette Full Window", Target.window().fully()
                 .layout(By.cssSelector(".view-products > .view-content"))
                 .ignore(By.cssSelector(".view-products > .view-content img")));
     }

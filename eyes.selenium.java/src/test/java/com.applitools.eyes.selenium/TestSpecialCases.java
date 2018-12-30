@@ -22,7 +22,7 @@ public class TestSpecialCases extends TestSetup {
 
     @Test
     public void TestCheckRegionInAVeryBigFrame() {
-        eyes.check("map", Target.frame("frame1").region(By.tagName("img")));
+        getEyes().check("map", Target.frame("frame1").region(By.tagName("img")));
     }
 
     @Test
@@ -32,6 +32,6 @@ public class TestSpecialCases extends TestSetup {
         WebElement element = driver.findElement(By.cssSelector("img"));
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", element);
 
-        eyes.check("", Target.region(By.cssSelector("img")));
+        getEyes().check("", Target.region(By.cssSelector("img")));
     }
 }

@@ -53,7 +53,7 @@ public class TestListener implements ITestListener {
         Object instance = result.getInstance();
         if (instance instanceof TestSetup) {
             TestSetup testSetup = (TestSetup)instance;
-            GeneralUtils.logExceptionStackTrace(testSetup.eyes.getLogger(), result.getThrowable());
+            GeneralUtils.logExceptionStackTrace(testSetup.getEyes().getLogger(), result.getThrowable());
             afterMethodFailure(testSetup);
         }
     }
@@ -73,7 +73,7 @@ public class TestListener implements ITestListener {
     }
 
     private void afterMethodFailure(TestSetup testSetup) {
-        IEyes eyes = testSetup.eyes;
+        IEyes eyes = testSetup.getEyes();
         try {
             if (eyes.getIsOpen()) {
                 eyes.close(false);
@@ -89,7 +89,7 @@ public class TestListener implements ITestListener {
     }
 
     private boolean afterMethodSuccess(TestSetup testSetup) {
-        IEyes eyes = testSetup.eyes;
+        IEyes eyes = testSetup.getEyes();
         try {
             if (eyes.getIsOpen()) {
                 TestResults results = eyes.close();

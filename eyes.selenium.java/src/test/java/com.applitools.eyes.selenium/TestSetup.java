@@ -20,7 +20,7 @@ public abstract class TestSetup implements ITest {
 
     private Eyes seleniumEyes;
 
-    protected IEyes eyes;
+    private IEyes eyes;
     protected WebDriver driver;
     protected RemoteWebDriver webDriver;
 
@@ -79,6 +79,10 @@ public abstract class TestSetup implements ITest {
 
     protected void setEyes(Eyes eyes) {
         this.eyes = eyes;
+    }
+
+    public IEyes getEyes(){
+        return this.eyes;
     }
 
     protected void setExpectedIgnoreRegions(Region... expectedIgnoreRegions) {

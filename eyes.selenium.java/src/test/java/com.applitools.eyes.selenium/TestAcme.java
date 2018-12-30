@@ -25,7 +25,7 @@ public class TestAcme extends TestSetup {
 
     @Test
     public void Test(){
-        eyes.check("main window with table",
+        getEyes().check("main window with table",
                 Target.window()
                         .fully()
                         .ignore(By.className("toolbar"))
@@ -43,7 +43,7 @@ public class TestAcme extends TestSetup {
         WebElement password = driver.findElement(By.id("password"));
         username.click();
         password.sendKeys("MySecret123?");
-        ((Eyes)eyes).check(
+        ((Eyes)getEyes()).check(
                 Target.region(username),
                 Target.region(password)
         );

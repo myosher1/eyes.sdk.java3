@@ -16,6 +16,10 @@ public class TestScrollRootElementOnSimplePage extends TestSetup {
         this.eyes = eyes;
     }
 
+    @Override
+    public IEyes getEyes() {
+        return this.eyes;
+    }
 
     @Factory(dataProvider = "dp", dataProviderClass = TestsDataProvider.class)
     public TestScrollRootElementOnSimplePage(Capabilities caps, String platform) {

@@ -22,7 +22,7 @@ public class TestWix extends TestSetup {
 
     @Test
     public void TestMap() {
-        eyes.check("map", Target.frame("TPAMultiSection_j5ocg4p8iframe").region(By.className("_2V52V")));
+        getEyes().check("map", Target.frame("TPAMultiSection_j5ocg4p8iframe").region(By.className("_2V52V")));
     }
 
 }
