@@ -24,6 +24,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,6 +50,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private HashMap<String, Object> result = null;
     private AtomicInteger framesLevel = new AtomicInteger();
     private RGridDom dom = null;
+    private boolean isTaskStarted = false;
+    private boolean isTaskCompleted = false;
+    private boolean isTaskInException = false;
 
     public interface RenderTaskListener {
         void onRenderSuccess();
@@ -77,6 +82,10 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     @Override
     public RenderStatusResults call() throws Exception {
+
+        this.isTaskStarted = true;
+
+        addRenderingTaskToOpenTasks();
 
         logger.verbose("enter");
 
@@ -153,12 +162,22 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         try {
             pollRenderingStatus(mapping);
         } catch (Exception e) {
+            this.isTaskInException = true;
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
 
+        isTaskCompleted = true;
         logger.verbose("exit");
 
         return null;
+    }
+
+    private void addRenderingTaskToOpenTasks() {
+        if (this.openTaskList != null) {
+            for (Task task : openTaskList) {
+                task.setRenderingTask(this);
+            }
+        }
     }
 
     private void forcePutAllResources(Map<String, RGridResource> resources, RunningRender runningRender) {
@@ -276,7 +295,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 IResourceFuture resourceFuture = fetchedCacheMap.get(url);
                 if (resourceFuture == null) {
                     logger.verbose("fetchedCacheMap.get(url) == null - " + url);
-                    throw new Exception("Resource put requested but never downloaded");
+                    logger.log("Resource put requested but never downloaded");
+                    continue;
                 } else {
                     RGridResource resource = resourceFuture.get();
 //                        logger.verbose("resource(" + resource.getUrl() + ") hash : " + resource.getSha256());
@@ -510,6 +530,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private String getCss(byte[] contentBytes, String contentTypeStr) {
+        logger.log("enter");
+        if (contentTypeStr == null) return null;
+        if (contentBytes.length == 0) return null;
         String[] parts = contentTypeStr.split(";");
         String charset = "UTF-8";
         for (String part : parts) {
@@ -536,6 +559,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
+        logger.log("exit");
         return css;
     }
 
@@ -675,11 +699,22 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
         logger.verbose("parsing " + allFetches.size() + " fetched resources");
         for (IResourceFuture future : allFetches) {
-            logger.verbose("finishing future.get() for resource " + future.getUrl() + " ...");
-            RGridResource resource = future.get();
+            RGridResource resource;
+            try {
+                logger.verbose("trying future.get() for resource " + future.getUrl() + " ...");
+                resource = future.get(10, TimeUnit.SECONDS);
+                logger.verbose("finishing future.get() for resource " + future.getUrl() + " ...");
+            } catch (TimeoutException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+                continue;
+            }
             logger.verbose("done getting resource " + future.getUrl());
-            this.debugResourceWriter.write(resource);
-
+            try {
+                this.debugResourceWriter.write(resource);
+            } catch (Exception e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
+            logger.log("done writing to debugWriter");
             String urlAsString = resource.getUrl();
 
             removeUrlFromList(urlAsString, resourceUrls);
@@ -687,10 +722,15 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
             // FIXME - remove this
             String contentType = resource.getContentType();
-            String css = getCss(resource.getContent(), contentType);
+            String css = null;
+            css = getCss(resource.getContent(), contentType);
             logger.verbose("handling " + contentType + " resource from URL: " + urlAsString);
             if (css == null || css.isEmpty() || !contentType.contains("text/css")) continue;
-//            parseCSS(css, new URL(urlAsString), resourceUrls);
+            try {
+                parseCSS(css, new URL(urlAsString), resourceUrls);
+            } catch (MalformedURLException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
 
         }
         logger.verbose("exit");
