@@ -3,10 +3,7 @@ package com.applitools.eyes.visualGridClient.services;
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.visualGridClient.model.CompletableTask;
-import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
-import com.applitools.eyes.visualGridClient.model.RenderStatusResults;
-import com.applitools.eyes.visualGridClient.model.TestResultContainer;
+import com.applitools.eyes.visualGridClient.model.*;
 import com.applitools.utils.GeneralUtils;
 
 import java.util.ArrayList;
@@ -33,6 +30,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
 
     private RunningTest runningTest;
     private Exception exception;
+    private RenderingTask renderingTask = null;
 
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
 
@@ -196,6 +194,10 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
     @Override
     public String toString() {
         return "Task - Type: " + type + " ; Browser Info: " + getBrowserInfo();
+    }
+
+    public void setRenderingTask(RenderingTask renderingTask) {
+        this.renderingTask = renderingTask;
     }
 }
 
