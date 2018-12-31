@@ -18,6 +18,11 @@ public class TestEkb extends TestSetup {
         this.eyes = eyes;
     }
 
+    @Override
+    public IEyes getEyes(){
+        return this.eyes;
+    }
+
     @Factory(dataProvider = "dp", dataProviderClass = TestsDataProvider.class)
     public TestEkb(Capabilities caps, String platform) {
         super.caps = caps;
