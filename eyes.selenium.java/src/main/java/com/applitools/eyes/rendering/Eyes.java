@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes {
 
+    private String apiKey = System.getenv("APPLITOOLS_API_KEY");
     private Logger logger;
     private String serverUrl;
     private final VisualGridManager renderingGridManager;
@@ -149,6 +150,17 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
             }
         }
 
+        String apiKey = this.apiKey;
+        if (apiKey == null) {
+            apiKey = this.renderingGridManager.getApiKey();
+
+        }
+        if (apiKey != null) {
+            eyesConnector.setApiKey(apiKey);
+        } else {
+            throw new EyesException("Missing API key");
+        }
+
         this.eyesConnector = eyesConnector;
         return eyesConnector;
     }
@@ -201,10 +213,12 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
 
     @Override
     public String getApiKey() {
-        if (eyesConnector == null) {
-            throw new EyesException("server connector not set.");
-        }
-        return eyesConnector.getApiKey();
+        return this.apiKey;
+    }
+
+    @Override
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 
     public List<Future<TestResultContainer>> closeAndReturnResults() {

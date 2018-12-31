@@ -5,7 +5,6 @@ import com.applitools.ICheckRGSettingsInternal;
 import com.applitools.eyes.Region;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +15,7 @@ public class CheckRGSettings extends CheckSettings implements ICheckRGSettings, 
 
     private String selector;
     private Region region;
-    private Map<String, List<String>> scriptHooks = new HashMap<>();
+    private Map<String, String> scriptHooks = new HashMap<>();
     private boolean isSendDom;
 
     public CheckRGSettings() {
@@ -37,14 +36,8 @@ public class CheckRGSettings extends CheckSettings implements ICheckRGSettings, 
         this.isSendDom = isSendDom;
     }
 
-    public void addScriptHook(String script) {
-
-        List<String> scripts = this.scriptHooks.get(BEFORE_CAPTURE_SCREENSHOT);
-        if (scripts == null) {
-            scripts = new ArrayList<>();
-            this.scriptHooks.put(BEFORE_CAPTURE_SCREENSHOT, scripts);
-        }
-        scripts.add(script);
+    private void setScirptHook(String script) {
+        this.scriptHooks.put(BEFORE_CAPTURE_SCREENSHOT, script);
     }
 
     @JsonProperty("sizeMode")
@@ -78,7 +71,7 @@ public class CheckRGSettings extends CheckSettings implements ICheckRGSettings, 
         return region;
     }
 
-    public Map<String, List<String>> getScriptHooks() {
+    public Map<String, String> getScriptHooks() {
         return scriptHooks;
     }
 
@@ -112,6 +105,14 @@ public class CheckRGSettings extends CheckSettings implements ICheckRGSettings, 
     @Override
     public ICheckRGSettings withName(String name) {
         return (CheckRGSettings) super.withName(name);
+    }
+
+    @Override
+    public ICheckRGSettings webHook(String hook) {
+        CheckRGSettings clone = new CheckRGSettings();
+        populateClone(clone);
+        clone.setScirptHook(hook);
+        return clone;
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")

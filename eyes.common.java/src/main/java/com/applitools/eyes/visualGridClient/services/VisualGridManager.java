@@ -44,6 +44,7 @@ public class VisualGridManager {
 
     private RateLimiter rateLimiter;
     private String serverUrl;
+    private String apiKey = System.getenv("APPLITOOLS_API_KEY");
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     private FutureTask<TestResultContainer> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker,
@@ -78,6 +79,14 @@ public class VisualGridManager {
 
     public String getServerUrl() {
         return this.serverUrl;
+    }
+
+    public String getApiKey() {
+        return this.apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 
     public interface RenderListener {

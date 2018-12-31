@@ -182,9 +182,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     private void forcePutAllResources(Map<String, RGridResource> resources, RunningRender runningRender) {
         RGridResource resource = null;
+        List<PutFuture> allPuts = new ArrayList<>();
         for (String url : resources.keySet()) {
-            if (putResourceCache.containsKey(url)) continue;
-
             try {
                 logger.verbose("trying to get url from map - " + url);
                 IResourceFuture resourceFuture = fetchedCacheMap.get(url);
@@ -196,10 +195,21 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                         logger.log("Resource not found Exiting...");
                         return;
                     }
+                } else {
+                    resource = resourceFuture.get();
+                    PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
+                    logger.verbose("locking putResourceCache");
+                    synchronized (putResourceCache) {
+                        putResourceCache.put(dom.getUrl(), future);
+                        allPuts.add(future);
+                    }
                 }
             } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
+        }
+        for (PutFuture put : allPuts) {
+            put.get();
         }
 
     }
@@ -537,7 +547,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         String charset = "UTF-8";
         for (String part : parts) {
             part = part.trim();
-            if (part.equalsIgnoreCase("text/css")) {
+            if (!part.equalsIgnoreCase("text/css")) {
                 charset = null;
             } else {
                 String[] keyVal = part.split("=");
@@ -580,7 +590,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("enter");
         ICommonsList<CSSFontFaceRule> allFontFaceRules = cascadingStyleSheet.getAllFontFaceRules();
         for (CSSFontFaceRule fontFaceRule : allFontFaceRules) {
-            getAllFontResourcesUrisFromDeclarations(allResourceUris, fontFaceRule, "src", baseUrl);
+            getAllResourcesUrisFromDeclarations(allResourceUris, fontFaceRule, "src", baseUrl);
         }
         logger.verbose("exit");
     }
@@ -610,7 +620,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("exit");
     }
 
-    private <T extends IHasCSSDeclarations<T>> void getAllResourcesUrisFromDeclarations(Set<URL> allResourceUris, CSSStyleRule rule, String propertyName, URL baseUrl) {
+    private <T extends IHasCSSDeclarations<T>> void getAllResourcesUrisFromDeclarations(Set<URL> allResourceUris, IHasCSSDeclarations<T> rule, String propertyName, URL baseUrl) {
         ICommonsList<CSSDeclaration> sourcesList = rule.getAllDeclarationsOfPropertyName(propertyName);
         for (CSSDeclaration cssDeclaration : sourcesList) {
             CSSExpression cssDeclarationExpression = cssDeclaration.getExpression();
@@ -628,26 +638,26 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
         }
     }
-
-    private <T extends IHasCSSDeclarations<T>> void getAllFontResourcesUrisFromDeclarations(Set<URL> allResourceUris, IHasCSSDeclarations<CSSFontFaceRule> rule, String propertyName, URL baseUrl) {
-        ICommonsList<CSSDeclaration> sourcesList = rule.getAllDeclarationsOfPropertyName(propertyName);
-        for (CSSDeclaration cssDeclaration : sourcesList) {
-            CSSExpression cssDeclarationExpression = cssDeclaration.getExpression();
-            ICommonsList<ICSSExpressionMember> allExpressionMembers = cssDeclarationExpression.getAllMembers();
-            ICommonsList<CSSExpressionMemberTermURI> allUriExpressions = allExpressionMembers.getAllInstanceOf(CSSExpressionMemberTermURI.class);
-            for (CSSExpressionMemberTermURI uriExpression : allUriExpressions) {
-                try {
-                    String uri = uriExpression.getURIString();
-                    if (uri.toLowerCase().startsWith("data:")) continue;
-                    URL url = new URL(baseUrl, uri);
-                    allResourceUris.add(url);
-                } catch (MalformedURLException e) {
-                    GeneralUtils.logExceptionStackTrace(logger, e);
-                }
-            }
-        }
-    }
-
+//
+//    private <T extends IHasCSSDeclarations<T>> void getAllFontResourcesUrisFromDeclarations(Set<URL> allResourceUris, IHasCSSDeclarations<CSSFontFaceRule> rule, String propertyName, URL baseUrl) {
+//        ICommonsList<CSSDeclaration> sourcesList = rule.getAllDeclarationsOfPropertyName(propertyName);
+//        for (CSSDeclaration cssDeclaration : sourcesList) {
+//            CSSExpression cssDeclarationExpression = cssDeclaration.getExpression();
+//            ICommonsList<ICSSExpressionMember> allExpressionMembers = cssDeclarationExpression.getAllMembers();
+//            ICommonsList<CSSExpressionMemberTermURI> allUriExpressions = allExpressionMembers.getAllInstanceOf(CSSExpressionMemberTermURI.class);
+//            for (CSSExpressionMemberTermURI uriExpression : allUriExpressions) {
+//                try {
+//                    String uri = uriExpression.getURIString();
+//                    if (uri.toLowerCase().startsWith("data:")) continue;
+//                    URL url = new URL(baseUrl, uri);
+//                    allResourceUris.add(url);
+//                } catch (MalformedURLException e) {
+//                    GeneralUtils.logExceptionStackTrace(logger, e);
+//                }
+//            }
+//        }
+//    }
+//
 
     private int addBlobsToCache(Map<String, RGridResource> allBlobs) {
         int written = 0;
