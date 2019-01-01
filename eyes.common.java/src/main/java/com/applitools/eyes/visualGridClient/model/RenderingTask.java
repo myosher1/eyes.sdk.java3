@@ -151,7 +151,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             logger.verbose("step 4.3");
             stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom || fetchFails > MAX_FETCH_FAILS;
             if (stillRunning) {
-                sendMissingResources(runningRenders, requests[0].getDom(), isNeedMoreDom);
+                sendMissingResources(runningRenders, requests[0].getDom(), requests[0].getResources(), isNeedMoreDom);
             }
 
             logger.verbose("step 4.4");
@@ -216,12 +216,6 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     }
 
-    private void notifyFailureAllListeners(Exception e) {
-        for (RenderTaskListener listener : listeners) {
-            listener.onRenderFailed(e);
-        }
-    }
-
     private void notifySuccessAllListeners() {
         for (RenderTaskListener listener : listeners) {
             listener.onRenderSuccess();
@@ -263,7 +257,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         return ids;
     }
 
-    private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, boolean isNeedMoreDom) throws Exception {
+    private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, Map<String, RGridResource> resources, boolean isNeedMoreDom) throws Exception {
         logger.verbose("enter");
         List<PutFuture> allPuts = new ArrayList<>();
         if (isNeedMoreDom) {
@@ -280,7 +274,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("creating PutFutures for " + runningRenders.size() + " runningRenders");
 
         for (RunningRender runningRender : runningRenders) {
-            createPutFutures(allPuts, runningRender);
+            createPutFutures(allPuts, runningRender, resources);
         }
 
         logger.verbose("calling future.get on " + allPuts.size() + " PutFutures");
@@ -291,10 +285,11 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("exit");
     }
 
-    private void createPutFutures(List<PutFuture> allPuts, RunningRender runningRender){
+    private void createPutFutures(List<PutFuture> allPuts, RunningRender runningRender, Map<String, RGridResource> resources) {
         List<String> needMoreResources = runningRender.getNeedMoreResources();
+        RGridResource resource;
         for (String url : needMoreResources) {
-            if (putResourceCache.containsKey(url) && !isForcePutNeeded.get()) {
+            if (putResourceCache.containsKey(url)) {
                 PutFuture putFuture = putResourceCache.get(url);
                 if (!allPuts.contains(putFuture)) {
                     allPuts.add(putFuture);
@@ -302,31 +297,35 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 continue;
             }
 
-            try {
-//                    logger.verbose("trying to get url from map - " + url);
-                IResourceFuture resourceFuture = fetchedCacheMap.get(url);
-                if (resourceFuture == null) {
-                    logger.verbose("fetchedCacheMap.get(url) == null - " + url);
-                    logger.log("Resource put requested but never downloaded");
+            //                    logger.verbose("trying to get url from map - " + url);
+            IResourceFuture resourceFuture = fetchedCacheMap.get(url);
+            if (resourceFuture == null) {
+                logger.verbose("fetchedCacheMap.get(url) == null - " + url);
+                logger.log("Resource put requested but never downloaded(maybe a Frame)");
+                resource = resources.get(url);
+            } else {
+                try {
+                    resource = resourceFuture.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    GeneralUtils.logExceptionStackTrace(logger, e);
                     continue;
-                } else {
-                    RGridResource resource = resourceFuture.get();
-//                        logger.verbose("resource(" + resource.getUrl() + ") hash : " + resource.getSha256());
-                    PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
-                    if (!putResourceCache.containsKey(url) || isForcePutNeeded.get()) {
-                        synchronized (putResourceCache) {
-                            putResourceCache.put(url, future);
-                            allPuts.add(future);
-                        }
-                    }
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                GeneralUtils.logExceptionStackTrace(logger, e);
+//
             }
-        }
-    }
+            logger.verbose("resource(" + resource.getUrl() + ") hash : " + resource.getSha256());
+            PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
+            if (!putResourceCache.containsKey(url)) {
+                synchronized (putResourceCache) {
+                    putResourceCache.put(url, future);
+                    allPuts.add(future);
+                }
+            }
 
-    private RenderRequest[] prepareDataForRG(HashMap<String, Object> result) throws ExecutionException, InterruptedException, MalformedURLException, JsonProcessingException {
+        }
+
+}
+
+    private RenderRequest[] prepareDataForRG(HashMap<String, Object> result) throws ExecutionException, InterruptedException, JsonProcessingException {
 
         final Map<String, RGridResource> allBlobs = Collections.synchronizedMap(new HashMap<String, RGridResource>());
         Set<URL> resourceUrls = new HashSet<>();
