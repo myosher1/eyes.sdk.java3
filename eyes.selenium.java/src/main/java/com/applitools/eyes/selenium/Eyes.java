@@ -66,10 +66,9 @@ public class Eyes extends EyesBase implements IEyes {
     private boolean doNotGetTitle;
 
     private boolean checkFrameOrElement;
-
     private Region regionToCheck;
-
     private String originalOverflow;
+    private boolean stitchContent;
 
     private ImageRotation rotation;
     private double devicePixelRatio;
@@ -82,51 +81,13 @@ public class Eyes extends EyesBase implements IEyes {
     private RegionPositionCompensation regionPositionCompensation;
     private WebElement targetElement;
     private PositionMemento positionMemento;
-    private Region effectiveViewport = Region.EMPTY;
+    private Region effectiveViewport;
 
     private EyesScreenshotFactory screenshotFactory;
 
     @SuppressWarnings("UnusedDeclaration")
     public interface WebDriverAction {
         void drive(WebDriver driver);
-    }
-
-    private boolean stitchContent = false;
-
-    public FrameChain getOriginalFC() {
-        return originalFC;
-    }
-
-    public PositionProvider getCurrentFramePositionProvider() {
-        return currentFramePositionProvider;
-    }
-
-    public Region getRegionToCheck() {
-        return regionToCheck;
-    }
-
-    public void setRegionToCheck(Region regionToCheck) {
-        this.regionToCheck = regionToCheck;
-    }
-
-    protected void ensureConfiguration() {
-        config = new Configuration();
-    }
-
-    private Configuration getConfig() {
-        return (Configuration) config;
-    }
-
-    public boolean getHideCaret() {
-        return getConfig().getHideCaret();
-    }
-
-    public void setHideCaret(boolean hideCaret) {
-        getConfig().setHideCaret(hideCaret);
-    }
-
-    public boolean shouldStitchContent() {
-        return stitchContent;
     }
 
     /**
@@ -148,6 +109,43 @@ public class Eyes extends EyesBase implements IEyes {
 
     public WebDriver getDriver() {
         return driver;
+    }
+
+    public FrameChain getOriginalFC() {
+        return originalFC;
+    }
+
+    public PositionProvider getCurrentFramePositionProvider() {
+        return currentFramePositionProvider;
+    }
+
+    public Region getRegionToCheck() {
+        return regionToCheck;
+    }
+
+    public void setRegionToCheck(Region regionToCheck) {
+        this.regionToCheck = regionToCheck;
+    }
+
+    @Override
+    protected void ensureConfiguration() {
+        config = new Configuration();
+    }
+
+    private Configuration getConfig() {
+        return (Configuration) config;
+    }
+
+    public boolean getHideCaret() {
+        return getConfig().getHideCaret();
+    }
+
+    public void setHideCaret(boolean hideCaret) {
+        getConfig().setHideCaret(hideCaret);
+    }
+
+    public boolean shouldStitchContent() {
+        return stitchContent;
     }
 
     /**
@@ -291,7 +289,6 @@ public class Eyes extends EyesBase implements IEyes {
         return open(driver);
     }
 
-
     /**
      * Starts a test.
      * @param driver       The web driver that controls the browser hosting
@@ -374,14 +371,14 @@ public class Eyes extends EyesBase implements IEyes {
     }
 
     public WebElement getScrollRootElement() {
-        if (scrollRootElement == null) {
-            scrollRootElement = driver.findElement(By.tagName("html"));
+        if (this.scrollRootElement == null) {
+            this.scrollRootElement = driver.findElement(By.tagName("html"));
         }
-        return scrollRootElement;
+        return this.scrollRootElement;
     }
 
     private PositionProvider createPositionProvider() {
-        return createPositionProvider(scrollRootElement);
+        return createPositionProvider(this.scrollRootElement);
     }
 
     private PositionProvider createPositionProvider(WebElement scrollRootElement) {
@@ -668,15 +665,13 @@ public class Eyes extends EyesBase implements IEyes {
             return;
         }
 
-        this.targetElement = null;
-        this.regionToCheck = null;
-        this.scrollRootElement = null;
-
         boolean originalForceFPS = getConfig().getForceFullPageScreenshot();
 
         if (checkSettings.length > 1) {
             getConfig().setForceFullPageScreenshot(true);
         }
+
+        logger.verbose(config.toString());
 
         Dictionary<Integer, GetRegion> getRegions = new Hashtable<>();
         Dictionary<Integer, ICheckSettingsInternal> checkSettingsInternalDictionary = new Hashtable<>();
@@ -898,9 +893,7 @@ public class Eyes extends EyesBase implements IEyes {
         ArgumentGuard.notNull(checkSettings, "checkSettings");
         ArgumentGuard.notOfType(checkSettings, ISeleniumCheckTarget.class, "checkSettings");
 
-        this.targetElement = null;
-        this.regionToCheck = null;
-        this.scrollRootElement = null;
+        logger.verbose(config.toString());
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
