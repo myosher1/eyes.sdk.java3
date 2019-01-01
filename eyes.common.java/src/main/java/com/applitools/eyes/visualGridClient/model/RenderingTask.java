@@ -102,6 +102,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("step 3");
         boolean stillRunning = true;
         int fetchFails = 0;
+        boolean isForcePutAlreadyDone = false;
         List<RunningRender> runningRenders = null;
         do {
 
@@ -142,8 +143,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
             boolean isNeedMoreDom = runningRender.isNeedMoreDom();
 
-            if (isForcePutNeeded.get()) {
+            if (isForcePutNeeded.get() && !isForcePutAlreadyDone) {
                 forcePutAllResources(requests[0].getResources(), runningRender);
+                isForcePutAlreadyDone = true;
             }
 
             logger.verbose("step 4.3");
@@ -181,7 +183,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private void forcePutAllResources(Map<String, RGridResource> resources, RunningRender runningRender) {
-        RGridResource resource = null;
+        RGridResource resource;
         List<PutFuture> allPuts = new ArrayList<>();
         for (String url : resources.keySet()) {
             try {
@@ -289,7 +291,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("exit");
     }
 
-    private void createPutFutures(List<PutFuture> allPuts, RunningRender runningRender) throws Exception {
+    private void createPutFutures(List<PutFuture> allPuts, RunningRender runningRender){
         List<String> needMoreResources = runningRender.getNeedMoreResources();
         for (String url : needMoreResources) {
             if (putResourceCache.containsKey(url) && !isForcePutNeeded.get()) {

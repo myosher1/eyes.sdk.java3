@@ -399,7 +399,6 @@ public class VisualGridManager {
         Map<IRenderingEyes, List<Future<TestResultContainer>>> allFutures = new HashMap<>();
         for (IRenderingEyes eyes : allEyes) {
             allFutures.put(eyes, eyes.closeAndReturnResults());
-            //allFutures.addAll(eyes.closeAndReturnResults());
             synchronized (this.eyesToCloseList) {
                 if (!this.eyesToCloseList.contains(eyes)) {
                     this.eyesToCloseList.add(eyes);

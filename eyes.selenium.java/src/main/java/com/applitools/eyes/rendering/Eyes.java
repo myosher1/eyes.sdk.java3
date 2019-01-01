@@ -40,6 +40,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
 
     private IDebugResourceWriter debugResourceWriter;
     private String url;
+    private List<Future<TestResultContainer>> futures;
 
     {
         try {
@@ -186,13 +187,13 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
     }
 
     public TestResults close() {
-        closeAndReturnResults();
+        futures = closeAndReturnResults();
         return null;
     }
 
     @Override
     public TestResults close(boolean throwException) {
-        closeAndReturnResults();
+        futures = closeAndReturnResults();
         return null;
     }
 
@@ -222,8 +223,12 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
     }
 
     public List<Future<TestResultContainer>> closeAndReturnResults() {
+        if (this.futures != null) {
+            return futures;
+        }
+        List<Future<TestResultContainer>> futureList;
         logger.verbose("enter " + batchInfo);
-        List<Future<TestResultContainer>> futureList = new ArrayList<>();
+        futureList = new ArrayList<>();
         try {
             for (RunningTest runningTest : testList) {
                 logger.verbose("running test name: " + runningTest.getConfiguration().getTestName());
@@ -406,5 +411,9 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
     @Override
     public String toString() {
         return "Eyes - url: " + url;
+    }
+
+    public List<Future<TestResultContainer>> getCloseFutures() {
+        return futures;
     }
 }
