@@ -19,7 +19,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes {
+public class Eyes implements IRenderingEyes, IEyes {
 
     private Logger logger;
     private String serverUrl;

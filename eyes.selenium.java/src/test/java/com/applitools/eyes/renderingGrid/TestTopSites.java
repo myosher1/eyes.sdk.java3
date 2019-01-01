@@ -3,7 +3,7 @@ package com.applitools.eyes.renderingGrid;
 import com.applitools.eyes.*;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
-import com.applitools.eyes.selenium.IEyes;
+import com.applitools.eyes.IEyes;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
 import com.applitools.eyes.visualGridClient.services.VisualGridManager;
