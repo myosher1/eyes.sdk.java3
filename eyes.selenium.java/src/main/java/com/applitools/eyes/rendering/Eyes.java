@@ -40,7 +40,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
 
     private IDebugResourceWriter debugResourceWriter;
     private String url;
-    private List<Future<TestResultContainer>> futures;
+    private List<Future<TestResultContainer>> futures = null;
 
     {
         try {
@@ -242,6 +242,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
                     futureList.add(closeFuture);
                 }
             }
+            futures = futureList;
             this.renderingGridManager.close(this);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);

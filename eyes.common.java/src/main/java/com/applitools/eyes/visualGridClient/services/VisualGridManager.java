@@ -120,7 +120,7 @@ public class VisualGridManager {
                         synchronized (eyesToCloseList) {
                             if (eyes.isEyesClosed()) {
                                 eyesToCloseList.remove(eyes);
-                                allEyes.remove(eyes);
+//                                allEyes.remove(eyes);
                             }
                         }
                         logger.verbose("releasing eyesToCloseList");
@@ -136,7 +136,7 @@ public class VisualGridManager {
                         synchronized (eyesToCloseList) {
                             if (eyes.isEyesClosed()) {
                                 eyesToCloseList.remove(eyes);
-                                allEyes.remove(eyes);
+//                                allEyes.remove(eyes);
                             }
                         }
                         logger.verbose("releasing eyesToCloseList");
@@ -398,7 +398,8 @@ public class VisualGridManager {
         logger.verbose("enter");
         Map<IRenderingEyes, List<Future<TestResultContainer>>> allFutures = new HashMap<>();
         for (IRenderingEyes eyes : allEyes) {
-            allFutures.put(eyes, eyes.closeAndReturnResults());
+            List<Future<TestResultContainer>> value = eyes.closeAndReturnResults();
+            allFutures.put(eyes, value);
             synchronized (this.eyesToCloseList) {
                 if (!this.eyesToCloseList.contains(eyes)) {
                     this.eyesToCloseList.add(eyes);
