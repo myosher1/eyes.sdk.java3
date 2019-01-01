@@ -87,7 +87,7 @@ public final class TestRenderingGridMultiThreadService {
             eyes.check(Target.window().withName("test").sendDom(false));
             List<Future<TestResultContainer>> close = eyes.closeAndReturnResults();
             for (Future<TestResultContainer> future : close) {
-                future.get();
+                TestResultContainer testResultContainer = future.get();
             }
         } catch (InterruptedException | ExecutionException e) {
             GeneralUtils.logExceptionStackTrace(renderingManager.getLogger(), e);

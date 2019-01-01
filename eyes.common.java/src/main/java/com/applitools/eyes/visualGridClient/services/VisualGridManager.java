@@ -44,6 +44,7 @@ public class VisualGridManager {
 
     private RateLimiter rateLimiter;
     private String serverUrl;
+    private String apiKey = System.getenv("APPLITOOLS_API_KEY");
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     private FutureTask<TestResultContainer> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker,
@@ -80,6 +81,14 @@ public class VisualGridManager {
         return this.serverUrl;
     }
 
+    public String getApiKey() {
+        return this.apiKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
     public interface RenderListener {
 
         void onRenderSuccess();
@@ -111,7 +120,7 @@ public class VisualGridManager {
                         synchronized (eyesToCloseList) {
                             if (eyes.isEyesClosed()) {
                                 eyesToCloseList.remove(eyes);
-                                allEyes.remove(eyes);
+//                                allEyes.remove(eyes);
                             }
                         }
                         logger.verbose("releasing eyesToCloseList");
@@ -127,7 +136,7 @@ public class VisualGridManager {
                         synchronized (eyesToCloseList) {
                             if (eyes.isEyesClosed()) {
                                 eyesToCloseList.remove(eyes);
-                                allEyes.remove(eyes);
+//                                allEyes.remove(eyes);
                             }
                         }
                         logger.verbose("releasing eyesToCloseList");
@@ -389,8 +398,8 @@ public class VisualGridManager {
         logger.verbose("enter");
         Map<IRenderingEyes, List<Future<TestResultContainer>>> allFutures = new HashMap<>();
         for (IRenderingEyes eyes : allEyes) {
-            allFutures.put(eyes, eyes.closeAndReturnResults());
-            //allFutures.addAll(eyes.closeAndReturnResults());
+            List<Future<TestResultContainer>> value = eyes.closeAndReturnResults();
+            allFutures.put(eyes, value);
             synchronized (this.eyesToCloseList) {
                 if (!this.eyesToCloseList.contains(eyes)) {
                     this.eyesToCloseList.add(eyes);

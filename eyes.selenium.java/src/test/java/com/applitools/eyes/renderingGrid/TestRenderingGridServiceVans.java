@@ -1,12 +1,11 @@
 package com.applitools.eyes.renderingGrid;
 
-import com.applitools.eyes.BatchInfo;
-import com.applitools.eyes.FileLogger;
-import com.applitools.eyes.Logger;
-import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.*;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
+import com.applitools.eyes.selenium.IEyes;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
+import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
 import com.applitools.eyes.visualGridClient.services.VisualGridManager;
 import com.applitools.utils.GeneralUtils;
@@ -18,6 +17,8 @@ import org.testng.annotations.*;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
+import java.util.concurrent.Future;
 
 public class TestRenderingGridServiceVans {
     private VisualGridManager renderingManager;
@@ -90,30 +91,6 @@ public class TestRenderingGridServiceVans {
         };
     }
 
-    private Eyes initEyes(WebDriver webDriver, String testedUrl, BatchInfo batch) {
-        Eyes eyes = new Eyes(renderingManager);
-        eyes.setBatch(batch);
-        initLogging(testedUrl, eyes);
-
-        Logger logger = eyes.getLogger();
-        logger.log("creating WebDriver: " + testedUrl);
-
-        try {
-            RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
-            renderingConfiguration.setTestName("Vans Gallery page");
-            renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
-//            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
-//            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME);
-//            renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME);
-            logger.log("created configurations for url " + testedUrl);
-            eyes.open(webDriver, renderingConfiguration);
-        } catch (Exception e) {
-            GeneralUtils.logExceptionStackTrace(logger, e);
-        }
-        return eyes;
-    }
-
     @Test(dataProvider = "Men")
     public void test(String testedUrl, BatchInfo batch) {
         renderingManager.getLogger().log("entering with url " + testedUrl);
@@ -123,7 +100,6 @@ public class TestRenderingGridServiceVans {
 
         Logger logger = eyes.getLogger();
         logger.log("navigated to " + testedUrl);
-
 
 
         try {
@@ -137,8 +113,9 @@ public class TestRenderingGridServiceVans {
             }
             eyes.getLogger().log("calling eyes.close() for url " + testedUrl);
 
-//            List<Future<TestResultContainer>> closeAndReturnResults = eyes.closeAndReturnResults();
-//            for (Future<TestResultContainer> future : closeAndReturnResults) {
+            TestResults close = eyes.close();
+//            for (Future<TestResultContainer> future : closeAndR
+//            eturnResults) {
 //                logger.log("calling future.get() for url " + testedUrl);
 //                future.get();
 //            }
@@ -152,6 +129,30 @@ public class TestRenderingGridServiceVans {
             logger.log("url " + testedUrl + " - done with browser.");
             // End the test.
         }
+    }
+
+    private Eyes initEyes(WebDriver webDriver, String testedUrl, BatchInfo batch) {
+        Eyes eyes = new Eyes(renderingManager);
+        eyes.setBatch(batch);
+        initLogging(testedUrl, eyes);
+
+        Logger logger = eyes.getLogger();
+        logger.log("creating WebDriver: " + testedUrl);
+
+        try {
+            RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
+            renderingConfiguration.setTestName("Vans Gallery page");
+            renderingConfiguration.setAppName("RenderingGridIntegration");
+            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
+            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
+            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME);
+            renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME);
+            logger.log("created configurations for url " + testedUrl);
+            eyes.open(webDriver, renderingConfiguration);
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
+        return eyes;
     }
 
     private void initLogging(String testedUrl, Eyes eyes) {
@@ -170,7 +171,7 @@ public class TestRenderingGridServiceVans {
     }
 
     @AfterClass
-    public void afterClass(ITestContext testContext) {
+    public void afterTestRun(ITestContext testContext) {
         TestResultSummary allTestResults = renderingManager.getAllTestResults();
         renderingManager.getLogger().log(allTestResults.toString());
     }

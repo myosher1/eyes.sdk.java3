@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes {
 
+    private String apiKey = System.getenv("APPLITOOLS_API_KEY");
     private Logger logger;
     private String serverUrl;
     private final VisualGridManager renderingGridManager;
@@ -39,6 +40,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
 
     private IDebugResourceWriter debugResourceWriter;
     private String url;
+    private List<Future<TestResultContainer>> futures = null;
 
     {
         try {
@@ -149,6 +151,17 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
             }
         }
 
+        String apiKey = this.apiKey;
+        if (apiKey == null) {
+            apiKey = this.renderingGridManager.getApiKey();
+
+        }
+        if (apiKey != null) {
+            eyesConnector.setApiKey(apiKey);
+        } else {
+            throw new EyesException("Missing API key");
+        }
+
         this.eyesConnector = eyesConnector;
         return eyesConnector;
     }
@@ -174,13 +187,13 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
     }
 
     public TestResults close() {
-        closeAndReturnResults();
+        futures = closeAndReturnResults();
         return null;
     }
 
     @Override
     public TestResults close(boolean throwException) {
-        closeAndReturnResults();
+        futures = closeAndReturnResults();
         return null;
     }
 
@@ -201,15 +214,21 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
 
     @Override
     public String getApiKey() {
-        if (eyesConnector == null) {
-            throw new EyesException("server connector not set.");
-        }
-        return eyesConnector.getApiKey();
+        return this.apiKey;
+    }
+
+    @Override
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
     }
 
     public List<Future<TestResultContainer>> closeAndReturnResults() {
+        if (this.futures != null) {
+            return futures;
+        }
+        List<Future<TestResultContainer>> futureList;
         logger.verbose("enter " + batchInfo);
-        List<Future<TestResultContainer>> futureList = new ArrayList<>();
+        futureList = new ArrayList<>();
         try {
             for (RunningTest runningTest : testList) {
                 logger.verbose("running test name: " + runningTest.getConfiguration().getTestName());
@@ -223,6 +242,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
                     futureList.add(closeFuture);
                 }
             }
+            futures = futureList;
             this.renderingGridManager.close(this);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
@@ -392,5 +412,9 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
     @Override
     public String toString() {
         return "Eyes - url: " + url;
+    }
+
+    public List<Future<TestResultContainer>> getCloseFutures() {
+        return futures;
     }
 }
