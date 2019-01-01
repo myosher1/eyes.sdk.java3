@@ -202,6 +202,7 @@ public class TestFluentApi extends TestSetup {
     @Test
     public void TestCheckLongIFrameModal() {
         Eyes eyes = (Eyes) getEyes();
+        StitchMode originalStitchMode = eyes.getStitchMode();
         eyes.setStitchMode(StitchMode.SCROLL);
         driver.findElement(By.id("stretched")).click();
         WebElement frame = driver.findElement(By.cssSelector("#modal2 iframe"));
@@ -222,5 +223,6 @@ public class TestFluentApi extends TestSetup {
             //eyes_.Check("Long IFrame Modal #" + c, Target.Region(rect).Fully());
         }
         eyes.check(targets.toArray(new ICheckSettings[0]));
+        eyes.setStitchMode(originalStitchMode);
     }
 }
