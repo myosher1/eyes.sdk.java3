@@ -18,6 +18,11 @@ public class TestClassicApi extends TestSetup {
         this.eyes = eyes;
     }
 
+    @Override
+    public Eyes getEyes() {
+        return this.eyes;
+    }
+
     @Factory(dataProvider = "dp", dataProviderClass = TestsDataProvider.class)
     public TestClassicApi(Capabilities caps, String platform) {
         super.caps = caps;

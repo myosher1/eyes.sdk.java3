@@ -23,7 +23,7 @@ public class TestFluentApi extends TestSetup {
 
         super.compareExpectedRegions = caps.getBrowserName().equalsIgnoreCase("chrome");
         testSuitName = "Eyes Selenium SDK - Fluent API";
-        testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
+        testedPageUrl = "https://applitools.github.io/demo/TestPages/FramesTestPage/";
     }
 
     @Test
@@ -189,7 +189,7 @@ public class TestFluentApi extends TestSetup {
 
     @Test
     public void TestCheckMany() {
-        ((Eyes)getEyes()).check(
+        ((Eyes) getEyes()).check(
                 Target.region(By.id("overflowing-div-image")).withName("overflowing div image"),
                 Target.region(By.id("overflowing-div")).withName("overflowing div"),
                 Target.region(By.id("overflowing-div-image")).fully().withName("overflowing div image (fully)"),

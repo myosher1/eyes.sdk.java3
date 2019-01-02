@@ -55,4 +55,13 @@ public class Configuration extends com.applitools.eyes.config.Configuration {
         this.hideCaret = hideCaret;
     }
 
+    @Override
+    public String toString() {
+        return super.toString() +
+                "\n\tforceFullPageScreenshot = " + forceFullPageScreenshot +
+                "\n\twaitBeforeScreenshots = " + waitBeforeScreenshots +
+                "\n\tstitchMode = " + stitchMode +
+                "\n\thideScrollbars = " + hideScrollbars +
+                "\n\thideCaret = " + hideCaret ;
+    }
 }

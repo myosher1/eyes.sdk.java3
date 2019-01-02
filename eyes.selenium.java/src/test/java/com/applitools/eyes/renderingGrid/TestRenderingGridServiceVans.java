@@ -3,9 +3,7 @@ package com.applitools.eyes.renderingGrid;
 import com.applitools.eyes.*;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
-import com.applitools.eyes.selenium.IEyes;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
-import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
 import com.applitools.eyes.visualGridClient.services.VisualGridManager;
 import com.applitools.utils.GeneralUtils;
@@ -17,8 +15,6 @@ import org.testng.annotations.*;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
-import java.util.concurrent.Future;
 
 public class TestRenderingGridServiceVans {
     private VisualGridManager renderingManager;

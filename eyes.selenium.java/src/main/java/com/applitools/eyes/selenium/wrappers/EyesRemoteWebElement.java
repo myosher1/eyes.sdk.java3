@@ -249,13 +249,12 @@ public class EyesRemoteWebElement extends RemoteWebElement {
         Object position = eyesDriver.executeScript(String.format(JS_SCROLL_TO_FORMATTED_STR,
                 location.getX(), location.getY()) + JS_GET_SCROLL_POSITION, this);
         String[] xy = position.toString().split(";");
-        if (xy.length != 2)
-        {
+        if (xy.length != 2) {
             throw new EyesException("Could not get scroll position!");
         }
         float x = Float.parseFloat(xy[0]);
         float y = Float.parseFloat(xy[1]);
-        return new Location((int)Math.ceil(x), (int)Math.ceil(y));
+        return new Location((int) Math.ceil(x), (int) Math.ceil(y));
     }
 
     /**
@@ -592,5 +591,17 @@ public class EyesRemoteWebElement extends RemoteWebElement {
                 Integer.parseInt(((String) esAsList.get(3)).replace("px", "")),
                 Integer.parseInt(((String) esAsList.get(4)).replace("px", "")),
                 Integer.parseInt(((String) esAsList.get(5)).replace("px", "")));
+    }
+
+    public Rectangle getBoundingClientRect() {
+        String retVal = (String) eyesDriver.executeScript("var r = arguments[0].getBoundingClientRect();" +
+                "return r.x+';'+r.y+';'+r.width+';'+r.height;", this);
+        String[] parts = retVal.split(";");
+        Rectangle rect = new Rectangle(
+                Math.round(Float.parseFloat(parts[0])),
+                Math.round(Float.parseFloat(parts[1])),
+                Math.round(Float.parseFloat(parts[2])),
+                Math.round(Float.parseFloat(parts[3])));
+        return rect;
     }
 }

@@ -1,7 +1,6 @@
-package com.applitools.eyes.selenium;
+package com.applitools.eyes;
 
 import com.applitools.ICheckSettings;
-import com.applitools.eyes.*;
 
 import java.net.URISyntaxException;
 

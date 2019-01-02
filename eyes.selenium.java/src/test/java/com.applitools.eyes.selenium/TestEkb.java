@@ -1,7 +1,7 @@
 package com.applitools.eyes.selenium;
 
+import com.applitools.eyes.IEyes;
 import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.selenium.fluent.Target;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
 import org.testng.annotations.Factory;
@@ -16,6 +16,11 @@ public class TestEkb extends TestSetup {
     @Override
     public void setEyes(Eyes eyes) {
         this.eyes = eyes;
+    }
+
+    @Override
+    public IEyes getEyes(){
+        return this.eyes;
     }
 
     @Factory(dataProvider = "dp", dataProviderClass = TestsDataProvider.class)
