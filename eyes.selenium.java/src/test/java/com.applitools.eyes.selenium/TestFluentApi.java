@@ -205,7 +205,7 @@ public class TestFluentApi extends TestSetup {
         driver.findElement(By.id("centered")).click();
         StitchMode originalStitchMode = eyes.getStitchMode();
         eyes.setStitchMode(StitchMode.SCROLL);
-        eyes.check("Scrollable Modal", Target.region(By.id("modal-content")).fully().scrollRootElement(By.id("modal")));
+        eyes.check("Scrollable Modal", Target.region(By.id("modal-content")).fully().scrollRootElement(By.id("modal1")));
         eyes.setStitchMode(originalStitchMode);
     }
 
