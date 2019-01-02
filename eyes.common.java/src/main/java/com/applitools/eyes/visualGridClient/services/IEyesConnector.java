@@ -45,4 +45,6 @@ public interface IEyesConnector {
     void setUserAgent(String userAgent);
 
     String getApiKey();
+
+    void setApiKey(String apiKey);
 }

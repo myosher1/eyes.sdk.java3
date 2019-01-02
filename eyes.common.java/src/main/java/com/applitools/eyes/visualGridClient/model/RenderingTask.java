@@ -24,6 +24,8 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -48,6 +50,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private HashMap<String, Object> result = null;
     private AtomicInteger framesLevel = new AtomicInteger();
     private RGridDom dom = null;
+    private boolean isTaskStarted = false;
+    private boolean isTaskCompleted = false;
+    private boolean isTaskInException = false;
 
     public interface RenderTaskListener {
         void onRenderSuccess();
@@ -78,6 +83,10 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     @Override
     public RenderStatusResults call() throws Exception {
 
+        this.isTaskStarted = true;
+
+        addRenderingTaskToOpenTasks();
+
         logger.verbose("enter");
 
         boolean isSecondRequestAlreadyHappened = false;
@@ -93,6 +102,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("step 3");
         boolean stillRunning = true;
         int fetchFails = 0;
+        boolean isForcePutAlreadyDone = false;
         List<RunningRender> runningRenders = null;
         do {
 
@@ -133,14 +143,15 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
             boolean isNeedMoreDom = runningRender.isNeedMoreDom();
 
-            if (isForcePutNeeded.get()) {
+            if (isForcePutNeeded.get() && !isForcePutAlreadyDone) {
                 forcePutAllResources(requests[0].getResources(), runningRender);
+                isForcePutAlreadyDone = true;
             }
 
             logger.verbose("step 4.3");
             stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom || fetchFails > MAX_FETCH_FAILS;
             if (stillRunning) {
-                sendMissingResources(runningRenders, requests[0].getDom(), isNeedMoreDom);
+                sendMissingResources(runningRenders, requests[0].getDom(), requests[0].getResources(), isNeedMoreDom);
             }
 
             logger.verbose("step 4.4");
@@ -153,19 +164,28 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         try {
             pollRenderingStatus(mapping);
         } catch (Exception e) {
+            this.isTaskInException = true;
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
 
+        isTaskCompleted = true;
         logger.verbose("exit");
 
         return null;
     }
 
-    private void forcePutAllResources(Map<String, RGridResource> resources, RunningRender runningRender) {
-        RGridResource resource = null;
-        for (String url : resources.keySet()) {
-            if (putResourceCache.containsKey(url)) continue;
+    private void addRenderingTaskToOpenTasks() {
+        if (this.openTaskList != null) {
+            for (Task task : openTaskList) {
+                task.setRenderingTask(this);
+            }
+        }
+    }
 
+    private void forcePutAllResources(Map<String, RGridResource> resources, RunningRender runningRender) {
+        RGridResource resource;
+        List<PutFuture> allPuts = new ArrayList<>();
+        for (String url : resources.keySet()) {
             try {
                 logger.verbose("trying to get url from map - " + url);
                 IResourceFuture resourceFuture = fetchedCacheMap.get(url);
@@ -177,18 +197,23 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                         logger.log("Resource not found Exiting...");
                         return;
                     }
+                } else {
+                    resource = resourceFuture.get();
+                    PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
+                    logger.verbose("locking putResourceCache");
+                    synchronized (putResourceCache) {
+                        putResourceCache.put(dom.getUrl(), future);
+                        allPuts.add(future);
+                    }
                 }
             } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
-
-    }
-
-    private void notifyFailureAllListeners(Exception e) {
-        for (RenderTaskListener listener : listeners) {
-            listener.onRenderFailed(e);
+        for (PutFuture put : allPuts) {
+            put.get();
         }
+
     }
 
     private void notifySuccessAllListeners() {
@@ -232,7 +257,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         return ids;
     }
 
-    private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, boolean isNeedMoreDom) throws Exception {
+    private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, Map<String, RGridResource> resources, boolean isNeedMoreDom) throws Exception {
         logger.verbose("enter");
         List<PutFuture> allPuts = new ArrayList<>();
         if (isNeedMoreDom) {
@@ -249,7 +274,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("creating PutFutures for " + runningRenders.size() + " runningRenders");
 
         for (RunningRender runningRender : runningRenders) {
-            createPutFutures(allPuts, runningRender);
+            createPutFutures(allPuts, runningRender, resources);
         }
 
         logger.verbose("calling future.get on " + allPuts.size() + " PutFutures");
@@ -260,10 +285,11 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("exit");
     }
 
-    private void createPutFutures(List<PutFuture> allPuts, RunningRender runningRender) throws Exception {
+    private void createPutFutures(List<PutFuture> allPuts, RunningRender runningRender, Map<String, RGridResource> resources) {
         List<String> needMoreResources = runningRender.getNeedMoreResources();
+        RGridResource resource;
         for (String url : needMoreResources) {
-            if (putResourceCache.containsKey(url) && !isForcePutNeeded.get()) {
+            if (putResourceCache.containsKey(url)) {
                 PutFuture putFuture = putResourceCache.get(url);
                 if (!allPuts.contains(putFuture)) {
                     allPuts.add(putFuture);
@@ -271,30 +297,35 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 continue;
             }
 
-            try {
-//                    logger.verbose("trying to get url from map - " + url);
-                IResourceFuture resourceFuture = fetchedCacheMap.get(url);
-                if (resourceFuture == null) {
-                    logger.verbose("fetchedCacheMap.get(url) == null - " + url);
-                    throw new Exception("Resource put requested but never downloaded");
-                } else {
-                    RGridResource resource = resourceFuture.get();
-//                        logger.verbose("resource(" + resource.getUrl() + ") hash : " + resource.getSha256());
-                    PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
-                    if (!putResourceCache.containsKey(url) || isForcePutNeeded.get()) {
-                        synchronized (putResourceCache) {
-                            putResourceCache.put(url, future);
-                            allPuts.add(future);
-                        }
-                    }
+            //                    logger.verbose("trying to get url from map - " + url);
+            IResourceFuture resourceFuture = fetchedCacheMap.get(url);
+            if (resourceFuture == null) {
+                logger.verbose("fetchedCacheMap.get(url) == null - " + url);
+                logger.log("Resource put requested but never downloaded(maybe a Frame)");
+                resource = resources.get(url);
+            } else {
+                try {
+                    resource = resourceFuture.get();
+                } catch (InterruptedException | ExecutionException e) {
+                    GeneralUtils.logExceptionStackTrace(logger, e);
+                    continue;
                 }
-            } catch (InterruptedException | ExecutionException e) {
-                GeneralUtils.logExceptionStackTrace(logger, e);
+//
             }
-        }
-    }
+            logger.verbose("resource(" + resource.getUrl() + ") hash : " + resource.getSha256());
+            PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
+            if (!putResourceCache.containsKey(url)) {
+                synchronized (putResourceCache) {
+                    putResourceCache.put(url, future);
+                    allPuts.add(future);
+                }
+            }
 
-    private RenderRequest[] prepareDataForRG(HashMap<String, Object> result) throws ExecutionException, InterruptedException, MalformedURLException, JsonProcessingException {
+        }
+
+}
+
+    private RenderRequest[] prepareDataForRG(HashMap<String, Object> result) throws ExecutionException, InterruptedException, JsonProcessingException {
 
         final Map<String, RGridResource> allBlobs = Collections.synchronizedMap(new HashMap<String, RGridResource>());
         Set<URL> resourceUrls = new HashSet<>();
@@ -510,11 +541,14 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private String getCss(byte[] contentBytes, String contentTypeStr) {
+        logger.log("enter");
+        if (contentTypeStr == null) return null;
+        if (contentBytes.length == 0) return null;
         String[] parts = contentTypeStr.split(";");
         String charset = "UTF-8";
         for (String part : parts) {
             part = part.trim();
-            if (part.equalsIgnoreCase("text/css")) {
+            if (!part.equalsIgnoreCase("text/css")) {
                 charset = null;
             } else {
                 String[] keyVal = part.split("=");
@@ -536,6 +570,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
+        logger.log("exit");
         return css;
     }
 
@@ -556,7 +591,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("enter");
         ICommonsList<CSSFontFaceRule> allFontFaceRules = cascadingStyleSheet.getAllFontFaceRules();
         for (CSSFontFaceRule fontFaceRule : allFontFaceRules) {
-            getAllFontResourcesUrisFromDeclarations(allResourceUris, fontFaceRule, "src", baseUrl);
+            getAllResourcesUrisFromDeclarations(allResourceUris, fontFaceRule, "src", baseUrl);
         }
         logger.verbose("exit");
     }
@@ -586,7 +621,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("exit");
     }
 
-    private <T extends IHasCSSDeclarations<T>> void getAllResourcesUrisFromDeclarations(Set<URL> allResourceUris, CSSStyleRule rule, String propertyName, URL baseUrl) {
+    private <T extends IHasCSSDeclarations<T>> void getAllResourcesUrisFromDeclarations(Set<URL> allResourceUris, IHasCSSDeclarations<T> rule, String propertyName, URL baseUrl) {
         ICommonsList<CSSDeclaration> sourcesList = rule.getAllDeclarationsOfPropertyName(propertyName);
         for (CSSDeclaration cssDeclaration : sourcesList) {
             CSSExpression cssDeclarationExpression = cssDeclaration.getExpression();
@@ -604,26 +639,26 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
         }
     }
-
-    private <T extends IHasCSSDeclarations<T>> void getAllFontResourcesUrisFromDeclarations(Set<URL> allResourceUris, IHasCSSDeclarations<CSSFontFaceRule> rule, String propertyName, URL baseUrl) {
-        ICommonsList<CSSDeclaration> sourcesList = rule.getAllDeclarationsOfPropertyName(propertyName);
-        for (CSSDeclaration cssDeclaration : sourcesList) {
-            CSSExpression cssDeclarationExpression = cssDeclaration.getExpression();
-            ICommonsList<ICSSExpressionMember> allExpressionMembers = cssDeclarationExpression.getAllMembers();
-            ICommonsList<CSSExpressionMemberTermURI> allUriExpressions = allExpressionMembers.getAllInstanceOf(CSSExpressionMemberTermURI.class);
-            for (CSSExpressionMemberTermURI uriExpression : allUriExpressions) {
-                try {
-                    String uri = uriExpression.getURIString();
-                    if (uri.toLowerCase().startsWith("data:")) continue;
-                    URL url = new URL(baseUrl, uri);
-                    allResourceUris.add(url);
-                } catch (MalformedURLException e) {
-                    GeneralUtils.logExceptionStackTrace(logger, e);
-                }
-            }
-        }
-    }
-
+//
+//    private <T extends IHasCSSDeclarations<T>> void getAllFontResourcesUrisFromDeclarations(Set<URL> allResourceUris, IHasCSSDeclarations<CSSFontFaceRule> rule, String propertyName, URL baseUrl) {
+//        ICommonsList<CSSDeclaration> sourcesList = rule.getAllDeclarationsOfPropertyName(propertyName);
+//        for (CSSDeclaration cssDeclaration : sourcesList) {
+//            CSSExpression cssDeclarationExpression = cssDeclaration.getExpression();
+//            ICommonsList<ICSSExpressionMember> allExpressionMembers = cssDeclarationExpression.getAllMembers();
+//            ICommonsList<CSSExpressionMemberTermURI> allUriExpressions = allExpressionMembers.getAllInstanceOf(CSSExpressionMemberTermURI.class);
+//            for (CSSExpressionMemberTermURI uriExpression : allUriExpressions) {
+//                try {
+//                    String uri = uriExpression.getURIString();
+//                    if (uri.toLowerCase().startsWith("data:")) continue;
+//                    URL url = new URL(baseUrl, uri);
+//                    allResourceUris.add(url);
+//                } catch (MalformedURLException e) {
+//                    GeneralUtils.logExceptionStackTrace(logger, e);
+//                }
+//            }
+//        }
+//    }
+//
 
     private int addBlobsToCache(Map<String, RGridResource> allBlobs) {
         int written = 0;
@@ -675,11 +710,22 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
         logger.verbose("parsing " + allFetches.size() + " fetched resources");
         for (IResourceFuture future : allFetches) {
-            logger.verbose("finishing future.get() for resource " + future.getUrl() + " ...");
-            RGridResource resource = future.get();
+            RGridResource resource;
+            try {
+                logger.verbose("trying future.get() for resource " + future.getUrl() + " ...");
+                resource = future.get(10, TimeUnit.SECONDS);
+                logger.verbose("finishing future.get() for resource " + future.getUrl() + " ...");
+            } catch (TimeoutException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+                continue;
+            }
             logger.verbose("done getting resource " + future.getUrl());
-            this.debugResourceWriter.write(resource);
-
+            try {
+                this.debugResourceWriter.write(resource);
+            } catch (Exception e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
+            logger.log("done writing to debugWriter");
             String urlAsString = resource.getUrl();
 
             removeUrlFromList(urlAsString, resourceUrls);
@@ -687,10 +733,15 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
             // FIXME - remove this
             String contentType = resource.getContentType();
-            String css = getCss(resource.getContent(), contentType);
+            String css = null;
+            css = getCss(resource.getContent(), contentType);
             logger.verbose("handling " + contentType + " resource from URL: " + urlAsString);
             if (css == null || css.isEmpty() || !contentType.contains("text/css")) continue;
-//            parseCSS(css, new URL(urlAsString), resourceUrls);
+            try {
+                parseCSS(css, new URL(urlAsString), resourceUrls);
+            } catch (MalformedURLException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
 
         }
         logger.verbose("exit");

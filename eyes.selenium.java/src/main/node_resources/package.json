@@ -1,5 +1,6 @@
 {
   "name": "node_resources",
+  "description": "required javascript scripts",
   "dependencies": {
     "@applitools/dom-capture": "^6.1.4"
   }

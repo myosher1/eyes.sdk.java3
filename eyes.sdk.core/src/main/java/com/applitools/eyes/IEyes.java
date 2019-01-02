@@ -25,4 +25,6 @@ public interface IEyes {
     boolean getIsDisabled();
 
     String getApiKey();
+
+    void setApiKey(String apiKey);
 }

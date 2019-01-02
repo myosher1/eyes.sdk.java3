@@ -5,4 +5,5 @@ public interface ICheckRGSettings extends ICheckSettings {
     ICheckRGSettings fully(boolean fully);
     ICheckRGSettings fully();
     ICheckRGSettings withName(String name);
+    ICheckRGSettings webHook(String hook);
 }

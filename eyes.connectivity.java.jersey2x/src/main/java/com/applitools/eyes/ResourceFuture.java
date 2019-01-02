@@ -64,7 +64,7 @@ public class ResourceFuture implements IResourceFuture {
         }
         while (this.rgResource == null && retryCount > 0) {
             try {
-                Response response = this.future.get();
+                Response response = this.future.get(15, TimeUnit.SECONDS);
                 logger.verbose("response: " + response);
                 ByteArrayOutputStream outputStream = downloadFile(response);
                 String contentType = Utils.getResponseContentType(response);
