@@ -6,10 +6,11 @@ import com.applitools.eyes.FloatingMatchSettings;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.selenium.fluent.Target;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 import org.testng.annotations.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Listeners(TestListener.class)
 public class TestFluentApi extends TestSetup {
@@ -196,5 +197,42 @@ public class TestFluentApi extends TestSetup {
                 Target.frame("frame1").withName("frame1"),
                 Target.region(new Region(30, 50, 300, 620)).withName("rectangle")
         );
+    }
+
+    //@Test
+    public void TestCheckScrollableModal() {
+        Eyes eyes = (Eyes) getEyes();
+        driver.findElement(By.id("centered")).click();
+        StitchMode originalStitchMode = eyes.getStitchMode();
+        eyes.setStitchMode(StitchMode.SCROLL);
+        eyes.check("Scrollable Modal", Target.region(By.id("modal-content")).fully().scrollRootElement(By.id("modal")));
+        eyes.setStitchMode(originalStitchMode);
+    }
+
+    //@Test
+    public void TestCheckLongIFrameModal() {
+        Eyes eyes = (Eyes) getEyes();
+        StitchMode originalStitchMode = eyes.getStitchMode();
+        eyes.setStitchMode(StitchMode.SCROLL);
+        driver.findElement(By.id("stretched")).click();
+        WebElement frame = driver.findElement(By.cssSelector("#modal2 iframe"));
+        driver.switchTo().frame(frame);
+        WebElement element = driver.findElement(By.tagName("html"));
+        Dimension size = element.getSize();
+        Point location = element.getLocation();
+        Rectangle elementRect = new Rectangle(location, size);
+        Region rect;
+        List<ICheckSettings> targets = new ArrayList<>();
+        for (int i = location.getY(), c = 1; i < location.getY() + size.getHeight(); i += 5000, c++) {
+            if ((elementRect.getY() + elementRect.getHeight()) > i + 5000) {
+                rect = new Region(location.getX(), i, size.getWidth(), 5000);
+            } else {
+                rect = new Region(location.getX(), i, size.getWidth(), elementRect.getY() + elementRect.getHeight() - i);
+            }
+            targets.add(Target.region(rect));
+            //eyes_.Check("Long IFrame Modal #" + c, Target.Region(rect).Fully());
+        }
+        eyes.check(targets.toArray(new ICheckSettings[0]));
+        eyes.setStitchMode(originalStitchMode);
     }
 }
