@@ -199,7 +199,17 @@ public class TestFluentApi extends TestSetup {
         );
     }
 
-    @Test
+    //@Test
+    public void TestCheckScrollableModal() {
+        Eyes eyes = (Eyes) getEyes();
+        driver.findElement(By.id("centered")).click();
+        StitchMode originalStitchMode = eyes.getStitchMode();
+        eyes.setStitchMode(StitchMode.SCROLL);
+        eyes.check("Scrollable Modal", Target.region(By.id("modal-content")).fully().scrollRootElement(By.id("modal1")));
+        eyes.setStitchMode(originalStitchMode);
+    }
+
+    //@Test
     public void TestCheckLongIFrameModal() {
         Eyes eyes = (Eyes) getEyes();
         StitchMode originalStitchMode = eyes.getStitchMode();
