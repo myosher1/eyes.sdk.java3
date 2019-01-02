@@ -42,24 +42,26 @@ public final class TestRenderingGridMultiThreadService {
     public void test() {
 
         final Eyes eyes = new Eyes(renderingManager);
-        eyes.setBatch(new BatchInfo("MichaelBatchThreads"));
+        eyes.setBatch(new BatchInfo("VG-2ThreadBatchThreads"));
 
+        final String environment = "";
         Thread threadA = new Thread(new Runnable() {
             @Override
             public void run() {
-                TestThreadMethod("MichaelBatchC11",
-                        new RenderBrowserInfo(800, 600, RenderingConfiguration.BrowserType.CHROME),
-                        new RenderBrowserInfo(700, 500, RenderingConfiguration.BrowserType.CHROME),
-                        new RenderBrowserInfo(400, 300, RenderingConfiguration.BrowserType.CHROME));
+
+                TestThreadMethod("VG-2ThreadBatchC11",
+                        new RenderBrowserInfo(800, 600, RenderingConfiguration.BrowserType.CHROME, environment),
+                        new RenderBrowserInfo(700, 500, RenderingConfiguration.BrowserType.CHROME, environment),
+                        new RenderBrowserInfo(400, 300, RenderingConfiguration.BrowserType.CHROME, environment));
             }
         });
 
         Thread threadB = new Thread(new Runnable() {
             @Override
             public void run() {
-                TestThreadMethod("MichaelBatchC22",
-                        new RenderBrowserInfo(840, 680, RenderingConfiguration.BrowserType.CHROME),
-                        new RenderBrowserInfo(750, 530, RenderingConfiguration.BrowserType.CHROME));
+                TestThreadMethod("VG-2ThreadBatchC22",
+                        new RenderBrowserInfo(840, 680, RenderingConfiguration.BrowserType.CHROME, environment),
+                        new RenderBrowserInfo(750, 530, RenderingConfiguration.BrowserType.CHROME, environment));
             }
         });
 

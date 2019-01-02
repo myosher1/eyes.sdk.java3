@@ -9,6 +9,7 @@ import com.applitools.eyes.visualGridClient.services.IEyesConnector;
 import com.applitools.eyes.visualGridClient.services.IResourceFuture;
 import com.applitools.eyes.visualGridClient.model.*;
 
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
@@ -29,6 +30,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
         logger.verbose("opening EyesConnector with viewport size: " + browserInfo.getViewportSize());
         this.config = config.cloneConfig();
         this.config.setViewportSize(browserInfo.getViewportSize());
+        this.config.setEnvironmentName(browserInfo.getEnvironment());
         openBase();
     }
 
@@ -109,6 +111,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
     @Override
     protected void setViewportSize(RectangleSize size) {
+        logger.log("WARNING setViewportSize() was called in Visual-Grid context");
     }
 
     @Override
@@ -151,4 +154,48 @@ class EyesConnector extends EyesBase implements IEyesConnector {
         // do nothing.
     }
 
+    @Override
+    public void setHideCaret(boolean hideCaret) {
+
+    }
+
+    @Override
+    public void setApiKey(String apiKey) {
+        super.setApiKey(apiKey);
+    }
+
+    @Override
+    public void setAgentId(String agentId) {
+        super.setAgentId(agentId);
+    }
+
+    @Override
+    public void setServerUrl(URI serverUrl) {
+        super.setServerUrl(serverUrl);
+    }
+
+    @Override
+    public void setAppName(String appName) {
+        super.setAppName(appName);
+    }
+
+    @Override
+    public void setBranchName(String branchName) {
+        super.setBranchName(branchName);
+    }
+
+    @Override
+    public String getParentBranchName() {
+        return super.getParentBranchName();
+    }
+
+    @Override
+    public void setBaselineBranchName(String branchName) {
+        super.setBaselineBranchName(branchName);
+    }
+
+    @Override
+    public void setMatchLevel(MatchLevel matchLevel) {
+        super.setMatchLevel(matchLevel);
+    }
 }

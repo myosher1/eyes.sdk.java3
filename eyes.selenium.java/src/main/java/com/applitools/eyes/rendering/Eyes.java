@@ -41,6 +41,11 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
     private IDebugResourceWriter debugResourceWriter;
     private String url;
     private List<Future<TestResultContainer>> futures = null;
+    private String branchName = null;
+    private String parentBranchName = null;
+    private boolean hideCaret = false;
+    private boolean isDisabled;
+    private MatchLevel matchLevel = MatchLevel.STRICT;
 
     {
         try {
@@ -91,6 +96,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
      */
     @Override
     public void setLogHandler(LogHandler logHandler) {
+        if(isDisabled) return;
         LogHandler currentLogHandler = logger.getLogHandler();
         this.logger = new Logger();
         this.logger.setLogHandler(new MultiLogHandler(currentLogHandler, logHandler));
@@ -101,6 +107,7 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
     }
 
     public void open(WebDriver webDriver, RenderingConfiguration renderingConfiguration) {
+        if(isDisabled) return;
         logger.verbose("enter");
 
         ArgumentGuard.notNull(webDriver, "webDriver");
@@ -132,6 +139,11 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
         eyesConnector.setLogHandler(this.logger.getLogHandler());
         eyesConnector.setProxy(this.proxy);
         eyesConnector.setBatch(batchInfo);
+        eyesConnector.setBranchName(this.branchName);
+        eyesConnector.setParentBranchName(parentBranchName);
+        eyesConnector.setApiKey(apiKey);
+        eyesConnector.setHideCaret(this.hideCaret);
+        eyesConnector.setMatchLevel(matchLevel);
 
         if (this.renderingInfo == null) {
             logger.verbose("initializing rendering info...");
@@ -187,12 +199,14 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
     }
 
     public TestResults close() {
+        if(isDisabled) return null;
         futures = closeAndReturnResults();
         return null;
     }
 
     @Override
     public TestResults close(boolean throwException) {
+        if(isDisabled) return null;
         futures = closeAndReturnResults();
         return null;
     }
@@ -222,7 +236,33 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
         this.apiKey = apiKey;
     }
 
+    @Override
+    public void setDisabled(boolean disabled) {
+        this.isDisabled = disabled;
+    }
+
+    @Override
+    public void setBranchName(String branchName) {
+        this.branchName = branchName;
+    }
+
+    @Override
+    public void setParentBranchName(String branchName) {
+        this.parentBranchName = branchName;
+    }
+
+    @Override
+    public void setHideCaret(boolean hideCaret) {
+
+    }
+
+    @Override
+    public void setMatchLevel(MatchLevel level) {
+        this.matchLevel = level;
+    }
+
     public List<Future<TestResultContainer>> closeAndReturnResults() {
+        if(isDisabled) return null;
         if (this.futures != null) {
             return futures;
         }
@@ -334,12 +374,14 @@ public class Eyes implements IRenderingEyes, com.applitools.eyes.selenium.IEyes 
     }
 
     public void check(String name, ICheckSettings checkSettings) {
+        if(isDisabled) return;
         ArgumentGuard.notNull(checkSettings, "checkSettings");
         checkSettings = checkSettings.withName(name);
         this.check(checkSettings);
     }
 
     public void check(ICheckSettings checkSettings) {
+        if(isDisabled) return;
         logger.verbose("enter");
 
         ArgumentGuard.notOfType(checkSettings, ICheckRGSettings.class, "checkSettings");

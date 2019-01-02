@@ -11,6 +11,10 @@ import java.util.List;
 public class RenderingConfiguration extends Configuration {
 
 
+    public enum BrowserType {CHROME, FIREFOX}
+
+    private List<RenderBrowserInfo> browsersInfo = new ArrayList<>();
+
     public RenderingConfiguration() {
     }
 
@@ -21,10 +25,6 @@ public class RenderingConfiguration extends Configuration {
         this.isThrowExceptionOn = configuration.isThrowExceptionOn;
         this.testName = configuration.testName;
     }
-
-    public enum BrowserType {CHROME, FIREFOX}
-
-    private List<RenderBrowserInfo> browsersInfo = new ArrayList<>();
 
     private int concurrentSessions = 3;
     private boolean isThrowExceptionOn = false;
@@ -47,8 +47,8 @@ public class RenderingConfiguration extends Configuration {
         return this;
     }
 
-    public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType) {
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType);
+    public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType, String environment) {
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType, environment);
         addBrowser(browserInfo);
         return this;
     }

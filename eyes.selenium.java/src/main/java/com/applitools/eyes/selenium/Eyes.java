@@ -33,6 +33,7 @@ import com.applitools.eyes.selenium.wrappers.EyesTargetLocator;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.utils.*;
+import net.bytebuddy.implementation.bind.annotation.Super;
 import org.openqa.selenium.*;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
@@ -854,6 +855,11 @@ public class Eyes extends EyesBase implements IEyes{
         ArgumentGuard.notNull(checkSettings, "checkSettings");
         checkSettings = checkSettings.withName(name);
         this.check(checkSettings);
+    }
+
+    @Override
+    public void setDisabled(boolean disabled) {
+        super.setIsDisabled(disabled);
     }
 
     @Override

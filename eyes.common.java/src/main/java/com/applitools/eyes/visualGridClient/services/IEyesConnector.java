@@ -47,4 +47,12 @@ public interface IEyesConnector {
     String getApiKey();
 
     void setApiKey(String apiKey);
+
+    void setBranchName(String branchName);
+
+    void setParentBranchName(String parentBranchName);
+
+    void setHideCaret(boolean hideCaret);
+
+    void setMatchLevel(MatchLevel matchLevel);
 }
