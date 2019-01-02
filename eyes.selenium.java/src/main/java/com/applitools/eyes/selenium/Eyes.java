@@ -45,24 +45,11 @@ import java.util.*;
  * The main API gateway for the SDK.
  */
 @SuppressWarnings("WeakerAccess")
-public class Eyes extends EyesBase implements IEyes{
-
-    public FrameChain getOriginalFC() {
-        return originalFC;
-    }
+public class Eyes extends EyesBase implements IEyes {
 
     private FrameChain originalFC;
     private WebElement scrollRootElement;
     private PositionProvider currentFramePositionProvider;
-
-    public PositionProvider getCurrentFramePositionProvider() {
-        return currentFramePositionProvider;
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    public interface WebDriverAction {
-        void drive(WebDriver driver);
-    }
 
     public static final double UNKNOWN_DEVICE_PIXEL_RATIO = 0;
     public static final double DEFAULT_DEVICE_PIXEL_RATIO = 1;
@@ -71,6 +58,7 @@ public class Eyes extends EyesBase implements IEyes{
 
     // Seconds
     private static final int RESPONSE_TIME_DEFAULT_DEADLINE = 10;
+
     // Seconds
     private static final int RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE = 20;
 
@@ -78,18 +66,9 @@ public class Eyes extends EyesBase implements IEyes{
     private boolean doNotGetTitle;
 
     private boolean checkFrameOrElement;
-
-    public Region getRegionToCheck() {
-        return regionToCheck;
-    }
-
-    public void setRegionToCheck(Region regionToCheck) {
-        this.regionToCheck = regionToCheck;
-    }
-
-    private Region regionToCheck = null;
-
+    private Region regionToCheck;
     private String originalOverflow;
+    private boolean stitchContent;
 
     private ImageRotation rotation;
     private double devicePixelRatio;
@@ -100,32 +79,15 @@ public class Eyes extends EyesBase implements IEyes{
     private UserAgent userAgent;
     private ImageProvider imageProvider;
     private RegionPositionCompensation regionPositionCompensation;
-    private WebElement targetElement = null;
+    private WebElement targetElement;
     private PositionMemento positionMemento;
-    private Region effectiveViewport = Region.EMPTY;
+    private Region effectiveViewport;
 
     private EyesScreenshotFactory screenshotFactory;
 
-    private boolean stitchContent = false;
-
-    protected void ensureConfiguration() {
-        config = new Configuration();
-    }
-
-    private Configuration getConfig() {
-        return (Configuration) config;
-    }
-
-    public boolean getHideCaret() {
-        return getConfig().getHideCaret();
-    }
-
-    public void setHideCaret(boolean hideCaret) {
-        getConfig().setHideCaret(hideCaret);
-    }
-
-    public boolean shouldStitchContent() {
-        return stitchContent;
+    @SuppressWarnings("UnusedDeclaration")
+    public interface WebDriverAction {
+        void drive(WebDriver driver);
     }
 
     /**
@@ -147,6 +109,43 @@ public class Eyes extends EyesBase implements IEyes{
 
     public WebDriver getDriver() {
         return driver;
+    }
+
+    public FrameChain getOriginalFC() {
+        return originalFC;
+    }
+
+    public PositionProvider getCurrentFramePositionProvider() {
+        return currentFramePositionProvider;
+    }
+
+    public Region getRegionToCheck() {
+        return regionToCheck;
+    }
+
+    public void setRegionToCheck(Region regionToCheck) {
+        this.regionToCheck = regionToCheck;
+    }
+
+    @Override
+    protected void ensureConfiguration() {
+        config = new Configuration();
+    }
+
+    private Configuration getConfig() {
+        return (Configuration) config;
+    }
+
+    public boolean getHideCaret() {
+        return getConfig().getHideCaret();
+    }
+
+    public void setHideCaret(boolean hideCaret) {
+        getConfig().setHideCaret(hideCaret);
+    }
+
+    public boolean shouldStitchContent() {
+        return stitchContent;
     }
 
     /**
@@ -290,7 +289,6 @@ public class Eyes extends EyesBase implements IEyes{
         return open(driver);
     }
 
-
     /**
      * Starts a test.
      * @param driver       The web driver that controls the browser hosting
@@ -314,7 +312,9 @@ public class Eyes extends EyesBase implements IEyes{
         return open(driver);
     }
 
-    protected WebDriver open(WebDriver driver) throws EyesException{
+    protected WebDriver open(WebDriver driver) throws EyesException {
+        openLogger();
+
         openLogger();
 
         if (getIsDisabled()) {
@@ -373,14 +373,14 @@ public class Eyes extends EyesBase implements IEyes{
     }
 
     public WebElement getScrollRootElement() {
-        if (scrollRootElement == null) {
-            scrollRootElement = driver.findElement(By.tagName("html"));
+        if (this.scrollRootElement == null) {
+            this.scrollRootElement = driver.findElement(By.tagName("html"));
         }
-        return scrollRootElement;
+        return this.scrollRootElement;
     }
 
     private PositionProvider createPositionProvider() {
-        return createPositionProvider(scrollRootElement);
+        return createPositionProvider(this.scrollRootElement);
     }
 
     private PositionProvider createPositionProvider(WebElement scrollRootElement) {
@@ -673,6 +673,8 @@ public class Eyes extends EyesBase implements IEyes{
             getConfig().setForceFullPageScreenshot(true);
         }
 
+        logger.verbose(config.toString());
+
         Dictionary<Integer, GetRegion> getRegions = new Hashtable<>();
         Dictionary<Integer, ICheckSettingsInternal> checkSettingsInternalDictionary = new Hashtable<>();
 
@@ -780,7 +782,7 @@ public class Eyes extends EyesBase implements IEyes{
 
     private Region findBoundingBox(Dictionary<Integer, GetRegion> getRegions, ICheckSettings[] checkSettings) {
         RectangleSize rectSize = getViewportSize();
-
+        logger.verbose("rectSize: " + rectSize);
         EyesScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver,
                 new BufferedImage(rectSize.getWidth(), rectSize.getHeight(), BufferedImage.TYPE_INT_RGB));
 
@@ -893,7 +895,7 @@ public class Eyes extends EyesBase implements IEyes{
         ArgumentGuard.notNull(checkSettings, "checkSettings");
         ArgumentGuard.notOfType(checkSettings, ISeleniumCheckTarget.class, "checkSettings");
 
-        this.regionToCheck = null;
+        logger.verbose(config.toString());
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
@@ -2380,7 +2382,7 @@ public class Eyes extends EyesBase implements IEyes{
         FrameChain originalFrameChain = driver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
 
-        switchTo.frames(originalFC);
+        switchTo.frames(this.originalFC);
         PositionProvider positionProvider = getPositionProvider();
         PositionMemento originalPosition = null;
         if (positionProvider != null) {
@@ -2427,8 +2429,8 @@ public class Eyes extends EyesBase implements IEyes{
                             ? originalFrameChain.getDefaultContentScrollPosition()
                             : Location.ZERO;
 
-            switchTo.defaultContent();
-
+            switchTo.frames(this.originalFC);
+            algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
             ////////////
             EyesRemoteWebElement eyesScrollRootElement;
             if (scrollRootElement instanceof EyesRemoteWebElement) {
@@ -2449,6 +2451,7 @@ public class Eyes extends EyesBase implements IEyes{
             BufferedImage fullPageImage = algo.getStitchedRegion(region, null, positionProviderHandler.get());
 
             switchTo.frames(originalFrameChain);
+
             result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);
         } else {
             ensureElementVisible(this.targetElement);
@@ -2581,19 +2584,20 @@ public class Eyes extends EyesBase implements IEyes{
     }
 
     private WebElement getScrollRootElement(IScrollRootElementContainer scrollRootElementContainer) {
+        WebElement scrollRootElement = null;
         if (!EyesSeleniumUtils.isMobileDevice(driver)) {
             if (scrollRootElementContainer == null) {
-                return driver.findElement(By.tagName("html"));
+                scrollRootElement = driver.findElement(By.tagName("html"));
+            } else {
+                scrollRootElement = scrollRootElementContainer.getScrollRootElement();
+                if (scrollRootElement == null) {
+                    By scrollRootSelector = scrollRootElementContainer.getScrollRootSelector();
+                    scrollRootElement = driver.findElement(scrollRootSelector != null ? scrollRootSelector : By.tagName("html"));
+                }
             }
-            WebElement scrollRootElement = scrollRootElementContainer.getScrollRootElement();
-            if (scrollRootElement == null) {
-                By scrollRootSelector = scrollRootElementContainer.getScrollRootSelector();
-                scrollRootElement = driver.findElement(scrollRootSelector != null ? scrollRootSelector : By.tagName("html"));
-            }
-            return scrollRootElement;
         }
 
-        return null;
+        return scrollRootElement;
     }
 
     private PositionProvider getElementPositionProvider(WebElement scrollRootElement) {
@@ -2605,13 +2609,6 @@ public class Eyes extends EyesBase implements IEyes{
         logger.verbose("position provider: " + positionProvider);
         currentFramePositionProvider = positionProvider;
         return positionProvider;
-    }
-
-    /**
-     * @return The currently set position provider.
-     */
-    private PositionProvider getElementPositionProvider() {
-        return elementPositionProvider == null ? positionProviderHandler.get() : elementPositionProvider;
     }
 
     @Override

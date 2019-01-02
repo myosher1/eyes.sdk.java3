@@ -1,10 +1,6 @@
-package com.applitools.eyes.selenium;
+package com.applitools.eyes;
 
 import com.applitools.ICheckSettings;
-import com.applitools.eyes.AbstractProxySettings;
-import com.applitools.eyes.LogHandler;
-import com.applitools.eyes.Logger;
-import com.applitools.eyes.TestResults;
 
 import java.net.URISyntaxException;
 

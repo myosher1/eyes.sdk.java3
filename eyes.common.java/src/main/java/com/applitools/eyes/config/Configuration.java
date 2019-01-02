@@ -136,4 +136,20 @@ public class Configuration {
     public Configuration cloneConfig() {
         return new Configuration(this);
     }
+
+    @Override
+    public String toString() {
+        return super.toString() +
+                "\n\tbatch = " + batch +
+                "\n\tbranchName = " + branchName +
+                "\n\tparentBranchName = " + parentBranchName +
+                "\n\tagentId = " + agentId +
+                "\n\tbaselineEnvName = " + baselineEnvName +
+                "\n\tenvironmentName = " + environmentName +
+                "\n\tsaveDiffs = " + saveDiffs +
+                "\n\tappName = " + appName +
+                "\n\ttestName = " + testName +
+                "\n\tviewportSize = " + viewportSize +
+                "\n\tsessionType = " + sessionType;
+    }
 }

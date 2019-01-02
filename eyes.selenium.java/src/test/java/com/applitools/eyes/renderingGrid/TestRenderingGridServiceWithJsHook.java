@@ -1,12 +1,8 @@
 package com.applitools.eyes.renderingGrid;
 
-import com.applitools.eyes.BatchInfo;
-import com.applitools.eyes.Logger;
-import com.applitools.eyes.ProxySettings;
-import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.*;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
-import com.applitools.eyes.selenium.IEyes;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;

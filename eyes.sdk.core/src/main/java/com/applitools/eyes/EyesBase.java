@@ -46,7 +46,7 @@ public abstract class EyesBase {
 
     private boolean shouldMatchWindowRunOnceOnTimeout;
 
-    protected MatchWindowTask matchWindowTask;
+    private MatchWindowTask matchWindowTask;
 
     protected IServerConnector serverConnector;
     protected RunningSession runningSession;
@@ -1183,8 +1183,8 @@ public abstract class EyesBase {
         return validationInfo;
     }
 
-    protected MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
-                                      ICheckSettings checkSettings) {
+    private MatchResult matchWindow(RegionProvider regionProvider, String tag, boolean ignoreMismatch,
+                                    ICheckSettings checkSettings) {
         MatchResult result;
         ICheckSettingsInternal checkSettingsInternal = (checkSettings instanceof ICheckSettingsInternal) ? (ICheckSettingsInternal) checkSettings : null;
 
@@ -1281,7 +1281,7 @@ public abstract class EyesBase {
         //If there's an action to do
         Thread actionThread = null;
         if (action != null) {
-            logger.verbose("Starting webdriver action.");
+            logger.verbose("Starting WebDriver action.");
             actionThread = new Thread(action);
             actionThread.start();
         }
@@ -1763,11 +1763,10 @@ public abstract class EyesBase {
         logger.verbose("Done!");
 
         //DOM SNAPSHOT
-        String domJson = null;
         String domJsonUrl = null;
         try {
             if (isSendDom()) {
-                domJson = tryCaptureDom();
+                String domJson = tryCaptureDom();
 
                 if (domJson != null) {
                     long start = System.currentTimeMillis();
