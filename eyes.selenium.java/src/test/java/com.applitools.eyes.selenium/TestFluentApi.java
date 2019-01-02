@@ -23,7 +23,7 @@ public class TestFluentApi extends TestSetup {
 
         super.compareExpectedRegions = caps.getBrowserName().equalsIgnoreCase("chrome");
         testSuitName = "Eyes Selenium SDK - Fluent API";
-        testedPageUrl = "http://applitools.github.io/demo/TestPages/FramesTestPage/";
+        testedPageUrl = "https://applitools.github.io/demo/TestPages/FramesTestPage/";
     }
 
     @Test
