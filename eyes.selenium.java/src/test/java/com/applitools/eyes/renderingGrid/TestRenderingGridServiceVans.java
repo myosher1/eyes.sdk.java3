@@ -139,10 +139,10 @@ public class TestRenderingGridServiceVans {
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
             renderingConfiguration.setTestName("Vans Gallery page");
             renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME, null);
-            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME, null);
-            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME, null);
-            renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME, null);
+            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
+            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
+            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME);
+            renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME);
             logger.log("created configurations for url " + testedUrl);
             eyes.open(webDriver, renderingConfiguration);
         } catch (Exception e) {

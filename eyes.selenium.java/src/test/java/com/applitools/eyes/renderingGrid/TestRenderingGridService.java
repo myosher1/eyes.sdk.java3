@@ -59,9 +59,9 @@ public final class TestRenderingGridService {
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
             renderingConfiguration.setTestName("Open Concurrency with Batch 2");
             renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME, null);
-            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME, null);
-            renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME, null);
+            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
+            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
+            renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
             eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);

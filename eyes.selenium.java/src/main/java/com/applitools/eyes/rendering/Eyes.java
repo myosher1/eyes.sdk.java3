@@ -262,7 +262,7 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public List<Future<TestResultContainer>> closeAndReturnResults() {
-        if(isDisabled) return null;
+        if(isDisabled) return new ArrayList<>();
         if (this.futures != null) {
             return futures;
         }
