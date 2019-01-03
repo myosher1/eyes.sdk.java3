@@ -30,7 +30,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
         logger.verbose("opening EyesConnector with viewport size: " + browserInfo.getViewportSize());
         this.config = config.cloneConfig();
         this.config.setViewportSize(browserInfo.getViewportSize());
-        this.config.setEnvironmentName(browserInfo.getEnvironment());
+        this.config.setBaselineEnvName(browserInfo.getBaselineEnvName());
         openBase();
     }
 

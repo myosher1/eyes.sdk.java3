@@ -47,10 +47,13 @@ public class RenderingConfiguration extends Configuration {
         return this;
     }
 
-    public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType, String environment) {
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType, environment);
+    public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType, String baselineEnvName) {
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType, baselineEnvName);
         addBrowser(browserInfo);
         return this;
+    }
+    public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType) {
+        return addBrowser(width, height, browserType, null);
     }
 
     public int getConcurrentSessions() {
