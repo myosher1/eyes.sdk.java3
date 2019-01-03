@@ -56,19 +56,21 @@ public final class TestMultiThreadWithServiceLockService {
         Thread threadA = new Thread(new Runnable() {
             @Override
             public void run() {
-                TestThreadMethod("MichaelBatchC11", threadALock,
-                        new RenderBrowserInfo(800, 600, RenderingConfiguration.BrowserType.CHROME),
-                        new RenderBrowserInfo(700, 500, RenderingConfiguration.BrowserType.CHROME),
-                        new RenderBrowserInfo(400, 300, RenderingConfiguration.BrowserType.CHROME));
+                String baselineEnvName = "";
+                TestThreadMethod("VG-MultiThreadBatchC11", threadALock,
+                        new RenderBrowserInfo(800, 600, RenderingConfiguration.BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(700, 500, RenderingConfiguration.BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(400, 300, RenderingConfiguration.BrowserType.CHROME, baselineEnvName));
             }
         }, "ThreadA");
 
         Thread threadB = new Thread(new Runnable() {
             @Override
             public void run() {
-                TestThreadMethod("MichaelBatchC22", threadBLock,
-                        new RenderBrowserInfo(840, 680, RenderingConfiguration.BrowserType.CHROME),
-                        new RenderBrowserInfo(750, 530, RenderingConfiguration.BrowserType.CHROME));
+                String baselineEnvName = "";
+                TestThreadMethod("VG-MultiThreadBatchC22", threadBLock,
+                        new RenderBrowserInfo(840, 680, RenderingConfiguration.BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(750, 530, RenderingConfiguration.BrowserType.CHROME, baselineEnvName));
             }
         }, "ThreadB");
 

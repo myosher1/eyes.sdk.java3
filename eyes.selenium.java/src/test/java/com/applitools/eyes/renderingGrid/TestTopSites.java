@@ -46,13 +46,15 @@ public class TestTopSites {
                 {"https://twitter.com"},
                 {"https://wikipedia.org"},
                 {"https://instagram.com"},
-                {"https://reddit.com"},
+                {"https://www.target.com/c/blankets-throws/-/N-d6wsb?lnk=ThrowsBlankets%E2%80%9C,tc"},
         };
     }
 
     private IEyes initEyes(WebDriver webDriver, String testedUrl) {
         Eyes eyes = new Eyes(renderingManager);
-        eyes.setBatch(new BatchInfo(testedUrl));
+        BatchInfo batchInfo = new BatchInfo(testedUrl);
+        batchInfo.setId("Target");
+        eyes.setBatch(batchInfo);
 
         initLogging(testedUrl, eyes);
 
@@ -63,12 +65,13 @@ public class TestTopSites {
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
             renderingConfiguration.setTestName("Top 10 websites - " + testedUrl);
             renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
-            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
-            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME);
-            renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME);
+            String environment = "";
+            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME, environment);
+            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME, environment);
+            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME, environment);
+            renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME, environment);
             logger.log("created configurations for url " + testedUrl);
-            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+//            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
         } catch (Exception e) {

@@ -14,10 +14,13 @@ public interface IEyes {
     Logger getLogger();
 
     void check(ICheckSettings checkSettings);
+
     void check(String testName, ICheckSettings checkSettings);
 
     TestResults close();
+
     TestResults close(boolean throwException);
+
     TestResults abortIfNotClosed();
 
     boolean getIsOpen();
@@ -27,4 +30,15 @@ public interface IEyes {
     String getApiKey();
 
     void setApiKey(String apiKey);
+
+    void setDisabled(boolean disabled);
+
+    void setBranchName(String branchName);
+
+    void setParentBranchName(String branchName);
+
+    void setHideCaret(boolean hideCaret);
+
+    void setMatchLevel(MatchLevel level);
+
 }

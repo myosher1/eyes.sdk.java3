@@ -9,14 +9,18 @@ public class RenderBrowserInfo {
     private String platform = "linux";
     private EmulationInfo emulationInfo = null;
     private String sizeMode = "full-page";
+    private String baselineEnvName;
 
-    public RenderBrowserInfo(int width, int height, RenderingConfiguration.BrowserType browserType, EmulationInfo emulationInfo) {
+
+    public RenderBrowserInfo(int width, int height, RenderingConfiguration.BrowserType browserType, EmulationInfo emulationInfo, String baselineEnvName) {
+        this.baselineEnvName = baselineEnvName;
         this.viewportSize = new RectangleSize(width, height);
         this.browserType = browserType;
         this.emulationInfo = emulationInfo;
     }
 
-    public RenderBrowserInfo(int width, int height, RenderingConfiguration.BrowserType browserType) {
+    public RenderBrowserInfo(int width, int height, RenderingConfiguration.BrowserType browserType, String baselineEnvName) {
+        this.baselineEnvName = baselineEnvName;
         this.viewportSize = new RectangleSize(width, height);
         this.browserType = browserType;
     }
@@ -72,5 +76,9 @@ public class RenderBrowserInfo {
                 ", emulationInfo=" + emulationInfo +
                 ", sizeMode='" + sizeMode + '\'' +
                 '}';
+    }
+
+    public String getBaselineEnvName() {
+        return baselineEnvName;
     }
 }

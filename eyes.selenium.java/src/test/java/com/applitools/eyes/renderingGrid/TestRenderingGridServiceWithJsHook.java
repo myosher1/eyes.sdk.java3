@@ -83,7 +83,7 @@ public final class TestRenderingGridServiceWithJsHook {
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
             renderingConfiguration.setTestName("Vans Gallery page");
             renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME);
+            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME, null);
             eyes.open(webDriver, renderingConfiguration);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);

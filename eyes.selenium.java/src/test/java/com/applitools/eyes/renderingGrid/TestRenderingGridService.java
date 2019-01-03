@@ -52,7 +52,8 @@ public final class TestRenderingGridService {
     public void test() {
 
         Eyes eyes = new Eyes(renderingManager);
-        eyes.setBatch(new BatchInfo("MichaelBatch"));
+        eyes.setDisabled(true);
+        eyes.setBatch(new BatchInfo("SimpleVisualGridBatch"));
 
         try {
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
@@ -67,8 +68,10 @@ public final class TestRenderingGridService {
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             eyes.check(Target.window().withName("test").fully(false).sendDom(false));
             List<Future<TestResultContainer>> close = eyes.closeAndReturnResults();
-            for (Future<TestResultContainer> future : close) {
-                future.get();
+            if (close != null) {
+                for (Future<TestResultContainer> future : close) {
+                    future.get();
+                }
             }
 
         } catch (Exception e) {
