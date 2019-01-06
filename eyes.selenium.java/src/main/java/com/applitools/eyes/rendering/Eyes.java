@@ -144,12 +144,6 @@ public class Eyes implements IRenderingEyes, IEyes {
         eyesConnector.setHideCaret(this.hideCaret);
         eyesConnector.setMatchLevel(matchLevel);
 
-        if (this.renderingInfo == null) {
-            logger.verbose("initializing rendering info...");
-            this.renderingInfo = eyesConnector.getRenderingInfo();
-        }
-        eyesConnector.setRenderInfo(this.renderingInfo);
-
         String serverUrl = this.renderingGridManager.getServerUrl();
         if (serverUrl == null) {
             serverUrl = this.serverUrl;
@@ -171,6 +165,12 @@ public class Eyes implements IRenderingEyes, IEyes {
         } else {
             throw new EyesException("Missing API key");
         }
+
+        if (this.renderingInfo == null) {
+            logger.verbose("initializing rendering info...");
+            this.renderingInfo = eyesConnector.getRenderingInfo();
+        }
+        eyesConnector.setRenderInfo(this.renderingInfo);
 
         this.eyesConnector = eyesConnector;
         return eyesConnector;
