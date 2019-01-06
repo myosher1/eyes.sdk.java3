@@ -96,7 +96,7 @@ public class Eyes implements IRenderingEyes, IEyes {
      */
     @Override
     public void setLogHandler(LogHandler logHandler) {
-        if(isDisabled) return;
+        if (isDisabled) return;
         LogHandler currentLogHandler = logger.getLogHandler();
         this.logger = new Logger();
         this.logger.setLogHandler(new MultiLogHandler(currentLogHandler, logHandler));
@@ -107,7 +107,7 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public void open(WebDriver webDriver, RenderingConfiguration renderingConfiguration) {
-        if(isDisabled) return;
+        if (isDisabled) return;
         logger.verbose("enter");
 
         ArgumentGuard.notNull(webDriver, "webDriver");
@@ -141,7 +141,6 @@ public class Eyes implements IRenderingEyes, IEyes {
         eyesConnector.setBatch(batchInfo);
         eyesConnector.setBranchName(this.branchName);
         eyesConnector.setParentBranchName(parentBranchName);
-        eyesConnector.setApiKey(apiKey);
         eyesConnector.setHideCaret(this.hideCaret);
         eyesConnector.setMatchLevel(matchLevel);
 
@@ -163,10 +162,9 @@ public class Eyes implements IRenderingEyes, IEyes {
             }
         }
 
-        String apiKey = this.apiKey;
+        String apiKey = this.renderingGridManager.getApiKey();
         if (apiKey == null) {
-            apiKey = this.renderingGridManager.getApiKey();
-
+            apiKey = this.apiKey;
         }
         if (apiKey != null) {
             eyesConnector.setApiKey(apiKey);
@@ -199,14 +197,14 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public TestResults close() {
-        if(isDisabled) return null;
+        if (isDisabled) return null;
         futures = closeAndReturnResults();
         return null;
     }
 
     @Override
     public TestResults close(boolean throwException) {
-        if(isDisabled) return null;
+        if (isDisabled) return null;
         futures = closeAndReturnResults();
         return null;
     }
@@ -262,7 +260,7 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public List<Future<TestResultContainer>> closeAndReturnResults() {
-        if(isDisabled) return new ArrayList<>();
+        if (isDisabled) return new ArrayList<>();
         if (this.futures != null) {
             return futures;
         }
@@ -374,14 +372,14 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public void check(String name, ICheckSettings checkSettings) {
-        if(isDisabled) return;
+        if (isDisabled) return;
         ArgumentGuard.notNull(checkSettings, "checkSettings");
         checkSettings = checkSettings.withName(name);
         this.check(checkSettings);
     }
 
     public void check(ICheckSettings checkSettings) {
-        if(isDisabled) return;
+        if (isDisabled) return;
         logger.verbose("enter");
 
         ArgumentGuard.notOfType(checkSettings, ICheckRGSettings.class, "checkSettings");
