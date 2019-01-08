@@ -11,6 +11,8 @@ public interface IEyes {
 
     void setProxy(AbstractProxySettings abstractProxySettings);
 
+    void setIsDisabled(boolean isDisabled);
+
     Logger getLogger();
 
     void check(ICheckSettings checkSettings);
@@ -30,8 +32,6 @@ public interface IEyes {
     String getApiKey();
 
     void setApiKey(String apiKey);
-
-    void setDisabled(boolean disabled);
 
     void setBranchName(String branchName);
 

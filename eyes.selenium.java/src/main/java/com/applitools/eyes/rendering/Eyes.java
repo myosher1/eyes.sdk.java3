@@ -46,7 +46,7 @@ public class Eyes implements IRenderingEyes, IEyes {
     private String branchName = null;
     private String parentBranchName = null;
     private boolean hideCaret = false;
-    private boolean isDisabled;
+    private Boolean isDisabled;
     private MatchLevel matchLevel = MatchLevel.STRICT;
 
     {
@@ -98,7 +98,7 @@ public class Eyes implements IRenderingEyes, IEyes {
      */
     @Override
     public void setLogHandler(LogHandler logHandler) {
-        if (isDisabled) return;
+        if (getIsDisabled()) return;
         LogHandler currentLogHandler = logger.getLogHandler();
         this.logger = new Logger();
         this.logger.setLogHandler(new MultiLogHandler(currentLogHandler, logHandler));
@@ -109,7 +109,7 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public void open(WebDriver webDriver, RenderingConfiguration renderingConfiguration) {
-        if (isDisabled) return;
+        if (getIsDisabled()) return;
         logger.verbose("enter");
 
         ArgumentGuard.notNull(webDriver, "webDriver");
@@ -199,14 +199,14 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public TestResults close() {
-        if (isDisabled) return null;
+        if (getIsDisabled()) return null;
         futures = closeAndReturnResults();
         return null;
     }
 
     @Override
     public TestResults close(boolean throwException) {
-        if (isDisabled) return null;
+        if (getIsDisabled()) return null;
         futures = closeAndReturnResults();
         return null;
     }
@@ -222,11 +222,6 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     @Override
-    public boolean getIsDisabled() {
-        return false;
-    }
-
-    @Override
     public String getApiKey() {
         return this.apiKey;
     }
@@ -237,8 +232,13 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     @Override
-    public void setDisabled(boolean disabled) {
+    public void setIsDisabled(boolean disabled) {
         this.isDisabled = disabled;
+    }
+
+    @Override
+    public boolean getIsDisabled() {
+        return this.isDisabled == null ? this.renderingGridManager.getIsDisabled() : this.isDisabled;
     }
 
     @Override
@@ -262,7 +262,7 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public List<Future<TestResultContainer>> closeAndReturnResults() {
-        if (isDisabled) return new ArrayList<>();
+        if (getIsDisabled()) return new ArrayList<>();
         if (this.futures != null) {
             return futures;
         }
@@ -374,14 +374,14 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public void check(String name, ICheckSettings checkSettings) {
-        if (isDisabled) return;
+        if (getIsDisabled()) return;
         ArgumentGuard.notNull(checkSettings, "checkSettings");
         checkSettings = checkSettings.withName(name);
         this.check(checkSettings);
     }
 
     public void check(ICheckSettings checkSettings) {
-        if (isDisabled) return;
+        if (getIsDisabled()) return;
         logger.verbose("enter");
 
         ArgumentGuard.notOfType(checkSettings, ICheckRGSettings.class, "checkSettings");

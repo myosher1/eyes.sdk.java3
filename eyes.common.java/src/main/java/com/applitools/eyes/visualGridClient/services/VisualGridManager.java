@@ -45,6 +45,7 @@ public class VisualGridManager {
     private RateLimiter rateLimiter;
     private String serverUrl;
     private String apiKey = System.getenv("APPLITOOLS_API_KEY");
+    private boolean isDisabled;
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
     private FutureTask<TestResultContainer> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker,
@@ -87,6 +88,14 @@ public class VisualGridManager {
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
+    }
+
+    public void setIsDisabled(boolean isDisabled){
+        this.isDisabled = isDisabled;
+    }
+
+    public boolean getIsDisabled(){
+        return this.isDisabled;
     }
 
     public interface RenderListener {
