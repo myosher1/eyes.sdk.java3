@@ -454,10 +454,6 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                         List<String> list = (List<String>) value;
                         for (String url : list) {
                             try {
-                                if (this.fetchedCacheMap.containsKey(url)) {
-                                    logger.verbose("Cache hit for " + url);
-                                    continue;
-                                }
                                 resourceUrls.add(new URL(baseUrl, url));
                             } catch (MalformedURLException e) {
                                 GeneralUtils.logExceptionStackTrace(logger, e);
