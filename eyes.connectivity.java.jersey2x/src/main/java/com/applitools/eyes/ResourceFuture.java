@@ -52,7 +52,7 @@ public class ResourceFuture implements IResourceFuture {
     }
 
     @Override
-    public RGridResource get() throws InterruptedException, ExecutionException {
+    public RGridResource get() throws InterruptedException {
         logger.verbose("enter - this.rgResource: " + this.rgResource);
         if (this.future == null) {
             try {
@@ -68,7 +68,12 @@ public class ResourceFuture implements IResourceFuture {
                 logger.verbose("response: " + response);
                 ByteArrayOutputStream outputStream = downloadFile(response);
                 String contentType = Utils.getResponseContentType(response);
-                rgResource = new RGridResource(url, contentType, outputStream.toByteArray(), logger, "ResourceFuture");
+                String contentEncoding = Utils.getResponseContentEncoding(response);
+                byte[] content = outputStream.toByteArray();
+                if (contentEncoding.contains("gzip")) {
+                    content = GeneralUtils.getUnGzipByteArrayOutputStream(content);
+                }
+                rgResource = new RGridResource(url, contentType, content, logger, "ResourceFuture");
                 break;
             } catch (Exception e) {
                 retryCount--;
@@ -90,8 +95,21 @@ public class ResourceFuture implements IResourceFuture {
         if (this.rgResource == null) {
             Response response = future.get(timeout, unit);
             ByteArrayOutputStream outputStream = downloadFile(response);
+            byte[] content = outputStream.toByteArray();
             String contentType = Utils.getResponseContentType(response);
-            rgResource = new RGridResource(url, contentType, outputStream.toByteArray(), logger,"ResourceFuture");
+            if (content.length > 0) {
+                String contentEncoding = Utils.getResponseContentEncoding(response);
+                if (contentEncoding != null && contentEncoding.contains("gzip")) {
+                    try {
+                        content = GeneralUtils.getUnGzipByteArrayOutputStream(content);
+                    } catch (IOException e) {
+                        GeneralUtils.logExceptionStackTrace(logger, e);
+                    }
+                }
+            } else {
+                logger.log("content is empty");
+            }
+            rgResource = new RGridResource(url, contentType, content, logger, "ResourceFuture");
         }
         return rgResource;
     }
