@@ -21,9 +21,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Eyes implements IRenderingEyes, IEyes {
 
-    private String apiKey = System.getenv("APPLITOOLS_API_KEY");
     private Logger logger;
+
+    private String apiKey;
     private String serverUrl;
+
     private final VisualGridManager renderingGridManager;
     private List<RunningTest> testList = new ArrayList<>();
     private final List<RunningTest> testsInCloseProcess = Collections.synchronizedList(new ArrayList<RunningTest>());
@@ -144,9 +146,9 @@ public class Eyes implements IRenderingEyes, IEyes {
         eyesConnector.setHideCaret(this.hideCaret);
         eyesConnector.setMatchLevel(matchLevel);
 
-        String serverUrl = this.renderingGridManager.getServerUrl();
+        String serverUrl = this.serverUrl;
         if (serverUrl == null) {
-            serverUrl = this.serverUrl;
+            serverUrl = this.renderingGridManager.getServerUrl();
         }
         if (serverUrl != null) {
             try {
@@ -156,9 +158,9 @@ public class Eyes implements IRenderingEyes, IEyes {
             }
         }
 
-        String apiKey = this.renderingGridManager.getApiKey();
+        String apiKey = this.apiKey;
         if (apiKey == null) {
-            apiKey = this.apiKey;
+            apiKey = renderingGridManager.getApiKey();
         }
         if (apiKey != null) {
             eyesConnector.setApiKey(apiKey);
@@ -251,7 +253,7 @@ public class Eyes implements IRenderingEyes, IEyes {
 
     @Override
     public void setHideCaret(boolean hideCaret) {
-
+        this.hideCaret = hideCaret;
     }
 
     @Override
