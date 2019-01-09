@@ -28,7 +28,7 @@ public class Eyes implements IRenderingEyes, IEyes {
     private String serverUrl;
 
     private final VisualGridManager renderingGridManager;
-    private List<RunningTest> testList = new ArrayList<>();
+    private List<RunningTest> testList = Collections.synchronizedList(new ArrayList<RunningTest>());
     private final List<RunningTest> testsInCloseProcess = Collections.synchronizedList(new ArrayList<RunningTest>());
     private AtomicBoolean isEyesClosed = new AtomicBoolean(false);
     private AtomicBoolean isEyesIssuedOpenTasks = new AtomicBoolean(false);
