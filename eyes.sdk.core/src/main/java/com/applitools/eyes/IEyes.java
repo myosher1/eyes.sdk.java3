@@ -2,6 +2,7 @@ package com.applitools.eyes;
 
 import com.applitools.ICheckSettings;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 
 public interface IEyes {
@@ -41,4 +42,5 @@ public interface IEyes {
 
     void setMatchLevel(MatchLevel level);
 
+    URI getServerUrl();
 }

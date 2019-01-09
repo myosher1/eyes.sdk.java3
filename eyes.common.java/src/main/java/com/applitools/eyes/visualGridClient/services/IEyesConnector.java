@@ -5,6 +5,7 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.config.Configuration;
 import com.applitools.eyes.visualGridClient.model.*;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
@@ -17,6 +18,8 @@ public interface IEyesConnector {
     void setLogHandler(LogHandler logHandler);
 
     void setServerUrl(String serverUrl) throws URISyntaxException;
+
+    URI getServerUrl();
 
     void open(Configuration config);
 

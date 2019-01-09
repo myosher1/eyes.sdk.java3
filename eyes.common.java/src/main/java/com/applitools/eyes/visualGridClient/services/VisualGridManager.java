@@ -44,7 +44,8 @@ public class VisualGridManager {
 
     private RateLimiter rateLimiter;
     private String serverUrl;
-    private String apiKey = System.getenv("APPLITOOLS_API_KEY");
+    private static final String DEFAULT_API_KEY = System.getenv("APPLITOOLS_API_KEY");
+    private String apiKey = DEFAULT_API_KEY;
     private boolean isDisabled;
 
     @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
@@ -87,7 +88,7 @@ public class VisualGridManager {
     }
 
     public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
+        this.apiKey = apiKey != null ? apiKey : DEFAULT_API_KEY;
     }
 
     public void setIsDisabled(boolean isDisabled){

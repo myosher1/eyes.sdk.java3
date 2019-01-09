@@ -52,7 +52,7 @@ public final class TestRenderingGridService {
     public void test() {
 
         Eyes eyes = new Eyes(renderingManager);
-        eyes.setDisabled(true);
+        eyes.setIsDisabled(true);
         eyes.setBatch(new BatchInfo("SimpleVisualGridBatch"));
 
         try {

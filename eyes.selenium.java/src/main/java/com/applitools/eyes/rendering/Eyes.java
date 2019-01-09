@@ -11,6 +11,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -146,22 +147,16 @@ public class Eyes implements IRenderingEyes, IEyes {
         eyesConnector.setHideCaret(this.hideCaret);
         eyesConnector.setMatchLevel(matchLevel);
 
-        String serverUrl = this.serverUrl;
-        if (serverUrl == null) {
-            serverUrl = this.renderingGridManager.getServerUrl();
-        }
-        if (serverUrl != null) {
+        URI serverUri = this.getServerUrl();
+        if (serverUri != null) {
             try {
-                eyesConnector.setServerUrl(serverUrl);
+                eyesConnector.setServerUrl(serverUri.toString());
             } catch (URISyntaxException e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
 
-        String apiKey = this.apiKey;
-        if (apiKey == null) {
-            apiKey = renderingGridManager.getApiKey();
-        }
+        String apiKey = this.getApiKey();
         if (apiKey != null) {
             eyesConnector.setApiKey(apiKey);
         } else {
@@ -223,7 +218,7 @@ public class Eyes implements IRenderingEyes, IEyes {
 
     @Override
     public String getApiKey() {
-        return this.apiKey;
+        return this.apiKey == null ? this.renderingGridManager.getApiKey() : this.apiKey;
     }
 
     @Override
@@ -259,6 +254,16 @@ public class Eyes implements IRenderingEyes, IEyes {
     @Override
     public void setMatchLevel(MatchLevel level) {
         this.matchLevel = level;
+    }
+
+    @Override
+    public URI getServerUrl() {
+        if (this.eyesConnector != null){
+            URI uri = this.eyesConnector.getServerUrl();
+            if (uri != null) return uri;
+        }
+        String str = this.serverUrl == null ? this.renderingGridManager.getServerUrl() : this.serverUrl;
+        return str == null ? null : URI.create(str);
     }
 
     public List<Future<TestResultContainer>> closeAndReturnResults() {
