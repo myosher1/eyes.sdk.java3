@@ -54,7 +54,7 @@ public final class TestRenderingGridServiceWithJsHook {
             renderingConfiguration.setTestName("Visual Grid With Web Hook");
             renderingConfiguration.setAppName("RenderingGridIntegration");
             renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
-            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+            //eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             eyes.setServerUrl("https://eyes.applitools.com/");
             ((Eyes) eyes).open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
