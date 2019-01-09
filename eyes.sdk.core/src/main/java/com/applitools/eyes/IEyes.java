@@ -2,6 +2,7 @@ package com.applitools.eyes;
 
 import com.applitools.ICheckSettings;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 
 public interface IEyes {
@@ -10,6 +11,8 @@ public interface IEyes {
     void setServerUrl(String serverUrl) throws URISyntaxException;
 
     void setProxy(AbstractProxySettings abstractProxySettings);
+
+    void setIsDisabled(boolean isDisabled);
 
     Logger getLogger();
 
@@ -31,8 +34,6 @@ public interface IEyes {
 
     void setApiKey(String apiKey);
 
-    void setDisabled(boolean disabled);
-
     void setBranchName(String branchName);
 
     void setParentBranchName(String branchName);
@@ -41,4 +42,5 @@ public interface IEyes {
 
     void setMatchLevel(MatchLevel level);
 
+    URI getServerUrl();
 }

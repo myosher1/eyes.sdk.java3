@@ -860,7 +860,7 @@ public class Eyes extends EyesBase implements IEyes {
     }
 
     @Override
-    public void setDisabled(boolean disabled) {
+    public void setIsDisabled(boolean disabled) {
         super.setIsDisabled(disabled);
     }
 

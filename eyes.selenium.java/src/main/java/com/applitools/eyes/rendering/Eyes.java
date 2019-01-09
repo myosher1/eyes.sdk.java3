@@ -11,6 +11,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,11 +22,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Eyes implements IRenderingEyes, IEyes {
 
-    private String apiKey = System.getenv("APPLITOOLS_API_KEY");
     private Logger logger;
+
+    private String apiKey;
     private String serverUrl;
+
     private final VisualGridManager renderingGridManager;
-    private List<RunningTest> testList = new ArrayList<>();
+    private List<RunningTest> testList = Collections.synchronizedList(new ArrayList<RunningTest>());
     private final List<RunningTest> testsInCloseProcess = Collections.synchronizedList(new ArrayList<RunningTest>());
     private AtomicBoolean isEyesClosed = new AtomicBoolean(false);
     private AtomicBoolean isEyesIssuedOpenTasks = new AtomicBoolean(false);
@@ -44,7 +47,7 @@ public class Eyes implements IRenderingEyes, IEyes {
     private String branchName = null;
     private String parentBranchName = null;
     private boolean hideCaret = false;
-    private boolean isDisabled;
+    private Boolean isDisabled;
     private MatchLevel matchLevel = MatchLevel.STRICT;
 
     {
@@ -96,7 +99,7 @@ public class Eyes implements IRenderingEyes, IEyes {
      */
     @Override
     public void setLogHandler(LogHandler logHandler) {
-        if (isDisabled) return;
+        if (getIsDisabled()) return;
         LogHandler currentLogHandler = logger.getLogHandler();
         this.logger = new Logger();
         this.logger.setLogHandler(new MultiLogHandler(currentLogHandler, logHandler));
@@ -107,7 +110,7 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public void open(WebDriver webDriver, RenderingConfiguration renderingConfiguration) {
-        if (isDisabled) return;
+        if (getIsDisabled()) return;
         logger.verbose("enter");
 
         ArgumentGuard.notNull(webDriver, "webDriver");
@@ -144,22 +147,16 @@ public class Eyes implements IRenderingEyes, IEyes {
         eyesConnector.setHideCaret(this.hideCaret);
         eyesConnector.setMatchLevel(matchLevel);
 
-        String serverUrl = this.renderingGridManager.getServerUrl();
-        if (serverUrl == null) {
-            serverUrl = this.serverUrl;
-        }
-        if (serverUrl != null) {
+        URI serverUri = this.getServerUrl();
+        if (serverUri != null) {
             try {
-                eyesConnector.setServerUrl(serverUrl);
+                eyesConnector.setServerUrl(serverUri.toString());
             } catch (URISyntaxException e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
 
-        String apiKey = this.renderingGridManager.getApiKey();
-        if (apiKey == null) {
-            apiKey = this.apiKey;
-        }
+        String apiKey = this.getApiKey();
         if (apiKey != null) {
             eyesConnector.setApiKey(apiKey);
         } else {
@@ -197,14 +194,14 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public TestResults close() {
-        if (isDisabled) return null;
+        if (getIsDisabled()) return null;
         futures = closeAndReturnResults();
         return null;
     }
 
     @Override
     public TestResults close(boolean throwException) {
-        if (isDisabled) return null;
+        if (getIsDisabled()) return null;
         futures = closeAndReturnResults();
         return null;
     }
@@ -220,13 +217,8 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     @Override
-    public boolean getIsDisabled() {
-        return false;
-    }
-
-    @Override
     public String getApiKey() {
-        return this.apiKey;
+        return this.apiKey == null ? this.renderingGridManager.getApiKey() : this.apiKey;
     }
 
     @Override
@@ -235,8 +227,13 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     @Override
-    public void setDisabled(boolean disabled) {
+    public void setIsDisabled(boolean disabled) {
         this.isDisabled = disabled;
+    }
+
+    @Override
+    public boolean getIsDisabled() {
+        return this.isDisabled == null ? this.renderingGridManager.getIsDisabled() : this.isDisabled;
     }
 
     @Override
@@ -251,7 +248,7 @@ public class Eyes implements IRenderingEyes, IEyes {
 
     @Override
     public void setHideCaret(boolean hideCaret) {
-
+        this.hideCaret = hideCaret;
     }
 
     @Override
@@ -259,8 +256,18 @@ public class Eyes implements IRenderingEyes, IEyes {
         this.matchLevel = level;
     }
 
+    @Override
+    public URI getServerUrl() {
+        if (this.eyesConnector != null){
+            URI uri = this.eyesConnector.getServerUrl();
+            if (uri != null) return uri;
+        }
+        String str = this.serverUrl == null ? this.renderingGridManager.getServerUrl() : this.serverUrl;
+        return str == null ? null : URI.create(str);
+    }
+
     public List<Future<TestResultContainer>> closeAndReturnResults() {
-        if (isDisabled) return new ArrayList<>();
+        if (getIsDisabled()) return new ArrayList<>();
         if (this.futures != null) {
             return futures;
         }
@@ -324,15 +331,17 @@ public class Eyes implements IRenderingEyes, IEyes {
     public ScoreTask getBestScoreTaskForOpen() {
         int bestMark = -1;
         ScoreTask currentBest = null;
-        for (RunningTest runningTest : testList) {
+        synchronized (testList) {
+            for (RunningTest runningTest : testList) {
 
-            ScoreTask currentScoreTask = runningTest.getScoreTaskObjectByType(Task.TaskType.OPEN);
-            if (currentScoreTask == null) continue;
+                ScoreTask currentScoreTask = runningTest.getScoreTaskObjectByType(Task.TaskType.OPEN);
+                if (currentScoreTask == null) continue;
 
-            if (bestMark < currentScoreTask.getScore()) {
-                bestMark = currentScoreTask.getScore();
-                currentBest = currentScoreTask;
+                if (bestMark < currentScoreTask.getScore()) {
+                    bestMark = currentScoreTask.getScore();
+                    currentBest = currentScoreTask;
 
+                }
             }
         }
         return currentBest;
@@ -372,14 +381,14 @@ public class Eyes implements IRenderingEyes, IEyes {
     }
 
     public void check(String name, ICheckSettings checkSettings) {
-        if (isDisabled) return;
+        if (getIsDisabled()) return;
         ArgumentGuard.notNull(checkSettings, "checkSettings");
         checkSettings = checkSettings.withName(name);
         this.check(checkSettings);
     }
 
     public void check(ICheckSettings checkSettings) {
-        if (isDisabled) return;
+        if (getIsDisabled()) return;
         logger.verbose("enter");
 
         ArgumentGuard.notOfType(checkSettings, ICheckRGSettings.class, "checkSettings");
