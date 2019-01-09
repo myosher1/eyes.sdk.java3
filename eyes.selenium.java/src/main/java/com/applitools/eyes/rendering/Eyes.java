@@ -331,15 +331,17 @@ public class Eyes implements IRenderingEyes, IEyes {
     public ScoreTask getBestScoreTaskForOpen() {
         int bestMark = -1;
         ScoreTask currentBest = null;
-        for (RunningTest runningTest : testList) {
+        synchronized (testList) {
+            for (RunningTest runningTest : testList) {
 
-            ScoreTask currentScoreTask = runningTest.getScoreTaskObjectByType(Task.TaskType.OPEN);
-            if (currentScoreTask == null) continue;
+                ScoreTask currentScoreTask = runningTest.getScoreTaskObjectByType(Task.TaskType.OPEN);
+                if (currentScoreTask == null) continue;
 
-            if (bestMark < currentScoreTask.getScore()) {
-                bestMark = currentScoreTask.getScore();
-                currentBest = currentScoreTask;
+                if (bestMark < currentScoreTask.getScore()) {
+                    bestMark = currentScoreTask.getScore();
+                    currentBest = currentScoreTask;
 
+                }
             }
         }
         return currentBest;
