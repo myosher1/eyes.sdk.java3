@@ -14,7 +14,7 @@ import java.util.List;
 public interface IServerConnector {
 
     String API_SESSIONS = "api/sessions";
-    String RUNNING_DATA_PATH = API_SESSIONS + "/running/model";
+    String RUNNING_DATA_PATH = API_SESSIONS + "/running/data";
 
     //Rendering Grid
     String RENDER_INFO_PATH = API_SESSIONS + "/renderinfo";
