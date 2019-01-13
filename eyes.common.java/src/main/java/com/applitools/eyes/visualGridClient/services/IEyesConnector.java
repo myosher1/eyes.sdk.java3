@@ -39,7 +39,7 @@ public interface IEyesConnector {
 
     IResourceFuture createResourceFuture(RGridResource rg);
 
-    MatchResult matchWindow(String resultImageURL, ICheckSettings checkSettings);
+    MatchResult matchWindow(String resultImageURL, String domLocation, ICheckSettings checkSettings);
 
     void setRenderInfo(RenderingInfo renderingInfo);
 

@@ -52,7 +52,7 @@ public class TestTopSites {
 
     private IEyes initEyes(WebDriver webDriver, String testedUrl) {
         Eyes eyes = new Eyes(renderingManager);
-        BatchInfo batchInfo = new BatchInfo(testedUrl);
+        BatchInfo batchInfo = new BatchInfo("Top Ten Sites");
         batchInfo.setId("Target");
         eyes.setBatch(batchInfo);
 
@@ -64,7 +64,7 @@ public class TestTopSites {
         try {
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
             renderingConfiguration.setTestName("Top 10 websites - " + testedUrl);
-            renderingConfiguration.setAppName("RenderingGridIntegration");
+            renderingConfiguration.setAppName("Top Ten Sites");
             String environment = "";
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME, environment);
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME, environment);
@@ -93,8 +93,8 @@ public class TestTopSites {
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             logger.log("running check for url " + testedUrl);
             try {
-                eyes.check(Target.window().withName("Step1 - " + testedUrl).sendDom(false));
-                eyes.check(Target.window().fully(false).withName("Step2 - " + testedUrl).sendDom(false));
+                eyes.check(Target.window().withName("Step1 - " + testedUrl).sendDom(true));
+                eyes.check(Target.window().fully(false).withName("Step2 - " + testedUrl).sendDom(true));
             } catch (Exception e) {
                 e.printStackTrace();
             }

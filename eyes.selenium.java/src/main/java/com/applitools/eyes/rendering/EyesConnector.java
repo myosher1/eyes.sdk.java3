@@ -61,7 +61,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public MatchResult matchWindow(String resultImageURL, ICheckSettings checkSettings) {
+    public MatchResult matchWindow(String resultImageURL, String domLocation, ICheckSettings checkSettings) {
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
 
@@ -71,7 +71,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
         String tag = checkSettingsInternal.getName();
 
-        AppOutput appOutput = new AppOutput(tag, null, null, resultImageURL);
+        AppOutput appOutput = new AppOutput(tag, null, domLocation, resultImageURL);
         AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, null);
 
         return matchWindowTask.performMatch(new Trigger[0], appOutputWithScreenshot, tag, false, imageMatchSettings);
