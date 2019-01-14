@@ -20,10 +20,6 @@ public interface IEyes {
 
     void check(String testName, ICheckSettings checkSettings);
 
-    TestResults close();
-
-    TestResults close(boolean throwException);
-
     TestResults abortIfNotClosed();
 
     boolean getIsOpen();

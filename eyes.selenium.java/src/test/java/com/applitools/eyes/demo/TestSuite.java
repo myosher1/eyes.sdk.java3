@@ -2,6 +2,7 @@ package com.applitools.eyes.demo;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
+import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.selenium.StitchMode;
 import com.applitools.eyes.selenium.config.Configuration;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
@@ -15,7 +16,7 @@ import org.testng.annotations.Test;
 
 public class TestSuite {
 
-    private IEyes eyes;
+    private Eyes eyes;
     private WebDriver webDriver;
     private ICheckSettings checkSettings;
     private VisualGridManager visualGridManager;

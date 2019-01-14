@@ -74,7 +74,7 @@ public class TestListener implements ITestListener {
     }
 
     private void afterMethodFailure(TestSetup testSetup) {
-        IEyes eyes = testSetup.getEyes();
+        Eyes eyes = (Eyes) testSetup.getEyes();
         try {
             if (eyes.getIsOpen()) {
                 eyes.close(false);
@@ -90,7 +90,7 @@ public class TestListener implements ITestListener {
     }
 
     private boolean afterMethodSuccess(TestSetup testSetup) {
-        IEyes eyes = testSetup.getEyes();
+        Eyes eyes = (Eyes) testSetup.getEyes();
         try {
             if (eyes.getIsOpen()) {
                 TestResults results = eyes.close();
