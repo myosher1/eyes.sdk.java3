@@ -20,7 +20,7 @@ public class TestIEyesSelenium extends TestIEyesBase {
     private Logger logger;
 
     @Factory(dataProvider = "dp")
-    public TestIEyesSelenium(String testName){
+    public TestIEyesSelenium(String testName) {
         this.testName = testName;
     }
 
@@ -48,7 +48,7 @@ public class TestIEyesSelenium extends TestIEyesBase {
     }
 
     @Test
-    public void test(){
+    public void test() {
         super.test(testName);
     }
 
@@ -57,7 +57,7 @@ public class TestIEyesSelenium extends TestIEyesBase {
         try {
             TestResults results = eyes.close();
             logger.log(results.toString());
-        }catch (Exception e){
+        } catch (Throwable e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
     }

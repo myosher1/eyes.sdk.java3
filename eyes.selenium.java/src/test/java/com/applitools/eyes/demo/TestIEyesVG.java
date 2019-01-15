@@ -56,7 +56,7 @@ public class TestIEyesVG extends TestIEyesBase {
             logger.log("created configurations for url " + testedUrl);
             eyes.open(webDriver, renderingConfiguration);
             this.eyes = eyes;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
         return this.eyes;
