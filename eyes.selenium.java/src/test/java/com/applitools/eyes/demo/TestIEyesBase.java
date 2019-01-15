@@ -1,17 +1,17 @@
 package com.applitools.eyes.demo;
 
-
+import com.applitools.ICheckSettings;
+import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.IEyes;
+import com.applitools.eyes.LogHandler;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.rendering.Target;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
 
 public abstract class TestIEyesBase {
 
-    protected IEyes eyes;
+    protected final String SERVER_URL = "https://eyes.applitools.com/";
 
     @DataProvider(name = "dp", parallel = true)
     public static Object[][] dp() {
@@ -29,21 +29,29 @@ public abstract class TestIEyesBase {
         };
     }
 
-    @Test(dataProvider = "dp")
     public void test(String testedUrl) {
         WebDriver webDriver = new ChromeDriver();
-        IEyes eyes = getEyes(webDriver, testedUrl);
+        IEyes eyes = initEyes(webDriver, testedUrl);
         Logger logger = eyes.getLogger();
         webDriver.get(testedUrl);
         logger.log("navigated to " + testedUrl);
         try {
             logger.log("running check for url " + testedUrl);
-            eyes.check(Target.window().withName("Step1 - " + testedUrl).sendDom(true));
-            eyes.check(Target.window().fully(false).withName("Step2 - " + testedUrl).sendDom(true));
+            ICheckSettings windowCheckSettings = getNewWindowCheckSettings();
+            eyes.check(windowCheckSettings.withName("Step1 - " + testedUrl));
+            eyes.check(windowCheckSettings.fully(false).withName("Step2 - " + testedUrl));
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            webDriver.quit();
         }
     }
 
-    protected abstract IEyes getEyes(WebDriver webDriver, String testedUrl);
+    protected abstract ICheckSettings getNewWindowCheckSettings();
+
+    protected abstract IEyes initEyes(WebDriver webDriver, String testedUrl);
+
+    protected LogHandler initLogHandler(String testName) {
+        return new FileLogger("eyes_" + testName + ".log", false, false);
+    }
 }
