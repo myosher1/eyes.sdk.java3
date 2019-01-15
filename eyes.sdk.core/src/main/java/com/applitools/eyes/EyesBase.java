@@ -226,8 +226,8 @@ public abstract class EyesBase {
      * @param serverUrl The URI of the rest server, or {@code null} to use
      *                  the default server.
      */
-    public void setServerUrl(String serverUrl) throws URISyntaxException {
-        setServerUrl(new URI(serverUrl));
+    public void setServerUrl(String serverUrl) {
+        setServerUrl(URI.create(serverUrl));
     }
 
     /**

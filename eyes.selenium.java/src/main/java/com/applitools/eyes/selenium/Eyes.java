@@ -33,7 +33,6 @@ import com.applitools.eyes.selenium.wrappers.EyesTargetLocator;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.utils.*;
-import net.bytebuddy.implementation.bind.annotation.Super;
 import org.openqa.selenium.*;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
@@ -85,6 +84,7 @@ public class Eyes extends EyesBase implements IEyes {
     private Region effectiveViewport;
 
     private EyesScreenshotFactory screenshotFactory;
+    private String cachedAUTSessionId;
 
     @SuppressWarnings("UnusedDeclaration")
     public interface WebDriverAction {
@@ -315,8 +315,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     protected WebDriver open(WebDriver driver) throws EyesException {
         openLogger();
-
-        openLogger();
+        this.cachedAUTSessionId = null;
 
         if (getIsDisabled()) {
             logger.verbose("Ignored");
@@ -2635,12 +2634,22 @@ public class Eyes extends EyesBase implements IEyes {
     @Override
     protected String getAUTSessionId() {
         try {
-            return driver.getRemoteWebDriver().getSessionId().toString();
+            if (this.cachedAUTSessionId == null) {
+                this.cachedAUTSessionId = driver.getRemoteWebDriver().getSessionId().toString();
+            }
+            return this.cachedAUTSessionId;
         } catch (Exception e) {
             logger.log("WARNING: Failed to get AUT session ID! (maybe driver is not available?). Error: "
                     + e.getMessage());
             return "";
         }
+    }
+
+    @Override
+    public TestResults close(boolean throwEx) {
+        TestResults results = super.close(throwEx);
+        this.cachedAUTSessionId = null;
+        return results;
     }
 
     @SuppressWarnings("UnusedDeclaration")
