@@ -25,7 +25,7 @@ public class ScrollPositionProvider implements PositionProvider {
     public ScrollPositionProvider(Logger logger, IEyesJsExecutor executor, WebElement scrollRootElement) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(executor, "executor");
-        ArgumentGuard.notNull(scrollRootElement, "scrollRootElement");
+//        ArgumentGuard.notNull(scrollRootElement, "scrollRootElement");
 
         this.logger = logger;
         this.executor = executor;

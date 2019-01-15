@@ -35,7 +35,7 @@ public class MobileNativeTests {
             eyes.setDebugScreenshotsPrefix(methodName + "_");
             eyes.setSaveDebugScreenshots(true);
         } else {
-            logHandler = new StdoutLogHandler(false);
+            logHandler = new StdoutLogHandler(true);
         }
 
         capabilities.setCapability("username", System.getenv("SAUCE_USERNAME"));
@@ -103,8 +103,8 @@ public class MobileNativeTests {
             eyes.check("Main window with ignore", Target.region(scrollableElement).ignore(scrollableElement));
             eyes.close(false);
         } finally {
+            driver.resetApp();
             eyes.abortIfNotClosed();
-            driver.quit();
         }
     }
 

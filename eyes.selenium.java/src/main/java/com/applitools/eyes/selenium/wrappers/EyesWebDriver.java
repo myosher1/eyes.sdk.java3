@@ -371,7 +371,12 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
             return defaultContentViewportSize;
         }
 
-        EyesTargetLocator switchTo = (EyesTargetLocator)switchTo();
+        EyesTargetLocator switchTo = null;
+        //In Appium driver there's no switchTo()
+        if (!EyesSeleniumUtils.isMobileDevice(this.driver)) {
+            switchTo = (EyesTargetLocator)switchTo();
+        }
+
         FrameChain currentFrames = getFrameChain().clone();
 
         // Optimization

@@ -85,7 +85,7 @@ public class TestTopSites {
         renderingManager.getLogger().log("entering with url " + testedUrl);
         WebDriver webDriver = new ChromeDriver();
         webDriver.get(testedUrl);
-        IEyes eyes = initEyes(webDriver, testedUrl);
+        Eyes eyes = (Eyes) initEyes(webDriver, testedUrl);
         Logger logger = eyes.getLogger();
         logger.log("navigated to " + testedUrl);
 

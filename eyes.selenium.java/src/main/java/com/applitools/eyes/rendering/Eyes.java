@@ -199,7 +199,6 @@ public class Eyes implements IRenderingEyes, IEyes {
         return null;
     }
 
-    @Override
     public TestResults close(boolean throwException) {
         if (getIsDisabled()) return null;
         futures = closeAndReturnResults();

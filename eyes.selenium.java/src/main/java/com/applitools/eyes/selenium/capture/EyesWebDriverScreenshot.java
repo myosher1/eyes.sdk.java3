@@ -15,10 +15,7 @@ import com.applitools.eyes.selenium.wrappers.EyesTargetLocator;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.ImageUtils;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.Point;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
 
 import java.awt.image.BufferedImage;
 import java.util.Iterator;
@@ -163,7 +160,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             if (sp == null) {
                 sp = new Location(0, 0);
             }
-        } catch (EyesDriverOperationException e) {
+        } catch (WebDriverException e) {
             sp = new Location(0, 0);
         }
         return sp;
@@ -179,7 +176,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             // we'll use the viewport size as the frame's size.
             try {
                 frameSize = positionProvider.getEntireSize();
-            } catch (EyesDriverOperationException e) {
+            } catch (WebDriverException e) {
                 frameSize = this.driver.getDefaultContentViewportSize();
             }
         }
