@@ -927,7 +927,10 @@ public class Eyes extends EyesBase implements IEyes {
 
         MatchResult result = null;
 
-        EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
+        EyesTargetLocator switchTo = null;
+        if (!EyesSeleniumUtils.isMobileDevice(this.driver)) {
+            switchTo = (EyesTargetLocator) driver.switchTo();
+        }
         FrameChain originalFC = null;
         if (targetRegion != null) {
             logger.verbose("have target region");
@@ -1746,7 +1749,7 @@ public class Eyes extends EyesBase implements IEyes {
         if (currentFrame != null) {
             scrollRootElement = currentFrame.getScrollRootElement();
         }
-        if (scrollRootElement == null) {
+        if (scrollRootElement == null && !EyesSeleniumUtils.isMobileDevice(this.driver)) {
             scrollRootElement = driver.findElement(By.tagName("html"));
         }
         return scrollRootElement;
@@ -2386,15 +2389,20 @@ public class Eyes extends EyesBase implements IEyes {
         ScaleProviderFactory scaleProviderFactory = updateScalingParams();
 
         FrameChain originalFrameChain = driver.getFrameChain().clone();
-        EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
+        EyesTargetLocator switchTo = null;
+        if (!EyesSeleniumUtils.isMobileDevice(this.driver)) {
+            switchTo = (EyesTargetLocator) driver.switchTo();
+            switchTo.frames(this.originalFC);
+        }
 
-        switchTo.frames(this.originalFC);
         PositionProvider positionProvider = getPositionProvider();
         PositionMemento originalPosition = null;
-        if (positionProvider != null) {
+        if (positionProvider != null && !EyesSeleniumUtils.isMobileDevice(this.driver)) {
             originalPosition = positionProvider.getState();
         }
-        switchTo.frames(originalFrameChain);
+        if (!EyesSeleniumUtils.isMobileDevice(this.driver)) {
+            switchTo.frames(originalFrameChain);
+        }
 
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
 
@@ -2412,7 +2420,9 @@ public class Eyes extends EyesBase implements IEyes {
         if (checkFrameOrElement) {
             logger.verbose("Check frame/element requested");
 
-            switchTo.frames(originalFrameChain);
+            if (!EyesSeleniumUtils.isMobileDevice(this.driver)) {
+                switchTo.frames(originalFrameChain);
+            }
 
             BufferedImage entireFrameOrElement;
             if (elementPositionProvider == null) {
@@ -2490,6 +2500,11 @@ public class Eyes extends EyesBase implements IEyes {
             } catch (WebDriverException e) {
                 logger.verbose("WARNING: Could not return focus to active element! " + e.getMessage());
             }
+        }
+
+        if (EyesSeleniumUtils.isMobileDevice(this.driver)) {
+            logger.verbose("Done!");
+            return result;
         }
 
         switchTo.frames(this.originalFC);
