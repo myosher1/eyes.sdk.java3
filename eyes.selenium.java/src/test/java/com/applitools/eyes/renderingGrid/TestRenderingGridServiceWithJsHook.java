@@ -60,7 +60,7 @@ public final class TestRenderingGridServiceWithJsHook {
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             String jshook = "document.body.style='background-color: red'";
             eyes.check(Target.window().withName("test").fully().sendDom(false).webHook(jshook));
-            List<Future<TestResultContainer>> close = ((Eyes) eyes).closeAndReturnResults();
+            List<Future<TestResultContainer>> close = ((Eyes) eyes).close();
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(eyes.getLogger(), e);
         } finally {

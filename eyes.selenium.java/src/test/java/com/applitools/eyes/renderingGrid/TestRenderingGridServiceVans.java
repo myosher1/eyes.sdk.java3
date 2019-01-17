@@ -109,12 +109,8 @@ public class TestRenderingGridServiceVans {
             }
             eyes.getLogger().log("calling eyes.close() for url " + testedUrl);
 
-            TestResults close = eyes.close();
-//            for (Future<TestResultContainer> future : closeAndR
-//            eturnResults) {
-//                logger.log("calling future.get() for url " + testedUrl);
-//                future.get();
-//            }
+            eyes.close();
+
             logger.log("end of `try` block for url " + testedUrl);
 
         } catch (Exception e) {

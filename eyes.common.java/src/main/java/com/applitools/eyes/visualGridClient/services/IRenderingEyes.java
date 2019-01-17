@@ -15,13 +15,13 @@ public interface IRenderingEyes {
 
     void setListener(EyesListener listener);
 
-    List<Future<TestResultContainer>> closeAndReturnResults();
-
     ScoreTask getBestScoreTaskForCheck();
 
     ScoreTask getBestScoreTaskForOpen();
 
     void setBatch(BatchInfo batchInfo);
+
+    List<Future<TestResultContainer>> close();
 
     interface EyesListener{
 

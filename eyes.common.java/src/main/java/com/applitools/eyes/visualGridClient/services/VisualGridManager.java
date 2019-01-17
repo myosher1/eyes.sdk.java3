@@ -408,7 +408,7 @@ public class VisualGridManager {
         logger.verbose("enter");
         Map<IRenderingEyes, List<Future<TestResultContainer>>> allFutures = new HashMap<>();
         for (IRenderingEyes eyes : allEyes) {
-            List<Future<TestResultContainer>> value = eyes.closeAndReturnResults();
+            List<Future<TestResultContainer>> value = eyes.close();
             allFutures.put(eyes, value);
             synchronized (this.eyesToCloseList) {
                 if (!this.eyesToCloseList.contains(eyes)) {

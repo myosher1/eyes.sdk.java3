@@ -67,7 +67,7 @@ public final class TestRenderingGridService {
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             eyes.check(Target.window().withName("test").fully(false).sendDom(false));
-            List<Future<TestResultContainer>> close = eyes.closeAndReturnResults();
+            List<Future<TestResultContainer>> close = eyes.close();
             if (close != null) {
                 for (Future<TestResultContainer> future : close) {
                     future.get();

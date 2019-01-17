@@ -5,6 +5,7 @@ import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
 import com.applitools.eyes.IEyes;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
+import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
 import com.applitools.eyes.visualGridClient.services.VisualGridManager;
 import com.applitools.utils.GeneralUtils;
@@ -16,6 +17,8 @@ import org.testng.annotations.*;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
+import java.util.concurrent.Future;
 
 public class TestTopSites {
     private VisualGridManager renderingManager;
@@ -99,12 +102,11 @@ public class TestTopSites {
                 e.printStackTrace();
             }
             eyes.getLogger().log("calling eyes.close() for url " + testedUrl);
-            eyes.close();
-//            List<Future<TestResultContainer>> close = eyes.closeAndReturnResults();
-//            for (Future<TestResultContainer> future : closeAndReturnResults) {
-//                logger.log("calling future.get() for url " + testedUrl);
-//                future.get();
-//            }
+//            eyes.close();
+            for (Future<TestResultContainer> future : eyes.close()) {
+                logger.log("calling future.get() for url " + testedUrl);
+                future.get();
+            }
             logger.log("end of `try` block for url " + testedUrl);
 
         } catch (Exception e) {

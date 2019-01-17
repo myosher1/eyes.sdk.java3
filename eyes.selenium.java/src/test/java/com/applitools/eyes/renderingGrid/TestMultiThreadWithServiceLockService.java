@@ -188,7 +188,7 @@ public final class TestMultiThreadWithServiceLockService {
             eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888));
             eyes.open(webDriver, renderingConfiguration);
             eyes.check(Target.window().withName("test").sendDom(false));
-            List<Future<TestResultContainer>> close = eyes.closeAndReturnResults();
+            List<Future<TestResultContainer>> close = eyes.close();
             synchronized (lock) {
                 lock.notify();
             }

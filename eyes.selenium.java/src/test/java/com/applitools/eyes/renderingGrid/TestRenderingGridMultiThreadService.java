@@ -87,7 +87,7 @@ public final class TestRenderingGridMultiThreadService {
             eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             eyes.open(webDriver, renderingConfiguration);
             eyes.check(Target.window().withName("test").sendDom(false));
-            List<Future<TestResultContainer>> close = eyes.closeAndReturnResults();
+            List<Future<TestResultContainer>> close = eyes.close();
             for (Future<TestResultContainer> future : close) {
                 TestResultContainer testResultContainer = future.get();
             }
