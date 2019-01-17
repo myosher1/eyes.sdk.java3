@@ -31,7 +31,7 @@ public final class TestDomCapture {
                 new RectangleSize(800, 600));
 
         // Navigate the browser to the "hello world!" web-site.
-        driver.get("https://nikita-andreev.github.io/applitools/dom_capture.html?aaa");
+        driver.get("https://www.usatoday.com");
 
         eyes.setOnDomCapture(new IDomCaptureListener() {
             @Override
