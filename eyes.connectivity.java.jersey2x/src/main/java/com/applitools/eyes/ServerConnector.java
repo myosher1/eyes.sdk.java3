@@ -564,7 +564,14 @@ public class ServerConnector extends RestClient
         String contentType = resource.getContentType();
         Invocation.Builder request = target.request(contentType);
         request.header("X-Auth-Token", renderingInfo.getAccessToken());
-        Entity entity = Entity.entity(content, contentType);
+        Entity entity = null;
+        if (contentType != null) {
+            entity = Entity.entity(content, contentType);
+
+        }
+        else{
+            entity = Entity.entity(content, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+        }
         final Future<Response> future = request.async().put(entity);
         logger.log("future created.");
         return new PutFuture(future, resource, runningRender, this, logger);
