@@ -203,7 +203,7 @@ public class Eyes implements IRenderingEyes, IEyes {
     public List<Future<TestResultContainer>> close(boolean throwException) {
         if (getIsDisabled()) return null;
         futures = closeAndReturnResults();
-        return null;
+        return futures;
     }
 
     @Override
