@@ -39,7 +39,7 @@ public class DomCapture {
 
     static {
         try {
-            CAPTURE_FRAME_SCRIPT = GeneralUtils.readToEnd(DomCapture.class.getResourceAsStream("/captureframe.js"));
+            CAPTURE_FRAME_SCRIPT = GeneralUtils.readToEnd(DomCapture.class.getResourceAsStream("/captureDom.js"));
             CAPTURE_CSSOM_SCRIPT = GeneralUtils.readToEnd(DomCapture.class.getResourceAsStream("/capturecssom.js"));
         } catch (IOException e) {
             e.printStackTrace();
@@ -115,7 +115,10 @@ public class DomCapture {
     private Map<String, Object> getFrameDom(Map<String, Object> argsObj) {
         logger.verbose("Trying to get DOM from driver");
         long startingTime = System.currentTimeMillis();
-        String executeScripString = (String) ((JavascriptExecutor) driver).executeScript(CAPTURE_FRAME_SCRIPT, argsObj);
+
+        String scripts = "var callback = arguments[arguments.length - 1]; return (" + CAPTURE_FRAME_SCRIPT + ")().then(callback, function(err) {callback('__ERROR__:' + (err.stack || err.toString()))})";
+
+        String executeScripString = (String) ((JavascriptExecutor) driver).executeAsyncScript(scripts);
 
         logger.verbose("Finished capturing DOM in - " + (System.currentTimeMillis() - startingTime));
         startingTime = System.currentTimeMillis();
