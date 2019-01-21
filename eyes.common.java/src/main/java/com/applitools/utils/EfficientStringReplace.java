@@ -38,7 +38,7 @@ public class EfficientStringReplace {
                                 String rep = replacements.get(refId.toString());
                                 if (rep != null) {
                                     result.append(rep);
-                                    i += refTokenLen;
+                                    i += refTokenLen-1;
                                     continue START;
                                 }
                             }
