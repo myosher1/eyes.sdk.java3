@@ -28,11 +28,12 @@ import java.util.*;
 import java.util.concurrent.Phaser;
 
 public class DomCapture {
-
+    private final String SEPARATOR = "separator";
+    private final String CSS_TOKEN = "cssToken";
+    private final String IFRAME_TOKEN = "iframeToken";
 
     private static String CAPTURE_FRAME_SCRIPT;
 
-    private static String CAPTURE_CSSOM_SCRIPT;
     private final Phaser treePhaser = new Phaser(1); // Phaser for syncing all callbacks on a single Frame
     private final Phaser mainPhaser = new Phaser(1); // Phaser for syncing all Frames
 
@@ -285,7 +286,7 @@ public class DomCapture {
         CssTreeNode root = new CssTreeNode();
         root.setBaseUrl(baseUrl);
 
-        List<String> result = (List<String>) ((JavascriptExecutor) driver).executeScript(CAPTURE_CSSOM_SCRIPT);
+        List<String> result = (List<String>) ((JavascriptExecutor) driver).executeScript("");
         final List<CssTreeNode> nodes = new ArrayList<>();
         for (String item : result) {
             String kind = item.substring(0, 5);

@@ -3,7 +3,8 @@ package com.applitools.utils;
 import java.util.Map;
 
 public class EfficientStringReplace {
-    public static String efficientStringReplace(char[] refIdToken, String input, Map<String, String> replacements) {
+    
+    public static String efficientStringReplace(String refIdOpenToken, String refIdCloseToken, String input, Map<String, String> replacements) {
         int resultBufferSize = input.length();
         for (String rep : replacements.values()) {
             resultBufferSize += rep.length();
@@ -11,25 +12,28 @@ public class EfficientStringReplace {
         StringBuilder result = new StringBuilder(resultBufferSize);
         StringBuilder refId = new StringBuilder();
         int inLen = input.length();
-        int refTokenLen = refIdToken.length;
+        char[] refIdOpenChars = refIdOpenToken.toCharArray();
+        int refOpenTokenLen = refIdOpenChars.length;
+        char[] refIdCloseChars = refIdCloseToken.toCharArray();
+        int refCloseTokenLen = refIdCloseChars.length;
         START:
         for (int i = 0; i < inLen; ++i) {
 
-            boolean refTokenEncountered = input.charAt(i) == refIdToken[0];
+            boolean refTokenEncountered = input.charAt(i) == refIdOpenChars[0];
             if (refTokenEncountered) {
-                for (int j = 1; j < refTokenLen; ++j) {
-                    if (input.charAt(i + j) != refIdToken[j]) {
+                for (int j = 1; j < refOpenTokenLen; ++j) {
+                    if (input.charAt(i + j) != refIdOpenChars[j]) {
                         refTokenEncountered = false;
                         break;
                     }
                 }
                 if (refTokenEncountered) {
                     refId.setLength(0);
-                    for (i += refTokenLen; i < inLen; ++i) {
-                        boolean refEndTokenEncountered = input.charAt(i) == refIdToken[0];
+                    for (i += refOpenTokenLen; i < inLen; ++i) {
+                        boolean refEndTokenEncountered = input.charAt(i) == refIdCloseChars[0];
                         if (refEndTokenEncountered) {
-                            for (int j = 1; j < refTokenLen; ++j) {
-                                if (input.charAt(i + j) != refIdToken[j]) {
+                            for (int j = 1; j < refCloseTokenLen; ++j) {
+                                if (input.charAt(i + j) != refIdCloseChars[j]) {
                                     refEndTokenEncountered = false;
                                     break;
                                 }
@@ -38,7 +42,7 @@ public class EfficientStringReplace {
                                 String rep = replacements.get(refId.toString());
                                 if (rep != null) {
                                     result.append(rep);
-                                    i += refTokenLen-1;
+                                    i += refCloseTokenLen-1;
                                     continue START;
                                 }
                             }

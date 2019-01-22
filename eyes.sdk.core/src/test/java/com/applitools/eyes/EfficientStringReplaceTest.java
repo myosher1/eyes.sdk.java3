@@ -13,7 +13,7 @@ public class EfficientStringReplaceTest {
     @DataProvider(name = "dp")
     public static Object[][] dp() {
         return new Object[][]{
-                {"@<", "abcdef@<0@<ghijklmnop@<1@<qrstuv@<2@<wx@<1@<@<0@<yz",
+                {"@<",">#", "abcdef@<0>#ghijklmnop@<1>#qrstuv@<2>#wx@<1>#@<0>#yz",
                         new HashMap<String, String>() {
                             {
                                 put("0", "ABCDEFG");
@@ -28,8 +28,8 @@ public class EfficientStringReplaceTest {
     }
 
     @Test(dataProvider = "dp")
-    public void efficientStringReplace(String refIdToken, String input, Map<String, String> replacements, String expectedResult) {
-        String result = EfficientStringReplace.efficientStringReplace( refIdToken.toCharArray(), input, replacements);
+    public void efficientStringReplace(String refIdOpenToken,String refIdCloseToken, String input, Map<String, String> replacements, String expectedResult) {
+        String result = EfficientStringReplace.efficientStringReplace( refIdOpenToken, refIdCloseToken, input, replacements);
         Assert.assertEquals(result, expectedResult);
     }
 
