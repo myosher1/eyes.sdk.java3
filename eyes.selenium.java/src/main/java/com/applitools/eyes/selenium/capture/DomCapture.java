@@ -40,7 +40,6 @@ public class DomCapture {
     static {
         try {
             CAPTURE_FRAME_SCRIPT = GeneralUtils.readToEnd(DomCapture.class.getResourceAsStream("/captureDom.js"));
-            CAPTURE_CSSOM_SCRIPT = GeneralUtils.readToEnd(DomCapture.class.getResourceAsStream("/capturecssom.js"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -75,57 +74,24 @@ public class DomCapture {
 
     public Map<String, Object> GetWindowDom() {
 
-        Map argsObj = initMapDom();
-
-        Map<String, Object> result = getFrameDom(argsObj);
+        Map<String, Object> result = getFrameDom();
 
         return result;
     }
 
-    private Map initMapDom() {
 
-        Map argsObj = new HashMap();
-        argsObj.put("styleProps", new String[]{
-                "background-color",
-                "background-image",
-                "background-size",
-                "color",
-                "border-width",
-                "border-color",
-                "border-style",
-                "padding",
-                "margin"
-        });
-
-        argsObj.put("attributeProps", null);
-        argsObj.put("rectProps", new String[]{
-                "right",
-                "bottom",
-                "height",
-                "width",
-                "top",
-                "left"});
-        argsObj.put("ignoredTagNames", new String[]{
-                "HEAD",
-                "SCRIPT"});
-
-        return argsObj;
-    }
-
-    private Map<String, Object> getFrameDom(Map<String, Object> argsObj) {
+    private Map<String, Object> getFrameDom() {
         logger.verbose("Trying to get DOM from driver");
         long startingTime = System.currentTimeMillis();
 
         String scripts = "var callback = arguments[arguments.length - 1]; return (" + CAPTURE_FRAME_SCRIPT + ")().then(callback, function(err) {callback('__ERROR__:' + (err.stack || err.toString()))})";
 
         String executeScripString = (String) ((JavascriptExecutor) driver).executeAsyncScript(scripts);
-
-        logger.verbose("Finished capturing DOM in - " + (System.currentTimeMillis() - startingTime));
-        startingTime = System.currentTimeMillis();
+        String[] result = executeScripString.split("\n", 1);
 
         final Map<String, Object> executeScriptMap;
         try {
-            executeScriptMap = GeneralUtils.parseJsonToObject(executeScripString);
+            executeScriptMap = GeneralUtils.parseJsonToObject(result[0]);
 
         } catch (IOException e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
@@ -133,14 +99,19 @@ public class DomCapture {
 
         }
 
-        logger.verbose("Finished converting DOM map in - " + (System.currentTimeMillis() - startingTime));
+        logger.verbose("Finished capturing DOM in - " + (System.currentTimeMillis() - startingTime));
         startingTime = System.currentTimeMillis();
 
-        try {
-            traverseDomTree(driver, argsObj, executeScriptMap, -1, new URL(driver.getCurrentUrl()));
-        } catch (MalformedURLException e) {
-            GeneralUtils.logExceptionStackTrace(logger, e);
-        }
+
+
+        logger.verbose("Finished converting DOM map in - " + (System.currentTimeMillis() - startingTime));
+        startingTime = System.currentTimeMillis();
+//
+//        try {
+//            traverseDomTree(driver,    , executeScriptMap, -1, new URL(driver.getCurrentUrl()));
+//        } catch (MalformedURLException e) {
+//            GeneralUtils.logExceptionStackTrace(logger, e);
+//        }
 
         mainPhaser.arriveAndAwaitAdvance();
 
