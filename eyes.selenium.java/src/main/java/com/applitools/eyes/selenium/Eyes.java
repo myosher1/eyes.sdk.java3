@@ -879,7 +879,7 @@ public class Eyes extends EyesBase implements IEyes {
             PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
 
             DomCapture domCapture = new DomCapture(this);
-            fullWindowDom = domCapture.getFullWindowDom(this.driver, positionProvider);
+            fullWindowDom = domCapture.getFullWindowDom(positionProvider);
             if (this.domCaptureListener != null) {
                 this.domCaptureListener.onDomCaptureComplete(fullWindowDom);
             }
