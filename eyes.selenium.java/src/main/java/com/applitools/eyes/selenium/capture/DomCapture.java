@@ -30,6 +30,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.util.*;
 import java.util.concurrent.Phaser;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class DomCapture {
     private final String SEPARATOR = "separator";
@@ -40,7 +42,7 @@ public class DomCapture {
 
     private static String CAPTURE_FRAME_SCRIPT;
 
-    private final Phaser cssPhaser = new Phaser(1); // Phaser for syncing all callbacks on a single Frame
+    private final Phaser cssPhaser = new Phaser(); // Phaser for syncing all callbacks on a single Frame
 
 
     static {
@@ -57,10 +59,11 @@ public class DomCapture {
     private final Logger logger;
     private String cssStartToken;
     private String cssEndToken;
-    private Map<String, String> cssData = new HashMap<>();
+    private Map<String, String> cssData = Collections.synchronizedMap(new HashMap<String, String>());
     private String separator;
     private String frameEndToken;
     private String frameStartToken;
+    private boolean shouldWaitForPhaser = false;
 
     public DomCapture(Eyes eyes) {
         mServerConnector = eyes.getServerConnector();
@@ -94,7 +97,15 @@ public class DomCapture {
             ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
         }
 
-        cssPhaser.arriveAndAwaitAdvance();
+        try {
+
+            if (shouldWaitForPhaser) {
+                cssPhaser.awaitAdvanceInterruptibly(0, 30, TimeUnit.SECONDS);
+            }
+
+        } catch (InterruptedException | TimeoutException e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        }
         String inlaidString = EfficientStringReplace.efficientStringReplace(cssStartToken, cssEndToken, dom, cssData);
         return inlaidString;
     }
@@ -129,9 +140,8 @@ public class DomCapture {
         Map<String, String> framesData = new HashMap<>();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
         FrameChain fc = driver.getFrameChain();
-
         for (String missingFrameLine : missingFramesList) {
-
+            logger.verbose("Switching to "+missingFrameLine);
             try {
                 String[] missingFrameXpaths = missingFrameLine.split(",");
                 for (String missingFrameXpath : missingFrameXpaths) {
@@ -151,7 +161,7 @@ public class DomCapture {
     }
 
     private void fetchCssFiles(List<String> missingCssList) {
-        for (String missingCssUrl : missingCssList) {
+        for (final String missingCssUrl : missingCssList) {
             if (missingCssUrl.startsWith("blob:")) {
                 logger.log("Found blob url continuing - " + missingCssUrl);
                 continue;
@@ -159,7 +169,6 @@ public class DomCapture {
             if(missingCssUrl.isEmpty()) continue;
             try {
                 final CssTreeNode cssTreeNode = new CssTreeNode(new URL(missingCssUrl));
-                cssData.put(missingCssUrl, cssTreeNode.calcCss());
                 downloadCss(cssTreeNode, new IDownloadListener<String>() {
                     @Override
                     public void onDownloadComplete(String downloadedString, String contentType) {
@@ -168,11 +177,13 @@ public class DomCapture {
                         if (cssTreeNode.allImportRules != null && !cssTreeNode.allImportRules.isEmpty()) {
                             cssTreeNode.downloadNodeCss();
                         }
+                        cssData.put(missingCssUrl, cssTreeNode.calcCss());
                     }
 
                     @Override
                     public void onDownloadFailed() {
                         logger.verbose("DomCapture.onDownloadFailed");
+                        cssData.put(missingCssUrl, "");
                     }
                 });
 
@@ -221,6 +232,8 @@ public class DomCapture {
                 if(!str.isEmpty()) blocks.get(i).add(str);
             }
         }
+
+        shouldWaitForPhaser |= !missingCssList.isEmpty();
     }
 
     private void removeFirstCharBR(String[] splited) {
@@ -238,7 +251,7 @@ public class DomCapture {
 
     class CssTreeNode {
         URL url;
-
+        String css;
         StringBuilder sb = new StringBuilder();
         List<CssTreeNode> decedents = new ArrayList<>();
         ICommonsList<CSSImportRule> allImportRules;
@@ -254,6 +267,7 @@ public class DomCapture {
         }
 
         String calcCss() {
+            sb.append(css);
             if (decedents != null) {
                 for (CssTreeNode decedent : decedents) {
                     sb.append(decedent.calcCss());
@@ -267,6 +281,10 @@ public class DomCapture {
             }
 
             return sb.toString();
+        }
+
+        public void setCss(String css) {
+            this.css = css;
         }
 
         void downloadNodeCss() {
@@ -333,6 +351,7 @@ public class DomCapture {
             public void onDownloadComplete(String downloadedString, String contentType) {
                 try {
                     logger.verbose("Download Complete");
+                    node.setCss(URLEncoder.encode(downloadedString,"UTF-8"));
                     listener.onDownloadComplete(downloadedString, "String");
 
                 } catch (Exception e) {
