@@ -32,6 +32,7 @@ public final class TestDomCapture {
 
         // Navigate the browser to the "hello world!" web-site.
         driver.get("https://www.usatoday.com");
+        Thread.sleep(10000);
 //        driver.get("https://nikita-andreev.github.io/applitools/dom_capture.html?aaa");
 
         eyes.setOnDomCapture(new IDomCaptureListener() {
