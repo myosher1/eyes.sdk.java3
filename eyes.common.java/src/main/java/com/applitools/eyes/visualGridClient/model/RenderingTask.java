@@ -572,10 +572,15 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     private void parseCSS(String css, URL baseUrl, Set<URL> resourceUrls) {
         logger.verbose("enter");
-        final CascadingStyleSheet cascadingStyleSheet = CSSReader.readFromString(css, ECSSVersion.CSS30);
-        if (cascadingStyleSheet == null) {
-            logger.verbose("exit - failed to read CSS string");
-            return;
+        CascadingStyleSheet cascadingStyleSheet = null;
+        try {
+            cascadingStyleSheet = CSSReader.readFromString(css, ECSSVersion.CSS30);
+            if (cascadingStyleSheet == null) {
+                logger.verbose("exit - failed to read CSS string");
+                return;
+            }
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
         collectAllImportUris(cascadingStyleSheet, resourceUrls, baseUrl);
         collectAllFontFaceUris(cascadingStyleSheet, resourceUrls, baseUrl);

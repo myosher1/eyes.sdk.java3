@@ -67,9 +67,6 @@ public final class TestRenderingGridServiceWithJsHook {
             if (webDriver != null) {
 //                webDriver.quit();
             }
-            TestResultSummary allTestResults = renderingManager.getAllTestResults();
-            System.out.println(allTestResults);
-            // End the test.
         }
     }
 
@@ -83,7 +80,7 @@ public final class TestRenderingGridServiceWithJsHook {
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
             renderingConfiguration.setTestName("Vans Gallery page");
             renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME, null);
+            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME, null, null);
             eyes.open(webDriver, renderingConfiguration);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);

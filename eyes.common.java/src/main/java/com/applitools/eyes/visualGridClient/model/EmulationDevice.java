@@ -1,13 +1,14 @@
 package com.applitools.eyes.visualGridClient.model;
 
-public class EmulationDevice {
+public class EmulationDevice extends EmulationBaseInfo{
 
     private int width;
     private int height;
     private String deviceScaleFactor;
     private String mobile;
 
-    public EmulationDevice(int width, int height, String deviceScaleFactor, String mobile) {
+    public EmulationDevice(int width, int height, String deviceScaleFactor, String mobile, ScreenOrientation screenOrientation) {
+        super(screenOrientation);
         this.width = width;
         this.height = height;
         this.deviceScaleFactor = deviceScaleFactor;

@@ -7,12 +7,12 @@ public class RenderBrowserInfo {
     private RectangleSize viewportSize;
     private RenderingConfiguration.BrowserType browserType;
     private String platform = "linux";
-    private EmulationInfo emulationInfo = null;
+    private EmulationBaseInfo emulationInfo = null;
     private String sizeMode = "full-page";
     private String baselineEnvName;
 
 
-    public RenderBrowserInfo(int width, int height, RenderingConfiguration.BrowserType browserType, EmulationInfo emulationInfo, String baselineEnvName) {
+    public RenderBrowserInfo(int width, int height, RenderingConfiguration.BrowserType browserType, String baselineEnvName, EmulationBaseInfo emulationInfo) {
         this.baselineEnvName = baselineEnvName;
         this.viewportSize = new RectangleSize(width, height);
         this.browserType = browserType;
@@ -20,9 +20,7 @@ public class RenderBrowserInfo {
     }
 
     public RenderBrowserInfo(int width, int height, RenderingConfiguration.BrowserType browserType, String baselineEnvName) {
-        this.baselineEnvName = baselineEnvName;
-        this.viewportSize = new RectangleSize(width, height);
-        this.browserType = browserType;
+        this(width, height, browserType,  baselineEnvName, null);
     }
 
     public int getWidth() {
@@ -59,7 +57,7 @@ public class RenderBrowserInfo {
         this.platform = platform;
     }
 
-    public EmulationInfo getEmulationInfo() {
+    public EmulationBaseInfo getEmulationInfo() {
         return emulationInfo;
     }
 
