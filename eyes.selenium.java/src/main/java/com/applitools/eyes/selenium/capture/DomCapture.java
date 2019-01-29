@@ -139,15 +139,16 @@ public class DomCapture {
     private Map<String, String> recurseFrames(List<String> missingFramesList) {
         Map<String, String> framesData = new HashMap<>();
         EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
-        FrameChain fc = driver.getFrameChain();
+        FrameChain fc = driver.getFrameChain().clone();
         for (String missingFrameLine : missingFramesList) {
-            logger.verbose("Switching to "+missingFrameLine);
+            logger.verbose("Switching to frame line :"+missingFrameLine);
             try {
                 String[] missingFrameXpaths = missingFrameLine.split(",");
                 for (String missingFrameXpath : missingFrameXpaths) {
+                     logger.verbose("switching to specific frame : "+ missingFrameXpath);
                     WebElement frame = driver.findElement(By.xpath((missingFrameXpath)));
+                    logger.verbose("Switched to frame("+missingFrameXpath+") with src("+frame.getAttribute("src")+")");
                     switchTo.frame(frame);
-                    logger.verbose("Switched to frame("+ frame.getAttribute("src")+") with id("+frame.getAttribute("id")+")");
                 }
                 String result = getFrameDom();
                 framesData.put(missingFrameLine, result);
