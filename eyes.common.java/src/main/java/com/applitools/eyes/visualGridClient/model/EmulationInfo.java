@@ -6,14 +6,13 @@ public class EmulationInfo extends EmulationBaseInfo {
 
     private DeviceName deviceName;
 
-
     public EmulationInfo(DeviceName deviceName, ScreenOrientation screenOrientation) {
         super(screenOrientation);
         this.deviceName = deviceName;
     }
 
-    public DeviceName getDeviceName() {
-        return deviceName;
+    public String getDeviceName() {
+        return deviceName.getName();
     }
 
     public void setDeviceName(DeviceName deviceName) {

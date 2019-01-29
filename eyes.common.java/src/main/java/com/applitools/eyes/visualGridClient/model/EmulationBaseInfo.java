@@ -1,8 +1,6 @@
 package com.applitools.eyes.visualGridClient.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-public class EmulationBaseInfo {
+public abstract class EmulationBaseInfo {
 
     protected ScreenOrientation screenOrientation;
 
@@ -17,4 +15,6 @@ public class EmulationBaseInfo {
     public void setScreenOrientation(ScreenOrientation screenOrientation) {
         this.screenOrientation = screenOrientation;
     }
+
+    public abstract String getDeviceName();
 }

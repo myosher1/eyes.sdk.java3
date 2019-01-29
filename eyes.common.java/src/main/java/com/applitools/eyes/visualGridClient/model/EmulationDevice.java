@@ -46,4 +46,9 @@ public class EmulationDevice extends EmulationBaseInfo{
     public void setMobile(String mobile) {
         this.mobile = mobile;
     }
+
+    @Override
+    public String getDeviceName() {
+        return null;
+    }
 }

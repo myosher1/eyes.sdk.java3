@@ -257,12 +257,17 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         return ids;
     }
 
-    private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, Map<String, RGridResource> resources, boolean isNeedMoreDom) throws Exception {
+    private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, Map<String, RGridResource> resources, boolean isNeedMoreDom) {
         logger.verbose("enter");
         List<PutFuture> allPuts = new ArrayList<>();
         if (isNeedMoreDom) {
             RunningRender runningRender = runningRenders.get(0);
-            PutFuture future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
+            PutFuture future = null;
+            try {
+                future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
+            } catch (JsonProcessingException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
             logger.verbose("locking putResourceCache");
             synchronized (putResourceCache) {
                 putResourceCache.put(dom.getUrl(), future);
@@ -280,7 +285,11 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("calling future.get on " + allPuts.size() + " PutFutures");
         for (PutFuture future : allPuts) {
             logger.verbose("calling future.get on " + future.toString());
-            future.get();
+            try {
+                future.get(10, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
         }
         logger.verbose("exit");
     }

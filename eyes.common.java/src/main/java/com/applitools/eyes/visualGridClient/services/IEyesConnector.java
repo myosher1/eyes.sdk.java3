@@ -58,4 +58,7 @@ public interface IEyesConnector {
     void setHideCaret(boolean hideCaret);
 
     void setMatchLevel(MatchLevel matchLevel);
+
+    void setDevice(String device);
+
 }

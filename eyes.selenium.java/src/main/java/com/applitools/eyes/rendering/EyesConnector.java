@@ -5,9 +5,11 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.config.Configuration;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
+import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import com.applitools.eyes.visualGridClient.services.IEyesConnector;
 import com.applitools.eyes.visualGridClient.services.IResourceFuture;
 import com.applitools.eyes.visualGridClient.model.*;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.net.URI;
 import java.net.URL;
@@ -17,6 +19,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
     private RenderBrowserInfo browserInfo;
     private String userAgent;
+    private String device;
 
     public EyesConnector(RenderBrowserInfo browserInfo, RateLimiter rateLimiter) {
         this.browserInfo = browserInfo;
@@ -197,5 +200,23 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     @Override
     public void setMatchLevel(MatchLevel matchLevel) {
         super.setMatchLevel(matchLevel);
+    }
+
+    @Override
+    public void setDevice(String device) {
+        this.device = device;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This override also checks for mobile operating system.
+     */
+    @Override
+    protected AppEnvironment getAppEnvironment() {
+        AppEnvironment appEnv = super.getAppEnvironment();
+        appEnv.setDeviceInfo(device);
+        logger.log("Done!");
+        return appEnv;
     }
 }
