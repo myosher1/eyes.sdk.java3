@@ -134,7 +134,7 @@ public class TestRenderingGridServiceVans {
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
             renderingConfiguration.setTestName("Vans Gallery page - with ");
             renderingConfiguration.setAppName("RenderingGridIntegration");
-            EmulationBaseInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.iPad_Mini, ScreenOrientation.PORTRAIT);
+            EmulationBaseInfo emulation = new EmulationDevice(400 , 800 , 2.25f, true, ScreenOrientation.PORTRAIT);
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME,emulation);
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME, emulation);
             renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME,emulation);

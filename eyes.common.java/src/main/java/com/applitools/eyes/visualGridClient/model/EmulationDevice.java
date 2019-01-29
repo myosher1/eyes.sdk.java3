@@ -4,15 +4,15 @@ public class EmulationDevice extends EmulationBaseInfo{
 
     private int width;
     private int height;
-    private String deviceScaleFactor;
-    private String mobile;
+    private float deviceScaleFactor;
+    private boolean mobile;
 
-    public EmulationDevice(int width, int height, String deviceScaleFactor, String mobile, ScreenOrientation screenOrientation) {
+    public EmulationDevice(int width, int height, float deviceScaleFactor, boolean isMobile, ScreenOrientation screenOrientation) {
         super(screenOrientation);
         this.width = width;
         this.height = height;
         this.deviceScaleFactor = deviceScaleFactor;
-        this.mobile = mobile;
+        this.mobile = isMobile;
     }
 
     public int getWidth() {
@@ -31,19 +31,19 @@ public class EmulationDevice extends EmulationBaseInfo{
         this.height = height;
     }
 
-    public String getDeviceScaleFactor() {
+    public float getDeviceScaleFactor() {
         return deviceScaleFactor;
     }
 
-    public void setDeviceScaleFactor(String deviceScaleFactor) {
+    public void setDeviceScaleFactor(float deviceScaleFactor) {
         this.deviceScaleFactor = deviceScaleFactor;
     }
 
-    public String getMobile() {
+    public boolean isMobile() {
         return mobile;
     }
 
-    public void setMobile(String mobile) {
+    public void setMobile(boolean mobile) {
         this.mobile = mobile;
     }
 
