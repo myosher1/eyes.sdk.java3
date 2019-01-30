@@ -47,13 +47,22 @@ public class RenderingConfiguration extends Configuration {
         return this;
     }
 
+    public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType, String baselineEnvName, EmulationBaseInfo emulationBaseInfo) {
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType, baselineEnvName, emulationBaseInfo);
+        addBrowser(browserInfo);
+        return this;
+    }
     public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType, String baselineEnvName) {
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType, baselineEnvName);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType, baselineEnvName, null);
         addBrowser(browserInfo);
         return this;
     }
     public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType) {
-        return addBrowser(width, height, browserType, null);
+        return addBrowser(width, height, browserType, null, null);
+    }
+
+    public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType, EmulationBaseInfo emulationInfo) {
+        return addBrowser(width, height, browserType, null, emulationInfo);
     }
 
     public int getConcurrentSessions() {

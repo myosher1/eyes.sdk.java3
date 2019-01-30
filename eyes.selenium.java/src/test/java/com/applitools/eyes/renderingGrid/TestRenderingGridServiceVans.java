@@ -3,8 +3,7 @@ package com.applitools.eyes.renderingGrid;
 import com.applitools.eyes.*;
 import com.applitools.eyes.rendering.Eyes;
 import com.applitools.eyes.rendering.Target;
-import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
-import com.applitools.eyes.visualGridClient.model.TestResultSummary;
+import com.applitools.eyes.visualGridClient.model.*;
 import com.applitools.eyes.visualGridClient.services.VisualGridManager;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
@@ -36,7 +35,7 @@ public class TestRenderingGridServiceVans {
 
     @DataProvider(name = "Kids",parallel=true)
     public Object[][] Kids_urls() {
-        BatchInfo batch = new BatchInfo("Kids Gallery Vans");
+        BatchInfo batch = new BatchInfo("Kids Gallery Vans - with Emulation");
         return new Object[][]{
                 {"https://www.vans.com/shop/infant-baby-shoes",batch},
                 {"https://www.vans.com/shop/kids-toddler-baby-shoes",batch},
@@ -87,7 +86,7 @@ public class TestRenderingGridServiceVans {
         };
     }
 
-    @Test(dataProvider = "Men")
+    @Test(dataProvider = "Kids")
     public void test(String testedUrl, BatchInfo batch) {
         renderingManager.getLogger().log("entering with url " + testedUrl);
         WebDriver webDriver = new ChromeDriver();
@@ -133,12 +132,13 @@ public class TestRenderingGridServiceVans {
 
         try {
             RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
-            renderingConfiguration.setTestName("Vans Gallery page");
+            renderingConfiguration.setTestName("Vans Gallery page - with ");
             renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
-            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
-            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME);
-            renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME);
+            EmulationBaseInfo emulation = new EmulationDevice(400 , 800 , 2.25f, true, ScreenOrientation.PORTRAIT);
+            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME,emulation);
+            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME, emulation);
+            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME,emulation);
+            renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME,emulation);
             logger.log("created configurations for url " + testedUrl);
             eyes.open(webDriver, renderingConfiguration);
         } catch (Exception e) {

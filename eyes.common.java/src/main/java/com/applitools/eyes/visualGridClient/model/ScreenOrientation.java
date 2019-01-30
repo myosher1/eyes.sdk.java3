@@ -1,8 +1,20 @@
 package com.applitools.eyes.visualGridClient.model;
 
-public class ScreenOrientation {
+import com.fasterxml.jackson.annotation.JsonValue;
 
-    public final String PORTAIT = "portrait";
+public enum ScreenOrientation {
 
-    public final String LANDSCAPE = "landscape";
+    PORTRAIT("portrait"),
+    LANDSCAPE("landscape");
+
+    private String orientation;
+
+    ScreenOrientation(String orientation) {
+        this.orientation = orientation;
+    }
+
+    @JsonValue
+    public String getOrientation() {
+        return orientation;
+    }
 }

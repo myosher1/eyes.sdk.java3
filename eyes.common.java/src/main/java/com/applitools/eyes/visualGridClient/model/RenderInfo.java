@@ -18,9 +18,9 @@ public class RenderInfo {
     private Region region;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private EmulationInfo emulationInfo;
+    private EmulationBaseInfo emulationInfo;
 
-    public RenderInfo(int width, int height, String sizeMode, Region region, EmulationInfo emulationInfo) {
+    public RenderInfo(int width, int height, String sizeMode, Region region, EmulationBaseInfo emulationInfo) {
         this.width = width;
         this.height = height;
         this.sizeMode = sizeMode;
@@ -60,7 +60,7 @@ public class RenderInfo {
         this.region = region;
     }
 
-    public EmulationInfo getEmulationInfo() {
+    public EmulationBaseInfo getEmulationInfo() {
         return emulationInfo;
     }
 

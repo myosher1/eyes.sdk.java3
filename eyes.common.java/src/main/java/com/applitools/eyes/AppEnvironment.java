@@ -8,6 +8,9 @@ public class AppEnvironment {
     private String os;
     private String hostingApp;
     private RectangleSize displaySize;
+    private String deviceInfo;
+    private String osInfo;
+    private String hostingAppInfo;
 
     /**
      * Creates a new AppEnvironment instance.
@@ -39,6 +42,25 @@ public class AppEnvironment {
         setOs(os);
         setHostingApp(hostingApp);
         setDisplaySize(displaySize);
+    }
+
+    /**
+     * Creates a new AppEnvironment instance.
+     *
+     * @param displaySize the display size of the application or {@code null} if unknown.
+     * @param os          the OS hosting the application under test or {@code null} if
+     *                    unknown.
+     * @param hostingApp  the application hosting the application under test or {@code null}
+     *                    if unknown.
+     * @param deviceInfo  specifies
+     */
+    public AppEnvironment(String os, String hostingApp, RectangleSize displaySize, String deviceInfo, String osInfo, String hostingAppInfo) {
+        this.os = os;
+        this.hostingApp = hostingApp;
+        this.displaySize = displaySize;
+        this.deviceInfo = deviceInfo;
+        this.osInfo = osInfo;
+        this.hostingAppInfo = hostingAppInfo;
     }
 
     /**
@@ -108,5 +130,56 @@ public class AppEnvironment {
         return "[os = " + (os == null ? "?" : "'" + os + "'") + " hostingApp = "
                 + (hostingApp == null ? "?" : "'" + hostingApp + "'")
                 + " displaySize = " + displaySize + "]";
+    }
+
+    /**
+     * Gets the device info (not part of test signature)
+     *
+     */
+    public String getDeviceInfo() {
+        return deviceInfo;
+    }
+
+    /**
+     * Sets the device info (not part of test signature)
+     *
+     * @param deviceInfo the device info
+     */
+    public void setDeviceInfo(String deviceInfo) {
+        this.deviceInfo =  deviceInfo != null  ? deviceInfo + " (Chrome emulation)" : "Desktop";
+    }
+
+    /**
+     * Gets the device info (not part of test signature)
+     *
+     */
+    public String getOsInfo() {
+        return osInfo;
+    }
+
+    /**
+     * Sets the os info (not part of test signature)
+     *
+     * @param osInfo
+     */
+    public void setOsInfo(String osInfo) {
+        this.osInfo = osInfo;
+    }
+
+    /**
+     * Gets the hosting app info info (not part of test signature)
+     *
+     */
+    public String getHostingAppInfo() {
+        return hostingAppInfo;
+    }
+
+    /**
+     * Sets the hosting app info info (not part of test signature)
+     *
+     * @param hostingAppInfo the hosting app
+     */
+    public void setHostingAppInfo(String hostingAppInfo) {
+        this.hostingAppInfo = hostingAppInfo;
     }
 }
