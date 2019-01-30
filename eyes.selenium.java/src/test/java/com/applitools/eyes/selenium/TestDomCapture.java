@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Phaser;
+
 public final class TestDomCapture {
     private static String domJson;
     public static void main(String[] args) throws Exception {
@@ -31,31 +34,35 @@ public final class TestDomCapture {
                 new RectangleSize(800, 600));
 
         // Navigate the browser to the "hello world!" web-site.
-        driver.get("https://www.usatoday.com");
-        Thread.sleep(5000);
+//        driver.get("https://www.usatoday.com");
+        driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/");
 //        driver.get("https://nikita-andreev.github.io/applitools/dom_capture.html?aaa");
+        Thread.sleep(5000);
 
+        final CountDownLatch latch = new CountDownLatch(1);
         eyes.setOnDomCapture(new IDomCaptureListener() {
             @Override
             public void onDomCaptureComplete(String dom) {
                 domJson = dom;
+                latch.countDown();
             }
         });
 
         eyes.checkWindow("Test DOM diffs");
 
+        latch.await();
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode targetJsonObj = mapper.readTree(domJson);
 
-//        ObjectMapper mapper = new ObjectMapper();
-//        JsonNode targetJsonObj = mapper.readTree(domJson);
-//
-//        String sourceJsonAsString = GeneralUtils.readToEnd(TestDomCapture.class.getResourceAsStream("/domcapture.json"));
-//        JsonNode sourceJsonAsStringnObj = mapper.readTree(sourceJsonAsString);
+        String sourceJsonAsString = GeneralUtils.readToEnd(TestDomCapture.class.getResourceAsStream("/dom_fullpage.json"));
+        JsonNode sourceJsonObj = mapper.readTree(sourceJsonAsString);
 
         driver.quit();
         eyes.close(false);
-//        if(!sourceJsonObj.equals(targetJsonObj)){
-//            throw new Exception("Dom capture json was not equal to target json");
-//        }
+
+        if(!sourceJsonObj.equals(targetJsonObj)){
+            throw new Exception("Dom capture json was not equal to target json");
+        }
 
     }
 }
