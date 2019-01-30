@@ -326,11 +326,9 @@ public class Eyes extends EyesBase implements IEyes {
 
         screenshotFactory = new EyesWebDriverScreenshotFactory(logger, this.driver);
 
-        ensureViewportSize();
-
         openBase();
 
-        String uaString = sessionStartInfo.getEnvironment().getInferred();
+        String uaString = this.driver.getUserAgent();
         if (uaString != null) {
             if (uaString.startsWith("useragent:")) {
                 uaString = uaString.substring(10);
@@ -348,12 +346,6 @@ public class Eyes extends EyesBase implements IEyes {
 
         this.driver.setRotation(rotation);
         return this.driver;
-    }
-
-    private void ensureViewportSize() {
-        if (this.config.getViewportSize() == null) {
-            this.config.setViewportSize(driver.getDefaultContentViewportSize());
-        }
     }
 
     private void initDriver(WebDriver driver) {
