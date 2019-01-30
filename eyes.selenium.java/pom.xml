@@ -98,6 +98,10 @@
                                     <directory>${project.basedir}/src/main/node_resources/node_modules/@applitools/dom-capture/dist</directory>
                                     <filtering>true</filtering>
                                 </resource>
+                                <resource>
+                                    <directory>${project.basedir}/src/main/node_resources/node_modules/@applitools/dom-snapshot/dist</directory>
+                                    <filtering>true</filtering>
+                                </resource>
                             </resources>
                         </configuration>
                     </execution>
