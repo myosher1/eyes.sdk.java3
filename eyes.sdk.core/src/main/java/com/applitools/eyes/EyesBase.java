@@ -81,7 +81,7 @@ public abstract class EyesBase {
 
     protected DebugScreenshotsProvider debugScreenshotsProvider;
     private boolean isViewportSizeSet;
-    private int stitchingOverlap = 50;
+    private int stitchingOverlap = 10;
 
     private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
     private int validationId;
@@ -416,7 +416,7 @@ public abstract class EyesBase {
         }
 
         this.matchTimeout = ms;
-    }
+    };
 
     /**
      * @return The maximum time in ms {@link #checkWindowBase

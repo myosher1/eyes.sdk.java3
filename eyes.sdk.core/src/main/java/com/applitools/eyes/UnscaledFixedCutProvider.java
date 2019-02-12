@@ -8,12 +8,7 @@ import java.awt.image.BufferedImage;
 /**
  * Cut provider based on fixed cut values, run BEFORE scaling.
  */
-public class UnscaledFixedCutProvider implements CutProvider {
-    private Logger logger = new Logger();
-    private final int header;
-    private final int footer;
-    private final int left;
-    private final int right;
+public class UnscaledFixedCutProvider extends FixedCutProvider{
 
     /**
      * @param header The header to cut in pixels.
@@ -23,24 +18,7 @@ public class UnscaledFixedCutProvider implements CutProvider {
      */
     @SuppressWarnings("WeakerAccess")
     public UnscaledFixedCutProvider(int header, int footer, int left, int right) {
-        this.header = header;
-        this.footer = footer;
-        this.left = left;
-        this.right = right;
-    }
-
-    public void setLogger(Logger logger){
-        ArgumentGuard.notNull(logger, "logger");
-        this.logger = logger;
-    }
-
-    public BufferedImage cut(BufferedImage image) {
-        if (header == 0 && footer == 0 && left == 0 && right == 0) return image;
-        Region targetRegion = new Region(left, header,
-                image.getWidth() - left - right,
-                image.getHeight() - header - footer);
-
-        return ImageUtils.cropImage(logger, image, targetRegion);
+        super(header, footer, left, right);
     }
 
     public CutProvider scale(double scaleRatio) {
@@ -48,7 +26,6 @@ public class UnscaledFixedCutProvider implements CutProvider {
             return this;
         }
         UnscaledFixedCutProvider cutProvider = new UnscaledFixedCutProvider(header, footer, left, right);
-        cutProvider.logger = logger;
         return cutProvider;
     }
 }

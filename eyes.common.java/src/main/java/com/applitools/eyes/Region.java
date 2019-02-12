@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -439,6 +440,13 @@ public class Region {
         return height;
     }
 
+    public int getRight() {
+        return this.left + this.width;
+    }
+
+    public int getBottom() {
+        return this.top + this.height;
+    }
 
     public void setLeft(int value) {
         left = value;
@@ -478,6 +486,153 @@ public class Region {
         int height = maxBottom - top;
 
         return new Region(left, top, width, height);
+    }
+
+    public Iterable<SubregionForStitching> getSubRegions(RectangleSize maxSubRegionSize, int logicalOverlap, double l2pScaleRatio, Region physicalRectInScreenshot, Logger logger)
+    {
+        List<SubregionForStitching> subRegions = new ArrayList<>();
+
+        int doubleLogicalOverlap = logicalOverlap * 2;
+        int physicalOverlap = (int)Math.round(doubleLogicalOverlap * l2pScaleRatio);
+
+        boolean needVScroll = this.height > physicalRectInScreenshot.getHeight();
+        boolean needHScroll = this.width > physicalRectInScreenshot.getWidth();
+
+
+        int scrollY = 0;
+        int currentTop = 0;
+        int currentLogicalHeight = maxSubRegionSize.getHeight();
+
+        int deltaY = currentLogicalHeight - doubleLogicalOverlap;
+
+        boolean isTopEdge = true;
+        boolean isBottomEdge = false;
+
+        int scaleRaioOffset = (int)Math.round(l2pScaleRatio - 1);
+
+        while (!isBottomEdge)
+        {
+            int currentScrollTop = scrollY + maxSubRegionSize.getHeight();
+            if (currentScrollTop >= height)
+            {
+                if (!isTopEdge)
+                {
+                    scrollY = height - currentLogicalHeight;
+                    currentLogicalHeight = height - currentTop;
+                    currentTop = height - currentLogicalHeight - doubleLogicalOverlap - logicalOverlap + scaleRaioOffset;
+                }
+                else
+                {
+                    currentLogicalHeight = height - currentTop;
+                }
+                isBottomEdge = true;
+            }
+
+            int scrollX = 0;
+            int currentLeft = 0;
+            int currentLogicalWidth = maxSubRegionSize.getWidth();
+
+            int deltaX = currentLogicalWidth - doubleLogicalOverlap;
+
+            boolean isLeftEdge = true;
+            boolean isRightEdge = false;
+
+            while (!isRightEdge)
+            {
+                int currentScrollRight = scrollX + maxSubRegionSize.getWidth();
+                if (currentScrollRight >= width)
+                {
+                    if (!isLeftEdge)
+                    {
+                        scrollX = width - currentLogicalWidth;
+                        currentLogicalWidth = width - currentLeft;
+                        currentLeft = width - currentLogicalWidth - doubleLogicalOverlap - logicalOverlap + scaleRaioOffset;
+                    }
+                    else
+                    {
+                        currentLogicalWidth = width - currentLeft;
+                    }
+                    isRightEdge = true;
+                }
+
+                Region physicalCropArea = new Region(physicalRectInScreenshot);
+                Region logicalCropArea = new Region(0, 0, currentLogicalWidth, currentLogicalHeight);
+                Location pastePoint = new Location(currentLeft, currentTop);
+
+                // handle horizontal
+                if (isRightEdge)
+                {
+                    int physicalWidth = (int)Math.round(currentLogicalWidth * l2pScaleRatio);
+                    physicalCropArea.left = physicalRectInScreenshot.getRight() - physicalWidth;
+                    physicalCropArea.width = physicalWidth;
+                }
+
+                if (!isLeftEdge)
+                {
+                    logicalCropArea.left += logicalOverlap;
+                    logicalCropArea.width -= logicalOverlap;
+                }
+
+                if (isRightEdge && !isLeftEdge)
+                {
+                    physicalCropArea.left -= physicalOverlap * 2;
+                    physicalCropArea.width += physicalOverlap * 2;
+                    logicalCropArea.width += doubleLogicalOverlap * 2;
+                }
+
+                // handle vertical
+                if (isBottomEdge)
+                {
+                    int physicalHeight = (int)Math.round(currentLogicalHeight * l2pScaleRatio);
+                    physicalCropArea.top = physicalRectInScreenshot.getBottom() - physicalHeight;
+                    physicalCropArea.height = physicalHeight;
+                }
+
+                if (!isTopEdge)
+                {
+                    logicalCropArea.top += logicalOverlap;
+                    logicalCropArea.height -= logicalOverlap;
+                }
+
+                if (isBottomEdge && !isTopEdge)
+                {
+                    physicalCropArea.top -= physicalOverlap * 2;
+                    physicalCropArea.height += physicalOverlap * 2;
+                    logicalCropArea.height += doubleLogicalOverlap * 2;
+                }
+
+                SubregionForStitching subregion = new SubregionForStitching(
+                        new Location(scrollX, scrollY),
+                        pastePoint,
+                        physicalCropArea,
+                        logicalCropArea
+                );
+
+                logger.verbose("adding subregion - " + subregion);
+
+                subRegions.add(subregion);
+
+                currentLeft += deltaX;
+                scrollX += deltaX;
+
+                if (needHScroll && isLeftEdge)
+                {
+                    currentLeft += logicalOverlap + scaleRaioOffset;
+                }
+                isLeftEdge = false;
+            }
+
+            currentTop += deltaY;
+            scrollY += deltaY;
+
+            if (needVScroll && isTopEdge)
+            {
+                currentTop += logicalOverlap + scaleRaioOffset;
+            }
+            isTopEdge = false;
+        }
+
+        return subRegions;
     }
 
     @Override

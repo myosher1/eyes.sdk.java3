@@ -85,6 +85,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     private EyesScreenshotFactory screenshotFactory;
     private String cachedAUTSessionId;
+    private Region fullRegionToCheck;
 
     @SuppressWarnings("UnusedDeclaration")
     public interface WebDriverAction {
@@ -152,6 +153,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * ﻿Forces a full page screenshot (by scrolling and stitching) if the
      * browser only ﻿supports viewport screenshots).
+     *
      * @param shouldForce Whether to force a full page screenshot or not.
      */
     public void setForceFullPageScreenshot(boolean shouldForce) {
@@ -168,6 +170,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Sets the time to wait just before taking a screenshot (e.g., to allow
      * positioning to stabilize when performing a full page stitching).
+     *
      * @param waitBeforeScreenshots The time to wait (Milliseconds). Values
      *                              smaller or equal to 0, will cause the
      *                              default value to be used.
@@ -186,6 +189,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Turns on/off the automatic scrolling to a region being checked by
      * {@code checkRegion}.
+     *
      * @param shouldScroll Whether to automatically scroll to a region being validated.
      */
     public void setScrollToRegion(boolean shouldScroll) {
@@ -208,6 +212,7 @@ public class Eyes extends EyesBase implements IEyes {
      * Set the type of stitching used for full page screenshots. When the
      * page includes fixed position header/sidebar, use {@link StitchMode#CSS}.
      * Default is {@link StitchMode#SCROLL}.
+     *
      * @param mode The stitch mode to set.
      */
     public void setStitchMode(StitchMode mode) {
@@ -224,6 +229,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     /**
      * Hide the scrollbars when taking screenshots.
+     *
      * @param shouldHide Whether to hide the scrollbars or not.
      */
     public void setHideScrollbars(boolean shouldHide) {
@@ -292,6 +298,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     /**
      * Starts a test.
+     *
      * @param driver       The web driver that controls the browser hosting
      *                     the application under test.
      * @param appName      The name of the application under test.
@@ -415,6 +422,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkWindow(int, String)}.
      * Default match timeout is used.
+     *
      * @param tag An optional tag to be associated with the snapshot.
      */
     public void checkWindow(String tag) {
@@ -424,6 +432,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Takes a snapshot of the application under test and matches it with
      * the expected output.
+     *
      * @param matchTimeout The amount of time to retry matching (Milliseconds).
      * @param tag          An optional tag to be associated with the snapshot.
      * @throws TestFailedException Thrown if a mismatch is detected and
@@ -435,6 +444,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     /**
      * Runs a test on the current window.
+     *
      * @param driver       The web driver that controls the browser hosting
      *                     the application under test.
      * @param appName      The name of the application under test.
@@ -482,6 +492,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     /**
      * Run a visual performance test.
+     *
      * @param driver   The driver to use.
      * @param appName  The name of the application being tested.
      * @param testName The test name.
@@ -579,6 +590,7 @@ public class Eyes extends EyesBase implements IEyes {
      * Similar to {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)},
      * except this method sets the viewport size before starting the
      * performance test.
+     *
      * @param viewportSize The required viewport size.
      */
     public void testResponseTime(WebDriver driver, String appName,
@@ -659,6 +671,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     /**
      * Takes multiple screenshots at once (given all <code>ICheckSettings</code> objects are on the same level).
+     *
      * @param checkSettings Multiple <code>ICheckSettings</code> object representing different regions in the viewport.
      */
     public void check(ICheckSettings... checkSettings) {
@@ -731,8 +744,9 @@ public class Eyes extends EyesBase implements IEyes {
         ScaleProviderFactory scaleProviderFactory = updateScalingParams();
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
 
+        Region empty = Region.EMPTY;
         BufferedImage screenshotImage = algo.getStitchedRegion(
-                Region.EMPTY,
+                empty,
                 bBox, positionProviderHandler.get());
 
         debugScreenshotsProvider.save(screenshotImage, "original");
@@ -1114,9 +1128,57 @@ public class Eyes extends EyesBase implements IEyes {
 
             logger.verbose("replacing regionToCheck");
             setRegionToCheck(screenshot.getFrameWindow());
+            fullRegionToCheck = Region.EMPTY;
         }
 
         return Region.EMPTY;
+    }
+
+    private FrameChain ensureFrameVisible(List<PositionProviderAndMemento> ppams) {
+        logger.verbose("scrollRootElement_: " + scrollRootElement);
+        FrameChain originalFC = driver.getFrameChain().clone();
+        FrameChain fc = driver.getFrameChain().clone();
+        driver.executeScript("window.scrollTo(0,0);");
+        while (fc.size() > 0) {
+            logger.verbose("fc.Count: " + fc.size());
+            EyesTargetLocator.parentFrame(logger, driver.getRemoteWebDriver().switchTo(), fc);
+            driver.executeScript("window.scrollTo(0,0);");
+            Frame prevFrame = fc.pop();
+            Frame frame = fc.peek();
+            WebElement scrollRootElement = null;
+            if (fc.size() == originalFC.size()) {
+                logger.verbose("PositionProvider: " + getPositionProvider());
+                positionMemento = getPositionProvider().getState();
+
+
+                scrollRootElement = this.scrollRootElement;
+                logger.verbose("scrollRootElement_:          " + scrollRootElement);
+            } else {
+                if (frame != null && frame.getScrollRootElement() != null) {
+                    scrollRootElement = driver.findElement(By.tagName("html"));
+                }
+            }
+
+            if (prevFrame != null) {
+                logger.verbose("prevFrame.Reference:         " + prevFrame.getLocation());
+                if (prevFrame.getScrollRootElement() != null) {
+                    logger.verbose("prevFrame.ScrollRootElement: " + prevFrame.getScrollRootElement());
+                }
+            }
+            logger.verbose("scrollRootElement: " + scrollRootElement);
+
+            PositionProvider positionProvider = getElementPositionProvider(scrollRootElement);
+            PositionMemento positionMemento = positionProvider.getState();
+            PositionProviderAndMemento ppam = new PositionProviderAndMemento(positionProvider, positionMemento, fc);
+            ppams.add(ppam);
+            positionProvider.setPosition(prevFrame.getLocation());
+
+            Region reg = new Region(Location.ZERO, prevFrame.getInnerSize());
+            effectiveViewport.intersect(reg);
+        }
+
+        ((EyesTargetLocator) driver.switchTo()).frames(originalFC);
+        return originalFC;
     }
 
     private FrameChain ensureFrameVisible() {
@@ -1156,15 +1218,12 @@ public class Eyes extends EyesBase implements IEyes {
         return originalFC;
     }
 
-    private void ensureElementVisible(WebElement element) {
-        if (this.targetElement == null || !getScrollToRegion()) {
-            // No element? we must be checking the window.
-            return;
-        }
+    private List<PositionProviderAndMemento> ensureElementVisible(WebElement element) {
+        List<PositionProviderAndMemento> ppams = new ArrayList<>();
 
-        if (EyesSeleniumUtils.isMobileDevice(driver.getRemoteWebDriver())) {
-            logger.log("NATIVE context identified, skipping 'ensure element visible'");
-            return;
+        if (this.targetElement == null) {
+            // No element? we must be checking the window.
+            return ppams;
         }
 
         FrameChain originalFC = driver.getFrameChain().clone();
@@ -1181,22 +1240,27 @@ public class Eyes extends EyesBase implements IEyes {
         logger.verbose("viewportBounds: " + viewportBounds + " ; elementBounds: " + elementBounds);
 
         if (!viewportBounds.contains(elementBounds)) {
-            ensureFrameVisible();
+            ensureFrameVisible(ppams);
 
-            Point p = element.getLocation();
-            Location elementLocation = new Location(p.getX(), p.getY());
-
+            Point location = element.getLocation();
+            Location elementLocation = new Location(location.x, location.y);
+            FrameChain fc;
             WebElement scrollRootElement;
             if (originalFC.size() > 0 && !element.equals(originalFC.peek().getReference())) {
+                fc = originalFC;
                 switchTo.frames(originalFC);
-                scrollRootElement = driver.findElement(By.tagName("html"));
+                //scrollRootElement = driver_.FindElement(By.TagName("html"));
+                scrollRootElement = getCurrentFrameScrollRootElement();
             } else {
+                fc = driver.getFrameChain().clone();
                 scrollRootElement = this.scrollRootElement;
             }
-
             PositionProvider positionProvider = getElementPositionProvider(scrollRootElement);
+            PositionMemento positionMemento = positionProvider.getState();
             positionProvider.setPosition(elementLocation);
+            ppams.add(new PositionProviderAndMemento(positionProvider, positionMemento, fc));
         }
+        return ppams;
     }
 
     private Region getViewportScrollBounds() {
@@ -1255,6 +1319,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     /**
      * Takes a snapshot of the application under test and matches a specific region within it with the expected output.
+     *
      * @param region       A non empty region representing the screen region to check.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
@@ -1286,6 +1351,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegion(WebElement, String)}.
      * {@code tag} defaults to {@code null}.
+     *
      * @param element The element which represents the region to check.
      */
     public void checkRegion(WebElement element) {
@@ -1296,6 +1362,7 @@ public class Eyes extends EyesBase implements IEyes {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(WebElement)}, otherwise
      * behaves the same as {@link #checkElement(WebElement)}.
+     *
      * @param element       The element which represents the region to check.
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
@@ -1306,6 +1373,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegion(WebElement, int, String)}.
      * Default match timeout is used.
+     *
      * @param element The element which represents the region to check.
      * @param tag     An optional tag to be associated with the snapshot.
      */
@@ -1317,6 +1385,7 @@ public class Eyes extends EyesBase implements IEyes {
      * if {@code stitchContent} is {@code false} then behaves the same {@link
      * #checkRegion(WebElement, String)}. Otherwise
      * behaves the same as {@link #checkElement(WebElement, String)}.
+     *
      * @param element       The element which represents the region to check.
      * @param tag           An optional tag to be associated with the snapshot.
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
@@ -1328,6 +1397,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Takes a snapshot of the application under test and matches a region of
      * a specific element with the expected region output.
+     *
      * @param element      The element which represents the region to check.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
@@ -1343,6 +1413,7 @@ public class Eyes extends EyesBase implements IEyes {
      * if {@code stitchContent} is {@code false} then behaves the same {@link
      * #checkRegion(WebElement, int, String)}. Otherwise
      * behaves the same as {@link #checkElement(WebElement, String)}.
+     *
      * @param element       The element which represents the region to check.
      * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the snapshot.
@@ -1355,6 +1426,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegion(By, String)}.
      * {@code tag} defaults to {@code null}.
+     *
      * @param selector The selector by which to specify which region to check.
      */
     public void checkRegion(By selector) {
@@ -1365,6 +1437,7 @@ public class Eyes extends EyesBase implements IEyes {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(By)}. Otherwise, behaves the
      * same as {@code #checkElement(org.openqa.selenium.By)}
+     *
      * @param selector      The selector by which to specify which region to check.
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
@@ -1375,6 +1448,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegion(By, int, String)}.
      * Default match timeout is used.
+     *
      * @param selector The selector by which to specify which region to check.
      * @param tag      An optional tag to be associated with the screenshot.
      */
@@ -1386,6 +1460,7 @@ public class Eyes extends EyesBase implements IEyes {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(By, String)}. Otherwise,
      * behaves the same as {@link #checkElement(By, String)}.
+     *
      * @param selector      The selector by which to specify which region to check.
      * @param tag           An optional tag to be associated with the screenshot.
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
@@ -1397,6 +1472,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Takes a snapshot of the application under test and matches a region
      * specified by the given selector with the expected region output.
+     *
      * @param selector     The selector by which to specify which region to check.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the screenshot.
@@ -1411,6 +1487,7 @@ public class Eyes extends EyesBase implements IEyes {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(By, int, String)}. Otherwise,
      * behaves the same as {@link #checkElement(By, int, String)}.
+     *
      * @param selector      The selector by which to specify which region to check.
      * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the screenshot.
@@ -1423,6 +1500,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(int, By, String)}.
      * {@code tag} defaults to {@code null}.
+     *
      * @param frameIndex The index of the frame to switch to. (The same index
      *                   as would be used in a call to
      *                   driver.switchTo().frame()).
@@ -1435,6 +1513,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(int, By, String)}.
      * {@code tag} defaults to {@code null}.
+     *
      * @param frameIndex    The index of the frame to switch to. (The same index
      *                      as would be used in a call to
      *                      driver.switchTo().frame()).
@@ -1451,6 +1530,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(int, By, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
+     *
      * @param frameIndex The index of the frame to switch to. (The same index
      *                   as would be used in a call to
      *                   driver.switchTo().frame()).
@@ -1464,6 +1544,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * Default match timeout is used.
+     *
      * @param frameIndex    The index of the frame to switch to. (The same index
      *                      as would be used in a call to
      *                      driver.switchTo().frame()).
@@ -1482,6 +1563,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
+     *
      * @param frameIndex   The index of the frame to switch to. (The same index
      *                     as would be used in a call to
      *                     driver.switchTo().frame()).
@@ -1496,6 +1578,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
+     *
      * @param frameIndex    The index of the frame to switch to. (The same index
      *                      as would be used in a call to
      *                      driver.switchTo().frame()).
@@ -1516,6 +1599,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
+     *
      * @param frameNameOrId The name or id of the frame to switch to. (as would
      *                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
@@ -1527,6 +1611,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code tag} defaults to {@code null}.
+     *
      * @param frameNameOrId The name or id of the frame to switch to. (as would
      *                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
@@ -1542,6 +1627,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
+     *
      * @param frameNameOrId The name or id of the frame to switch to. (as would
      *                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
@@ -1556,6 +1642,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * Default match timeout is used
+     *
      * @param frameNameOrId The name or id of the frame to switch to. (as would
      *                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
@@ -1574,6 +1661,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
+     *
      * @param frameNameOrId The name or id of the frame to switch to. (as would
      *                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check inside the frame.
@@ -1588,6 +1676,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
+     *
      * @param frameNameOrId The name or id of the frame to switch to. (as would
      *                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check inside the frame.
@@ -1606,6 +1695,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
+     *
      * @param frameReference The element which is the frame to switch to. (as
      *                       would be used in a call to
      *                       driver.switchTo().frame()).
@@ -1618,6 +1708,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code tag} defaults to {@code null}.
+     *
      * @param frameReference The element which is the frame to switch to. (as
      *                       would be used in a call to
      *                       driver.switchTo().frame()).
@@ -1634,6 +1725,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
+     *
      * @param frameReference The element which is the frame to switch to. (as
      *                       would be used in a call to
      *                       driver.switchTo().frame()).
@@ -1647,6 +1739,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, int, String, boolean)}.
      * Default match timeout is used.
+     *
      * @param frameReference The element which is the frame to switch to. (as
      *                       would be used in a call to
      *                       driver.switchTo().frame()).
@@ -1666,6 +1759,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
+     *
      * @param frameReference The element which is the frame to switch to. (as
      *                       would be used in a call to
      *                       driver.switchTo().frame()).
@@ -1681,6 +1775,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
+     *
      * @param frameReference The element which is the frame to switch to. (as
      *                       would be used in a call to
      *                       driver.switchTo().frame()).
@@ -1749,13 +1844,19 @@ public class Eyes extends EyesBase implements IEyes {
             scrollRootElement = currentFrame.getScrollRootElement();
         }
         if (scrollRootElement == null && !EyesSeleniumUtils.isMobileDevice(this.driver)) {
-            scrollRootElement = driver.findElement(By.tagName("html"));
+            scrollRootElement = this.scrollRootElement;
+
+            if (scrollRootElement == null) {
+                scrollRootElement = driver.findElement(By.tagName("html"));
+            }
         }
+
         return scrollRootElement;
     }
 
     /**
      * Verifies the current frame.
+     *
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
      */
@@ -1807,6 +1908,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
+     *
      * @param frameNameOrId The name or id of the frame to check. (The same
      *                      name/id as would be used in a call to
      *                      driver.switchTo().frame()).
@@ -1836,6 +1938,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
+     *
      * @param frameIndex   The index of the frame to switch to. (The same index
      *                     as would be used in a call to
      *                     driver.switchTo().frame()).
@@ -1875,6 +1978,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
+     *
      * @param frameReference The element which is the frame to switch to. (as
      *                       would be used in a call to
      *                       driver.switchTo().frame() ).
@@ -1888,6 +1992,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Matches the frame given by the frames path, by switching into the frame
      * and using stitching to get an image of the frame.
+     *
      * @param framePath    The path to the frame to check. This is a list of
      *                     frame names/IDs (where each frame is nested in the
      *                     previous frame).
@@ -1923,6 +2028,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
+     *
      * @param framePath     The path to the frame to check. This is a list of
      *                      frame names/IDs (where each frame is nested in the previous frame).
      * @param selector      A Selector specifying the region to check.
@@ -1998,6 +2104,9 @@ public class Eyes extends EyesBase implements IEyes {
         PositionProvider positionProvider = createPositionProvider(scrollRootElement);
         PositionMemento originalPositionMemento = positionProvider.getState();
 
+        regionToCheck = Region.EMPTY;
+        fullRegionToCheck = Region.EMPTY;
+
         ensureElementVisible(targetElement);
 
         String originalOverflow = null;
@@ -2018,10 +2127,12 @@ public class Eyes extends EyesBase implements IEyes {
             Borders borderWidths = sizeAndBorders.getBorders();
             RectangleSize elementSize = sizeAndBorders.getSize();
 
+            boolean useEntireSize = false;
             if (!displayStyle.equals("inline") &&
                     elementSize.getHeight() <= effectiveViewport.getHeight() &&
                     elementSize.getWidth() <= effectiveViewport.getWidth()) {
                 elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
+                useEntireSize = true;
             } else {
                 elementPositionProvider = null;
             }
@@ -2033,7 +2144,11 @@ public class Eyes extends EyesBase implements IEyes {
             logger.verbose("Element region: " + elementRegion);
 
             regionToCheck = elementRegion;
-
+            if (useEntireSize) {
+                fullRegionToCheck = new Region(elementRegion.getLocation(), elementPositionProvider.getEntireSize());
+            } else {
+                fullRegionToCheck = new Region(elementRegion.getLeft(), elementRegion.getTop(), elementRegion.getWidth(), elementRegion.getHeight());
+            }
             if (!effectiveViewport.isSizeEmpty()) {
                 regionToCheck.intersect(effectiveViewport);
             }
@@ -2052,6 +2167,7 @@ public class Eyes extends EyesBase implements IEyes {
             positionProvider.restoreState(originalPositionMemento);
             regionToCheck = null;
             elementPositionProvider = null;
+            fullRegionToCheck = Region.EMPTY;
         }
 
         return result;
@@ -2060,6 +2176,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Takes a snapshot of the application under test and matches a specific
      * element with the expected region output.
+     *
      * @param element      The element to check.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
@@ -2088,6 +2205,7 @@ public class Eyes extends EyesBase implements IEyes {
     /**
      * Takes a snapshot of the application under test and matches an element
      * specified by the given selector with the expected region output.
+     *
      * @param selector     Selects the element to check.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the screenshot.
@@ -2100,6 +2218,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     /**
      * Adds a mouse trigger.
+     *
      * @param action  Mouse action.
      * @param control The control on which the trigger is activated (context relative coordinates).
      * @param cursor  The cursor's position relative to the control.
@@ -2127,6 +2246,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     /**
      * Adds a mouse trigger.
+     *
      * @param action  Mouse action.
      * @param element The WebElement on which the click was called.
      */
@@ -2167,6 +2287,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     /**
      * Adds a keyboard trigger.
+     *
      * @param control The control's context-relative region.
      * @param text    The trigger's text.
      */
@@ -2192,6 +2313,7 @@ public class Eyes extends EyesBase implements IEyes {
 
     /**
      * Adds a keyboard trigger.
+     *
      * @param element The element for which we sent keys.
      * @param text    The trigger's text.
      */
@@ -2230,6 +2352,7 @@ public class Eyes extends EyesBase implements IEyes {
      * Call this method if for some
      * reason you don't want to call {@link #open(WebDriver, String, String)}
      * (or one of its variants) yet.
+     *
      * @param driver The driver to use for getting the viewport.
      * @return The viewport size of the current context.
      */
@@ -2274,6 +2397,7 @@ public class Eyes extends EyesBase implements IEyes {
      * Set the viewport size using the driver. Call this method if for some
      * reason you don't want to call {@link #open(WebDriver, String, String)}
      * (or one of its variants) yet.
+     *
      * @param driver The driver to use for setting the viewport.
      * @param size   The required viewport size.
      */
@@ -2384,75 +2508,67 @@ public class Eyes extends EyesBase implements IEyes {
     @Override
     protected EyesScreenshot getScreenshot() {
 
-        logger.verbose("enter()");
         ScaleProviderFactory scaleProviderFactory = updateScalingParams();
 
         FrameChain originalFrameChain = driver.getFrameChain().clone();
-        EyesTargetLocator switchTo = null;
-        if (!EyesSeleniumUtils.isMobileDevice(this.driver)) {
-            switchTo = (EyesTargetLocator) driver.switchTo();
-            switchTo.frames(this.originalFC);
-        }
+        EyesTargetLocator switchTo = (EyesTargetLocator) driver.switchTo();
 
-        PositionProvider positionProvider = getPositionProvider();
+        switchTo.frames(originalFC);
         PositionMemento originalPosition = null;
-        if (positionProvider != null && !EyesSeleniumUtils.isMobileDevice(this.driver)) {
+        PositionProvider positionProvider = getPositionProvider();
+        if (positionProvider != null) {
             originalPosition = positionProvider.getState();
         }
-        if (!EyesSeleniumUtils.isMobileDevice(this.driver)) {
-            switchTo.frames(originalFrameChain);
-        }
+        switchTo.frames(originalFrameChain);
+
+        FrameChain originalFC = tryHideScrollbars();
 
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
 
-        EyesWebDriverScreenshot result;
+        EyesScreenshot result;
 
         Object activeElement = null;
-        if (getHideCaret()) {
-            try {
-                activeElement = driver.executeScript("var activeElement = document.activeElement; activeElement && activeElement.blur(); return activeElement;");
-            } catch (WebDriverException e) {
-                logger.verbose("WARNING: Cannot hide caret! " + e.getMessage());
-            }
+        Configuration seleniumConfig = (Configuration) this.config;
+        if (seleniumConfig.getHideCaret()) {
+            activeElement = driver.executeScript("var activeElement = document.activeElement; activeElement && activeElement.blur(); return activeElement;");
         }
 
         if (checkFrameOrElement) {
             logger.verbose("Check frame/element requested");
-
-            if (!EyesSeleniumUtils.isMobileDevice(this.driver)) {
-                switchTo.frames(originalFrameChain);
-            }
+            switchTo.frames(originalFrameChain);
 
             BufferedImage entireFrameOrElement;
             if (elementPositionProvider == null) {
-                WebElement scrollRootElement = driver.findElement(By.tagName("html"));
-                PositionProvider elemPositionProvider = this.getElementPositionProvider(scrollRootElement);
-                entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, elemPositionProvider);
-            } else {
-                entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, elementPositionProvider);
-            }
+                WebElement scrollRootElement = getCurrentFrameScrollRootElement();
+                positionProvider = getElementPositionProvider(scrollRootElement);
 
+                entireFrameOrElement = algo.getStitchedRegion(regionToCheck, fullRegionToCheck, positionProvider);
+            } else {
+                entireFrameOrElement = algo.getStitchedRegion(regionToCheck, fullRegionToCheck, elementPositionProvider);
+            }
             logger.verbose("Building screenshot object...");
             result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
                     new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
-        } else if (getConfig().getForceFullPageScreenshot() || stitchContent) {
-            logger.verbose("Full page screenshot requested.");
-
+        } else if (this.getForceFullPageScreenshot() || stitchContent) {
+            logger.verbose("ForceFullPageScreenshot || stitchContent_ - enter");
             // Save the current frame path.
-            Location originalFramePosition =
-                    originalFrameChain.size() > 0
-                            ? originalFrameChain.getDefaultContentScrollPosition()
-                            : Location.ZERO;
+            Location originalFramePosition = originalFrameChain.size() > 0 ? originalFrameChain.getDefaultContentScrollPosition() : Location.ZERO;
 
-            switchTo.frames(this.originalFC);
+            switchTo.frames(originalFC);
             algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
-            ////////////
+
             EyesRemoteWebElement eyesScrollRootElement;
-            if (scrollRootElement instanceof EyesRemoteWebElement) {
-                eyesScrollRootElement = (EyesRemoteWebElement) scrollRootElement;
-            } else {
+            if (!(scrollRootElement instanceof EyesRemoteWebElement)) {
                 eyesScrollRootElement = new EyesRemoteWebElement(logger, driver, scrollRootElement);
+            } else {
+                eyesScrollRootElement = (EyesRemoteWebElement) scrollRootElement;
             }
+
+            WebElement scrollRootElement = getCurrentFrameScrollRootElement();
+            PositionProvider originProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
+            logger.verbose("resetting originProvider location");
+            originProvider.setPosition(Location.ZERO);
+
             Point location = eyesScrollRootElement.getLocation();
             SizeAndBorders sizeAndBorders = eyesScrollRootElement.getSizeAndBorders();
 
@@ -2461,58 +2577,62 @@ public class Eyes extends EyesBase implements IEyes {
                     location.getY() + sizeAndBorders.getBorders().getTop(),
                     sizeAndBorders.getSize().getWidth(),
                     sizeAndBorders.getSize().getHeight());
-            ////////////
 
-            BufferedImage fullPageImage = algo.getStitchedRegion(region, null, positionProviderHandler.get());
+            BufferedImage fullPageImage = algo.getStitchedRegion(region, Region.EMPTY, positionProvider);
 
             switchTo.frames(originalFrameChain);
 
             result = new EyesWebDriverScreenshot(logger, driver, fullPageImage, null, originalFramePosition);
         } else {
-            ensureElementVisible(this.targetElement);
-
-            logger.verbose("Screenshot requested...");
-            BufferedImage screenshotImage = imageProvider.getImage();
-            debugScreenshotsProvider.save(screenshotImage, "original");
-
-            ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
-            if (scaleProvider.getScaleRatio() != 1.0) {
-                logger.verbose("scaling...");
-                screenshotImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
-                debugScreenshotsProvider.save(screenshotImage, "scaled");
-            }
-
-            CutProvider cutProvider = cutProviderHandler.get();
-            if (!(cutProvider instanceof NullCutProvider)) {
-                logger.verbose("cutting...");
-                screenshotImage = cutProvider.cut(screenshotImage);
-                debugScreenshotsProvider.save(screenshotImage, "cut");
-            }
-
-            logger.verbose("Creating screenshot object...");
-            result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
-        }
-
-        if (getHideCaret() && activeElement != null) {
+            List<PositionProviderAndMemento> ppams = ensureElementVisible(targetElement);
             try {
-                driver.executeScript("arguments[0].focus();", activeElement);
-            } catch (WebDriverException e) {
-                logger.verbose("WARNING: Could not return focus to active element! " + e.getMessage());
+                Thread.sleep(this.getWaitBeforeScreenshots());
+            } catch (InterruptedException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
+            result = getScaledAndCroppedScreenshot(scaleProviderFactory);
+            for (int i = ppams.size() - 1; i >= 0; i--) {
+                PositionProviderAndMemento ppam = ppams.get(i);
+                switchTo.frames(ppam.frames);
+                ppam.RestoreState();
             }
         }
 
-        if (EyesSeleniumUtils.isMobileDevice(this.driver)) {
-            logger.verbose("Done!");
-            return result;
+        if (seleniumConfig.getHideCaret() && activeElement != null) {
+            switchTo.frames(originalFrameChain);
+            driver.executeScript("arguments[0].focus();", activeElement);
         }
 
-        switchTo.frames(this.originalFC);
+        tryRestoreScrollbars(originalFC);
+
+        switchTo.frames(originalFC);
         if (positionProvider != null) {
             positionProvider.restoreState(originalPosition);
         }
         switchTo.frames(originalFrameChain);
 
-        logger.verbose("Done!");
+        return result;
+    }
+
+    private EyesScreenshot getScaledAndCroppedScreenshot(ScaleProviderFactory scaleProviderFactory) {
+        BufferedImage screenshotImage = imageProvider.getImage();
+
+        ScaleProvider scaleProvider = scaleProviderFactory.getScaleProvider(screenshotImage.getWidth());
+        CutProvider cutProvider = cutProviderHandler.get();
+        if (scaleProvider.getScaleRatio() != 1.0) {
+            BufferedImage scaledImage = ImageUtils.scaleImage(screenshotImage, scaleProvider);
+            screenshotImage = scaledImage;
+            debugScreenshotsProvider.save(screenshotImage, "scaled");
+            cutProvider.scale(scaleProvider.getScaleRatio());
+        }
+
+        if (!(cutProvider instanceof NullCutProvider)) {
+            BufferedImage croppedImage = cutProvider.cut(screenshotImage);
+            screenshotImage = croppedImage;
+            debugScreenshotsProvider.save(screenshotImage, "cut");
+        }
+
+        EyesWebDriverScreenshot result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
         return result;
     }
 

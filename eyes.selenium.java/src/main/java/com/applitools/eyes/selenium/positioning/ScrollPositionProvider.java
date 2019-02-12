@@ -98,4 +98,15 @@ public class ScrollPositionProvider implements PositionProvider {
         ScrollPositionMemento s = (ScrollPositionMemento) state;
         setPosition(new Location(s.getX(), s.getY()));
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(!(obj instanceof ScrollPositionProvider)) return false;
+        return this.scrollRootElement.equals(((ScrollPositionProvider)obj).scrollRootElement);
+    }
+
+    @Override
+    public int hashCode() {
+        return -1500623415 + scrollRootElement.hashCode();
+    }
 }

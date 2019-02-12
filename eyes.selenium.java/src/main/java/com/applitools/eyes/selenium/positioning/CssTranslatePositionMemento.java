@@ -17,6 +17,7 @@ public class CssTranslatePositionMemento extends PositionMemento {
      * @param transform The current transform.
      */
     public CssTranslatePositionMemento(String transform, Location position) {
+        super(position);
         this.transform = transform;
         this.position = position;
     }
