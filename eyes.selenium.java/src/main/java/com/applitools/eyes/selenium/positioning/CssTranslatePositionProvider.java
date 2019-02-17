@@ -43,9 +43,9 @@ public class CssTranslatePositionProvider implements PositionProvider {
 
     public Location setPosition(Location location) {
         ArgumentGuard.notNull(location, "location");
-        logger.verbose("setting position to "+location+" (element: "+scrollRootElement+")");
+        logger.verbose("setting position to " + location + " (element: " + scrollRootElement + ")");
         Location negatedPos = new Location(-location.getX(), -location.getY());
-        executor.executeScript(String.format(JSSetTransform,"translate("+negatedPos.getX()+"px, "+negatedPos.getY()+"px)"), scrollRootElement);
+        executor.executeScript(String.format(JSSetTransform, "translate(" + negatedPos.getX() + "px, " + negatedPos.getY() + "px)"), scrollRootElement);
         lastSetPosition = location;
         return lastSetPosition;
     }
@@ -58,15 +58,14 @@ public class CssTranslatePositionProvider implements PositionProvider {
     }
 
     public PositionMemento getState() {
-        return new CssTranslatePositionMemento(
-                (String)executor.executeScript("return arguments[0].style.transform;", this.scrollRootElement),
-                lastSetPosition);
+        String transform = (String) executor.executeScript("return arguments[0].style.transform;", this.scrollRootElement);
+        return new CssTranslatePositionMemento(transform, lastSetPosition);
     }
 
     public void restoreState(PositionMemento state) {
-        executor.executeScript(
-                String.format(JSSetTransform, ((CssTranslatePositionMemento)state).getTransform()),
-                this.scrollRootElement);
-        lastSetPosition = ((CssTranslatePositionMemento)state).getPosition();
+        String transform = ((CssTranslatePositionMemento) state).getTransform();
+        String formatted = String.format(JSSetTransform, transform);
+        executor.executeScript(formatted, this.scrollRootElement);
+        lastSetPosition = ((CssTranslatePositionMemento) state).getPosition();
     }
 }

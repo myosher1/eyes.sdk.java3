@@ -9,7 +9,7 @@ public final class Location implements Cloneable {
     private final int x;
     private final int y;
 
-    public static final Location ZERO = new Location(0,0);
+    public static final Location ZERO = new Location(0, 0);
 
     /**
      * Creates a Location instance.
@@ -44,13 +44,17 @@ public final class Location implements Cloneable {
 
     /**
      * Creates a location from another location instance.
+     *
      * @param other A location instance from which to create the location.
      */
     public Location(Location other) {
-        ArgumentGuard.notNull(other, "other");
-
-        x = other.getX();
-        y = other.getY();
+        if (other != null) {
+            x = other.getX();
+            y = other.getY();
+        } else {
+            x = 0;
+            y = 0;
+        }
     }
 
     /**

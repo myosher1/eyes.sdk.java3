@@ -6,9 +6,9 @@ import com.applitools.eyes.selenium.frames.FrameChain;
 
 public class PositionProviderAndMemento {
 
-    public PositionProvider provider;
-    public PositionMemento memento;
-    public FrameChain frames;
+    private PositionProvider provider;
+    private PositionMemento memento;
+    private FrameChain frames;
 
 
     public PositionProviderAndMemento(PositionProvider positionProvider, PositionMemento positionMemento, FrameChain frames) {
@@ -18,7 +18,7 @@ public class PositionProviderAndMemento {
     }
 
 
-    public void RestoreState() {
+    public void restoreState() {
         provider.restoreState(memento);
     }
 

@@ -257,6 +257,17 @@ public class EyesRemoteWebElement extends RemoteWebElement {
         return new Location((int) Math.ceil(x), (int) Math.ceil(y));
     }
 
+    public Location getScrollLocation() {
+        Object position = eyesDriver.executeScript(JS_GET_SCROLL_POSITION, this);
+        String[] xy = position.toString().split(";");
+        if (xy.length != 2) {
+            throw new EyesException("Could not get scroll position!");
+        }
+        float x = Float.parseFloat(xy[0]);
+        float y = Float.parseFloat(xy[1]);
+        return new Location((int) Math.ceil(x), (int) Math.ceil(y));
+    }
+
     /**
      * @return The overflow of the element.
      */
@@ -498,7 +509,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof RemoteWebElement) && webElement.equals(obj);
+        return (obj instanceof RemoteWebElement) && webElement.getId().equals(((RemoteWebElement) obj).getId());
     }
 
     @Override

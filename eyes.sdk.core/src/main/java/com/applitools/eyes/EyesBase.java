@@ -1190,14 +1190,13 @@ public abstract class EyesBase {
 
         // Update retry timeout if it wasn't specified.
         int retryTimeout = -1;
-        if (checkSettingsInternal != null) {
-            retryTimeout = checkSettingsInternal.getTimeout();
-        }
 
         ImageMatchSettings defaultMatchSettings = getDefaultMatchSettings();
 
-        // Set defaults if necessary
         if (checkSettingsInternal != null) {
+
+            retryTimeout = checkSettingsInternal.getTimeout();
+
             if (checkSettingsInternal.getMatchLevel() == null) {
                 checkSettings = checkSettings.matchLevel(defaultMatchSettings.getMatchLevel());
             }

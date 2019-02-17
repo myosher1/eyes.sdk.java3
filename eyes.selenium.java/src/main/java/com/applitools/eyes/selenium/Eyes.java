@@ -396,7 +396,8 @@ public class Eyes extends EyesBase implements IEyes {
         logger.verbose("initializing position provider. stitchMode: " + stitchMode);
         switch (stitchMode) {
             case CSS:
-                return new CssTranslatePositionProvider(logger, this.jsExecutor, scrollRootElement);
+                CssTranslatePositionProvider cssTranslatePositionProvider = new CssTranslatePositionProvider(logger, this.jsExecutor, scrollRootElement);
+                return cssTranslatePositionProvider;
             default:
                 return new ScrollPositionProvider(logger, this.jsExecutor, scrollRootElement);
         }
@@ -1149,12 +1150,13 @@ public class Eyes extends EyesBase implements IEyes {
             if (fc.size() == originalFC.size()) {
                 logger.verbose("PositionProvider: " + getPositionProvider());
                 positionMemento = getPositionProvider().getState();
-
-
                 scrollRootElement = this.scrollRootElement;
                 logger.verbose("scrollRootElement_:          " + scrollRootElement);
             } else {
-                if (frame != null && frame.getScrollRootElement() != null) {
+                if (frame != null){
+                    scrollRootElement = frame.getScrollRootElement();
+                }
+                if (scrollRootElement == null) {
                     scrollRootElement = driver.findElement(By.tagName("html"));
                 }
             }
@@ -2593,8 +2595,8 @@ public class Eyes extends EyesBase implements IEyes {
             result = getScaledAndCroppedScreenshot(scaleProviderFactory);
             for (int i = ppams.size() - 1; i >= 0; i--) {
                 PositionProviderAndMemento ppam = ppams.get(i);
-                switchTo.frames(ppam.frames);
-                ppam.RestoreState();
+                switchTo.frames(ppam.getFrames());
+                ppam.restoreState();
             }
         }
 
@@ -2741,7 +2743,10 @@ public class Eyes extends EyesBase implements IEyes {
     }
 
     private PositionProvider getElementPositionProvider(WebElement scrollRootElement) {
-        PositionProvider positionProvider = ((EyesRemoteWebElement) scrollRootElement).getPositionProvider();
+        PositionProvider positionProvider = null;
+        if (scrollRootElement != null) {
+            positionProvider = ((EyesRemoteWebElement) scrollRootElement).getPositionProvider();
+        }
         if (positionProvider == null) {
             positionProvider = createPositionProvider(scrollRootElement);
             ((EyesRemoteWebElement) scrollRootElement).setPositionProvider(positionProvider);
