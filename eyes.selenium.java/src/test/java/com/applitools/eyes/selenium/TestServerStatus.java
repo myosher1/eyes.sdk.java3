@@ -19,12 +19,12 @@ import java.util.UUID;
 
 public class TestServerStatus {
 
-    private Eyes eyes;
+    private SeleniumEyes eyes;
     private WebDriver webDriver;
 
     @BeforeClass
     public void setup() throws MalformedURLException {
-        eyes = new Eyes();
+        eyes = new SeleniumEyes();
         eyes.setSaveNewTests(false);
 
         ChromeOptions options = new ChromeOptions();

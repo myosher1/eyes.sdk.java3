@@ -9,7 +9,7 @@ import com.applitools.utils.GeneralUtils;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class VisualGridManager {
+public class VisualGridRunner implements EyesRunner {
 
     private int concurrentOpenSessions;
 
@@ -175,16 +175,16 @@ public class VisualGridManager {
 
     };
 
-    public VisualGridManager(int concurrentOpenSessions) {
+    public VisualGridRunner(int concurrentOpenSessions) {
         this(concurrentOpenSessions, null, null, null, null);
 
     }
 
-    public VisualGridManager(int concurrentOpenSessions,
-                             Object openerServiceDebugLock,
-                             Object checkerServiceDebugLock,
-                             Object closerServiceDebugLock,
-                             Object renderServiceDebugLock) {
+    public VisualGridRunner(int concurrentOpenSessions,
+                            Object openerServiceDebugLock,
+                            Object checkerServiceDebugLock,
+                            Object closerServiceDebugLock,
+                            Object renderServiceDebugLock) {
 
         this.concurrentOpenSessions = concurrentOpenSessions;
         this.openerServiceDebugLock = openerServiceDebugLock;

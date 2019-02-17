@@ -44,7 +44,7 @@ public class TestCustomerWebsites extends TestSetup {
         //noinspection SpellCheckingInspection
         driver.findElement(By.cssSelector("p[model-tagular-uid='117']")).click();
         By selector = By.cssSelector("body > div.boxy > main > div.boxy__product-box.product-list > div:nth-child(2)");
-        eyes.check("region", Target.region(selector).fully());
+        VisualGridEyes.check("region", Target.region(selector).fully());
     }
     */
 

@@ -1,15 +1,13 @@
-package com.applitools.eyes.rendering;
+package com.applitools.eyes.selenium.rendering;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.config.Configuration;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
-import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import com.applitools.eyes.visualGridClient.services.IEyesConnector;
 import com.applitools.eyes.visualGridClient.services.IResourceFuture;
 import com.applitools.eyes.visualGridClient.model.*;
-import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.net.URI;
 import java.net.URL;
@@ -99,7 +97,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
     @Override
     protected String getBaseAgentId() {
-        return "eyes.selenium.visualgrid.java/3.144.1";
+        return "VisualGridEyes.selenium.visualgrid.java/3.144.1";
     }
 
     @Override

@@ -26,7 +26,7 @@ public class MobileNativeTests {
     private String appiumServerUrl = System.getenv("SELENIUM_SERVER_URL");
     private static BatchInfo batchInfo = new BatchInfo("Mobile Native Tests");
 
-    private void setupLogging(Eyes eyes, DesiredCapabilities capabilities, String methodName) {
+    private void setupLogging(SeleniumEyes eyes, DesiredCapabilities capabilities, String methodName) {
         LogHandler logHandler;
         if (System.getenv("CI") == null && logsPath != null) {
             String path = logsPath + File.separator + "java" + File.separator + methodName;
@@ -58,7 +58,7 @@ public class MobileNativeTests {
         capabilities.setCapability("clearSystemFiles", true);
         capabilities.setCapability("noReset", true);
 
-        Eyes eyes = new Eyes();
+        SeleniumEyes eyes = new SeleniumEyes();
         setupLogging(eyes, capabilities, "AndroidNativeAppTest1");
 
         WebDriver driver = new AndroidDriver(new URL(appiumServerUrl), capabilities);
@@ -89,7 +89,7 @@ public class MobileNativeTests {
         capabilities.setCapability("appActivity", "com.applitoolstest.ScrollActivity");
         capabilities.setCapability("newCommandTimeout", 600);
 
-        Eyes eyes = new Eyes();
+        SeleniumEyes eyes = new SeleniumEyes();
         setupLogging(eyes, capabilities,"AndroidNativeAppTest2");
 
         AndroidDriver<AndroidElement> driver = new AndroidDriver<>(new URL(appiumServerUrl), capabilities);
@@ -120,7 +120,7 @@ public class MobileNativeTests {
         capabilities.setCapability("clearSystemFiles", true);
         capabilities.setCapability("noReset", true);
 
-        Eyes eyes = new Eyes();
+        SeleniumEyes eyes = new SeleniumEyes();
         setupLogging(eyes, capabilities,"iOSNativeAppTest");
 
         WebDriver driver = new IOSDriver(new URL(appiumServerUrl), capabilities);

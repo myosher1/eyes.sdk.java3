@@ -51,7 +51,7 @@ public class FinalApplication_Android {
         function();
     }
     public static void function() throws InterruptedException, AWTException {
-        Eyes eyes = new Eyes();
+        SeleniumEyes eyes = new SeleniumEyes();
         eyes.setSaveNewTests(false);
         eyes.setForceFullPageScreenshot(true);
         eyes.setImageCut(new FixedCutProvider(URL_BAR_SIZE, NAVIGATION_BAR_SIZE, 0, 0));
@@ -69,7 +69,7 @@ public class FinalApplication_Android {
             System.out.println("this is the element location: " + element.getLocation().toString());
             System.out.println("this is the element Height: " + element.getSize().getHeight());
             System.out.println("this is the element Width: " + element.getSize().getWidth());
-//            eyes.setBaselineName("Images");
+//            VisualGridEyes.setBaselineName("Images");
             eyes.close();
         } finally {
             driver.quit();

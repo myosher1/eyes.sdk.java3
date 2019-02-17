@@ -1,25 +1,23 @@
 package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.*;
-import com.applitools.eyes.rendering.Eyes;
-import com.applitools.eyes.rendering.Target;
-import com.applitools.eyes.IEyes;
+import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.rendering.Target;
 import com.applitools.eyes.visualGridClient.model.*;
-import com.applitools.eyes.visualGridClient.services.VisualGridManager;
+import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.*;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
-import java.util.concurrent.Future;
 
 public class TestTopSites {
-    private VisualGridManager renderingManager;
+    private VisualGridRunner renderingManager;
 
     private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
@@ -27,12 +25,12 @@ public class TestTopSites {
 
     @BeforeClass
     public void beforeClass() {
-        renderingManager = new VisualGridManager(40);
+        renderingManager = new VisualGridRunner(40);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
-        FileLogger logHandler = new FileLogger("eyes.log", false, true);
+        FileLogger logHandler = new FileLogger("VisualGridEyes.log", false, true);
         renderingManager.setLogHandler(logHandler);
         renderingManager.getLogger().log("enter");
-        renderingManager.setServerUrl("https://eyes.applitools.com/");
+        renderingManager.setServerUrl("https://VisualGridEyes.applitools.com/");
     }
 
     @DataProvider(name = "dp", parallel = true)
@@ -51,7 +49,7 @@ public class TestTopSites {
         };
     }
 
-    private IEyes initEyes(WebDriver webDriver, String testedUrl) {
+    private Eyes initEyes(WebDriver webDriver, String testedUrl) {
         Eyes eyes = new Eyes(renderingManager);
         BatchInfo batchInfo = new BatchInfo("Top Ten Sites");
         batchInfo.setId("Target");
@@ -73,8 +71,8 @@ public class TestTopSites {
             renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME, environment);
             renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME, environment);
             logger.log("created configurations for url " + testedUrl);
-//            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
-            //eyes.setServerUrl("https://eyes.applitools.com/");
+//            VisualGridEyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+            //VisualGridEyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
@@ -100,12 +98,10 @@ public class TestTopSites {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            eyes.getLogger().log("calling eyes.close() for url " + testedUrl);
-//            eyes.close();
-            for (Future<TestResultContainer> future : eyes.close()) {
-                logger.log("calling future.get() for url " + testedUrl);
-                future.get();
-            }
+            eyes.getLogger().log("calling VisualGridEyes.close() for url " + testedUrl);
+//            VisualGridEyes.close();
+            TestResults close = eyes.close();
+            Assert.assertNotNull(close);
             logger.log("end of `try` block for url " + testedUrl);
 
         } catch (Exception e) {
@@ -122,10 +118,10 @@ public class TestTopSites {
         String testName = testedUrl.substring(8);
         String path = logsPath + File.separator + "java" + File.separator + "TestTopSites_" + dateTimeString;
 //        FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
-//        eyes.setDebugResourceWriter(fileDebugResourceWriter);
+//        VisualGridEyes.setDebugResourceWriter(fileDebugResourceWriter);
 
         //FileLogger eyesLogger = new FileLogger("TopTenSites.log", true, true);
-        //eyes.setLogHandler(eyesLogger);
+        //VisualGridEyes.setLogHandler(eyesLogger);
     }
 
     @AfterMethod

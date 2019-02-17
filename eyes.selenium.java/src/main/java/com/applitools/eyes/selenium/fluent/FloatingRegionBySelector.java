@@ -2,7 +2,7 @@ package com.applitools.eyes.selenium.fluent;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.fluent.GetFloatingRegion;
-import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.SeleniumEyes;
 import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Point;
@@ -30,7 +30,7 @@ public class FloatingRegionBySelector implements GetFloatingRegion {
 
     @Override
     public List<FloatingMatchSettings> getRegions(EyesBase eyesBase, EyesScreenshot screenshot) {
-        List<WebElement> elements = ((Eyes) eyesBase).getDriver().findElements(this.selector);
+        List<WebElement> elements = ((SeleniumEyes) eyesBase).getDriver().findElements(this.selector);
         List<FloatingMatchSettings> values = new ArrayList<>();
         Logger logger = eyesBase.getLogger();
 

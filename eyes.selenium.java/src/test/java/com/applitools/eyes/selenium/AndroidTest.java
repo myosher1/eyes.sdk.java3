@@ -46,7 +46,7 @@ public class AndroidTest {
 
     @Test(dataProvider = "data")
     public void TestAndroidChromeCrop(String deviceName, String deviceOrientation, String platformVersion, boolean fully) throws MalformedURLException {
-        Eyes eyes = new Eyes();
+        SeleniumEyes eyes = new SeleniumEyes();
 
         eyes.setBatch(batchInfo);
 
@@ -74,12 +74,12 @@ public class AndroidTest {
 
         if (System.getenv("CI") == null) {
             //String logFilename = String.format("c:\\temp\\logs\\iostest_%s.log", testName);
-            //eyes.setLogHandler(new FileLogger(logFilename, false, true));
-            //eyes.setImageCut(new FixedCutProvider(30, 12, 8, 5));
-            //eyes.setForceFullPageScreenshot(true);
-            //eyes.setSaveDebugScreenshots(true);
-            //eyes.setDebugScreenshotsPath("C:\\temp\\logs");
-            //eyes.setDebugScreenshotsPrefix("iostest_" + testName);
+            //VisualGridEyes.setLogHandler(new FileLogger(logFilename, false, true));
+            //VisualGridEyes.setImageCut(new FixedCutProvider(30, 12, 8, 5));
+            //VisualGridEyes.setForceFullPageScreenshot(true);
+            //VisualGridEyes.setSaveDebugScreenshots(true);
+            //VisualGridEyes.setDebugScreenshotsPath("C:\\temp\\logs");
+            //VisualGridEyes.setDebugScreenshotsPrefix("iostest_" + testName);
         } else {
             eyes.setLogHandler(new StdoutLogHandler(true));
         }
@@ -91,7 +91,7 @@ public class AndroidTest {
 
         try {
             driver.get("https://www.applitools.com/customers");
-            eyes.open(driver, "Eyes Selenium SDK - Android Chrome Cropping", testName);
+            eyes.open(driver, "SeleniumEyes Selenium SDK - Android Chrome Cropping", testName);
             eyes.check("Initial view", Target.region(By.cssSelector("body")).fully(fully));
             eyes.close();
         } finally {

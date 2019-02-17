@@ -20,7 +20,7 @@ public abstract class TestSetup implements ITest {
 
     private Eyes seleniumEyes;
 
-    private IEyes eyes;
+    private Eyes eyes;
     protected WebDriver driver;
     protected RemoteWebDriver webDriver;
 
@@ -81,7 +81,7 @@ public abstract class TestSetup implements ITest {
         this.eyes = eyes;
     }
 
-    public IEyes getEyes(){
+    public Eyes getEyes(){
         return this.eyes;
     }
 

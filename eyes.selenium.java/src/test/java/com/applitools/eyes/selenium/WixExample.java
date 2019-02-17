@@ -20,8 +20,8 @@ public final class WixExample {
         options.addArguments("test-type", "start-maximized", "disable-popup-blocking", "disable-infobars");
 
         WebDriver driver = new ChromeDriver(options);
-        Eyes eyes = new Eyes();
-//        eyes.setServerUrl(URI.create("https://localhost.applitools.com"));
+        SeleniumEyes eyes = new SeleniumEyes();
+//        VisualGridEyes.setServerUrl(URI.create("https://localhost.applitools.com"));
         eyes.setMatchTimeout(0);
 
         LogHandler logHandler = new StdoutLogHandler(true);
@@ -50,7 +50,7 @@ public final class WixExample {
             eyesDriver.findElement(By.cssSelector("[model-hook=plus-button]")).click();
 
             //just an example, where it make us some problems with scrolling to top of the frame.
-            //eyes.checkRegion(By.cssSelector("[model-hook=plus-button]"));
+            //VisualGridEyes.checkRegion(By.cssSelector("[model-hook=plus-button]"));
             eyes.check("", Target.region(By.cssSelector("[model-hook=plus-button]")));
             eyes.close();
         } finally {

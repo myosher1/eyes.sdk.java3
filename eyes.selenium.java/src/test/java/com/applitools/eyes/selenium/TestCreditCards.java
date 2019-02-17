@@ -18,7 +18,7 @@ public class TestCreditCards extends TestSetup{
         super.forceFPS = false;
         super.testedPageSize = new RectangleSize(1260, 600);
 
-        testSuitName = "Eyes Selenium SDK - Credit Cards";
+        testSuitName = "SeleniumEyes Selenium SDK - Credit Cards";
         testedPageUrl = "https://creditcards.com/v2/zero-interest";
     }
 

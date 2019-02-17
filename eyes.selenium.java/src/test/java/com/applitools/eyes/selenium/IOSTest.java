@@ -17,8 +17,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
@@ -98,7 +96,7 @@ public class IOSTest {
 
     @Test(dataProvider = "data")
     public void TestIOSSafariCrop(String deviceName, String deviceOrientation, String platformVersion, boolean fully) throws MalformedURLException {
-        Eyes eyes = new Eyes();
+        SeleniumEyes eyes = new SeleniumEyes();
         eyes.setServerConnector(new ServerConnector());
 
         eyes.setBatch(batchInfo);
@@ -144,7 +142,7 @@ public class IOSTest {
 
         try {
             driver.get("https://www.applitools.com/customers");
-            eyes.open(driver, "Eyes Selenium SDK - iOS Safari Cropping", testName);
+            eyes.open(driver, "SeleniumEyes Selenium SDK - iOS Safari Cropping", testName);
             eyes.check("Initial view", Target.region(By.cssSelector("body")).fully(fully));
             eyes.close();
         } finally {

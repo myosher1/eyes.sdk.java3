@@ -1,6 +1,5 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.IEyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Capabilities;
@@ -18,7 +17,7 @@ public class TestScrollRootElementOnSimplePage extends TestSetup {
     }
 
     @Override
-    public IEyes getEyes() {
+    public Eyes getEyes() {
         return this.eyes;
     }
 
@@ -28,7 +27,7 @@ public class TestScrollRootElementOnSimplePage extends TestSetup {
         super.platform = platform;
         super.forceFPS = false;
 
-        testSuitName = "Eyes Selenium SDK - Scroll Root Element";
+        testSuitName = "SeleniumEyes Selenium SDK - Scroll Root Element";
         testedPageUrl = "https://applitools.github.io/demo/TestPages/SimpleTestPage/index.html";
     }
 

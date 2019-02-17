@@ -4,12 +4,12 @@ import com.applitools.eyes.BrowserNames;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.UserAgent;
 import com.applitools.eyes.capture.ImageProvider;
-import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.SeleniumEyes;
 import org.openqa.selenium.TakesScreenshot;
 
 public class ImageProviderFactory {
 
-    public static ImageProvider getImageProvider(UserAgent ua, Eyes eyes, Logger logger, TakesScreenshot tsInstance) {
+    public static ImageProvider getImageProvider(UserAgent ua, SeleniumEyes eyes, Logger logger, TakesScreenshot tsInstance) {
         if (ua != null) {
             if (ua.getBrowser().equals(BrowserNames.Firefox)) {
                 try {

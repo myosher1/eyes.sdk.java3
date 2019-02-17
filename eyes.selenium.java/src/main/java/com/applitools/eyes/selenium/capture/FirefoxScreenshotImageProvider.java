@@ -1,12 +1,8 @@
 package com.applitools.eyes.selenium.capture;
 
-import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.Region;
 import com.applitools.eyes.capture.ImageProvider;
-import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.selenium.frames.Frame;
+import com.applitools.eyes.selenium.SeleniumEyes;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.wrappers.EyesTargetLocator;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
@@ -24,11 +20,11 @@ import java.awt.image.BufferedImage;
  */
 public class FirefoxScreenshotImageProvider implements ImageProvider {
 
-    private final Eyes eyes;
+    private final SeleniumEyes eyes;
     private final Logger logger;
     private final TakesScreenshot tsInstance;
 
-    public FirefoxScreenshotImageProvider(Eyes eyes, Logger logger, TakesScreenshot tsInstance) {
+    public FirefoxScreenshotImageProvider(SeleniumEyes eyes, Logger logger, TakesScreenshot tsInstance) {
         this.eyes = eyes;
         this.logger = logger;
         this.tsInstance = tsInstance;

@@ -3,32 +3,29 @@ package com.applitools.eyes.renderingGrid;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.rendering.Eyes;
-import com.applitools.eyes.rendering.Target;
+import com.applitools.eyes.TestResults;
+import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.rendering.Target;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
-import com.applitools.eyes.visualGridClient.model.TestResultContainer;
-import com.applitools.eyes.visualGridClient.services.VisualGridManager;
+import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
 public final class TestRenderingGridMultiThreadService {
 
-    private VisualGridManager renderingManager;
+    private VisualGridRunner renderingManager;
     private WebDriver webDriver;
 
     @BeforeMethod
     public void Before(ITestContext testContext) {
-        renderingManager = new VisualGridManager(1);
+        renderingManager = new VisualGridRunner(1);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
 
         webDriver = new ChromeDriver();
@@ -77,23 +74,18 @@ public final class TestRenderingGridMultiThreadService {
     }
 
     private void TestThreadMethod(String batchName, RenderBrowserInfo... browsersInfo) {
-        try {
-            Eyes eyes = new Eyes(renderingManager);
-            eyes.setBatch(new BatchInfo(batchName));
-            RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
-            renderingConfiguration.setTestName("Open Concurrency with Batch 3");
-            renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowsers(browsersInfo);
-            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
-            eyes.open(webDriver, renderingConfiguration);
-            eyes.check(Target.window().withName("test").sendDom(false));
-            List<Future<TestResultContainer>> close = eyes.close();
-            for (Future<TestResultContainer> future : close) {
-                TestResultContainer testResultContainer = future.get();
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            GeneralUtils.logExceptionStackTrace(renderingManager.getLogger(), e);
-        }
+        Eyes eyes = new Eyes(renderingManager);
+        eyes.setBatch(new BatchInfo(batchName));
+        RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
+        renderingConfiguration.setTestName("Open Concurrency with Batch 3");
+        renderingConfiguration.setAppName("RenderingGridIntegration");
+        renderingConfiguration.addBrowsers(browsersInfo);
+        eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+        eyes.open(webDriver, renderingConfiguration);
+        eyes.check(Target.window().withName("test").sendDom(false));
+        TestResults close = eyes.close();
+        Assert.assertNotNull(close);
+
     }
 
     @AfterMethod

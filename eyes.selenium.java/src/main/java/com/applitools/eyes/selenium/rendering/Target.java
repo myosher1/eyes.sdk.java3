@@ -1,4 +1,4 @@
-package com.applitools.eyes.rendering;
+package com.applitools.eyes.selenium.rendering;
 
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.CheckRGSettings;

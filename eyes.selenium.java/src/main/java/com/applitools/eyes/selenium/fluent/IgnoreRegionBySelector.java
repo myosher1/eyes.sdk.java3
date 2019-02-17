@@ -2,7 +2,7 @@ package com.applitools.eyes.selenium.fluent;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.fluent.GetRegion;
-import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.SeleniumEyes;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
@@ -20,7 +20,7 @@ public class IgnoreRegionBySelector implements GetRegion {
 
     @Override
     public List<Region> getRegions(EyesBase eyesBase, EyesScreenshot screenshot, boolean adjustLocation) {
-        List<WebElement> elements = ((Eyes) eyesBase).getDriver().findElements(this.selector);
+        List<WebElement> elements = ((SeleniumEyes) eyesBase).getDriver().findElements(this.selector);
         List<Region> values = new ArrayList<>(elements.size());
         for (WebElement element : elements) {
 

@@ -3,7 +3,6 @@ package com.applitools.eyes.selenium;
 import com.applitools.eyes.LogHandler;
 import com.applitools.eyes.ServerConnector;
 import com.applitools.eyes.StdoutLogHandler;
-import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.ios.IOSDriver;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -31,13 +30,13 @@ public class iOSNativeTest {
         final String url = "https://" + SAUCE_USERNAME + ":" + SAUCE_ACCESS_KEY + "@ondemand.saucelabs.com:443/wd/hub";
         WebDriver driver = new IOSDriver(new URL(url), capabilities);
 
-        // Initialize the eyes SDK and set your private API key.
-        Eyes eyes = new Eyes();
+        // Initialize the VisualGridEyes SDK and set your private API key.
+        SeleniumEyes eyes = new SeleniumEyes();
         eyes.setServerConnector(new ServerConnector());
         LogHandler logHandler = new StdoutLogHandler(true);
         eyes.setLogHandler(logHandler);
         eyes.setSaveDebugScreenshots(true);
-//        eyes.setForceFullPageScreenshot(true);
+//        VisualGridEyes.setForceFullPageScreenshot(true);
         try {
 
             // Start the test.
@@ -54,7 +53,7 @@ public class iOSNativeTest {
             // Close the app.
             driver.quit();
 
-            // If the test was aborted before eyes.close was called, ends the test as aborted.
+            // If the test was aborted before VisualGridEyes.close was called, ends the test as aborted.
             eyes.abortIfNotClosed();
         }
     }

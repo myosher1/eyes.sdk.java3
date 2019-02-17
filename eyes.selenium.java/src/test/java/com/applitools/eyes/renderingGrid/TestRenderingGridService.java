@@ -3,16 +3,17 @@ package com.applitools.eyes.renderingGrid;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.rendering.Eyes;
-import com.applitools.eyes.rendering.Target;
+import com.applitools.eyes.TestResults;
+import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.rendering.Target;
 import com.applitools.eyes.visualGridClient.model.FileDebugResourceWriter;
-import com.applitools.eyes.visualGridClient.model.TestResultContainer;
-import com.applitools.eyes.visualGridClient.services.VisualGridManager;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
+import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
@@ -21,19 +22,17 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
-import java.util.concurrent.Future;
 
 public final class TestRenderingGridService {
 
-    private VisualGridManager renderingManager;
+    private VisualGridRunner renderingManager;
     private WebDriver webDriver;
 
     private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
 
     @BeforeMethod
     public void Before(ITestContext testContext){
-        renderingManager = new VisualGridManager(3);
+        renderingManager = new VisualGridRunner(3);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
@@ -63,16 +62,12 @@ public final class TestRenderingGridService {
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
             eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
-            //eyes.setServerUrl("https://eyes.applitools.com/");
+            //VisualGridEyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             eyes.check(Target.window().withName("test").fully(false).sendDom(false));
-            List<Future<TestResultContainer>> close = eyes.close();
-            if (close != null) {
-                for (Future<TestResultContainer> future : close) {
-                    future.get();
-                }
-            }
+            TestResults close = eyes.close();
+            Assert.assertNotNull(close);
 
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(eyes.getLogger(), e);

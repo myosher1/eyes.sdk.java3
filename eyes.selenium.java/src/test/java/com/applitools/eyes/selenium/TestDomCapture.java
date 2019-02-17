@@ -10,7 +10,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Phaser;
 
 public final class TestDomCapture {
     private static String domJson;
@@ -19,12 +18,12 @@ public final class TestDomCapture {
         // Open a Chrome browser.
         WebDriver driver = new ChromeDriver();
 
-        // Initialize the eyes SDK and set your private API key.
-        Eyes eyes = new Eyes();
+        // Initialize the VisualGridEyes SDK and set your private API key.
+        SeleniumEyes eyes = new SeleniumEyes();
 
         eyes.setLogHandler(new StdoutLogHandler(true));
-        eyes.setServerUrl("https://eyes.applitools.com/");
-//        eyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
+        eyes.setServerUrl("https://VisualGridEyes.applitools.com/");
+//        VisualGridEyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
 
         // Switch sendDom flag on
         eyes.setSendDom(true);
