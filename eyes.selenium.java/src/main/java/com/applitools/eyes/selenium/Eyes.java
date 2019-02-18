@@ -99,8 +99,12 @@ public class Eyes {
                 }
             }
         } else {
-            SeleniumRunner seleniumRunner = (SeleniumRunner) runner;
-            return seleniumRunner.setTestResults(seleniumEyes.close());
+            TestResults close = seleniumEyes.close();
+            if (runner != null) {
+                SeleniumRunner seleniumRunner = (SeleniumRunner) runner;
+                return seleniumRunner.setTestResults(close);
+            }
+            return close;
         }
         return null;
     }
@@ -374,8 +378,12 @@ public class Eyes {
 
             }
         } else {
-            SeleniumRunner seleniumRunner = (SeleniumRunner) runner;
-            return seleniumRunner.setTestResults(seleniumEyes.close(shouldThrowException));
+            TestResults close = seleniumEyes.close(shouldThrowException);
+            if (runner != null) {
+                SeleniumRunner seleniumRunner = (SeleniumRunner) runner;
+                return seleniumRunner.setTestResults(close);
+            }
+            return close;
         }
         return null;
     }
