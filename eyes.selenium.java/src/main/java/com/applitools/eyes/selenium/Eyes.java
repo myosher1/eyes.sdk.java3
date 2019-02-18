@@ -28,18 +28,21 @@ public class Eyes {
     private boolean isVisualGridEyes = false;
     private VisualGridEyes visualGridEyes = null;
     private SeleniumEyes seleniumEyes = null;
-
+    private EyesRunner runner = null;
 
     public Eyes() {
         seleniumEyes = new SeleniumEyes();
     }
 
     public Eyes(EyesRunner runner) {
+        ArgumentGuard.notNull(runner, "EyesRunner");
+        this.runner = runner;
         if (runner instanceof VisualGridRunner) {
-            visualGridEyes = new VisualGridEyes(new VisualGridRunner(2));
+            visualGridEyes = new VisualGridEyes((VisualGridRunner) runner);
             isVisualGridEyes = true;
         } else {
             seleniumEyes = new SeleniumEyes();
+            ((SeleniumRunner)runner).addEyes(this);
         }
     }
 
@@ -97,7 +100,12 @@ public class Eyes {
                 }
             }
         } else {
-            return seleniumEyes.close();
+            TestResults close = seleniumEyes.close();
+            if (runner != null) {
+                SeleniumRunner seleniumRunner = (SeleniumRunner) runner;
+                return seleniumRunner.setTestResults(close);
+            }
+            return close;
         }
         return null;
     }
@@ -359,9 +367,9 @@ public class Eyes {
         }
     }
 
-    public TestResults close(boolean shoudThrowException) {
+    public TestResults close(boolean shouldThrowException) {
         if (isVisualGridEyes) {
-            List<Future<TestResultContainer>> close = visualGridEyes.close(shoudThrowException);
+            List<Future<TestResultContainer>> close = visualGridEyes.close(shouldThrowException);
             if (close != null && !close.isEmpty()) {
                 try {
                     return close.get(0).get().getTestResults();
@@ -371,7 +379,12 @@ public class Eyes {
 
             }
         } else {
-            return seleniumEyes.close(shoudThrowException);
+            TestResults close = seleniumEyes.close(shouldThrowException);
+            if (runner != null) {
+                SeleniumRunner seleniumRunner = (SeleniumRunner) runner;
+                return seleniumRunner.setTestResults(close);
+            }
+            return close;
         }
         return null;
     }

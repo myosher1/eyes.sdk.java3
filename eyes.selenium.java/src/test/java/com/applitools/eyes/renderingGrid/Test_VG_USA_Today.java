@@ -27,7 +27,7 @@ public class Test_VG_USA_Today {
     private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
     private String dateTimeString = dateFormat.format(Calendar.getInstance().getTime());
-    private String defaultServerUrl = "https://VisualGridEyes.applitools.com";
+    private String defaultServerUrl = "https://eyes.applitools.com";
     private String defaultApiKey = System.getenv("APPLITOOLS_API_KEY");
     private String fabricDemoServerUrl = "https://fabricdemoeyes.applitools.com";
 
