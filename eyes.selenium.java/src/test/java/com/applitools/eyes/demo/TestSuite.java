@@ -4,6 +4,7 @@ import com.applitools.ICheckSettings;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import org.openqa.selenium.WebDriver;
@@ -48,7 +49,7 @@ public class TestSuite {
         eyes.open(webDriver, configuration);
         this.eyes = eyes;
 
-        this.checkSettings = com.applitools.eyes.selenium.rendering.Target.window();
+        this.checkSettings = Target.window();
     }
 
 //    @BeforeClass

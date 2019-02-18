@@ -5,9 +5,8 @@ import com.applitools.eyes.Logger;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.selenium.rendering.Target;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
-import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
@@ -21,8 +20,6 @@ import org.testng.annotations.Test;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
-import java.util.concurrent.Future;
 
 public final class TestRenderingGridServiceWithJsHook {
 

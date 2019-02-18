@@ -5,7 +5,7 @@ import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.selenium.rendering.Target;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualGridClient.model.*;
 import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;

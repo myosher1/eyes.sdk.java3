@@ -5,14 +5,12 @@ import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.selenium.rendering.Target;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualGridClient.model.CompletableTask;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
-import com.applitools.eyes.visualGridClient.model.TestResultContainer;
 import com.applitools.eyes.visualGridClient.services.Task;
 import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
-import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
@@ -22,8 +20,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 public final class TestMultiThreadWithServiceLockService {
 

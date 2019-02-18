@@ -1,11 +1,10 @@
 package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.BatchInfo;
-import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.selenium.rendering.Target;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualGridClient.model.FileDebugResourceWriter;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
@@ -51,7 +50,6 @@ public final class TestRenderingGridService {
     public void test() {
 
         Eyes eyes = new Eyes(renderingManager);
-        eyes.setIsDisabled(true);
         eyes.setBatch(new BatchInfo("SimpleVisualGridBatch"));
 
         try {
@@ -61,7 +59,7 @@ public final class TestRenderingGridService {
             renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
             renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
-            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+//            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //VisualGridEyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);

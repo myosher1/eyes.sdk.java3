@@ -5,7 +5,7 @@ import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.selenium.rendering.Target;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.services.VisualGridRunner;

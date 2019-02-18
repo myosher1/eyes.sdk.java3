@@ -4,7 +4,7 @@
     <test name="Demo_Tests" parallel="instances" thread-count="10">
         <classes>
             <class name="com.applitools.eyes.demo.TestISeleniumVGEyesSelenium" />
-            <class name="com.applitools.eyes.demo.TestISeleniumVGEyesVG" />
+            <class name="com.applitools.eyes.demo.TestVGEyes" />
         </classes>
     </test>
 </suite>

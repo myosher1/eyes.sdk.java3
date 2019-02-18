@@ -14,7 +14,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
-public class TestISeleniumVGEyesSelenium extends TestIEyesBase {
+public class TestISeleniumVGEyesSelenium extends TestEyesBase {
 
     private final String testName;
     private static BatchInfo batchInfo = new BatchInfo("Top Sites - Selenium");

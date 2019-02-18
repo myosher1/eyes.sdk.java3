@@ -6,6 +6,7 @@ import com.applitools.eyes.Region;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The Match settings object to use in the various Eyes.Check methods.
@@ -374,6 +375,26 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     @Override
     public String getName(){
         return this.name;
+    }
+
+    @Override
+    public Map<String, String> getScriptHooks() {
+        return null;
+    }
+
+    @Override
+    public String getSizeMode() {
+        return null;
+    }
+
+    @Override
+    public Region getRegion() {
+        return null;
+    }
+
+    @Override
+    public boolean isSendDom() {
+        return false;
     }
 
     protected void updateTargetRegion(Region region) {

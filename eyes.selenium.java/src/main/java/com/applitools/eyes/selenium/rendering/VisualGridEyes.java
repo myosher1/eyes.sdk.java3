@@ -1,6 +1,5 @@
 package com.applitools.eyes.selenium.rendering;
 
-import com.applitools.ICheckRGSettings;
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
 import com.applitools.eyes.visualGridClient.model.*;
@@ -380,7 +379,7 @@ public class VisualGridEyes implements IRenderingEyes {
         if (getIsDisabled()) return;
         logger.verbose("enter");
 
-        ArgumentGuard.notOfType(checkSettings, ICheckRGSettings.class, "checkSettings");
+        ArgumentGuard.notOfType(checkSettings, ICheckSettings.class, "checkSettings");
 
         List<Task> openTasks = addOpenTaskToAllRunningTest();
 
@@ -400,9 +399,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
         logger.verbose(" $$$$$$$$$$    added check tasks  (" + checkSettings.toString() + ")   $$$$$$$$$$$$");
 
-        ICheckRGSettings rgSettings = (ICheckRGSettings) checkSettings;
-
-        this.renderingGridManager.check(rgSettings, debugResourceWriter, scriptResult,
+        this.renderingGridManager.check(checkSettings, debugResourceWriter, scriptResult,
                 this.VGEyesConnector, taskList, openTasks,
                 new VisualGridRunner.RenderListener() {
                     @Override

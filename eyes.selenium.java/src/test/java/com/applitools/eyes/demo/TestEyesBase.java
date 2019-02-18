@@ -9,9 +9,9 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.DataProvider;
 
-public abstract class TestIEyesBase {
+public abstract class TestEyesBase {
 
-    protected final String SERVER_URL = "https://VisualGridEyes.applitools.com/";
+    protected final String SERVER_URL = "https://eyes.applitools.com/";
 
     @DataProvider(name = "dp", parallel = true)
     public static Object[][] dp() {

@@ -1,6 +1,6 @@
 package com.applitools.eyes.visualGridClient.services;
 
-import com.applitools.ICheckRGSettings;
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.LogHandler;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.model.*;
@@ -464,7 +464,7 @@ public class VisualGridRunner implements EyesRunner {
         notifyAllServices();
     }
 
-    public synchronized void check(ICheckRGSettings settings, IDebugResourceWriter debugResourceWriter, String script,
+    public synchronized void check(ICheckSettings settings, IDebugResourceWriter debugResourceWriter, String script,
                                    IEyesConnector connector, List<Task> taskList, List<Task> openTasks, final RenderListener listener) {
 
         if (debugResourceWriter == null) {

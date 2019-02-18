@@ -5,7 +5,7 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.selenium.rendering.Target;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
 import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
@@ -17,7 +17,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class TestISeleniumVGEyesVG extends TestIEyesBase {
+public class TestVGEyes extends TestEyesBase {
 
     private VisualGridRunner renderingManager;
     private Logger logger;
