@@ -27,10 +27,10 @@ public class TestTopSites {
     public void beforeClass() {
         renderingManager = new VisualGridRunner(40);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
-        FileLogger logHandler = new FileLogger("VisualGridEyes.log", false, true);
+        FileLogger logHandler = new FileLogger("eyes.log", false, true);
         renderingManager.setLogHandler(logHandler);
         renderingManager.getLogger().log("enter");
-        renderingManager.setServerUrl("https://VisualGridEyes.applitools.com/");
+        renderingManager.setServerUrl("https://eyes.applitools.com/");
     }
 
     @DataProvider(name = "dp", parallel = true)
@@ -100,7 +100,7 @@ public class TestTopSites {
             }
             eyes.getLogger().log("calling VisualGridEyes.close() for url " + testedUrl);
 //            VisualGridEyes.close();
-            TestResults close = eyes.close();
+            TestResults close = eyes.close(true);
             Assert.assertNotNull(close);
             logger.log("end of `try` block for url " + testedUrl);
 

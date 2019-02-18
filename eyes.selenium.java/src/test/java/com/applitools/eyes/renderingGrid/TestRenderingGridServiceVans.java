@@ -29,10 +29,10 @@ public class TestRenderingGridServiceVans {
     public void beforeClass() {
         renderingManager = new VisualGridRunner(40);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
-        FileLogger logHandler = new FileLogger("VisualGridEyes.log", false, true);
+        FileLogger logHandler = new FileLogger("eyes.log", false, true);
         renderingManager.setLogHandler(logHandler);
         renderingManager.getLogger().log("enter");
-        renderingManager.setServerUrl("https://VisualGridEyes.applitools.com/");
+        renderingManager.setServerUrl("https://eyes.applitools.com/");
     }
 
 

@@ -22,7 +22,7 @@ public final class TestDomCapture {
         SeleniumEyes eyes = new SeleniumEyes();
 
         eyes.setLogHandler(new StdoutLogHandler(true));
-        eyes.setServerUrl("https://VisualGridEyes.applitools.com/");
+        eyes.setServerUrl("https://eyes.applitools.com/");
 //        VisualGridEyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
 
         // Switch sendDom flag on

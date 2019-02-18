@@ -88,7 +88,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     public EyesWebDriver(Logger logger, SeleniumEyes eyes, RemoteWebDriver driver)
             throws EyesException {
         ArgumentGuard.notNull(logger, "logger");
-        ArgumentGuard.notNull(eyes, "VisualGridEyes");
+        ArgumentGuard.notNull(eyes, "eyes");
         ArgumentGuard.notNull(driver, "driver");
 
         this.logger = logger;
