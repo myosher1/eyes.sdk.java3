@@ -1,8 +1,5 @@
 package com.applitools.utils;
 
-import com.applitools.ICheckRGSettings;
-import com.applitools.ICheckSettings;
-
 /**
  * Argument validation utilities.
  */
