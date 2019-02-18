@@ -14,7 +14,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 
-public class TestISelenuimVGEyesSelenium extends TestIEyesBase {
+public class TestISeleniumVGEyesSelenium extends TestIEyesBase {
 
     private final String testName;
     private static BatchInfo batchInfo = new BatchInfo("Top Sites - Selenium");
@@ -22,7 +22,7 @@ public class TestISelenuimVGEyesSelenium extends TestIEyesBase {
     private Logger logger;
 
     @Factory(dataProvider = "dp")
-    public TestISelenuimVGEyesSelenium(String testName) {
+    public TestISeleniumVGEyesSelenium(String testName) {
         this.testName = testName;
     }
 

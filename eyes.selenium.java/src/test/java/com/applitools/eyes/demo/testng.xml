@@ -3,8 +3,8 @@
 <suite name="Demo" verbose="1" parallel="tests">
     <test name="Demo_Tests" parallel="instances" thread-count="10">
         <classes>
-            <class name="com.applitools.eyes.demo.TestISelenuimVGEyesSelenium" />
-            <class name="com.applitools.eyes.demo.TestISelenuimVGEyesVG" />
+            <class name="com.applitools.eyes.demo.TestISeleniumVGEyesSelenium" />
+            <class name="com.applitools.eyes.demo.TestISeleniumVGEyesVG" />
         </classes>
     </test>
 </suite>

@@ -17,7 +17,7 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-public class TestISelenuimVGEyesVG extends TestIEyesBase {
+public class TestISeleniumVGEyesVG extends TestIEyesBase {
 
     private VisualGridRunner renderingManager;
     private Logger logger;
