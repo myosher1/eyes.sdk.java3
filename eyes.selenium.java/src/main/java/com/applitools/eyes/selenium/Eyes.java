@@ -35,6 +35,7 @@ public class Eyes {
     }
 
     public Eyes(EyesRunner runner) {
+        ArgumentGuard.notNull(runner, "EyesRunner");
         this.runner = runner;
         if (runner instanceof VisualGridRunner) {
             visualGridEyes = new VisualGridEyes((VisualGridRunner) runner);
