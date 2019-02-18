@@ -31,11 +31,11 @@ public abstract class TestIEyesBase {
 
     public void test(String testedUrl) {
         WebDriver webDriver = new ChromeDriver();
-        Eyes eyes = initEyes(webDriver, testedUrl);
-        Logger logger = eyes.getLogger();
-        webDriver.get(testedUrl);
-        logger.log("navigated to " + testedUrl);
         try {
+            Eyes eyes = initEyes(webDriver, testedUrl);
+            Logger logger = eyes.getLogger();
+            webDriver.get(testedUrl);
+            logger.log("navigated to " + testedUrl);
             logger.log("running check for url " + testedUrl);
             ICheckSettings windowCheckSettings = getNewWindowCheckSettings();
             eyes.check(windowCheckSettings.withName("Step1 - " + testedUrl));

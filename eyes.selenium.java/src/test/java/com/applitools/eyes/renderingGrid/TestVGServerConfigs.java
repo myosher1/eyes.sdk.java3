@@ -56,7 +56,7 @@ public class TestVGServerConfigs {
 
     @DataProvider(name = "dp")
     public static Object[][] dp() {
-        String server1 = "https://VisualGridEyes.applitools.com";
+        String server1 = "https://eyesapi.applitools.com";
         String server2 = "https://fabricdemoeyes.applitools.com/";
         String key1 = System.getenv("APPLITOOLS_API_KEY");
         String key2 = System.getenv("FABRICAM_DEMO_EYES_API_KEY");
