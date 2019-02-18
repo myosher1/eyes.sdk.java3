@@ -1551,5 +1551,8 @@ public class Eyes {
        }
     }
 
+    public void setSendDom(boolean isSendDom) {
+        seleniumEyes.setSendDom(isSendDom);
+    }
 
 }
