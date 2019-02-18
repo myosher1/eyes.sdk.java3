@@ -38,7 +38,7 @@ public class FinalApplication_iOS {
     }
 
     public static void function() throws InterruptedException, AWTException {
-        Eyes eyes = new Eyes();
+        SeleniumEyes eyes = new SeleniumEyes();
         eyes.setSaveNewTests(false);
         eyes.setForceFullPageScreenshot(true);
         eyes.setStitchMode(StitchMode.CSS);
@@ -47,7 +47,7 @@ public class FinalApplication_iOS {
         eyes.setDebugScreenshotsPath("c:\\temp\\logs");
         eyes.setDebugScreenshotsPrefix("IOS_10_0_Safari_10_0_");
 
-        //eyes.setImageCut(new FixedCutProvider(URL_BAR_SIZE,NAVIGATION_BAR_SIZE, 0, 0));
+        //VisualGridEyes.setImageCut(new FixedCutProvider(URL_BAR_SIZE,NAVIGATION_BAR_SIZE, 0, 0));
         eyes.setLogHandler(new StdoutLogHandler(true));
         driver= eyes.open(driver, "sample", "IOS");
         try {

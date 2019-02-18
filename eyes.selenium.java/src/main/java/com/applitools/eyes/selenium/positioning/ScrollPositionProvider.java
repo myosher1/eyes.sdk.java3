@@ -3,11 +3,7 @@ package com.applitools.eyes.selenium.positioning;
 import com.applitools.eyes.*;
 import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.positioning.PositionProvider;
-import com.applitools.eyes.selenium.EyesSeleniumUtils;
-import com.applitools.eyes.selenium.SeleniumJavaScriptExecutor;
-import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.utils.ArgumentGuard;
-import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 
 public class ScrollPositionProvider implements PositionProvider {

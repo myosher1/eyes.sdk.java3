@@ -13,7 +13,7 @@ public class TestServerConnector {
 
     @Test
     public void TestDelete() {
-        Eyes eyes = new Eyes();
+        SeleniumEyes eyes = new SeleniumEyes();
         eyes.setServerConnector(new ServerConnector(eyes.getLogger(), EyesBase.getDefaultServerUrl()));
         WebDriver webDriver = new ChromeDriver();
         try {

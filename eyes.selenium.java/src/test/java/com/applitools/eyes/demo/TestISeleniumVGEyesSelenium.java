@@ -2,7 +2,6 @@ package com.applitools.eyes.demo;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.BatchInfo;
-import com.applitools.eyes.IEyes;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.selenium.Eyes;
@@ -10,9 +9,12 @@ import com.applitools.eyes.selenium.config.Configuration;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 
-public class TestIEyesSelenium extends TestIEyesBase {
+public class TestISeleniumVGEyesSelenium extends TestEyesBase {
 
     private final String testName;
     private static BatchInfo batchInfo = new BatchInfo("Top Sites - Selenium");
@@ -20,7 +22,7 @@ public class TestIEyesSelenium extends TestIEyesBase {
     private Logger logger;
 
     @Factory(dataProvider = "dp")
-    public TestIEyesSelenium(String testName) {
+    public TestISeleniumVGEyesSelenium(String testName) {
         this.testName = testName;
     }
 
@@ -38,7 +40,7 @@ public class TestIEyesSelenium extends TestIEyesBase {
     }
 
     @Override
-    protected IEyes initEyes(WebDriver webDriver, String testedUrl) {
+    protected Eyes initEyes(WebDriver webDriver, String testedUrl) {
         Configuration configuration = new Configuration();
         configuration.setTestName("Top Sites - " + testedUrl);
         configuration.setAppName("Top Sites");

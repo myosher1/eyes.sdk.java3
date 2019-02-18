@@ -1,10 +1,13 @@
 package com.applitools.eyes.renderingGrid;
 
-import com.applitools.eyes.*;
-import com.applitools.eyes.rendering.Eyes;
-import com.applitools.eyes.rendering.Target;
+import com.applitools.eyes.BatchInfo;
+import com.applitools.eyes.FileLogger;
+import com.applitools.eyes.Logger;
+import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualGridClient.model.*;
-import com.applitools.eyes.visualGridClient.services.VisualGridManager;
+import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -16,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class TestRenderingGridServiceVans {
-    private VisualGridManager renderingManager;
+    private VisualGridRunner renderingManager;
 
     private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
@@ -24,12 +27,12 @@ public class TestRenderingGridServiceVans {
 
     @BeforeClass
     public void beforeClass() {
-        renderingManager = new VisualGridManager(40);
+        renderingManager = new VisualGridRunner(40);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
-        FileLogger logHandler = new FileLogger("eyes.log", false, true);
+        FileLogger logHandler = new FileLogger("VisualGridEyes.log", false, true);
         renderingManager.setLogHandler(logHandler);
         renderingManager.getLogger().log("enter");
-        renderingManager.setServerUrl("https://eyes.applitools.com/");
+        renderingManager.setServerUrl("https://VisualGridEyes.applitools.com/");
     }
 
 
@@ -102,11 +105,11 @@ public class TestRenderingGridServiceVans {
             logger.log("running check for url " + testedUrl);
             try {
                 eyes.check(Target.window().withName("Step1 - " + testedUrl).sendDom(false));
-//                eyes.check(Target.window().fully(false).withName("Step2 - " + testedUrl).sendDom(false));
+//                VisualGridEyes.check(Target.window().fully(false).withName("Step2 - " + testedUrl).sendDom(false));
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            eyes.getLogger().log("calling eyes.close() for url " + testedUrl);
+            eyes.getLogger().log("calling VisualGridEyes.close() for url " + testedUrl);
 
             eyes.close();
 
@@ -151,10 +154,10 @@ public class TestRenderingGridServiceVans {
         String testName = testedUrl.substring(8);
         String path = logsPath + File.separator + "java" + File.separator + "TestTopSites_" + dateTimeString;
 //        FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
-//        eyes.setDebugResourceWriter(fileDebugResourceWriter);
+//        VisualGridEyes.setDebugResourceWriter(fileDebugResourceWriter);
 
         //FileLogger eyesLogger = new FileLogger("TopTenSites.log", true, true);
-        //eyes.setLogHandler(eyesLogger);
+        //VisualGridEyes.setLogHandler(eyesLogger);
     }
 
     @AfterMethod

@@ -3,15 +3,14 @@ package com.applitools.eyes.renderingGrid;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.rendering.Eyes;
-import com.applitools.eyes.rendering.Target;
+import com.applitools.eyes.TestResults;
+import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualGridClient.model.CompletableTask;
 import com.applitools.eyes.visualGridClient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
-import com.applitools.eyes.visualGridClient.model.TestResultContainer;
-import com.applitools.eyes.visualGridClient.services.VisualGridManager;
 import com.applitools.eyes.visualGridClient.services.Task;
-import com.applitools.utils.GeneralUtils;
+import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
@@ -21,12 +20,10 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 public final class TestMultiThreadWithServiceLockService {
 
-    private VisualGridManager renderingManager;
+    private VisualGridRunner renderingManager;
     private WebDriver webDriver;
     private final Object openerLock = new Object();
     private final Object checkerLock = new Object();
@@ -39,7 +36,7 @@ public final class TestMultiThreadWithServiceLockService {
     @BeforeMethod
     public void Before(ITestContext testContext) {
         concurrentOpenSessions = 3;
-        renderingManager = new VisualGridManager(concurrentOpenSessions, openerLock, checkerLock, closerLock, renderLock);
+        renderingManager = new VisualGridRunner(concurrentOpenSessions, openerLock, checkerLock, closerLock, renderLock);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
 
         webDriver = new ChromeDriver();
@@ -178,26 +175,17 @@ public final class TestMultiThreadWithServiceLockService {
     }
 
     private void TestThreadMethod(String batchName, Object lock, RenderBrowserInfo... browsersInfo) {
-        try {
-            Eyes eyes = new Eyes(renderingManager);
-            eyes.setBatch(new BatchInfo(batchName));
-            RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
-            renderingConfiguration.setTestName("Open Concurrency with Batch 3");
-            renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowsers(browsersInfo);
-            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888));
-            eyes.open(webDriver, renderingConfiguration);
-            eyes.check(Target.window().withName("test").sendDom(false));
-            List<Future<TestResultContainer>> close = eyes.close();
-            synchronized (lock) {
-                lock.notify();
-            }
-            for (Future<TestResultContainer> future : close) {
-                future.get();
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            GeneralUtils.logExceptionStackTrace(renderingManager.getLogger(), e);
-        }
+        Eyes eyes = new Eyes(renderingManager);
+        eyes.setBatch(new BatchInfo(batchName));
+        RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
+        renderingConfiguration.setTestName("Open Concurrency with Batch 3");
+        renderingConfiguration.setAppName("RenderingGridIntegration");
+        renderingConfiguration.addBrowsers(browsersInfo);
+        eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888));
+        eyes.open(webDriver, renderingConfiguration);
+        eyes.check(Target.window().withName("test").sendDom(false));
+        TestResults close = eyes.close();
+        Assert.assertNotNull(close);
     }
 
     @AfterMethod

@@ -7,7 +7,6 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.exceptions.CoordinatesTypeConversionException;
 import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.selenium.*;
-import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.eyes.selenium.frames.Frame;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
@@ -116,7 +115,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         this.screenshotType = updateScreenshotType(screenshotType, image);
 
         PositionProvider positionProvider;
-        Eyes eyes = driver.getEyes();
+        SeleniumEyes eyes = driver.getEyes();
         PositionProvider currentFramePositionProvider = eyes.getCurrentFramePositionProvider();
         if (currentFramePositionProvider != null) {
             positionProvider = currentFramePositionProvider;

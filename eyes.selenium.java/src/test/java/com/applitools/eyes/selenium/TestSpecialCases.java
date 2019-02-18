@@ -16,7 +16,7 @@ public class TestSpecialCases extends TestSetup {
         super.platform = platform;
         super.forceFPS = false;
 
-        testSuitName = "Eyes Selenium SDK - Special Cases";
+        testSuitName = "SeleniumEyes Selenium SDK - Special Cases";
         testedPageUrl = "http://applitools.github.io/demo/TestPages/WixLikeTestPage/index.html";
     }
 

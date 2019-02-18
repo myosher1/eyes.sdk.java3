@@ -21,7 +21,7 @@ public class CheckRegionInFrameOffsetTest {
         // Test 1
         WebDriver driver = new ChromeDriver();
 
-        Eyes eyes = new Eyes();
+        SeleniumEyes eyes = new SeleniumEyes();
 
         eyes.setForceFullPageScreenshot(true);
         eyes.setStitchMode(StitchMode.CSS);
@@ -31,11 +31,11 @@ public class CheckRegionInFrameOffsetTest {
         logHandler = new StdoutLogHandler(true);
         eyes.setLogHandler(logHandler);
 
-//        eyes.setDebugScreenshotsPath("c:\\temp\\logs");
-//        eyes.setSaveDebugScreenshots(true);
+//        VisualGridEyes.setDebugScreenshotsPath("c:\\temp\\logs");
+//        VisualGridEyes.setSaveDebugScreenshots(true);
 
         try {
-            driver = eyes.open(driver, "Eyes Selenium SDK", "WIX like test",
+            driver = eyes.open(driver, "SeleniumEyes Selenium SDK", "WIX like test",
                     new RectangleSize(1024, 600));
 
             driver.get("http://applitools.github.io/demo/TestPages/WixLikeTestPage/index.html");

@@ -1,7 +1,6 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.FloatingMatchSettings;
-import com.applitools.eyes.IEyes;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.metadata.ActualAppOutput;

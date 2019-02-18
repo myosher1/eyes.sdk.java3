@@ -3,7 +3,7 @@ package com.applitools.eyes.selenium.capture;
 import com.applitools.eyes.*;
 import com.applitools.eyes.capture.ImageProvider;
 import com.applitools.eyes.positioning.PositionProvider;
-import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.SeleniumEyes;
 import com.applitools.eyes.selenium.SeleniumJavaScriptExecutor;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
@@ -11,7 +11,6 @@ import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ImageUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
-import org.openqa.selenium.Rectangle;
 import org.openqa.selenium.TakesScreenshot;
 
 import java.awt.image.BufferedImage;
@@ -20,7 +19,7 @@ import java.util.Map;
 
 public class SafariScreenshotImageProvider implements ImageProvider {
 
-    private final Eyes eyes;
+    private final SeleniumEyes eyes;
     private final Logger logger;
     private final TakesScreenshot tsInstance;
     private final IEyesJsExecutor jsExecutor;
@@ -28,7 +27,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
 
     private static Map<DeviceData, Region> devicesRegions = null;
 
-    public SafariScreenshotImageProvider(Eyes eyes, Logger logger, TakesScreenshot tsInstance, UserAgent userAgent) {
+    public SafariScreenshotImageProvider(SeleniumEyes eyes, Logger logger, TakesScreenshot tsInstance, UserAgent userAgent) {
         this.eyes = eyes;
         this.logger = logger;
         this.tsInstance = tsInstance;

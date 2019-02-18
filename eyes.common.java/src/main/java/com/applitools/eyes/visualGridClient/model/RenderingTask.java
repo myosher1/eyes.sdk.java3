@@ -1,12 +1,11 @@
 package com.applitools.eyes.visualGridClient.model;
 
-import com.applitools.ICheckRGSettings;
-import com.applitools.ICheckRGSettingsInternal;
+import com.applitools.ICheckSettings;
 import com.applitools.ICheckSettingsInternal;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.services.IEyesConnector;
 import com.applitools.eyes.visualGridClient.services.IResourceFuture;
-import com.applitools.eyes.visualGridClient.services.VisualGridManager;
+import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import com.applitools.eyes.visualGridClient.services.Task;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,7 +36,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private final List<RenderTaskListener> listeners = new ArrayList<>();
     private IEyesConnector eyesConnector;
     private String scriptResult;
-    private ICheckRGSettings renderingConfiguration;
+    private ICheckSettings renderingConfiguration;
     private List<Task> taskList;
     private List<Task> openTaskList;
     private RenderingInfo renderingInfo;
@@ -60,8 +59,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         void onRenderFailed(Exception e);
     }
 
-    public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckRGSettings renderingConfiguration,
-                         List<Task> taskList, List<Task> openTasks, VisualGridManager renderingGridManager,
+    public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckSettings renderingConfiguration,
+                         List<Task> taskList, List<Task> openTasks, VisualGridRunner renderingGridManager,
                          IDebugResourceWriter debugResourceWriter, RenderTaskListener listener) {
 
         this.eyesConnector = eyesConnector;
@@ -502,12 +501,12 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
         //Create RG requests
         List<RenderRequest> allRequestsForRG = new ArrayList<>();
-        ICheckRGSettingsInternal rcInternal = (ICheckRGSettingsInternal) renderingConfiguration;
+        ICheckSettingsInternal rcInternal = (ICheckSettingsInternal) renderingConfiguration;
 
         for (Task task : this.taskList) {
 
             RenderBrowserInfo browserInfo = task.getBrowserInfo();
-            RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), ((ICheckRGSettingsInternal) renderingConfiguration).getSizeMode(), rcInternal.getRegion(), browserInfo.getEmulationInfo());
+            RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), ((ICheckSettingsInternal) renderingConfiguration).getSizeMode(), rcInternal.getRegion(), browserInfo.getEmulationInfo());
 
             RenderRequest request = new RenderRequest(this.renderingInfo.getResultsUrl(), url, dom,
                     resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), rcInternal.getScriptHooks(), null, rcInternal.isSendDom(), task);

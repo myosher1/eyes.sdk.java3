@@ -1,21 +1,32 @@
 package com.applitools.eyes.selenium.fluent;
 
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.CheckSettings;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class SeleniumCheckSettings extends CheckSettings implements ISeleniumCheckTarget, Cloneable {
+public class SeleniumCheckSettings extends CheckSettings implements ISeleniumCheckTarget,Cloneable {
 
     private By targetSelector;
     private WebElement targetElement;
     private List<FrameLocator> frameChain = new ArrayList<>();
     private WebElement scrollRootElement;
     private By scrollRootSelector;
+
+    // For Rendering Grid
+    private static final String BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot";
+    private String selector;
+    private Region region;
+    private Map<String, String> scriptHooks = new HashMap<>();
+    private boolean isSendDom;
 
     SeleniumCheckSettings() {
     }
@@ -57,6 +68,9 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         clone.frameChain.addAll(this.frameChain);
         clone.scrollRootElement = this.scrollRootElement;
         clone.scrollRootSelector = this.scrollRootSelector;
+        clone.region = this.region;
+        clone.selector = this.selector;
+        clone.isSendDom = this.isSendDom;
         return clone;
     }
 
@@ -407,5 +421,73 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     @Override
     public By getScrollRootSelector() {
         return scrollRootSelector;
+    }
+
+    public SeleniumCheckSettings(String selector) {
+        this.selector = selector;
+    }
+
+    public SeleniumCheckSettings(String selector, Region region, boolean isSendDom) {
+        this.selector = selector;
+        this.region = region;
+        this.isSendDom = isSendDom;
+    }
+
+    private void setScirptHook(String script) {
+        this.scriptHooks.put(BEFORE_CAPTURE_SCREENSHOT, script);
+    }
+
+    @JsonProperty("sizeMode")
+    public String getSizeMode() {
+        if (region == null && selector == null) {
+            if (getStitchContent()) {
+                return "full-page";
+            } else {
+                return "viewport";
+            }
+        } else if (region != null) {
+            if (getStitchContent()) {
+                return "region";
+            } else {
+                return "region";
+            }
+        } else /* if (selector != null) */ {
+            if (getStitchContent()) {
+                return "selector";
+            } else {
+                return "selector";
+            }
+        }
+    }
+
+    public String getSelector() {
+        return selector;
+    }
+
+    public Region getRegion() {
+        return region;
+    }
+
+    @Override
+    public Map<String, String> getScriptHooks() {
+        return scriptHooks;
+    }
+
+    @Override
+    public boolean isSendDom() {
+        return isSendDom;
+    }
+
+    public SeleniumCheckSettings sendDom(boolean sendDom) {
+        SeleniumCheckSettings clone = this.clone();
+        clone.isSendDom = sendDom;
+        return clone;
+    }
+
+    public SeleniumCheckSettings webHook(String hook) {
+        SeleniumCheckSettings clone = new SeleniumCheckSettings();
+        populateClone(clone);
+        clone.setScirptHook(hook);
+        return clone;
     }
 }

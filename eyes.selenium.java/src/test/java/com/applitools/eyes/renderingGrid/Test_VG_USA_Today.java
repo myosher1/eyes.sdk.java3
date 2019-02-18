@@ -4,11 +4,11 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.rendering.Eyes;
-import com.applitools.eyes.rendering.Target;
+import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
 import com.applitools.eyes.visualGridClient.model.TestResultSummary;
-import com.applitools.eyes.visualGridClient.services.VisualGridManager;
+import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -22,18 +22,18 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class Test_VG_USA_Today {
-    private VisualGridManager renderingManager;
+    private VisualGridRunner renderingManager;
 
     private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
     private String dateTimeString = dateFormat.format(Calendar.getInstance().getTime());
-    private String defaultServerUrl = "https://eyes.applitools.com";
+    private String defaultServerUrl = "https://VisualGridEyes.applitools.com";
     private String defaultApiKey = System.getenv("APPLITOOLS_API_KEY");
     private String fabricDemoServerUrl = "https://fabricdemoeyes.applitools.com";
 
     @BeforeClass
     public void beforeClass() {
-        renderingManager = new VisualGridManager(10);
+        renderingManager = new VisualGridRunner(10);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
         FileLogger logHandler = new FileLogger("Oran.log", false, true);
         renderingManager.setLogHandler(logHandler);
@@ -60,7 +60,7 @@ public class Test_VG_USA_Today {
         eyes.setBatch(batch);
         eyes.setMatchLevel(MatchLevel.STRICT);
         eyes.setServerUrl(defaultServerUrl);
-//        eyes.setApiKey("2wDc2MarTPsvSJoJ98vT46iPQrT9H110XHY6mvt4dAb9mU110");
+//        VisualGridEyes.setApiKey("2wDc2MarTPsvSJoJ98vT46iPQrT9H110XHY6mvt4dAb9mU110");
 
         initLogging(testedUrl, eyes);
 
@@ -94,7 +94,7 @@ public class Test_VG_USA_Today {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            eyes.getLogger().log("calling eyes.close() for url " + testedUrl);
+            eyes.getLogger().log("calling VisualGridEyes.close() for url " + testedUrl);
 
             eyes.getLogger().log("end of `try` block for url " + testedUrl);
             eyes.close(false);

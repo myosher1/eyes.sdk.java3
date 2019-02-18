@@ -29,7 +29,7 @@ public class TestClassicApi extends TestSetup {
         super.platform = platform;
         super.forceFPS = false;
 
-        testSuitName = "Eyes Selenium SDK - Classic API";
+        testSuitName = "SeleniumEyes Selenium SDK - Classic API";
         testedPageUrl = "https://applitools.github.io/demo/TestPages/FramesTestPage/";
     }
 

@@ -1,21 +1,16 @@
 package com.applitools.eyes.renderingGrid;
 
-import com.applitools.eyes.*;
-import com.applitools.eyes.rendering.Eyes;
-import com.applitools.eyes.rendering.Target;
+import com.applitools.eyes.EyesBase;
+import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
-import com.applitools.eyes.visualGridClient.model.TestResultSummary;
-import com.applitools.eyes.visualGridClient.services.VisualGridManager;
-import com.applitools.utils.GeneralUtils;
-import org.openqa.selenium.WebDriver;
+import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
-import org.testng.ITestContext;
-import org.testng.annotations.*;
-
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Factory;
+import org.testng.annotations.Test;
 
 public class TestVGServerConfigs {
     private final String server1;
@@ -27,7 +22,7 @@ public class TestVGServerConfigs {
     private final String expectedServer;
     private final String expectedKey;
     private final boolean expectedDisabled;
-    private VisualGridManager renderingManager;
+    private VisualGridRunner renderingManager;
 
 
     @Factory(dataProvider = "dp")
@@ -51,7 +46,7 @@ public class TestVGServerConfigs {
 
     @BeforeClass
     public void beforeClass() {
-        renderingManager = new VisualGridManager(3);
+        renderingManager = new VisualGridRunner(3);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
         renderingManager.getLogger().log("enter");
         renderingManager.setServerUrl(server1);
@@ -61,7 +56,7 @@ public class TestVGServerConfigs {
 
     @DataProvider(name = "dp")
     public static Object[][] dp() {
-        String server1 = "https://eyes.applitools.com";
+        String server1 = "https://eyesapi.applitools.com";
         String server2 = "https://fabricdemoeyes.applitools.com/";
         String key1 = System.getenv("APPLITOOLS_API_KEY");
         String key2 = System.getenv("FABRICAM_DEMO_EYES_API_KEY");

@@ -1,6 +1,6 @@
 package com.applitools.eyes.visualGridClient.services;
 
-import com.applitools.ICheckRGSettings;
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.LogHandler;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualGridClient.model.*;
@@ -9,7 +9,7 @@ import com.applitools.utils.GeneralUtils;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class VisualGridManager {
+public class VisualGridRunner implements EyesRunner {
 
     private int concurrentOpenSessions;
 
@@ -175,16 +175,16 @@ public class VisualGridManager {
 
     };
 
-    public VisualGridManager(int concurrentOpenSessions) {
+    public VisualGridRunner(int concurrentOpenSessions) {
         this(concurrentOpenSessions, null, null, null, null);
 
     }
 
-    public VisualGridManager(int concurrentOpenSessions,
-                             Object openerServiceDebugLock,
-                             Object checkerServiceDebugLock,
-                             Object closerServiceDebugLock,
-                             Object renderServiceDebugLock) {
+    public VisualGridRunner(int concurrentOpenSessions,
+                            Object openerServiceDebugLock,
+                            Object checkerServiceDebugLock,
+                            Object closerServiceDebugLock,
+                            Object renderServiceDebugLock) {
 
         this.concurrentOpenSessions = concurrentOpenSessions;
         this.openerServiceDebugLock = openerServiceDebugLock;
@@ -464,7 +464,7 @@ public class VisualGridManager {
         notifyAllServices();
     }
 
-    public synchronized void check(ICheckRGSettings settings, IDebugResourceWriter debugResourceWriter, String script,
+    public synchronized void check(ICheckSettings settings, IDebugResourceWriter debugResourceWriter, String script,
                                    IEyesConnector connector, List<Task> taskList, List<Task> openTasks, final RenderListener listener) {
 
         if (debugResourceWriter == null) {

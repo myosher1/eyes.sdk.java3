@@ -1,12 +1,12 @@
 package com.applitools.eyes.demo;
 
 import com.applitools.ICheckSettings;
-import com.applitools.eyes.*;
-import com.applitools.eyes.rendering.Eyes;
-import com.applitools.eyes.selenium.StitchMode;
-import com.applitools.eyes.selenium.config.Configuration;
+import com.applitools.eyes.BatchInfo;
+import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualGridClient.model.RenderingConfiguration;
-import com.applitools.eyes.visualGridClient.services.VisualGridManager;
+import com.applitools.eyes.visualGridClient.services.VisualGridRunner;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.AfterClass;
@@ -19,7 +19,7 @@ public class TestSuite {
     private Eyes eyes;
     private WebDriver webDriver;
     private ICheckSettings checkSettings;
-    private VisualGridManager visualGridManager;
+    private VisualGridRunner visualGridManager;
 
     public TestSuite() {
         this.webDriver = new ChromeDriver();
@@ -27,16 +27,16 @@ public class TestSuite {
 
     @BeforeClass
     public void before_VisualGrid() {
-        visualGridManager = new VisualGridManager(4);
+        visualGridManager = new VisualGridRunner(4);
         visualGridManager.setLogHandler(new StdoutLogHandler(true));
 
         visualGridManager.setServerUrl("https://fabricdemoeyes.applitools.com/");
         visualGridManager.setApiKey(System.getenv("FABRICAM_DEMO_EYES_API_KEY"));
 
-        com.applitools.eyes.rendering.Eyes eyes = new com.applitools.eyes.rendering.Eyes(visualGridManager);
+        Eyes eyes = new Eyes(visualGridManager);
         eyes.setBatch(new BatchInfo("Applitools Visual Grid Demo"));
 
-        //eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888));
+        //VisualGridEyes.setProxy(new ProxySettings("http://127.0.0.1", 8888));
 
         RenderingConfiguration configuration = new RenderingConfiguration();
         initConfig(configuration);
@@ -49,14 +49,14 @@ public class TestSuite {
         eyes.open(webDriver, configuration);
         this.eyes = eyes;
 
-        this.checkSettings = com.applitools.eyes.rendering.Target.window();
+        this.checkSettings = Target.window();
     }
 
 //    @BeforeClass
 //    public void before_LocalRendering() {
-//        com.applitools.eyes.selenium.Eyes eyes = new com.applitools.eyes.selenium.Eyes();
-//        eyes.setLogHandler(new StdoutLogHandler(true));
-//        eyes.setBatch(new BatchInfo("Applitools Local Rendering Demo"));
+//        com.applitools.VisualGridEyes.selenium.SeleniumEyes VisualGridEyes = new com.applitools.VisualGridEyes.selenium.SeleniumEyes();
+//        VisualGridEyes.setLogHandler(new StdoutLogHandler(true));
+//        VisualGridEyes.setBatch(new BatchInfo("Applitools Local Rendering Demo"));
 //
 //        Configuration configuration = new Configuration();
 //        initConfig(configuration);
@@ -65,10 +65,10 @@ public class TestSuite {
 //        configuration.setStitchMode(StitchMode.CSS);
 //        configuration.setViewportSize(new RectangleSize(1200, 800));
 //
-//        eyes.open(webDriver, configuration);
-//        this.eyes = eyes;
+//        VisualGridEyes.open(webDriver, configuration);
+//        this.VisualGridEyes = VisualGridEyes;
 //
-//        this.checkSettings = com.applitools.eyes.selenium.fluent.Target.window();
+//        this.checkSettings = com.applitools.VisualGridEyes.selenium.fluent.Target.window();
 //    }
 
     private void initConfig(com.applitools.eyes.config.Configuration configuration) {

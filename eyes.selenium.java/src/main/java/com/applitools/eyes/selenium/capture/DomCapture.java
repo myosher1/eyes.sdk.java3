@@ -6,7 +6,7 @@ import com.applitools.eyes.Location;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.positioning.PositionMemento;
 import com.applitools.eyes.positioning.PositionProvider;
-import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.SeleniumEyes;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.wrappers.EyesTargetLocator;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
@@ -64,7 +64,7 @@ public class DomCapture {
     private String frameStartToken;
     private boolean shouldWaitForPhaser = false;
 
-    public DomCapture(Eyes eyes) {
+    public DomCapture(SeleniumEyes eyes) {
         mServerConnector = eyes.getServerConnector();
         logger = eyes.getLogger();
         driver = (EyesWebDriver) eyes.getDriver();

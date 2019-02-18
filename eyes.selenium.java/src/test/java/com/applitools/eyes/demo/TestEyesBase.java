@@ -2,14 +2,14 @@ package com.applitools.eyes.demo;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.FileLogger;
-import com.applitools.eyes.IEyes;
 import com.applitools.eyes.LogHandler;
 import com.applitools.eyes.Logger;
+import com.applitools.eyes.selenium.Eyes;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.DataProvider;
 
-public abstract class TestIEyesBase {
+public abstract class TestEyesBase {
 
     protected final String SERVER_URL = "https://eyes.applitools.com/";
 
@@ -31,11 +31,11 @@ public abstract class TestIEyesBase {
 
     public void test(String testedUrl) {
         WebDriver webDriver = new ChromeDriver();
-        IEyes eyes = initEyes(webDriver, testedUrl);
-        Logger logger = eyes.getLogger();
-        webDriver.get(testedUrl);
-        logger.log("navigated to " + testedUrl);
         try {
+            Eyes eyes = initEyes(webDriver, testedUrl);
+            Logger logger = eyes.getLogger();
+            webDriver.get(testedUrl);
+            logger.log("navigated to " + testedUrl);
             logger.log("running check for url " + testedUrl);
             ICheckSettings windowCheckSettings = getNewWindowCheckSettings();
             eyes.check(windowCheckSettings.withName("Step1 - " + testedUrl));
@@ -49,7 +49,7 @@ public abstract class TestIEyesBase {
 
     protected abstract ICheckSettings getNewWindowCheckSettings();
 
-    protected abstract IEyes initEyes(WebDriver webDriver, String testedUrl);
+    protected abstract Eyes initEyes(WebDriver webDriver, String testedUrl);
 
     protected LogHandler initLogHandler(String testName) {
         return new FileLogger("eyes_" + testName + ".log", false, false);

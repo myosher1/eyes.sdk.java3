@@ -3,11 +3,11 @@ package com.applitools.eyes.selenium.positioning;
 import com.applitools.eyes.BrowserNames;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.UserAgent;
-import com.applitools.eyes.selenium.Eyes;
+import com.applitools.eyes.selenium.SeleniumEyes;
 
 public class RegionPositionCompensationFactory {
 
-    public static RegionPositionCompensation getRegionPositionCompensation(UserAgent userAgent, Eyes eyes, Logger logger) {
+    public static RegionPositionCompensation getRegionPositionCompensation(UserAgent userAgent, SeleniumEyes eyes, Logger logger) {
         if (userAgent != null) {
             if (userAgent.getBrowser().equals(BrowserNames.Firefox)) {
                 try {
