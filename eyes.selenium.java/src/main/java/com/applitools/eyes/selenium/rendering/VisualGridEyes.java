@@ -2,8 +2,8 @@ package com.applitools.eyes.selenium.rendering;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
-import com.applitools.eyes.visualGridClient.model.*;
-import com.applitools.eyes.visualGridClient.services.*;
+import com.applitools.eyes.visualgridclient.model.*;
+import com.applitools.eyes.visualgridclient.services.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.JavascriptExecutor;

@@ -1,7 +1,7 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.visualGridClient.model.TestResultSummary;
-import com.applitools.eyes.visualGridClient.services.EyesRunner;
+import com.applitools.eyes.visualgridclient.model.TestResultSummary;
+import com.applitools.eyes.visualgridclient.services.EyesRunner;
 
 public class SeleniumRunner implements EyesRunner {
     @Override

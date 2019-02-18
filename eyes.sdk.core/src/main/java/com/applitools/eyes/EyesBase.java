@@ -2,7 +2,7 @@ package com.applitools.eyes;
 
 import com.applitools.ICheckSettings;
 import com.applitools.IDomCaptureListener;
-import com.applitools.eyes.visualGridClient.model.RenderingInfo;
+import com.applitools.eyes.visualgridclient.model.RenderingInfo;
 import com.applitools.eyes.capture.AppOutputProvider;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.config.Configuration;

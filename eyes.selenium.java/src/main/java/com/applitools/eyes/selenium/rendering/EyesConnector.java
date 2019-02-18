@@ -5,9 +5,9 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.config.Configuration;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
-import com.applitools.eyes.visualGridClient.services.IEyesConnector;
-import com.applitools.eyes.visualGridClient.services.IResourceFuture;
-import com.applitools.eyes.visualGridClient.model.*;
+import com.applitools.eyes.visualgridclient.services.IEyesConnector;
+import com.applitools.eyes.visualgridclient.services.IResourceFuture;
+import com.applitools.eyes.visualgridclient.model.*;
 
 import java.net.URI;
 import java.net.URL;

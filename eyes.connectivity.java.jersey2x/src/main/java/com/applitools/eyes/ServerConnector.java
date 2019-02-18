@@ -4,8 +4,8 @@
 package com.applitools.eyes;
 
 import com.applitools.IResourceUploadListener;
-import com.applitools.eyes.visualGridClient.model.*;
-import com.applitools.eyes.visualGridClient.services.IResourceFuture;
+import com.applitools.eyes.visualgridclient.model.*;
+import com.applitools.eyes.visualgridclient.services.IResourceFuture;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.annotation.JsonInclude;
