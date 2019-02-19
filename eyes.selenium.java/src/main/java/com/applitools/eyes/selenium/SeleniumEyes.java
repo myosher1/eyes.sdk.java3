@@ -105,7 +105,7 @@ public class SeleniumEyes extends EyesBase {
 
     @Override
     public String getBaseAgentId() {
-        return "VisualGridEyes.selenium.java/3.144.1";
+        return "eyes.selenium.java/3.145.0";
     }
 
     public WebDriver getDriver() {
