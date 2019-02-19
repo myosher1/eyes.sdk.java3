@@ -64,4 +64,11 @@ public class Configuration extends com.applitools.eyes.config.Configuration {
                 "\n\thideScrollbars = " + hideScrollbars +
                 "\n\thideCaret = " + hideCaret ;
     }
+
+    public Configuration(com.applitools.eyes.config.Configuration config) {
+        super(config);
+    }
+
+    public Configuration() {
+    }
 }

@@ -1,5 +1,6 @@
 package com.applitools.eyes.visualgridclient.model;
 
+import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.config.Configuration;
 
 import java.util.ArrayList;
@@ -7,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class RenderingConfiguration extends Configuration {
-
 
     public enum BrowserType {CHROME, FIREFOX}
 
@@ -23,6 +23,36 @@ public class RenderingConfiguration extends Configuration {
         this.isThrowExceptionOn = configuration.isThrowExceptionOn;
         this.testName = configuration.testName;
     }
+
+    public RenderingConfiguration(Configuration configuration) {
+        super(configuration);
+        ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
+        RectangleSize viewportSize = configuration.getViewportSize();
+        browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, configuration.getBaselineEnvName()));
+        this.browsersInfo = browsersInfo;
+        this.concurrentSessions = 1;
+        this.testName = configuration.getTestName();
+    }
+
+    public RenderingConfiguration(String appName, String testName,
+                                  RectangleSize viewportSize) {
+        super();
+        ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
+        browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, null));
+        this.browsersInfo = browsersInfo;
+        this.concurrentSessions = 1;
+        this.testName = testName;
+        this.setAppName(appName);
+    }
+
+    public RenderingConfiguration(RectangleSize viewportSize) {
+        super();
+        ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
+        browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, null));
+        this.browsersInfo = browsersInfo;
+        this.concurrentSessions = 1;
+    }
+
 
     private int concurrentSessions = 3;
     private boolean isThrowExceptionOn = false;
@@ -50,11 +80,13 @@ public class RenderingConfiguration extends Configuration {
         addBrowser(browserInfo);
         return this;
     }
+
     public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType, String baselineEnvName) {
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType, baselineEnvName, null);
         addBrowser(browserInfo);
         return this;
     }
+
     public RenderingConfiguration addBrowser(int width, int height, BrowserType browserType) {
         return addBrowser(width, height, browserType, null, null);
     }
@@ -96,5 +128,11 @@ public class RenderingConfiguration extends Configuration {
     @Override
     public RenderingConfiguration cloneConfig() {
         return new RenderingConfiguration(this);
+    }
+
+    @Override
+    public RectangleSize getViewportSize(){
+        RenderBrowserInfo renderBrowserInfo = this.browsersInfo.get(0);
+        return new RectangleSize(renderBrowserInfo.getWidth(), renderBrowserInfo.getHeight());
     }
 }

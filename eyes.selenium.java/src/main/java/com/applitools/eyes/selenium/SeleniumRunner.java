@@ -1,6 +1,5 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.visualgridclient.model.TestResultContainer;
 import com.applitools.eyes.visualgridclient.model.TestResultSummary;

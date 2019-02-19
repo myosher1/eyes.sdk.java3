@@ -42,16 +42,32 @@ public class Eyes {
             isVisualGridEyes = true;
         } else {
             seleniumEyes = new SeleniumEyes();
-            ((SeleniumRunner)runner).addEyes(this);
+            ((SeleniumRunner) runner).addEyes(this);
         }
     }
 
-    public void open(WebDriver webDriver, RenderingConfiguration renderingConfiguration) {
-        visualGridEyes.open(webDriver, renderingConfiguration);
+    public WebDriver open(WebDriver webDriver, RenderingConfiguration renderingConfiguration) {
+        ArgumentGuard.notNull(renderingConfiguration, "renderingConfiguration");
+        if (isVisualGridEyes) {
+            return visualGridEyes.open(webDriver, renderingConfiguration);
+        } else {
+            return seleniumEyes.open(webDriver, convertConfigs(renderingConfiguration));
+        }
+    }
+
+    private Configuration convertConfigs(RenderingConfiguration renderingConfiguration) {
+        Configuration configuration = new Configuration(renderingConfiguration);
+        configuration.setViewportSize(renderingConfiguration.getViewportSize());
+        return configuration;
     }
 
     public void open(WebDriver webDriver, Configuration configuration) {
-        seleniumEyes.open(webDriver, configuration);
+        ArgumentGuard.notNull(configuration, "configuration");
+        if (this.isVisualGridEyes) {
+            visualGridEyes.open(webDriver, new RenderingConfiguration(configuration));
+        } else {
+            seleniumEyes.open(webDriver, configuration);
+        }
     }
 
 
@@ -1098,7 +1114,13 @@ public class Eyes {
      * frame handling.
      */
     public WebDriver open(WebDriver driver, String appName, String testName) {
-        return this.seleniumEyes.open(driver, appName, testName);
+        if (isVisualGridEyes) {
+            RectangleSize viewportSize = SeleniumEyes.getViewportSize(driver);
+            return visualGridEyes.open(driver, new RenderingConfiguration(appName, testName, viewportSize));
+        } else {
+
+            return this.seleniumEyes.open(driver, appName, testName);
+        }
     }
 
     /**
@@ -1117,7 +1139,12 @@ public class Eyes {
      */
     public WebDriver open(WebDriver driver, String appName, String testName,
                           RectangleSize viewportSize) {
-        return this.seleniumEyes.open(driver, appName, testName, viewportSize);
+        if (isVisualGridEyes) {
+            return this.visualGridEyes.open(driver, new RenderingConfiguration(appName, testName, viewportSize));
+        } else {
+
+            return this.seleniumEyes.open(driver, appName, testName, viewportSize);
+        }
     }
 
     public boolean getHideCaret() {
@@ -1452,6 +1479,7 @@ public class Eyes {
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
+     *
      * @param frameNameOrId The name or id of the frame to check. (The same
      *                      name/id as would be used in a call to
      *                      driver.switchTo().frame()).
@@ -1481,6 +1509,7 @@ public class Eyes {
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
+     *
      * @param frameIndex   The index of the frame to switch to. (The same index
      *                     as would be used in a call to
      *                     driver.switchTo().frame()).
@@ -1511,6 +1540,7 @@ public class Eyes {
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
+     *
      * @param frameReference The element which is the frame to switch to. (as
      *                       would be used in a call to
      *                       driver.switchTo().frame() ).
@@ -1524,6 +1554,7 @@ public class Eyes {
     /**
      * Matches the frame given by the frames path, by switching into the frame
      * and using stitching to get an image of the frame.
+     *
      * @param framePath    The path to the frame to check. This is a list of
      *                     frame names/IDs (where each frame is nested in the
      *                     previous frame).
@@ -1556,12 +1587,11 @@ public class Eyes {
      * @return The URI of the eyes server.
      */
     public URI getServerUrl() {
-       if(this.isVisualGridEyes){
-           return this.visualGridEyes.getServerUrl();
-       }
-       else{
-           return this.seleniumEyes.getServerUrl();
-       }
+        if (this.isVisualGridEyes) {
+            return this.visualGridEyes.getServerUrl();
+        } else {
+            return this.seleniumEyes.getServerUrl();
+        }
     }
 
     public void setSendDom(boolean isSendDom) {
