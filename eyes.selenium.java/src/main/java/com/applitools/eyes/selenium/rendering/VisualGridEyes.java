@@ -108,8 +108,8 @@ public class VisualGridEyes implements IRenderingEyes {
         }
     }
 
-    public void open(WebDriver webDriver, RenderingConfiguration renderingConfiguration) {
-        if (getIsDisabled()) return;
+    public WebDriver open(WebDriver webDriver, RenderingConfiguration renderingConfiguration) {
+        if (getIsDisabled()) return webDriver;
         logger.verbose("enter");
 
         ArgumentGuard.notNull(webDriver, "webDriver");
@@ -133,6 +133,7 @@ public class VisualGridEyes implements IRenderingEyes {
         logger.verbose(String.format("opening %d tests...", testList.size()));
         this.renderingGridManager.open(this, renderingInfo);
         logger.verbose("done");
+        return webDriver;
     }
 
     private IEyesConnector createVGEyesConnector(RenderBrowserInfo browserInfo) {
