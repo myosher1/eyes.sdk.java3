@@ -70,10 +70,6 @@ public class TestVGEyes extends TestEyesBase {
         super.test(testName);
     }
 
-    @AfterMethod
-    public void afterMethod() {
-        eyes.close();
-    }
 
     @AfterClass
     public void afterClass(ITestContext testContext) {
