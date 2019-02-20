@@ -2,10 +2,10 @@ package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.selenium.SeleniumRunner;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.*;
 import com.applitools.eyes.visualgridclient.services.EyesRunner;
+import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -26,7 +26,7 @@ public class TestTopSites {
 
     @BeforeClass
     public void beforeClass() {
-        renderingManager = new SeleniumRunner();
+        renderingManager = new VisualGridRunner(10);
         renderingManager.setLogHandler(new StdoutLogHandler(true));
         FileLogger logHandler = new FileLogger("eyes.log", false, true);
         renderingManager.setLogHandler(logHandler);
@@ -37,16 +37,16 @@ public class TestTopSites {
     @DataProvider(name = "dp", parallel = true)
     public static Object[][] dp() {
         return new Object[][]{
-//                {"https://google.com"},
+                {"https://google.com"},
                 {"https://facebook.com"},
-//                {"https://youtube.com"},
-//                {"https://amazon.com"},
-//                {"https://yahoo.com"},
-//                {"https://ebay.com"},
-//                {"https://twitter.com"},
-//                {"https://wikipedia.org"},
-//                {"https://instagram.com"},
-//                {"https://www.target.com/c/blankets-throws/-/N-d6wsb?lnk=ThrowsBlankets%E2%80%9C,tc"},
+                {"https://youtube.com"},
+                {"https://amazon.com"},
+                {"https://yahoo.com"},
+                {"https://ebay.com"},
+                {"https://twitter.com"},
+                {"https://wikipedia.org"},
+                {"https://instagram.com"},
+                {"https://www.target.com/c/blankets-throws/-/N-d6wsb?lnk=ThrowsBlankets%E2%80%9C,tc"},
         };
     }
 
@@ -72,7 +72,7 @@ public class TestTopSites {
             renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME, environment);
             renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME, environment);
             logger.log("created configurations for url " + testedUrl);
-            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
+//            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //VisualGridEyes.setServerUrl("https://eyes.applitools.com/");
             eyes.open(webDriver, renderingConfiguration);
         } catch (Exception e) {
