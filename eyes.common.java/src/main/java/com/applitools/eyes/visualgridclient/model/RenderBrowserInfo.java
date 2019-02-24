@@ -1,25 +1,26 @@
 package com.applitools.eyes.visualgridclient.model;
 
 import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.config.SeleniumConfiguration;
 
 public class RenderBrowserInfo {
 
     private RectangleSize viewportSize;
-    private RenderingConfiguration.BrowserType browserType;
+    private SeleniumConfiguration.BrowserType browserType;
     private String platform = "linux";
-    private EmulationBaseInfo emulationInfo = null;
+    private EmulationBaseInfo emulationInfo;
     private String sizeMode = "full-page";
     private String baselineEnvName;
 
 
-    public RenderBrowserInfo(int width, int height, RenderingConfiguration.BrowserType browserType, String baselineEnvName, EmulationBaseInfo emulationInfo) {
+    public RenderBrowserInfo(int width, int height, SeleniumConfiguration.BrowserType browserType, String baselineEnvName, EmulationBaseInfo emulationInfo) {
         this.baselineEnvName = baselineEnvName;
         this.viewportSize = new RectangleSize(width, height);
         this.browserType = browserType;
         this.emulationInfo = emulationInfo;
     }
 
-    public RenderBrowserInfo(int width, int height, RenderingConfiguration.BrowserType browserType, String baselineEnvName) {
+    public RenderBrowserInfo(int width, int height, SeleniumConfiguration.BrowserType browserType, String baselineEnvName) {
         this(width, height, browserType,  baselineEnvName, null);
     }
 
@@ -45,7 +46,7 @@ public class RenderBrowserInfo {
         return "";
     }
 
-    public void setBrowserType(RenderingConfiguration.BrowserType browserType) {
+    public void setBrowserType(SeleniumConfiguration.BrowserType browserType) {
         this.browserType = browserType;
     }
 

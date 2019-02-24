@@ -3,10 +3,10 @@ package com.applitools.eyes.renderingGrid;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
+import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.FileDebugResourceWriter;
-import com.applitools.eyes.visualgridclient.model.RenderingConfiguration;
 import com.applitools.eyes.visualgridclient.model.TestResultSummary;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
@@ -53,15 +53,15 @@ public final class TestRenderingGridService {
         eyes.setBatch(new BatchInfo("SimpleVisualGridBatch"));
 
         try {
-            RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
-            renderingConfiguration.setTestName("Open Concurrency with Batch 2");
-            renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
-            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME);
-            renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
+            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
+            seleniumConfiguration.setTestName("Open Concurrency with Batch 2");
+            seleniumConfiguration.setAppName("RenderingGridIntegration");
+            seleniumConfiguration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME);
+            seleniumConfiguration.addBrowser(700, 500, SeleniumConfiguration.BrowserType.CHROME);
+            seleniumConfiguration.addBrowser(400, 300, SeleniumConfiguration.BrowserType.CHROME);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //VisualGridEyes.setServerUrl("https://eyes.applitools.com/");
-            eyes.open(webDriver, renderingConfiguration);
+            eyes.open(webDriver, seleniumConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             eyes.check(Target.window().withName("test").fully(false).sendDom(false));
             TestResults close = eyes.close();

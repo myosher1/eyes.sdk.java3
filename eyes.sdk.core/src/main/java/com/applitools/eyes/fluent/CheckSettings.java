@@ -397,6 +397,11 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         return false;
     }
 
+    @Override
+    public void setSizeMode(String sizeMode) {
+
+    }
+
     protected void updateTargetRegion(Region region) {
         this.targetRegion = region;
     }

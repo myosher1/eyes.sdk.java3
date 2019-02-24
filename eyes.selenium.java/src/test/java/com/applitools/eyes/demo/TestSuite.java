@@ -3,9 +3,10 @@ package com.applitools.eyes.demo;
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.config.Configuration;
+import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.model.RenderingConfiguration;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -38,13 +39,13 @@ public class TestSuite {
 
         //VisualGridEyes.setProxy(new ProxySettings("http://127.0.0.1", 8888));
 
-        RenderingConfiguration configuration = new RenderingConfiguration();
+        SeleniumConfiguration configuration = new SeleniumConfiguration();
         initConfig(configuration);
         configuration.setTestName("Applitools Visual Grid Demo");
 
-        configuration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME);
-        configuration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME);
-        configuration.addBrowser(1920, 1000, RenderingConfiguration.BrowserType.CHROME);
+        configuration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME);
+        configuration.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.CHROME);
+        configuration.addBrowser(1920, 1000, SeleniumConfiguration.BrowserType.CHROME);
 
         eyes.open(webDriver, configuration);
         this.eyes = eyes;
@@ -52,26 +53,7 @@ public class TestSuite {
         this.checkSettings = Target.window();
     }
 
-//    @BeforeClass
-//    public void before_LocalRendering() {
-//        com.applitools.VisualGridEyes.selenium.SeleniumEyes VisualGridEyes = new com.applitools.VisualGridEyes.selenium.SeleniumEyes();
-//        VisualGridEyes.setLogHandler(new StdoutLogHandler(true));
-//        VisualGridEyes.setBatch(new BatchInfo("Applitools Local Rendering Demo"));
-//
-//        Configuration configuration = new Configuration();
-//        initConfig(configuration);
-//
-//        configuration.setTestName("Applitools Local Rendering Demo");
-//        configuration.setStitchMode(StitchMode.CSS);
-//        configuration.setViewportSize(new RectangleSize(1200, 800));
-//
-//        VisualGridEyes.open(webDriver, configuration);
-//        this.VisualGridEyes = VisualGridEyes;
-//
-//        this.checkSettings = com.applitools.VisualGridEyes.selenium.fluent.Target.window();
-//    }
-
-    private void initConfig(com.applitools.eyes.config.Configuration configuration) {
+    private void initConfig(Configuration configuration) {
         configuration.setAppName("Applitools Java3 Demo");
     }
 

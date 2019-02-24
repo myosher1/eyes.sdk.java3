@@ -3,8 +3,8 @@ package com.applitools.eyes.visualgridclient.services;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.Logger;
+import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
-import com.applitools.eyes.visualgridclient.model.RenderingConfiguration;
 import com.applitools.eyes.visualgridclient.model.TestResultContainer;
 
 import java.util.*;
@@ -19,7 +19,7 @@ public class RunningTest {
     private AtomicBoolean isTestClose = new AtomicBoolean(false);
     private AtomicBoolean isTestInExceptionMode = new AtomicBoolean(false);
     private RunningTestListener listener;
-    private RenderingConfiguration configuration;
+    private SeleniumConfiguration configuration;
     private HashMap<Task, FutureTask<TestResultContainer>> taskToFutureMapping = new HashMap<>();
     private Logger logger;
 
@@ -55,7 +55,7 @@ public class RunningTest {
         }
 
         @Override
-        public void onTaskFailed(Exception e, Task task) {
+        public void onTaskFailed(Error e, Task task) {
             setTestInExceptionMode(e);
             listener.onTaskComplete(task, RunningTest.this);
         }
@@ -68,7 +68,7 @@ public class RunningTest {
         }
     };
 
-    public RunningTest(IEyesConnector eyes, RenderingConfiguration configuration, RenderBrowserInfo browserInfo, Logger logger, RunningTestListener listener) {
+    public RunningTest(IEyesConnector eyes, SeleniumConfiguration configuration, RenderBrowserInfo browserInfo, Logger logger, RunningTestListener listener) {
         this.eyes = eyes;
         this.browserInfo = browserInfo;
         this.configuration = configuration;
@@ -199,7 +199,7 @@ public class RunningTest {
         return eyes;
     }
 
-    private void setTestInExceptionMode(Exception e) {
+    private void setTestInExceptionMode(Error e) {
         this.isTestInExceptionMode.set(true);
 
         logger.verbose("locking taskList.");
@@ -223,7 +223,7 @@ public class RunningTest {
         return logger;
     }
 
-    public RenderingConfiguration getConfiguration() {
+    public SeleniumConfiguration getConfiguration() {
         return configuration;
     }
 }

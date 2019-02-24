@@ -1,6 +1,5 @@
 package com.applitools.eyes.selenium.fluent;
 
-import com.applitools.ICheckSettings;
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.CheckSettings;
@@ -13,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SeleniumCheckSettings extends CheckSettings implements ISeleniumCheckTarget,Cloneable {
+public class SeleniumCheckSettings extends CheckSettings implements ISeleniumCheckTarget, Cloneable {
 
     private By targetSelector;
     private WebElement targetElement;
@@ -290,30 +289,22 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return clone;
     }
 
-    public SeleniumCheckSettings scrollRootElement(By selector)
-    {
+    public SeleniumCheckSettings scrollRootElement(By selector) {
         SeleniumCheckSettings clone = this.clone();
-        if (frameChain.size() == 0)
-        {
+        if (frameChain.size() == 0) {
             clone.scrollRootSelector = selector;
-        }
-        else
-        {
+        } else {
             frameChain.get(frameChain.size() - 1).setScrollRootSelector(selector);
         }
         return clone;
     }
 
-    public SeleniumCheckSettings scrollRootElement(WebElement element)
-    {
+    public SeleniumCheckSettings scrollRootElement(WebElement element) {
         SeleniumCheckSettings clone = this.clone();
-        if (frameChain.size() == 0)
-        {
+        if (frameChain.size() == 0) {
             clone.scrollRootElement = element;
-        }
-        else
-        {
-            frameChain.get(frameChain.size()- 1).setScrollRootElement(element);
+        } else {
+            frameChain.get(frameChain.size() - 1).setScrollRootElement(element);
         }
         return clone;
     }
@@ -439,25 +430,14 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
 
     @JsonProperty("sizeMode")
     public String getSizeMode() {
-        if (region == null && selector == null) {
-            if (getStitchContent()) {
-                return "full-page";
-            } else {
-                return "viewport";
-            }
-        } else if (region != null) {
-            if (getStitchContent()) {
-                return "region";
-            } else {
-                return "region";
-            }
-        } else /* if (selector != null) */ {
-            if (getStitchContent()) {
-                return "selector";
-            } else {
-                return "selector";
-            }
+
+
+        if (region != null) {
+            return "region";
+        } else if(selector != null){
+            return "selector";
         }
+          return "full-page";
     }
 
     public String getSelector() {

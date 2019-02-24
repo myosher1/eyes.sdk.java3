@@ -7,7 +7,6 @@ import com.applitools.eyes.TestResults;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.SeleniumRunner;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.model.RenderingConfiguration;
 import com.applitools.eyes.visualgridclient.model.TestResultSummary;
 import com.applitools.eyes.visualgridclient.services.EyesRunner;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;

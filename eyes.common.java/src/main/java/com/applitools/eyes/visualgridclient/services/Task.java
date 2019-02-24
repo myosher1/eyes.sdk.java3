@@ -29,7 +29,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
     private ICheckSettings checkSettings;
 
     private RunningTest runningTest;
-    private Exception exception;
+    private Error exception;
     private RenderingTask renderingTask = null;
 
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
@@ -38,7 +38,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
 
         void onTaskComplete(Task task);
 
-        void onTaskFailed(Exception e, Task task);
+        void onTaskFailed(Error e, Task task);
 
         void onRenderComplete();
 
@@ -110,7 +110,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
                         testResults = eyesConnector.abortIfNotClosed();
                     }
                     else{
-                        this.exception = new Exception("Rendering Failed");
+                        this.exception = new Error("Rendering Failed");
                         logger.log("Closing a not opened test");
                     }
             }
@@ -120,7 +120,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
             return testResultContainer;
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
-            notifyFailureAllListeners(e);
+            notifyFailureAllListeners(new Error(e));
         } finally {
             logger.verbose("marking task as complete: " + this.runningTest.getConfiguration().getTestName());
             this.isTaskComplete.set(true);
@@ -135,7 +135,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
         }
     }
 
-    private void notifyFailureAllListeners(Exception e) {
+    private void notifyFailureAllListeners(Error e) {
         for (TaskListener listener : listeners) {
             listener.onTaskFailed(e, this);
         }
@@ -177,16 +177,16 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
     public void setRenderError(String renderId) {
         logger.verbose("enter - renderId: " + renderId);
         for (TaskListener listener : listeners) {
-            listener.onTaskFailed(new Exception("Render Failed for " + this.getBrowserInfo() + " (renderId: " + renderId + ")"), this);
+            listener.onTaskFailed(new Error("Render Failed for " + this.getBrowserInfo() + " (renderId: " + renderId + ")"), this);
         }
         logger.verbose("exit - renderId: " + renderId);
     }
 
-    public Exception getException() {
+    public Error getException() {
         return exception;
     }
 
-    public void setException(Exception exception) {
+    public void setException(Error exception) {
         logger.verbose("aborting task with exception");
         this.exception = exception;
         this.type = TaskType.ABORT;

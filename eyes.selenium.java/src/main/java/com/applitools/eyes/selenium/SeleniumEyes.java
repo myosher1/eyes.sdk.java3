@@ -19,7 +19,7 @@ import com.applitools.eyes.positioning.*;
 import com.applitools.eyes.scaling.FixedScaleProviderFactory;
 import com.applitools.eyes.scaling.NullScaleProvider;
 import com.applitools.eyes.selenium.capture.*;
-import com.applitools.eyes.selenium.config.Configuration;
+import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.eyes.selenium.fluent.*;
 import com.applitools.eyes.selenium.frames.Frame;
@@ -130,11 +130,11 @@ public class SeleniumEyes extends EyesBase {
 
     @Override
     protected void ensureConfiguration() {
-        config = new Configuration();
+        config = new SeleniumConfiguration();
     }
 
-    private Configuration getConfig() {
-        return (Configuration) config;
+    private SeleniumConfiguration getConfig() {
+        return (SeleniumConfiguration) config;
     }
 
     public boolean getHideCaret() {
@@ -262,7 +262,7 @@ public class SeleniumEyes extends EyesBase {
         return devicePixelRatio;
     }
 
-    public WebDriver open(WebDriver driver, Configuration configuration) {
+    public WebDriver open(WebDriver driver, SeleniumConfiguration configuration) {
         config = configuration;
         return open(driver);
     }

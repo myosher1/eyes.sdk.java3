@@ -4,9 +4,9 @@ import com.applitools.eyes.TestResults;
 
 public class TestResultContainer {
     private TestResults testResults;
-    private Exception exception;
+    private Error exception;
 
-    public TestResultContainer(TestResults testResults, Exception exception) {
+    public TestResultContainer(TestResults testResults, Error exception) {
         this.testResults = testResults;
         this.exception = exception;
     }
@@ -15,7 +15,7 @@ public class TestResultContainer {
         return testResults;
     }
 
-    public Exception getException() {
+    public Error getException() {
         return exception;
     }
 

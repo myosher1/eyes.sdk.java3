@@ -1,8 +1,13 @@
 package com.applitools.eyes.selenium.rendering;
 
 import com.applitools.ICheckSettings;
+import com.applitools.ICheckSettingsInternal;
 import com.applitools.eyes.*;
-import com.applitools.eyes.visualgridclient.model.*;
+import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.visualgridclient.model.IDebugResourceWriter;
+import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
+import com.applitools.eyes.visualgridclient.model.RenderingInfo;
+import com.applitools.eyes.visualgridclient.model.TestResultContainer;
 import com.applitools.eyes.visualgridclient.services.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
@@ -48,6 +53,9 @@ public class VisualGridEyes implements IRenderingEyes {
     private boolean hideCaret = false;
     private Boolean isDisabled;
     private MatchLevel matchLevel = MatchLevel.STRICT;
+    private Boolean forceFullPageScreenshot = null;
+    private SeleniumConfiguration configuration = new SeleniumConfiguration();
+    private String agentId;
 
     {
         try {
@@ -108,14 +116,17 @@ public class VisualGridEyes implements IRenderingEyes {
         }
     }
 
-    public WebDriver open(WebDriver webDriver, RenderingConfiguration renderingConfiguration) {
+    public WebDriver open(WebDriver webDriver, SeleniumConfiguration renderingConfiguration) {
         if (getIsDisabled()) return webDriver;
         logger.verbose("enter");
+
 
         ArgumentGuard.notNull(webDriver, "webDriver");
         ArgumentGuard.notNull(renderingConfiguration, "renderingConfiguration");
 
         initDriver(webDriver);
+
+        mergeConfigurations(renderingConfiguration);
 
         if (renderingConfiguration.getBatch() == null) {
             renderingConfiguration.setBatch(batchInfo);
@@ -134,6 +145,46 @@ public class VisualGridEyes implements IRenderingEyes {
         this.renderingGridManager.open(this, renderingInfo);
         logger.verbose("done");
         return webDriver;
+    }
+
+    private void mergeConfigurations(SeleniumConfiguration renderingConfiguration) {
+        if (renderingConfiguration.getTestName() == null) {
+            renderingConfiguration.setTestName(this.configuration.getTestName());
+        }
+        if (renderingConfiguration.getBaselineEnvName() == null) {
+            renderingConfiguration.setBaselineEnvName(this.configuration.getBaselineEnvName());
+        }
+        if (renderingConfiguration.getBatch() == null) {
+            renderingConfiguration.setBatch(this.configuration.getBatch());
+        }
+        if (renderingConfiguration.getBranchName() == null) {
+            renderingConfiguration.setBranchName(this.configuration.getBranchName());
+        }
+        if (renderingConfiguration.getParentBranchName() == null) {
+            renderingConfiguration.setParentBranchName(this.configuration.getParentBranchName());
+        }
+        if (renderingConfiguration.getAgentId() == null) {
+            renderingConfiguration.setAgentId(this.configuration.getAgentId());
+        }
+        if (renderingConfiguration.getAppName() == null) {
+            renderingConfiguration.setAppName(this.configuration.getAppName());
+        }
+        if (renderingConfiguration.getEnvironmentName() == null) {
+            renderingConfiguration.setEnvironmentName(this.configuration.getEnvironmentName());
+        }
+        if (renderingConfiguration.getSaveDiffs() == null) {
+            renderingConfiguration.setSaveDiffs(this.configuration.getSaveDiffs());
+        }
+        if (renderingConfiguration.getSessionType() == null) {
+            renderingConfiguration.setSessionType(this.configuration.getSessionType());
+        }
+        if (renderingConfiguration.getTestName() == null) {
+            renderingConfiguration.setTestName(this.configuration.getTestName());
+        }
+        if (renderingConfiguration.getViewportSize() == null) {
+            renderingConfiguration.setViewportSize(this.configuration.getViewportSize());
+        }
+        this.configuration = renderingConfiguration;
     }
 
     private IEyesConnector createVGEyesConnector(RenderBrowserInfo browserInfo) {
@@ -386,19 +437,29 @@ public class VisualGridEyes implements IRenderingEyes {
 
         List<Task> taskList = new ArrayList<>();
 
+        ICheckSettingsInternal settingsInternal = (ICheckSettingsInternal) checkSettings;
+        String sizeMode = settingsInternal.getSizeMode();
+
+        //First check config
+        if (sizeMode == null) {
+            if (this.forceFullPageScreenshot != null && this.forceFullPageScreenshot) {
+                settingsInternal.setSizeMode("full-page");
+            }
+        }
+
         String domCaptureScript = "var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})";
 
-        logger.verbose(" $$$$$$$$$$    Dom extraction starting   (" + checkSettings.toString() + ")   $$$$$$$$$$$$");
+        logger.verbose("Dom extraction starting   (" + checkSettings.toString() + ")");
         String scriptResult = (String) this.jsExecutor.executeAsyncScript(domCaptureScript);
 
-        logger.verbose(" $$$$$$$$$$    Dom extracted  (" + checkSettings.toString() + ")   $$$$$$$$$$$$");
+        logger.verbose("Dom extracted  (" + checkSettings.toString() + ")");
 
         for (final RunningTest test : testList) {
             Task checkTask = test.check(checkSettings);
             taskList.add(checkTask);
         }
 
-        logger.verbose(" $$$$$$$$$$    added check tasks  (" + checkSettings.toString() + ")   $$$$$$$$$$$$");
+        logger.verbose("added check tasks  (" + checkSettings.toString() + ")");
 
         this.renderingGridManager.check(checkSettings, debugResourceWriter, scriptResult,
                 this.VGEyesConnector, taskList, openTasks,
@@ -410,11 +471,11 @@ public class VisualGridEyes implements IRenderingEyes {
 
                     @Override
                     public void onRenderFailed(Exception e) {
-
+                        GeneralUtils.logExceptionStackTrace(logger, e);
                     }
                 });
 
-        logger.verbose(" $$$$$$$$$$    created renderTask  (" + checkSettings.toString() + ")   $$$$$$$$$$$$");
+        logger.verbose("created renderTask  (" + checkSettings.toString() + ")");
     }
 
     private synchronized List<Task> addOpenTaskToAllRunningTest() {
@@ -449,7 +510,58 @@ public class VisualGridEyes implements IRenderingEyes {
         return "SelenuimVGEyes - url: " + url;
     }
 
-    public List<Future<TestResultContainer>> getCloseFutures() {
-        return futures;
+    public void setBaselineEnvName(String baselineEnvName) {
+        logger.log("Baseline environment name: " + baselineEnvName);
+
+        if (baselineEnvName == null || baselineEnvName.isEmpty()) {
+            this.configuration.setBaselineEnvName(null);
+        } else {
+            this.configuration.setBaselineEnvName(baselineEnvName.trim());
+        }
+    }
+
+    public BatchInfo getBatch() {
+        return batchInfo;
+    }
+
+    public boolean isForceFullPageScreenshot() {
+        return forceFullPageScreenshot;
+    }
+
+    public void setForceFullPageScreenshot(boolean forceFullPageScreenshot) {
+        this.forceFullPageScreenshot = forceFullPageScreenshot;
+    }
+
+    public String getFullAgentId() {
+        String agentId = getAgentId();
+        if (agentId == null) {
+            return getBaseAgentId();
+        }
+        return String.format("%s [%s]", agentId, getBaseAgentId());
+    }
+
+    private String getBaseAgentId() {
+        String agentId = getAgentId();
+        if (agentId == null) {
+            return getBaseAgentId();
+        }
+        return String.format("%s [%s]", agentId, getBaseAgentId());
+    }
+
+
+    /**
+     * Sets the user given agent id of the SDK. {@code null} is referred to
+     * as no id.
+     * @param agentId The agent ID to set.
+     */
+    public void setAgentId(String agentId) {
+        this.agentId = agentId;
+    }
+
+    /**
+     * @return The user given agent id of the SDK.
+     */
+    public String getAgentId() {
+        return agentId;
     }
 }

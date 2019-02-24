@@ -2,18 +2,17 @@ package com.applitools.eyes.demo;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.BatchInfo;
+import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.model.RenderingConfiguration;
-import com.applitools.eyes.visualgridclient.model.TestResultSummary;
+import com.applitools.eyes.visualgridclient.model.*;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.testng.ITestContext;
 import org.testng.annotations.AfterClass;
-import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -27,7 +26,7 @@ public class TestVGEyes extends TestEyesBase {
     @BeforeClass
     public void before() {
         renderingManager = new VisualGridRunner(40);
-        renderingManager.setLogHandler(new StdoutLogHandler(true));
+        renderingManager.setLogHandler(new FileLogger(true));
         renderingManager.setLogHandler(initLogHandler("visual_grid"));
         logger = renderingManager.getLogger();
         logger.log("enter");
@@ -44,19 +43,28 @@ public class TestVGEyes extends TestEyesBase {
     protected Eyes initEyes(WebDriver webDriver, String testedUrl) {
         Eyes eyes = new Eyes(renderingManager);
         eyes.setBatch(batchInfo);
+        eyes.setBaselineEnvName("applitools environment");
         Logger logger = eyes.getLogger();
         logger.log("creating WebDriver: " + testedUrl);
         try {
-            RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
-            renderingConfiguration.setTestName("Top Sites - " + testedUrl);
-            renderingConfiguration.setAppName("Top Sites");
-            String environment = "";
-            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME, environment);
-            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME, environment);
-            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME, environment);
-            renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME, environment);
+            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
+            seleniumConfiguration.setTestName("Top Sites - " + testedUrl);
+            seleniumConfiguration.setAppName("Top Sites");
+
+            String environment = "VeryCoolEnvironment";
+            seleniumConfiguration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME, environment);
+            seleniumConfiguration.addBrowser(700, 500, SeleniumConfiguration.BrowserType.CHROME, environment);
+            seleniumConfiguration.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.CHROME, environment);
+            seleniumConfiguration.addBrowser(1600, 1200, SeleniumConfiguration.BrowserType.CHROME, environment);
+
+            EmulationDevice emulationDevice = new EmulationDevice(300, 400, 0.5f, true, ScreenOrientation.LANDSCAPE);
+            EmulationInfo emulationInfo = new EmulationInfo(EmulationInfo.DeviceName.Galaxy_Note_II, ScreenOrientation.PORTRAIT);
+
+            seleniumConfiguration.addDeviceEmulation(emulationDevice, environment);
+            seleniumConfiguration.addDeviceEmulation(emulationInfo);
+
             logger.log("created configurations for url " + testedUrl);
-            eyes.open(webDriver, renderingConfiguration);
+            eyes.open(webDriver, seleniumConfiguration);
             this.eyes = eyes;
         } catch (Throwable e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
