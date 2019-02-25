@@ -1,6 +1,7 @@
 package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.*;
+import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.*;
@@ -27,7 +28,7 @@ public class TestTopSites {
     @BeforeClass
     public void beforeClass() {
         renderingManager = new VisualGridRunner(10);
-        renderingManager.setLogHandler(new StdoutLogHandler(true));
+//        renderingManager.setLogHandler(new StdoutLogHandler(true));
         FileLogger logHandler = new FileLogger("eyes.log", false, true);
         renderingManager.setLogHandler(logHandler);
         renderingManager.getLogger().log("enter");
@@ -41,7 +42,6 @@ public class TestTopSites {
                 {"https://facebook.com"},
                 {"https://youtube.com"},
                 {"https://amazon.com"},
-                {"https://yahoo.com"},
                 {"https://ebay.com"},
                 {"https://twitter.com"},
                 {"https://wikipedia.org"},
@@ -62,19 +62,19 @@ public class TestTopSites {
         logger.log("creating WebDriver: " + testedUrl);
 
         try {
-            RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
-            renderingConfiguration.setTestName("Top 10 websites - " + testedUrl);
-            renderingConfiguration.setAppName("Top Ten Sites");
+            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
+            seleniumConfiguration.setTestName("Top 10 websites - " + testedUrl);
+            seleniumConfiguration.setAppName("Top Ten Sites");
             String environment = "";
-            EmulationBaseInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.IPHONE4, ScreenOrientation.PORTRAIT);
-            renderingConfiguration.addBrowser(800, 600, RenderingConfiguration.BrowserType.CHROME, environment, emulation);
-            renderingConfiguration.addBrowser(700, 500, RenderingConfiguration.BrowserType.CHROME, environment);
-            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME, environment);
-            renderingConfiguration.addBrowser(1600, 1200, RenderingConfiguration.BrowserType.CHROME, environment);
+            EmulationInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.IPHONE4, ScreenOrientation.PORTRAIT);
+            seleniumConfiguration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME, environment);
+            seleniumConfiguration.addBrowser(700, 500, SeleniumConfiguration.BrowserType.CHROME, environment);
+            seleniumConfiguration.addBrowser(1600, 1200, SeleniumConfiguration.BrowserType.CHROME, environment);
+            seleniumConfiguration.addDeviceEmulation(emulation);
             logger.log("created configurations for url " + testedUrl);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //VisualGridEyes.setServerUrl("https://eyes.applitools.com/");
-            eyes.open(webDriver, renderingConfiguration);
+            eyes.open(webDriver, seleniumConfiguration);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
@@ -121,8 +121,8 @@ public class TestTopSites {
 //        FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
 //        VisualGridEyes.setDebugResourceWriter(fileDebugResourceWriter);
 
-        //FileLogger eyesLogger = new FileLogger("TopTenSites.log", true, true);
-        //VisualGridEyes.setLogHandler(eyesLogger);
+//        FileLogger eyesLogger = new FileLogger("TopTenSites.log", true, true);
+//        eyes.setLogHandler(eyesLogger);
     }
 
     @AfterMethod

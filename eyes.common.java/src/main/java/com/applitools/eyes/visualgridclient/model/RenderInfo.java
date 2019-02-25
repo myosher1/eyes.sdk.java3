@@ -12,7 +12,7 @@ public class RenderInfo {
     private int height;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String sizeMode;
+    private String sizeMode = "full-page";
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Region region;

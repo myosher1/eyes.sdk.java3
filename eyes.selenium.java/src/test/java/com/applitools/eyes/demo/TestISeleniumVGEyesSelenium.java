@@ -5,7 +5,7 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.selenium.config.Configuration;
+import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
@@ -41,7 +41,7 @@ public class TestISeleniumVGEyesSelenium extends TestEyesBase {
 
     @Override
     protected Eyes initEyes(WebDriver webDriver, String testedUrl) {
-        Configuration configuration = new Configuration();
+        SeleniumConfiguration configuration = new SeleniumConfiguration();
         configuration.setTestName("Top Sites - " + testedUrl);
         configuration.setAppName("Top Sites");
         configuration.setBatch(batchInfo);

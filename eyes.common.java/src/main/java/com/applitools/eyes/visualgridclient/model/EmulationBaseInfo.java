@@ -2,9 +2,9 @@ package com.applitools.eyes.visualgridclient.model;
 
 public abstract class EmulationBaseInfo {
 
-    protected ScreenOrientation screenOrientation;
+    ScreenOrientation screenOrientation;
 
-    public EmulationBaseInfo(ScreenOrientation screenOrientation) {
+    EmulationBaseInfo(ScreenOrientation screenOrientation) {
         this.screenOrientation = screenOrientation;
     }
 

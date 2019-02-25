@@ -31,12 +31,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RenderingTask implements Callable<RenderStatusResults>, CompletableTask {
 
     private static final int MAX_FETCH_FAILS = 62;
-    private static final int MAX_ITERATIONS = 30;
+    private static final int MAX_ITERATIONS = 100;
 
     private final List<RenderTaskListener> listeners = new ArrayList<>();
     private IEyesConnector eyesConnector;
     private String scriptResult;
-    private ICheckSettings renderingConfiguration;
+    private ICheckSettings checkSettings;
     private List<Task> taskList;
     private List<Task> openTaskList;
     private RenderingInfo renderingInfo;
@@ -59,13 +59,13 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         void onRenderFailed(Exception e);
     }
 
-    public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckSettings renderingConfiguration,
+    public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckSettings checkSettings,
                          List<Task> taskList, List<Task> openTasks, VisualGridRunner renderingGridManager,
                          IDebugResourceWriter debugResourceWriter, RenderTaskListener listener) {
 
         this.eyesConnector = eyesConnector;
         this.scriptResult = scriptResult;
-        this.renderingConfiguration = renderingConfiguration;
+        this.checkSettings = checkSettings;
         this.taskList = taskList;
         this.openTaskList = openTasks;
         this.renderingInfo = renderingGridManager.getRenderingInfo();
@@ -501,12 +501,13 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
         //Create RG requests
         List<RenderRequest> allRequestsForRG = new ArrayList<>();
-        ICheckSettingsInternal rcInternal = (ICheckSettingsInternal) renderingConfiguration;
+        ICheckSettingsInternal rcInternal = (ICheckSettingsInternal) checkSettings;
 
         for (Task task : this.taskList) {
 
             RenderBrowserInfo browserInfo = task.getBrowserInfo();
-            RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), ((ICheckSettingsInternal) renderingConfiguration).getSizeMode(), rcInternal.getRegion(), browserInfo.getEmulationInfo());
+
+            RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), ((ICheckSettingsInternal) checkSettings).getSizeMode(), rcInternal.getRegion(), browserInfo.getEmulationInfo());
 
             RenderRequest request = new RenderRequest(this.renderingInfo.getResultsUrl(), url, dom,
                     resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), rcInternal.getScriptHooks(), null, rcInternal.isSendDom(), task);
@@ -771,6 +772,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         List<String> ids = getRenderIds(runningRenders.keySet());
         int numOfIterations = 0;
 
+        boolean isMaxIterationNotReached = false;
         do {
 
             List<RenderStatusResults> renderStatusResultsList = null;
@@ -801,7 +803,13 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
             numOfIterations++;
 
-        } while (!ids.isEmpty() && numOfIterations < MAX_ITERATIONS);
+            isMaxIterationNotReached = numOfIterations < MAX_ITERATIONS;
+
+            if(!isMaxIterationNotReached){
+                logger.log("Max iteration reached for url - "+ this.dom.getUrl());
+            }
+
+        } while (!ids.isEmpty() && isMaxIterationNotReached);
 
         for (String id : ids) {
             for (RunningRender renderedRender : runningRenders.keySet()) {
@@ -814,7 +822,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
         }
 
-        ICheckSettingsInternal rcInternal = (ICheckSettingsInternal) renderingConfiguration;
+        ICheckSettingsInternal rcInternal = (ICheckSettingsInternal) checkSettings;
         logger.verbose("marking task as complete: " + rcInternal.getName());
         this.isTaskComplete.set(true);
         this.notifySuccessAllListeners();
@@ -856,6 +864,10 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                             }
                         }
                         logger.verbose("setting task " + task + " render result: " + renderStatusResults + " to url " + this.result.get("url"));
+                        String error = renderStatusResults.getError();
+                        if(error != null){
+                            GeneralUtils.logExceptionStackTrace(logger, new Exception(error));
+                        }
                         task.setRenderResult(renderStatusResults);
                         break;
                     }

@@ -21,4 +21,6 @@ public interface ICheckSettingsInternal {
     Region getRegion();
 
     boolean isSendDom();
+
+    void setSizeMode(String sizeMode);
 }

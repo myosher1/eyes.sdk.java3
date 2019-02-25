@@ -4,9 +4,9 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
+import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.model.RenderingConfiguration;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
@@ -50,13 +50,13 @@ public final class TestRenderingGridServiceWithJsHook {
         Eyes eyes = initEyes(webDriver, new BatchInfo("WebHookBatch") );
 
         try {
-            RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
-            renderingConfiguration.setTestName("Visual Grid With Web Hook");
-            renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowser(400, 300, RenderingConfiguration.BrowserType.CHROME);
+            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
+            seleniumConfiguration.setTestName("Visual Grid With Web Hook");
+            seleniumConfiguration.setAppName("RenderingGridIntegration");
+            seleniumConfiguration.addBrowser(400, 300, SeleniumConfiguration.BrowserType.CHROME);
             //VisualGridEyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             eyes.setServerUrl("https://eyes.applitools.com/");
-            ((Eyes) eyes).open(webDriver, renderingConfiguration);
+            ((Eyes) eyes).open(webDriver, seleniumConfiguration);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             String jshook = "document.body.style='background-color: red'";
             eyes.check(Target.window().withName("test").fully().sendDom(false).webHook(jshook));
@@ -78,11 +78,11 @@ public final class TestRenderingGridServiceWithJsHook {
         Logger logger = eyes.getLogger();
 
         try {
-            RenderingConfiguration renderingConfiguration = new RenderingConfiguration();
-            renderingConfiguration.setTestName("Vans Gallery page");
-            renderingConfiguration.setAppName("RenderingGridIntegration");
-            renderingConfiguration.addBrowser(1200, 800, RenderingConfiguration.BrowserType.CHROME, null, null);
-            eyes.open(webDriver, renderingConfiguration);
+            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
+            seleniumConfiguration.setTestName("Vans Gallery page");
+            seleniumConfiguration.setAppName("RenderingGridIntegration");
+            seleniumConfiguration.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.CHROME, null);
+            eyes.open(webDriver, seleniumConfiguration);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
