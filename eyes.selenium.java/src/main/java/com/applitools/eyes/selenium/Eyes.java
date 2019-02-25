@@ -1,14 +1,20 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.ICheckSettings;
+import com.applitools.IDomCaptureListener;
 import com.applitools.eyes.*;
 import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.debug.DebugScreenshotsProvider;
+import com.applitools.eyes.events.ISessionEventHandler;
 import com.applitools.eyes.exceptions.TestFailedException;
+import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.selenium.fluent.Target;
+import com.applitools.eyes.selenium.frames.Frame;
+import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.positioning.ImageRotation;
 import com.applitools.eyes.selenium.rendering.VisualGridEyes;
 import com.applitools.eyes.triggers.MouseAction;
+import com.applitools.eyes.visualgridclient.model.RenderingInfo;
 import com.applitools.eyes.visualgridclient.model.TestResultContainer;
 import com.applitools.eyes.visualgridclient.services.EyesRunner;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
@@ -28,6 +34,8 @@ public class Eyes {
     private VisualGridEyes visualGridEyes = null;
     private SeleniumEyes seleniumEyes = null;
     private EyesRunner runner = null;
+    private SeleniumConfiguration configuration = null;
+    private WebDriver driver;
 
     public Eyes() {
         seleniumEyes = new SeleniumEyes();
@@ -48,6 +56,8 @@ public class Eyes {
     public WebDriver open(WebDriver webDriver, SeleniumConfiguration seleniumConfiguration) {
         ArgumentGuard.notNull(seleniumConfiguration, "seleniumConfiguration");
         seleniumConfiguration.setRenderingConfig(isVisualGridEyes);
+        this.configuration = seleniumConfiguration;
+        this.driver = webDriver;
         if (isVisualGridEyes) {
             return visualGridEyes.open(webDriver, seleniumConfiguration);
         } else {
@@ -69,7 +79,12 @@ public class Eyes {
         }
     }
 
-
+    /**
+     * Sets the proxy settings to be used by the rest client.
+     *
+     * @param proxySettings The proxy settings to be used by the rest client.
+     *                      If {@code null} then no proxy is set.
+     */
     public void setProxy(AbstractProxySettings proxySettings) {
         if (isVisualGridEyes) {
             visualGridEyes.setProxy(proxySettings);
@@ -78,7 +93,10 @@ public class Eyes {
         }
     }
 
-
+    /**
+     * @param isDisabled If true, all interactions with this API will be
+     *                   silently ignored.
+     */
     public void setIsDisabled(boolean isDisabled) {
         if (isVisualGridEyes) {
             visualGridEyes.setIsDisabled(isDisabled);
@@ -95,8 +113,14 @@ public class Eyes {
         }
     }
 
+    /**
+     * See {@link #close(boolean)}.
+     * {@code throwEx} defaults to {@code true}.
+     *
+     * @return The test results.
+     */
     public TestResults close() {
-            if (isVisualGridEyes) {
+        if (isVisualGridEyes) {
             List<Future<TestResultContainer>> futures = visualGridEyes.close();
             if (futures != null && !futures.isEmpty()) {
                 try {
@@ -116,6 +140,10 @@ public class Eyes {
         return null;
     }
 
+
+    /**
+     * If a test is running, aborts it. Otherwise, does nothing.
+     */
     public void abortIfNotClosed() {
         if (isVisualGridEyes) {
             visualGridEyes.abortIfNotClosed();
@@ -124,7 +152,9 @@ public class Eyes {
         }
     }
 
-
+    /**
+     * @return Whether eyes is disabled.
+     */
     public boolean getIsDisabled() {
         if (isVisualGridEyes) {
             return visualGridEyes.getIsDisabled();
@@ -244,10 +274,9 @@ public class Eyes {
      * @return The currently set batch info.
      */
     public BatchInfo getBatch() {
-        if(isVisualGridEyes){
+        if (isVisualGridEyes) {
             return this.visualGridEyes.getBatch();
-        }
-        else{
+        } else {
             return this.seleniumEyes.getBatch();
         }
 
@@ -317,8 +346,7 @@ public class Eyes {
     public String getFullAgentId() {
         if (!this.isVisualGridEyes) {
             return this.seleniumEyes.getFullAgentId();
-        }
-        else{
+        } else {
             return this.visualGridEyes.getFullAgentId();
         }
     }
@@ -357,10 +385,9 @@ public class Eyes {
     public LogHandler getLogHandler() {
         if (!this.isVisualGridEyes) {
             return this.seleniumEyes.getLogHandler();
-        }
-        else {
+        } else {
             if (this.visualGridEyes.getLogger() != null) {
-                return this.visualGridEyes.getLogger() .getLogHandler();
+                return this.visualGridEyes.getLogger().getLogHandler();
             }
         }
         return null;
@@ -409,7 +436,7 @@ public class Eyes {
                     Future<TestResultContainer> testResultContainerFuture = close.get(0);
                     TestResultContainer testResultContainer = testResultContainerFuture.get();
                     Error exception = testResultContainer.getException();
-                    if(exception != null){
+                    if (exception != null) {
                         throw exception;
                     }
                     return testResultContainer.getTestResults();
@@ -437,7 +464,9 @@ public class Eyes {
      *                   back to automatic scaling.
      */
     public void setScaleRatio(Double scaleRatio) {
-        this.seleniumEyes.setScaleRatio(scaleRatio);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.setScaleRatio(scaleRatio);
+        }
 
     }
 
@@ -445,7 +474,10 @@ public class Eyes {
      * @return The ratio used to scale the images being validated.
      */
     public double getScaleRatio() {
-        return this.seleniumEyes.getScaleRatio();
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getScaleRatio();
+        }
+        return 0;
     }
 
     /**
@@ -455,67 +487,93 @@ public class Eyes {
      * @param value The property value.
      */
     public void addProperty(String name, String value) {
-        this.seleniumEyes.addProperty(name, value);
+        if (isVisualGridEyes) {
+            this.seleniumEyes.addProperty(name, value);
+        }
     }
 
     /**
      * Clears the list of custom properties.
      */
     public void clearProperties() {
-        this.seleniumEyes.clearProperties();
+        if (isVisualGridEyes) {
+            this.seleniumEyes.clearProperties();
+        }
     }
 
     /**
      * @param saveDebugScreenshots If true, will save all screenshots to local directory.
      */
     public void setSaveDebugScreenshots(boolean saveDebugScreenshots) {
-        this.seleniumEyes.setSaveDebugScreenshots(saveDebugScreenshots);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.setSaveDebugScreenshots(saveDebugScreenshots);
+        }
     }
 
     /**
      * @return True if screenshots saving enabled.
      */
     public boolean getSaveDebugScreenshots() {
-        return seleniumEyes.getSaveDebugScreenshots();
+        if (!isVisualGridEyes) {
+            return seleniumEyes.getSaveDebugScreenshots();
+        }
+        return false;
     }
 
     /**
      * @param pathToSave Path where you want to save the debug screenshots.
      */
     public void setDebugScreenshotsPath(String pathToSave) {
-        this.seleniumEyes.setDebugScreenshotsPath(pathToSave);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.setDebugScreenshotsPath(pathToSave);
+        }
     }
 
     /**
      * @return The path where you want to save the debug screenshots.
      */
     public String getDebugScreenshotsPath() {
-        return this.seleniumEyes.getDebugScreenshotsPath();
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getDebugScreenshotsPath();
+        }
+        return null;
     }
 
     /**
      * @param prefix The prefix for the screenshots' names.
      */
     public void setDebugScreenshotsPrefix(String prefix) {
-        this.seleniumEyes.setDebugScreenshotsPrefix(prefix);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.setDebugScreenshotsPrefix(prefix);
+        }
+
     }
 
     /**
      * @return The prefix for the screenshots' names.
      */
     public String getDebugScreenshotsPrefix() {
-        return this.seleniumEyes.getDebugScreenshotsPrefix();
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getDebugScreenshotsPrefix();
+        }
+        return null;
     }
 
     public DebugScreenshotsProvider getDebugScreenshotsProvider() {
-        return this.seleniumEyes.getDebugScreenshotsProvider();
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getDebugScreenshotsProvider();
+        }
+        return null;
     }
 
     /**
      * @return Whether to ignore or the blinking caret or not when comparing images.
      */
     public boolean getIgnoreCaret() {
-        return this.seleniumEyes.getIgnoreCaret();
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getIgnoreCaret();
+        }
+        return false;
     }
 
     /**
@@ -524,14 +582,19 @@ public class Eyes {
      * @param value The ignore value.
      */
     public void setIgnoreCaret(boolean value) {
-        this.seleniumEyes.setIgnoreCaret(value);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.setIgnoreCaret(value);
+        }
     }
 
     /**
      * Returns the stitching overlap in pixels.
      */
     public int getStitchOverlap() {
-        return this.seleniumEyes.getStitchOverlap();
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getStitchOverlap();
+        }
+        return 0;
     }
 
     /**
@@ -540,7 +603,9 @@ public class Eyes {
      * @param pixels The width (in pixels) of the overlap.
      */
     public void setStitchOverlap(int pixels) {
-        this.seleniumEyes.setStitchOverlap(pixels);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.setStitchOverlap(pixels);
+        }
     }
 
     /**
@@ -549,7 +614,9 @@ public class Eyes {
      * Default match timeout is used.
      */
     public void checkRegion(Region region) {
-        this.seleniumEyes.checkRegion(region);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(region);
+        }
     }
 
     /**
@@ -561,7 +628,9 @@ public class Eyes {
      * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
     public void checkRegion(final Region region, int matchTimeout, String tag) throws TestFailedException {
-        this.seleniumEyes.checkRegion(region, matchTimeout, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(region, matchTimeout, tag);
+        }
     }
 
     /**
@@ -571,7 +640,9 @@ public class Eyes {
      * @param element The element which represents the region to check.
      */
     public void checkRegion(WebElement element) {
-        this.seleniumEyes.checkRegion(element);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(element);
+        }
     }
 
     /**
@@ -583,7 +654,9 @@ public class Eyes {
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(WebElement element, boolean stitchContent) {
-        this.seleniumEyes.checkRegion(element, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(element, stitchContent);
+        }
     }
 
     /**
@@ -594,7 +667,9 @@ public class Eyes {
      * @param tag     An optional tag to be associated with the snapshot.
      */
     public void checkRegion(WebElement element, String tag) {
-        this.seleniumEyes.checkRegion(element, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(element, tag);
+        }
     }
 
     /**
@@ -607,7 +682,9 @@ public class Eyes {
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(WebElement element, String tag, boolean stitchContent) {
-        this.seleniumEyes.checkRegion(element, tag, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(element, tag, stitchContent);
+        }
     }
 
     /**
@@ -621,7 +698,9 @@ public class Eyes {
      *                             immediate failure reports are enabled
      */
     public void checkRegion(final WebElement element, int matchTimeout, String tag) {
-        this.seleniumEyes.checkRegion(element, matchTimeout, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(element, matchTimeout, tag);
+        }
     }
 
     /**
@@ -635,7 +714,9 @@ public class Eyes {
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(WebElement element, int matchTimeout, String tag, boolean stitchContent) {
-        this.seleniumEyes.checkRegion(element, matchTimeout, tag, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(element, matchTimeout, tag, stitchContent);
+        }
     }
 
     /**
@@ -645,7 +726,9 @@ public class Eyes {
      * @param selector The selector by which to specify which region to check.
      */
     public void checkRegion(By selector) {
-        this.seleniumEyes.checkRegion(selector);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(selector);
+        }
     }
 
     /**
@@ -657,7 +740,9 @@ public class Eyes {
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(By selector, boolean stitchContent) {
-        this.seleniumEyes.checkRegion(selector, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(selector, stitchContent);
+        }
     }
 
     /**
@@ -668,7 +753,9 @@ public class Eyes {
      * @param tag      An optional tag to be associated with the screenshot.
      */
     public void checkRegion(By selector, String tag) {
-        this.seleniumEyes.checkRegion(selector, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(selector, tag);
+        }
     }
 
     /**
@@ -681,7 +768,9 @@ public class Eyes {
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(By selector, String tag, boolean stitchContent) {
-        this.seleniumEyes.checkRegion(selector, tag, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(selector, tag, stitchContent);
+        }
     }
 
     /**
@@ -695,7 +784,9 @@ public class Eyes {
      *                             immediate failure reports are enabled
      */
     public void checkRegion(By selector, int matchTimeout, String tag) {
-        this.seleniumEyes.checkRegion(selector, matchTimeout, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegion(selector, matchTimeout, tag);
+        }
     }
 
     /**
@@ -708,7 +799,9 @@ public class Eyes {
      * @param selector   The selector by which to specify which region to check inside the frame.
      */
     public void checkRegionInFrame(int frameIndex, By selector) {
-        this.seleniumEyes.checkRegionInFrame(frameIndex, selector);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameIndex, selector);
+        }
     }
 
     /**
@@ -725,7 +818,9 @@ public class Eyes {
      *                      region.
      */
     public void checkRegionInFrame(int frameIndex, By selector, boolean stitchContent) {
-        this.seleniumEyes.checkRegionInFrame(frameIndex, selector, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameIndex, selector, stitchContent);
+        }
     }
 
     /**
@@ -739,7 +834,9 @@ public class Eyes {
      * @param tag        An optional tag to be associated with the screenshot.
      */
     public void checkRegionInFrame(int frameIndex, By selector, String tag) {
-        this.seleniumEyes.checkRegionInFrame(frameIndex, selector, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameIndex, selector, tag);
+        }
     }
 
     /**
@@ -757,7 +854,9 @@ public class Eyes {
      *                      region.
      */
     public void checkRegionInFrame(int frameIndex, By selector, String tag, boolean stitchContent) {
-        this.seleniumEyes.checkRegionInFrame(frameIndex, selector, tag, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameIndex, selector, tag, stitchContent);
+        }
     }
 
     /**
@@ -772,7 +871,9 @@ public class Eyes {
      * @param tag          An optional tag to be associated with the screenshot.
      */
     public void checkRegionInFrame(int frameIndex, By selector, int matchTimeout, String tag) {
-        this.seleniumEyes.checkRegionInFrame(frameIndex, selector, matchTimeout, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameIndex, selector, matchTimeout, tag);
+        }
     }
 
     /**
@@ -793,7 +894,9 @@ public class Eyes {
     public void checkRegionInFrame(int frameIndex, By selector,
                                    int matchTimeout, String tag,
                                    boolean stitchContent) {
-        this.seleniumEyes.checkRegionInFrame(frameIndex, selector, matchTimeout, tag, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameIndex, selector, matchTimeout, tag, stitchContent);
+        }
     }
 
     /**
@@ -805,7 +908,9 @@ public class Eyes {
      * @param selector      A Selector specifying the region to check.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector) {
-        this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector);
+        }
     }
 
     /**
@@ -821,7 +926,9 @@ public class Eyes {
      *                      region.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector, boolean stitchContent) {
-        this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, stitchContent);
+        }
     }
 
     /**
@@ -835,7 +942,9 @@ public class Eyes {
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    String tag) {
-        this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, tag);
+        }
     }
 
     /**
@@ -853,7 +962,9 @@ public class Eyes {
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    String tag, boolean stitchContent) {
-        this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, tag, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, tag, stitchContent);
+        }
     }
 
     /**
@@ -868,7 +979,9 @@ public class Eyes {
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    int matchTimeout, String tag) {
-        this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, matchTimeout, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, matchTimeout, tag);
+        }
     }
 
     /**
@@ -887,7 +1000,9 @@ public class Eyes {
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    int matchTimeout, String tag,
                                    boolean stitchContent) {
-        this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, matchTimeout, tag, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, matchTimeout, tag, stitchContent);
+        }
     }
 
     /**
@@ -900,7 +1015,9 @@ public class Eyes {
      * @param selector       A Selector specifying the region to check inside the frame.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector) {
-        this.seleniumEyes.checkRegionInFrame(frameReference, selector);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameReference, selector);
+        }
     }
 
     /**
@@ -917,7 +1034,9 @@ public class Eyes {
      *                       region.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector, boolean stitchContent) {
-        this.seleniumEyes.checkRegionInFrame(frameReference, selector, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameReference, selector, stitchContent);
+        }
     }
 
     /**
@@ -931,7 +1050,9 @@ public class Eyes {
      * @param tag            An optional tag to be associated with the snapshot.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector, String tag) {
-        this.seleniumEyes.checkRegionInFrame(frameReference, selector, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameReference, selector, tag);
+        }
     }
 
     /**
@@ -950,7 +1071,9 @@ public class Eyes {
      */
     public void checkRegionInFrame(WebElement frameReference, By selector,
                                    String tag, boolean stitchContent) {
-        this.seleniumEyes.checkRegionInFrame(frameReference, selector, tag, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameReference, selector, tag, stitchContent);
+        }
     }
 
     /**
@@ -966,7 +1089,9 @@ public class Eyes {
      */
     public void checkRegionInFrame(WebElement frameReference, By selector,
                                    int matchTimeout, String tag) {
-        this.seleniumEyes.checkRegionInFrame(frameReference, selector, matchTimeout, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameReference, selector, matchTimeout, tag);
+        }
     }
 
     /**
@@ -987,7 +1112,9 @@ public class Eyes {
     public void checkRegionInFrame(WebElement frameReference, By selector,
                                    int matchTimeout, String tag,
                                    boolean stitchContent) {
-        this.seleniumEyes.checkRegionInFrame(frameReference, selector, matchTimeout, tag, stitchContent);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkRegionInFrame(frameReference, selector, matchTimeout, tag, stitchContent);
+        }
     }
 
     /**
@@ -995,7 +1122,9 @@ public class Eyes {
      * {@code tag} defaults to {@code null}.
      */
     public void checkElement(WebElement element) {
-        this.seleniumEyes.checkElement(element);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkElement(element);
+        }
     }
 
     /**
@@ -1003,7 +1132,9 @@ public class Eyes {
      * Default match timeout is used.
      */
     public void checkElement(WebElement element, String tag) {
-        this.seleniumEyes.checkElement(element, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkElement(element, tag);
+        }
     }
 
     /**
@@ -1016,7 +1147,9 @@ public class Eyes {
      * @throws TestFailedException if a mismatch is detected and immediate failure reports are enabled
      */
     public void checkElement(WebElement element, int matchTimeout, String tag) {
-        this.seleniumEyes.checkElement(element, matchTimeout, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkElement(element, matchTimeout, tag);
+        }
     }
 
     /**
@@ -1024,7 +1157,9 @@ public class Eyes {
      * {@code tag} defaults to {@code null}.
      */
     public void checkElement(By selector) {
-        this.seleniumEyes.checkElement(selector);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkElement(selector);
+        }
     }
 
     /**
@@ -1032,7 +1167,9 @@ public class Eyes {
      * Default match timeout is used.
      */
     public void checkElement(By selector, String tag) {
-        check(tag, Target.region(selector).fully());
+        if (!isVisualGridEyes) {
+            check(tag, Target.region(selector).fully());
+        }
     }
 
     /**
@@ -1046,7 +1183,9 @@ public class Eyes {
      *                             immediate failure reports are enabled
      */
     public void checkElement(By selector, int matchTimeout, String tag) {
-        this.seleniumEyes.checkElement(selector, matchTimeout, tag);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.checkElement(selector, matchTimeout, tag);
+        }
     }
 
     /**
@@ -1057,7 +1196,9 @@ public class Eyes {
      * @param cursor  The cursor's position relative to the control.
      */
     public void addMouseTrigger(MouseAction action, Region control, Location cursor) {
-        this.seleniumEyes.addMouseTrigger(action, control, cursor);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.addMouseTrigger(action, control, cursor);
+        }
     }
 
     /**
@@ -1067,7 +1208,9 @@ public class Eyes {
      * @param element The WebElement on which the click was called.
      */
     public void addMouseTrigger(MouseAction action, WebElement element) {
-        this.seleniumEyes.addMouseTrigger(action, element);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.addMouseTrigger(action, element);
+        }
     }
 
     /**
@@ -1077,7 +1220,9 @@ public class Eyes {
      * @param text    The trigger's text.
      */
     public void addTextTrigger(Region control, String text) {
-        this.seleniumEyes.addTextTrigger(control, text);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.addTextTrigger(control, text);
+        }
     }
 
     /**
@@ -1087,7 +1232,9 @@ public class Eyes {
      * @param text    The trigger's text.
      */
     public void addTextTrigger(WebElement element, String text) {
-        this.seleniumEyes.addTextTrigger(element, text);
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.addTextTrigger(element, text);
+        }
     }
 
     /**
@@ -1097,7 +1244,10 @@ public class Eyes {
      * {@inheritDoc}
      */
     public RectangleSize getViewportSize() {
-        return this.seleniumEyes.getViewportSize();
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getViewportSize();
+        }
+        return null;
     }
 
     /**
@@ -1338,8 +1488,7 @@ public class Eyes {
     public void checkWindow() {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkWindow();
-        }
-        else{
+        } else {
             this.visualGridEyes.check(null, null);
         }
     }
@@ -1353,8 +1502,7 @@ public class Eyes {
     public void checkWindow(String tag) {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkWindow();
-        }
-        else{
+        } else {
             this.visualGridEyes.check(tag, null);
         }
     }
@@ -1371,8 +1519,7 @@ public class Eyes {
     public void checkWindow(int matchTimeout, String tag) {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkWindow(matchTimeout, tag);
-        }
-        else{
+        } else {
             this.visualGridEyes.check(tag, null);
         }
     }
@@ -1567,8 +1714,7 @@ public class Eyes {
     public void check(ICheckSettings... checkSettings) {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.check(checkSettings);
-        }
-        else{
+        } else {
             for (ICheckSettings checkSetting : checkSettings) {
                 this.visualGridEyes.check(checkSetting);
             }
@@ -1582,8 +1728,7 @@ public class Eyes {
     public void checkFrame(String frameNameOrId) {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkFrame(frameNameOrId);
-        }
-        else{
+        } else {
             this.visualGridEyes.check(Target.frame(frameNameOrId));
         }
     }
@@ -1609,8 +1754,7 @@ public class Eyes {
     public void checkFrame(String frameNameOrId, int matchTimeout, String tag) {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkFrame(frameNameOrId, matchTimeout, tag);
-        }
-        else{
+        } else {
             this.visualGridEyes.check(tag, Target.frame(frameNameOrId));
         }
     }
@@ -1622,8 +1766,7 @@ public class Eyes {
     public void checkFrame(int frameIndex) {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkFrame(frameIndex);
-        }
-        else{
+        } else {
             this.visualGridEyes.check(Target.frame(frameIndex));
         }
     }
@@ -1635,8 +1778,7 @@ public class Eyes {
     public void checkFrame(int frameIndex, String tag) {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkFrame(frameIndex, tag);
-        }
-        else{
+        } else {
             this.visualGridEyes.check(tag, Target.frame(frameIndex));
         }
     }
@@ -1654,8 +1796,7 @@ public class Eyes {
     public void checkFrame(int frameIndex, int matchTimeout, String tag) {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkFrame(frameIndex, matchTimeout, tag);
-        }
-        else{
+        } else {
             this.visualGridEyes.check(tag, Target.frame(frameIndex));
         }
     }
@@ -1668,8 +1809,7 @@ public class Eyes {
     public void checkFrame(WebElement frameReference) {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkFrame(frameReference);
-        }
-        else{
+        } else {
             this.visualGridEyes.check(Target.frame(frameReference));
         }
     }
@@ -1681,8 +1821,7 @@ public class Eyes {
     public void checkFrame(WebElement frameReference, String tag) {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkFrame(frameReference, tag);
-        }
-        else{
+        } else {
             this.visualGridEyes.check(tag, Target.frame(frameReference));
         }
     }
@@ -1744,15 +1883,227 @@ public class Eyes {
         }
     }
 
-    public void setSendDom(boolean isSendDom) {
-        seleniumEyes.setSendDom(isSendDom);
+    /**
+     * Sets the user given agent id of the SDK. {@code null} is referred to
+     * as no id.
+     *
+     * @param agentId The agent ID to set.
+     */
+    public void setAgentId(String agentId) {
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.setAgentId(agentId);
+        } else {
+            this.visualGridEyes.setAgentId(agentId);
+        }
     }
 
-    public void setBaselineEnvName(String baselineEnvName) {
+    /**
+     * @return The user given agent id of the SDK.
+     */
+    public String getAgentId() {
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getAgentId();
+        }
+        return this.visualGridEyes.getAgentId();
+    }
+
+    /**
+     * Sets the server connector to use. MUST BE SET IN ORDER FOR THE EYES OBJECT TO WORK!
+     *
+     * @param serverConnector The server connector object to use.
+     */
+    public void setServerConnector(IServerConnector serverConnector) {
+        if (this.isVisualGridEyes) {
+            this.visualGridEyes.setServerConnector(serverConnector);
+        }
+    }
+
+
+    /**
+     * @return The current proxy settings used by the server connector,
+     * or {@code null} if no proxy is set.
+     */
+    public AbstractProxySettings getProxy() {
         if (isVisualGridEyes) {
-            this.visualGridEyes.setBaselineEnvName(baselineEnvName);
+            return this.visualGridEyes.getProxy();
         } else {
-            this.seleniumEyes.setBaselineEnvName(baselineEnvName);
+            return this.seleniumEyes.getProxy();
+        }
+    }
+
+
+    /**
+     * @param appName The name of the application under test.
+     */
+    public void setAppName(String appName) {
+        this.configuration.setAppName(appName);
+    }
+
+    /**
+     * @return The name of the application under test.
+     */
+    public String getAppName() {
+        return configuration.getAppName();
+    }
+    /**
+     * @return get the host OS running the AUT.
+     */
+    public void getHostOS() {
+    }
+
+    /**
+     * @return The application name running the AUT.
+     */
+    public String getHostApp() {
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getHostOS();
+        }
+        return "";
+    }
+
+    /**
+     * @param baselineName If specified, determines the baseline to compare
+     *                     with and disables automatic baseline inference.
+     * @deprecated Only available for backward compatibility. See {@link #setBaselineEnvName(String)}.
+     */
+    public void setBaselineName(String baselineName) {
+        setBaselineEnvName(baselineName);
+    }
+
+    /**
+     * @return The baseline name, if specified.
+     * @deprecated Only available for backward compatibility. See {@link #getBaselineEnvName()}.
+     */
+    @SuppressWarnings("UnusedDeclaration")
+    public String getBaselineName() {
+        return getBaselineEnvName();
+    }
+
+    /**
+     * If not {@code null}, determines the name of the environment of the baseline.
+     *
+     * @param baselineEnvName The name of the baseline's environment.
+     */
+    public void setBaselineEnvName(String baselineEnvName) {
+    }
+
+    /**
+     * If not {@code null}, determines the name of the environment of the baseline.
+     *
+     * @return The name of the baseline's environment, or {@code null} if no such name was set.
+     */
+    public String getBaselineEnvName() {
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.getBaselineEnvName();
+        }
+        return null;
+    }
+
+
+    /**
+     * If not {@code null} specifies a name for the environment in which the application under test is running.
+     *
+     * @param envName The name of the environment of the baseline.
+     */
+    public void setEnvName(String envName) {
+        if (isVisualGridEyes) {
+            this.visualGridEyes.setEnvName(envName);
+        } else {
+            this.seleniumEyes.setEnvName(envName);
+        }
+    }
+
+    /**
+     * If not {@code null} specifies a name for the environment in which the application under test is running.
+     *
+     * @return The name of the environment of the baseline, or {@code null} if no such name was set.
+     */
+    public String getEnvName() {
+        if (isVisualGridEyes) {
+            return this.visualGridEyes.getEnvName();
+        } else {
+            return this.seleniumEyes.getEnvName();
+        }
+    }
+
+
+    /**
+     * @return The currently set position provider.
+     */
+    public PositionProvider getPositionProvider() {
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getPositionProvider();
+        }
+        return null;
+    }
+
+    /**
+     * @param positionProvider The position provider to be used.
+     */
+    public void setPositionProvider(PositionProvider positionProvider) {
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.setPositionProvider(positionProvider);
+        }
+    }
+
+
+    public void setExplicitViewportSize(RectangleSize explicitViewportSize) {
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.setExplicitViewportSize(explicitViewportSize);
+        }
+    }
+
+    public Object getAgentSetup() {
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.getAgentSetup();
+        }
+        return null;
+    }
+
+    public void log(String message) {
+        if (isVisualGridEyes) {
+            this.visualGridEyes.getLogger().log(message);
+        } else {
+            this.seleniumEyes.log(message);
+        }
+    }
+
+    public void addSessionEventHandler(ISessionEventHandler eventHandler) {
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.addSessionEventHandler(eventHandler);
+        }
+    }
+
+    public void removeSessionEventHandler(ISessionEventHandler eventHandler) {
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.removeSessionEventHandler(eventHandler);
+        }
+    }
+
+    public void clearSessionEventHandlers() {
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.clearSessionEventHandlers();
+        }
+    }
+
+
+    public boolean isSendDom() {
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.isSendDom();
+        }
+
+        return true;
+    }
+
+    public void setOnDomCapture(IDomCaptureListener listener) {
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.setOnDomCapture(listener);
+        }
+    }
+
+    public void setSendDom(boolean isSendDom) {
+        if (!isVisualGridEyes) {
+            this.seleniumEyes.setSendDom(isSendDom);
         }
     }
 
@@ -1762,15 +2113,127 @@ public class Eyes {
         }
     }
 
+    /**
+     * @param hostApp The application running the AUT (e.g., Chrome).
+     */
     public void setHostApp(String hostApp) {
         if (!isVisualGridEyes) {
             this.seleniumEyes.setHostApp(hostApp);
         }
     }
+    /**
+     * for internal usage
+     *
+     * @return
+     */
+    public RenderingInfo getRenderingInfo() {
+        return null;
+    }
 
-    public void setExplicitViewportSize(RectangleSize explicitViewportSize) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.setExplicitViewportSize(explicitViewportSize);
+    /**
+     * @return The current branch (see {@link #setBranchName(String)}).
+     */
+    public String getBranchName() {
+        return configuration.getBranchName();
+    }
+
+    /**
+     * @return The name of the current parent branch under which new branches
+     * will be created. (see {@link #setParentBranchName(String)}).
+     */
+    public String getParentBranchName() {
+        return configuration.getParentBranchName();
+    }
+
+    /**
+     * Sets the branch under which new branches are created. (see {@link
+     * #setBranchName(String)}.
+     * @param branchName Branch name or {@code null} to specify the default branch.
+     */
+    public void setBaselineBranchName(String branchName) {
+        this.configuration.setBaselineBranchName(branchName);
+    }
+
+    /**
+     * @return The name of the current parent branch under which new branches
+     * will be created. (see {@link #setBaselineBranchName(String)}).
+     */
+    public String getBaselineBranchName() {
+        return configuration.getBaselineBranchName();
+    }
+
+    /**
+     * Automatically save differences as a baseline.
+     * @param saveDiffs Sets whether to automatically save differences as baseline.
+     */
+    public void setSaveDiffs(Boolean saveDiffs) {
+        this.configuration.setSaveDiffs(saveDiffs);
+    }
+
+    /**
+     * Returns whether to automatically save differences as a baseline.
+     * @return Whether to automatically save differences as baseline.
+     */
+    public Boolean getSaveDiffs() {
+        return this.configuration.getSaveDiffs();
+    }
+
+    /**
+     * Superseded by {@link #setHostOS(String)} and {@link #setHostApp(String)}.
+     * Sets the OS (e.g., Windows) and application (e.g., Chrome) that host the application under test.
+     * @param hostOS  The name of the OS hosting the application under test or {@code null} to auto-detect.
+     * @param hostApp The name of the application hosting the application under test or {@code null} to auto-detect.
+     */
+    @Deprecated
+    public void setAppEnvironment(String hostOS, String hostApp) {
+        setHostOS(hostOS);
+        setHostApp(hostApp);
+    }
+
+    public WebDriver getDriver() {
+        return this.driver;
+    }
+
+
+    public FrameChain getOriginalFC() {
+        if(!this.isVisualGridEyes){
+            return this.seleniumEyes.getOriginalFC();
+        }
+        return null;
+    }
+
+    public PositionProvider getCurrentFramePositionProvider() {
+        if(!this.isVisualGridEyes){
+            return this.seleniumEyes.getCurrentFramePositionProvider();
+        }
+        return null;
+    }
+
+    public Region getRegionToCheck() {
+        if(!this.isVisualGridEyes){
+            return this.seleniumEyes.getRegionToCheck();
+        }
+        return null;
+    }
+
+    public void setRegionToCheck(Region regionToCheck) {
+        if(!this.isVisualGridEyes){
+            this.seleniumEyes.setRegionToCheck(regionToCheck);
         }
     }
+
+    public WebElement getCurrentFrameScrollRootElement() {
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getCurrentFrameScrollRootElement();
+        }
+        return null;
+    }
+
+    public IServerConnector getServerConnector() {
+        if (!isVisualGridEyes) {
+            return this.seleniumEyes.getServerConnector();
+        }
+        return null;
+    }
+
 }

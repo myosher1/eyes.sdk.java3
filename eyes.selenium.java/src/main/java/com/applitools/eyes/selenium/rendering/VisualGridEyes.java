@@ -56,7 +56,7 @@ public class VisualGridEyes implements IRenderingEyes {
     private Boolean forceFullPageScreenshot = null;
     private SeleniumConfiguration configuration = new SeleniumConfiguration();
     private String agentId;
-
+    private IServerConnector serverConnector = null;
     {
         try {
             PROCESS_RESOURCES = GeneralUtils.readToEnd(VisualGridEyes.class.getResourceAsStream("/processPageAndSerialize.js"));
@@ -189,7 +189,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
     private IEyesConnector createVGEyesConnector(RenderBrowserInfo browserInfo) {
         logger.verbose("creating VisualGridEyes server connector");
-        IEyesConnector VGEyesConnector = new EyesConnector(browserInfo, renderingGridManager.getRateLimiter());
+        EyesConnector VGEyesConnector = new EyesConnector(browserInfo, renderingGridManager.getRateLimiter());
         if (browserInfo.getEmulationInfo() != null) {
             VGEyesConnector.setDevice(browserInfo.getEmulationInfo().getDeviceName());
         }
@@ -200,14 +200,13 @@ public class VisualGridEyes implements IRenderingEyes {
         VGEyesConnector.setParentBranchName(parentBranchName);
         VGEyesConnector.setHideCaret(this.hideCaret);
         VGEyesConnector.setMatchLevel(matchLevel);
+        if (serverConnector != null) {
+            VGEyesConnector.setServerConnector(serverConnector);
+        }
 
         URI serverUri = this.getServerUrl();
         if (serverUri != null) {
-            try {
-                VGEyesConnector.setServerUrl(serverUri.toString());
-            } catch (URISyntaxException e) {
-                GeneralUtils.logExceptionStackTrace(logger, e);
-            }
+            VGEyesConnector.setServerUrl(serverUri.toString());
         }
 
         String apiKey = this.getApiKey();
@@ -563,5 +562,22 @@ public class VisualGridEyes implements IRenderingEyes {
      */
     public String getAgentId() {
         return agentId;
+    }
+
+
+    public void setServerConnector(IServerConnector serverConnector) {
+        this.serverConnector = serverConnector;
+    }
+
+    public String getEnvName() {
+        return null;
+    }
+
+    public void setEnvName(String envName) {
+
+    }
+
+    public AbstractProxySettings getProxy() {
+        return null;
     }
 }
