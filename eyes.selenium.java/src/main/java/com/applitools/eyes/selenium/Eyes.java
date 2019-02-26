@@ -7,12 +7,13 @@ import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.debug.DebugScreenshotsProvider;
 import com.applitools.eyes.events.ISessionEventHandler;
 import com.applitools.eyes.exceptions.TestFailedException;
+import com.applitools.eyes.fluent.CheckSettings;
 import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.selenium.frames.Frame;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.positioning.ImageRotation;
 import com.applitools.eyes.selenium.rendering.VisualGridEyes;
+import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.eyes.visualgridclient.model.RenderingInfo;
 import com.applitools.eyes.visualgridclient.model.TestResultContainer;
@@ -35,7 +36,9 @@ public class Eyes {
     private SeleniumEyes seleniumEyes = null;
     private EyesRunner runner = null;
     private SeleniumConfiguration configuration = null;
+    private SeleniumConfiguration globalConfiguration = new SeleniumConfiguration();
     private WebDriver driver;
+    private ImageRotation rotation;
 
     public Eyes() {
         seleniumEyes = new SeleniumEyes();
@@ -56,13 +59,55 @@ public class Eyes {
     public WebDriver open(WebDriver webDriver, SeleniumConfiguration seleniumConfiguration) {
         ArgumentGuard.notNull(seleniumConfiguration, "seleniumConfiguration");
         seleniumConfiguration.setRenderingConfig(isVisualGridEyes);
-        this.configuration = seleniumConfiguration;
+
+        configuration = mergeConfigurations(seleniumConfiguration);
+
         this.driver = webDriver;
         if (isVisualGridEyes) {
             return visualGridEyes.open(webDriver, seleniumConfiguration);
         } else {
             return seleniumEyes.open(webDriver, convertConfigs(seleniumConfiguration));
         }
+    }
+
+    private SeleniumConfiguration mergeConfigurations(SeleniumConfiguration renderingConfiguration) {
+        if (renderingConfiguration.getTestName() == null) {
+            renderingConfiguration.setTestName(this.globalConfiguration.getTestName());
+        }
+        if (renderingConfiguration.getBaselineEnvName() == null) {
+            renderingConfiguration.setBaselineEnvName(this.globalConfiguration.getBaselineEnvName());
+        }
+        if (renderingConfiguration.getBatch() == null) {
+            renderingConfiguration.setBatch(this.globalConfiguration.getBatch());
+        }
+        if (renderingConfiguration.getBranchName() == null) {
+            renderingConfiguration.setBranchName(this.globalConfiguration.getBranchName());
+        }
+        if (renderingConfiguration.getParentBranchName() == null) {
+            renderingConfiguration.setParentBranchName(this.globalConfiguration.getParentBranchName());
+        }
+        if (renderingConfiguration.getAgentId() == null) {
+            renderingConfiguration.setAgentId(this.globalConfiguration.getAgentId());
+        }
+        if (renderingConfiguration.getAppName() == null) {
+            renderingConfiguration.setAppName(this.globalConfiguration.getAppName());
+        }
+        if (renderingConfiguration.getEnvironmentName() == null) {
+            renderingConfiguration.setEnvironmentName(this.globalConfiguration.getEnvironmentName());
+        }
+        if (renderingConfiguration.getSaveDiffs() == null) {
+            renderingConfiguration.setSaveDiffs(this.globalConfiguration.getSaveDiffs());
+        }
+        if (renderingConfiguration.getSessionType() == null) {
+            renderingConfiguration.setSessionType(this.globalConfiguration.getSessionType());
+        }
+        if (renderingConfiguration.getTestName() == null) {
+            renderingConfiguration.setTestName(this.globalConfiguration.getTestName());
+        }
+        if (renderingConfiguration.getViewportSize() == null) {
+            renderingConfiguration.setViewportSize(this.globalConfiguration.getViewportSize());
+        }
+        return renderingConfiguration;
     }
 
     private SeleniumConfiguration convertConfigs(SeleniumConfiguration renderingConfiguration) {
@@ -214,14 +259,23 @@ public class Eyes {
      * @param ms Total number of ms to wait for a match.
      */
     public void setMatchTimeout(int ms) {
-        this.seleniumEyes.setMatchTimeout(ms);
+        if (isVisualGridEyes) {
+            this.visualGridEyes.setMatchTimeout(ms);
+        } else {
+            this.seleniumEyes.setMatchTimeout(ms);
+        }
+
     }
 
     /**
      * @return The maximum time in ms waits for a match.
      */
     public int getMatchTimeout() {
-        return this.seleniumEyes.getMatchTimeout();
+        if (isVisualGridEyes) {
+            return this.visualGridEyes.getMatchTimeout();
+        } else {
+            return this.seleniumEyes.getMatchTimeout();
+        }
     }
 
     /**
@@ -230,14 +284,22 @@ public class Eyes {
      * @param saveNewTests True if new tests should be saved by default. False otherwise.
      */
     public void setSaveNewTests(boolean saveNewTests) {
-        this.seleniumEyes.setSaveNewTests(saveNewTests);
+        if (isVisualGridEyes) {
+            this.visualGridEyes.setSaveNewTests(saveNewTests);
+        } else {
+            this.seleniumEyes.setSaveNewTests(saveNewTests);
+        }
     }
 
     /**
      * @return True if new tests are saved by default.
      */
     public boolean getSaveNewTests() {
-        return this.seleniumEyes.getSaveNewTests();
+        if (isVisualGridEyes) {
+            return this.visualGridEyes.getSaveNewTests();
+        } else {
+            return this.seleniumEyes.getSaveNewTests();
+        }
     }
 
     /**
@@ -246,14 +308,22 @@ public class Eyes {
      * @param saveFailedTests True if failed tests should be saved by default, false otherwise.
      */
     public void setSaveFailedTests(boolean saveFailedTests) {
-        this.seleniumEyes.setSaveFailedTests(saveFailedTests);
+        if (isVisualGridEyes) {
+            this.visualGridEyes.setSaveFailedTests(saveFailedTests);
+        } else {
+            this.seleniumEyes.setSaveFailedTests(saveFailedTests);
+        }
     }
 
     /**
      * @return True if failed tests are saved by default.
      */
     public boolean getSaveFailedTests() {
-        return this.seleniumEyes.getSaveFailedTests();
+        if (isVisualGridEyes) {
+            return this.visualGridEyes.getSaveNewTests();
+        } else {
+            return this.seleniumEyes.getSaveNewTests();
+        }
     }
 
     /**
@@ -287,14 +357,22 @@ public class Eyes {
      * @see FailureReports
      */
     public void setFailureReports(FailureReports failureReports) {
-        this.seleniumEyes.setFailureReports(failureReports);
+        if (isVisualGridEyes) {
+            visualGridEyes.setFailureReports(failureReports);
+        } else {
+            seleniumEyes.setFailureReports(failureReports);
+        }
     }
 
     /**
      * @return the failure reports setting.
      */
     public FailureReports getFailureReports() {
-        return this.seleniumEyes.getFailureReports();
+        if (isVisualGridEyes) {
+            return this.visualGridEyes.getFailureReports();
+        } else {
+            return this.seleniumEyes.getFailureReports();
+        }
     }
 
     /**
@@ -304,14 +382,23 @@ public class Eyes {
      */
     public void setDefaultMatchSettings(ImageMatchSettings
                                                 defaultMatchSettings) {
-        this.seleniumEyes.setDefaultMatchSettings(defaultMatchSettings);
+        if (isVisualGridEyes) {
+            visualGridEyes.setDefaultMatchSettings(defaultMatchSettings);
+        } else {
+            seleniumEyes.setDefaultMatchSettings(defaultMatchSettings);
+        }
     }
 
     /**
      * @return The match settings used for the session.
      */
     public ImageMatchSettings getDefaultMatchSettings() {
-        return this.seleniumEyes.getDefaultMatchSettings();
+        if (isVisualGridEyes) {
+            return this.visualGridEyes.getDefaultMatchSettings();
+        } else {
+            return this.seleniumEyes.getDefaultMatchSettings();
+        }
+
     }
 
     /**
@@ -336,7 +423,11 @@ public class Eyes {
      * @deprecated Please use{@link #getDefaultMatchSettings} instead.
      */
     public MatchLevel getMatchLevel() {
-        return seleniumEyes.getMatchLevel();
+        if (!this.isVisualGridEyes) {
+            return this.seleniumEyes.getMatchLevel();
+        } else {
+            return this.visualGridEyes.getMatchLevel();
+        }
     }
 
     /**
@@ -1464,8 +1555,11 @@ public class Eyes {
      * @param rotation The image rotation model.
      */
     public void setRotation(ImageRotation rotation) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.setRotation(rotation);
+        this.rotation = rotation;
+        if (!isVisualGridEyes) {
+            if (driver != null) {
+                ((EyesWebDriver)driver).setRotation(rotation);
+            }
         }
     }
 
@@ -1489,7 +1583,7 @@ public class Eyes {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkWindow();
         } else {
-            this.visualGridEyes.check(null, null);
+            this.visualGridEyes.check(null, new CheckSettings(15000));
         }
     }
 
@@ -1503,7 +1597,7 @@ public class Eyes {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkWindow();
         } else {
-            this.visualGridEyes.check(tag, null);
+            this.visualGridEyes.check(tag, new CheckSettings(15000));
         }
     }
 
@@ -1520,7 +1614,7 @@ public class Eyes {
         if (!this.isVisualGridEyes) {
             this.seleniumEyes.checkWindow(matchTimeout, tag);
         } else {
-            this.visualGridEyes.check(tag, null);
+            this.visualGridEyes.check(tag, new CheckSettings(15000));
         }
     }
 
@@ -1936,14 +2030,20 @@ public class Eyes {
      * @param appName The name of the application under test.
      */
     public void setAppName(String appName) {
-        this.configuration.setAppName(appName);
+        this.globalConfiguration.setAppName(appName);
+        if (this.configuration != null) {
+            this.globalConfiguration.setAppName(appName);
+        }
     }
 
     /**
      * @return The name of the application under test.
      */
     public String getAppName() {
-        return configuration.getAppName();
+        if (configuration != null) {
+            return configuration.getAppName();
+        }
+        return globalConfiguration.getAppName();
     }
     /**
      * @return get the host OS running the AUT.
@@ -1985,6 +2085,10 @@ public class Eyes {
      * @param baselineEnvName The name of the baseline's environment.
      */
     public void setBaselineEnvName(String baselineEnvName) {
+        this.globalConfiguration.setBaselineEnvName(baselineEnvName);
+        if (this.configuration != null) {
+            this.globalConfiguration.setBaselineEnvName(baselineEnvName);
+        }
     }
 
     /**
@@ -1993,10 +2097,10 @@ public class Eyes {
      * @return The name of the baseline's environment, or {@code null} if no such name was set.
      */
     public String getBaselineEnvName() {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.getBaselineEnvName();
+        if (configuration != null) {
+            return configuration.getBaselineEnvName();
         }
-        return null;
+        return globalConfiguration.getBaselineEnvName();
     }
 
 
@@ -2006,10 +2110,9 @@ public class Eyes {
      * @param envName The name of the environment of the baseline.
      */
     public void setEnvName(String envName) {
-        if (isVisualGridEyes) {
-            this.visualGridEyes.setEnvName(envName);
-        } else {
-            this.seleniumEyes.setEnvName(envName);
+        this.globalConfiguration.setEnvironmentName(envName);
+        if (this.configuration != null) {
+            this.globalConfiguration.setEnvironmentName(envName);
         }
     }
 
@@ -2232,6 +2335,9 @@ public class Eyes {
     public IServerConnector getServerConnector() {
         if (!isVisualGridEyes) {
             return this.seleniumEyes.getServerConnector();
+        }
+        else{
+//            this.visualGridEyes.getS
         }
         return null;
     }
