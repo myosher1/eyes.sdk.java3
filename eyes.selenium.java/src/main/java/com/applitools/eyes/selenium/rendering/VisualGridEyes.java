@@ -16,7 +16,6 @@ import org.openqa.selenium.WebDriver;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -57,6 +56,15 @@ public class VisualGridEyes implements IRenderingEyes {
     private SeleniumConfiguration configuration = new SeleniumConfiguration();
     private String agentId;
     private IServerConnector serverConnector = null;
+    private String baselineEnvName;
+    private int matchTimeout;
+    private StitchMode stitchMode;
+    private boolean saveNewTests;
+    private FailureReports failureReport;
+    private ImageMatchSettings defaultMatchSettings;
+    private int mathTimeout;
+    private String envName;
+
     {
         try {
             PROCESS_RESOURCES = GeneralUtils.readToEnd(VisualGridEyes.class.getResourceAsStream("/processPageAndSerialize.js"));
@@ -126,12 +134,6 @@ public class VisualGridEyes implements IRenderingEyes {
 
         initDriver(webDriver);
 
-        mergeConfigurations(renderingConfiguration);
-
-        if (renderingConfiguration.getBatch() == null) {
-            renderingConfiguration.setBatch(batchInfo);
-        }
-
         logger.verbose("getting all browsers info...");
         List<RenderBrowserInfo> browserInfoList = renderingConfiguration.getBrowsersInfo();
         logger.verbose("creating test descriptors for each browser info...");
@@ -146,47 +148,6 @@ public class VisualGridEyes implements IRenderingEyes {
         logger.verbose("done");
         return webDriver;
     }
-
-    private void mergeConfigurations(SeleniumConfiguration renderingConfiguration) {
-        if (renderingConfiguration.getTestName() == null) {
-            renderingConfiguration.setTestName(this.configuration.getTestName());
-        }
-        if (renderingConfiguration.getBaselineEnvName() == null) {
-            renderingConfiguration.setBaselineEnvName(this.configuration.getBaselineEnvName());
-        }
-        if (renderingConfiguration.getBatch() == null) {
-            renderingConfiguration.setBatch(this.configuration.getBatch());
-        }
-        if (renderingConfiguration.getBranchName() == null) {
-            renderingConfiguration.setBranchName(this.configuration.getBranchName());
-        }
-        if (renderingConfiguration.getParentBranchName() == null) {
-            renderingConfiguration.setParentBranchName(this.configuration.getParentBranchName());
-        }
-        if (renderingConfiguration.getAgentId() == null) {
-            renderingConfiguration.setAgentId(this.configuration.getAgentId());
-        }
-        if (renderingConfiguration.getAppName() == null) {
-            renderingConfiguration.setAppName(this.configuration.getAppName());
-        }
-        if (renderingConfiguration.getEnvironmentName() == null) {
-            renderingConfiguration.setEnvironmentName(this.configuration.getEnvironmentName());
-        }
-        if (renderingConfiguration.getSaveDiffs() == null) {
-            renderingConfiguration.setSaveDiffs(this.configuration.getSaveDiffs());
-        }
-        if (renderingConfiguration.getSessionType() == null) {
-            renderingConfiguration.setSessionType(this.configuration.getSessionType());
-        }
-        if (renderingConfiguration.getTestName() == null) {
-            renderingConfiguration.setTestName(this.configuration.getTestName());
-        }
-        if (renderingConfiguration.getViewportSize() == null) {
-            renderingConfiguration.setViewportSize(this.configuration.getViewportSize());
-        }
-        this.configuration = renderingConfiguration;
-    }
-
     private IEyesConnector createVGEyesConnector(RenderBrowserInfo browserInfo) {
         logger.verbose("creating VisualGridEyes server connector");
         EyesConnector VGEyesConnector = new EyesConnector(browserInfo, renderingGridManager.getRateLimiter());
@@ -512,11 +473,12 @@ public class VisualGridEyes implements IRenderingEyes {
     public void setBaselineEnvName(String baselineEnvName) {
         logger.log("Baseline environment name: " + baselineEnvName);
 
-        if (baselineEnvName == null || baselineEnvName.isEmpty()) {
-            this.configuration.setBaselineEnvName(null);
-        } else {
-            this.configuration.setBaselineEnvName(baselineEnvName.trim());
-        }
+        this.baselineEnvName = baselineEnvName;
+//        if (baselineEnvName == null || baselineEnvName.isEmpty()) {
+//            this.configuration.setBaselineEnvName(null);
+//        } else {
+//            this.configuration.setBaselineEnvName(baselineEnvName.trim());
+//        }
     }
 
     public BatchInfo getBatch() {
@@ -551,6 +513,7 @@ public class VisualGridEyes implements IRenderingEyes {
     /**
      * Sets the user given agent id of the SDK. {@code null} is referred to
      * as no id.
+     *
      * @param agentId The agent ID to set.
      */
     public void setAgentId(String agentId) {
@@ -570,14 +533,55 @@ public class VisualGridEyes implements IRenderingEyes {
     }
 
     public String getEnvName() {
-        return null;
+        return envName;
     }
 
     public void setEnvName(String envName) {
-
+        this.envName = envName;
     }
 
     public AbstractProxySettings getProxy() {
         return null;
+    }
+
+    public void setMatchTimeout(int ms) {
+        mathTimeout = ms;
+    }
+
+    public int getMatchTimeout() {
+        return matchTimeout;
+    }
+
+    public void setSaveNewTests(boolean saveNewTests) {
+        this.saveNewTests = saveNewTests;
+    }
+
+    public boolean getSaveNewTests() {
+
+        return saveNewTests;
+    }
+
+    public void setSaveFailedTests(boolean saveFailedTests) {
+        saveNewTests = saveFailedTests;
+    }
+
+    public FailureReports getFailureReports() {
+        return failureReport;
+    }
+
+    public void setFailureReports(FailureReports failureReports) {
+        this.failureReport = failureReports;
+    }
+
+    public void setDefaultMatchSettings(ImageMatchSettings defaultMatchSettings) {
+        this.defaultMatchSettings = defaultMatchSettings;
+    }
+
+    public ImageMatchSettings getDefaultMatchSettings() {
+        return defaultMatchSettings;
+    }
+
+    public MatchLevel getMatchLevel() {
+        return matchLevel;
     }
 }

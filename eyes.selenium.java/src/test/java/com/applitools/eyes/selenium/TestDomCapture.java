@@ -19,7 +19,7 @@ public final class TestDomCapture {
         WebDriver driver = new ChromeDriver();
 
         // Initialize the VisualGridEyes SDK and set your private API key.
-        SeleniumEyes eyes = new SeleniumEyes();
+        Eyes eyes = new Eyes();
 
         eyes.setLogHandler(new StdoutLogHandler(true));
         eyes.setServerUrl("https://eyes.applitools.com/");

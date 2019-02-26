@@ -22,8 +22,7 @@ public class SeleniumConfiguration extends Configuration {
     //Rendering Configuration
     private int concurrentSessions = 3;
     private boolean isThrowExceptionOn = false;
-    private String testName = null;
-    private boolean isRenderingConfig = false;
+    private Boolean isRenderingConfig = false;
 
     public enum BrowserType {CHROME, FIREFOX}
     private List<RenderBrowserInfo> browsersInfo = new ArrayList<>();

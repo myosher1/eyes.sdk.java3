@@ -6,18 +6,18 @@ import com.applitools.eyes.SessionType;
 
 public class Configuration {
 
+    private String branchName = System.getenv("APPLITOOLS_BRANCH");
+    private String parentBranchName = System.getenv("APPLITOOLS_PARENT_BRANCH");
+    private String baselineBranchName = System.getenv("APPLITOOLS_BASELINE_BRANCH");
+    private String agentId;
+    private String environmentName;
+    private Boolean saveDiffs;
+    private SessionType sessionType;
     protected BatchInfo batch;
-    protected String branchName = System.getenv("APPLITOOLS_BRANCH");
-    protected String parentBranchName = System.getenv("APPLITOOLS_PARENT_BRANCH");
-    protected String baselineBranchName = System.getenv("APPLITOOLS_BASELINE_BRANCH");
-    protected String agentId;
     protected String baselineEnvName;
-    protected String environmentName;
-    protected Boolean saveDiffs;
     protected String appName;
     protected String testName;
     protected RectangleSize viewportSize;
-    protected SessionType sessionType;
 
     public Configuration() {
     }

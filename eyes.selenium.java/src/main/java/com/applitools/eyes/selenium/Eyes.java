@@ -107,6 +107,21 @@ public class Eyes {
         if (renderingConfiguration.getViewportSize() == null) {
             renderingConfiguration.setViewportSize(this.globalConfiguration.getViewportSize());
         }
+        if (!renderingConfiguration.isThrowExceptionOn()) {
+            renderingConfiguration.setThrowExceptionOn(this.globalConfiguration.isThrowExceptionOn());
+        }
+        if (renderingConfiguration.getBaselineBranchName() == null) {
+            renderingConfiguration.setBaselineBranchName(this.globalConfiguration.getBaselineBranchName());
+        }
+        if (!renderingConfiguration.getForceFullPageScreenshot()) {
+            renderingConfiguration.setForceFullPageScreenshot(this.globalConfiguration.getForceFullPageScreenshot());
+        }
+        if (!renderingConfiguration.getHideCaret()) {
+            renderingConfiguration.setHideCaret(this.globalConfiguration.getHideCaret());
+        }
+        if (!renderingConfiguration.getHideScrollbars()) {
+            renderingConfiguration.setHideScrollbars(this.globalConfiguration.getHideScrollbars());
+        }
         return renderingConfiguration;
     }
 
@@ -165,6 +180,7 @@ public class Eyes {
      * @return The test results.
      */
     public TestResults close() {
+        configuration = null;
         if (isVisualGridEyes) {
             List<Future<TestResultContainer>> futures = visualGridEyes.close();
             if (futures != null && !futures.isEmpty()) {
@@ -190,6 +206,7 @@ public class Eyes {
      * If a test is running, aborts it. Otherwise, does nothing.
      */
     public void abortIfNotClosed() {
+        configuration = null;
         if (isVisualGridEyes) {
             visualGridEyes.abortIfNotClosed();
         } else {
@@ -228,20 +245,18 @@ public class Eyes {
 
 
     public void setBranchName(String branchName) {
-        if (isVisualGridEyes) {
-            visualGridEyes.setBranchName(branchName);
-        } else {
-            seleniumEyes.setBranchName(branchName);
+        if (this.configuration != null) {
+            this.configuration.setBranchName(branchName);
         }
+        globalConfiguration.setBranchName(branchName);
     }
 
 
     public void setParentBranchName(String branchName) {
-        if (isVisualGridEyes) {
-            visualGridEyes.setParentBranchName(branchName);
-        } else {
-            seleniumEyes.setParentBranchName(branchName);
+        if (this.configuration != null) {
+            this.configuration.setParentBranchName(branchName);
         }
+        globalConfiguration.setParentBranchName(branchName);
     }
 
 
@@ -520,6 +535,7 @@ public class Eyes {
     }
 
     public TestResults close(boolean shouldThrowException) {
+        configuration = null;
         if (isVisualGridEyes) {
             List<Future<TestResultContainer>> close = visualGridEyes.close(shouldThrowException);
             if (close != null && !close.isEmpty()) {
@@ -1379,13 +1395,8 @@ public class Eyes {
      * frame handling.
      */
     public WebDriver open(WebDriver driver, String appName, String testName) {
-        if (isVisualGridEyes) {
             RectangleSize viewportSize = SeleniumEyes.getViewportSize(driver);
-            return visualGridEyes.open(driver, new SeleniumConfiguration(appName, testName, viewportSize));
-        } else {
-
-            return this.seleniumEyes.open(driver, appName, testName);
-        }
+            return open(driver, new SeleniumConfiguration(appName, testName, viewportSize));
     }
 
     /**
@@ -1404,19 +1415,14 @@ public class Eyes {
      */
     public WebDriver open(WebDriver driver, String appName, String testName,
                           RectangleSize viewportSize) {
-        if (isVisualGridEyes) {
-            return this.visualGridEyes.open(driver, new SeleniumConfiguration(appName, testName, viewportSize));
-        } else {
-
-            return this.seleniumEyes.open(driver, appName, testName, viewportSize);
-        }
+        return open(driver, new SeleniumConfiguration(appName, testName, viewportSize));
     }
 
     public boolean getHideCaret() {
-        if (!this.isVisualGridEyes) {
-            return this.seleniumEyes.getHideCaret();
+        if (this.configuration != null) {
+            return this.configuration.getHideCaret();
         }
-        return false;
+        return globalConfiguration.getHideCaret();
     }
 
 
@@ -1434,19 +1440,20 @@ public class Eyes {
      * @param shouldForce Whether to force a full page screenshot or not.
      */
     public void setForceFullPageScreenshot(boolean shouldForce) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.setForceFullPageScreenshot(shouldForce);
+        if (this.configuration != null) {
+            this.configuration.setForceFullPageScreenshot(shouldForce);
         }
+        globalConfiguration.setForceFullPageScreenshot(shouldForce);
     }
 
     /**
      * @return Whether SeleniumEyes should force a full page screenshot.
      */
     public boolean getForceFullPageScreenshot() {
-        if (!this.isVisualGridEyes) {
-            return this.seleniumEyes.getForceFullPageScreenshot();
+        if (this.configuration != null) {
+            return this.configuration.getForceFullPageScreenshot();
         }
-        return false;
+        return globalConfiguration.getForceFullPageScreenshot();
     }
 
     /**
@@ -1458,9 +1465,10 @@ public class Eyes {
      *                              default value to be used.
      */
     public void setWaitBeforeScreenshots(int waitBeforeScreenshots) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.setWaitBeforeScreenshots(waitBeforeScreenshots);
+        if (this.configuration != null) {
+            this.configuration.setWaitBeforeScreenshots(waitBeforeScreenshots);
         }
+        globalConfiguration.setWaitBeforeScreenshots(waitBeforeScreenshots);
     }
 
     /**
@@ -1505,8 +1513,9 @@ public class Eyes {
      * @param mode The stitch mode to set.
      */
     public void setStitchMode(StitchMode mode) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.setStitchMode(mode);
+        this.globalConfiguration.setStitchMode(mode);
+        if (this.configuration != null) {
+            this.globalConfiguration.setStitchMode(mode);
         }
     }
 
@@ -1514,10 +1523,10 @@ public class Eyes {
      * @return The current stitch mode settings.
      */
     public StitchMode getStitchMode() {
-        if (!this.isVisualGridEyes) {
-            return this.seleniumEyes.getStitchMode();
+        if (this.configuration != null) {
+            return this.configuration.getStitchMode();
         }
-        return null;
+        return globalConfiguration.getStitchMode();
     }
 
     /**
@@ -1526,8 +1535,9 @@ public class Eyes {
      * @param shouldHide Whether to hide the scrollbars or not.
      */
     public void setHideScrollbars(boolean shouldHide) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.setHideScrollbars(shouldHide);
+        this.globalConfiguration.setHideScrollbars(shouldHide);
+        if (this.configuration != null) {
+            this.globalConfiguration.setHideScrollbars(shouldHide);
         }
     }
 
@@ -1535,10 +1545,10 @@ public class Eyes {
      * @return Whether or not scrollbars are hidden when taking screenshots.
      */
     public boolean getHideScrollbars() {
-        if (!this.isVisualGridEyes) {
-            return this.seleniumEyes.getHideScrollbars();
+        if (this.configuration != null) {
+            return this.configuration.getHideScrollbars();
         }
-        return false;
+        return globalConfiguration.getHideScrollbars();
     }
 
     /**

@@ -19,7 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class TestTopSites {
-    private EyesRunner renderingManager;
+    private EyesRunner visualGridRunner;
 
     private String logsPath = System.getenv("APPLITOOLS_LOGS_PATH");
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
@@ -27,12 +27,12 @@ public class TestTopSites {
 
     @BeforeClass
     public void beforeClass() {
-        renderingManager = new VisualGridRunner(10);
-//        renderingManager.setLogHandler(new StdoutLogHandler(true));
+        visualGridRunner = new VisualGridRunner(10);
+//        visualGridRunner.setLogHandler(new StdoutLogHandler(true));
         FileLogger logHandler = new FileLogger("eyes.log", false, true);
-        renderingManager.setLogHandler(logHandler);
-        renderingManager.getLogger().log("enter");
-        renderingManager.setServerUrl("https://eyes.applitools.com/");
+        visualGridRunner.setLogHandler(logHandler);
+        visualGridRunner.getLogger().log("enter");
+        visualGridRunner.setServerUrl("https://eyes.applitools.com/");
     }
 
     @DataProvider(name = "dp", parallel = true)
@@ -51,7 +51,7 @@ public class TestTopSites {
     }
 
     private Eyes initEyes(WebDriver webDriver, String testedUrl) {
-        Eyes eyes = new Eyes(renderingManager);
+        Eyes eyes = new Eyes(visualGridRunner);
         BatchInfo batchInfo = new BatchInfo("Top Ten Sites");
         batchInfo.setId("Target");
         eyes.setBatch(batchInfo);
@@ -83,7 +83,7 @@ public class TestTopSites {
 
     @Test(dataProvider = "dp")
     public void test(String testedUrl) {
-        renderingManager.getLogger().log("entering with url " + testedUrl);
+        visualGridRunner.getLogger().log("entering with url " + testedUrl);
         WebDriver webDriver = new ChromeDriver();
         webDriver.get(testedUrl);
         Eyes eyes = (Eyes) initEyes(webDriver, testedUrl);
@@ -104,7 +104,6 @@ public class TestTopSites {
             TestResults close = eyes.close(true);
             Assert.assertNotNull(close);
             logger.log("end of `try` block for url " + testedUrl);
-
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         } finally {
@@ -118,7 +117,7 @@ public class TestTopSites {
     private void initLogging(String testedUrl, Eyes eyes) {
         String testName = testedUrl.substring(8);
         String path = logsPath + File.separator + "java" + File.separator + "TestTopSites_" + dateTimeString;
-//        FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(renderingManager.getLogger(), path, null, null);
+//        FileDebugResourceWriter fileDebugResourceWriter = new FileDebugResourceWriter(visualGridRunner.getLogger(), path, null, null);
 //        VisualGridEyes.setDebugResourceWriter(fileDebugResourceWriter);
 
 //        FileLogger eyesLogger = new FileLogger("TopTenSites.log", true, true);
@@ -127,12 +126,12 @@ public class TestTopSites {
 
     @AfterMethod
     public void afterMethod(ITestContext testContext) {
-        renderingManager.getLogger().log("enter");
+        visualGridRunner.getLogger().log("enter");
     }
 
     @AfterClass
     public void afterClass(ITestContext testContext) {
-        TestResultSummary allTestResults = renderingManager.getAllTestResults();
-        renderingManager.getLogger().log(allTestResults.toString());
+        TestResultSummary allTestResults = visualGridRunner.getAllTestResults();
+        visualGridRunner.getLogger().log(allTestResults.toString());
     }
 }
