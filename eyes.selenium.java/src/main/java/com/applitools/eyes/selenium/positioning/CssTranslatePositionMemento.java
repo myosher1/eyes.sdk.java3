@@ -13,8 +13,10 @@ public class CssTranslatePositionMemento extends PositionMemento {
     private final Location position;
 
     /**
+     * Instantiates a new Css translate position memento.
      *
      * @param transform The current transform.
+     * @param position  the position
      */
     public CssTranslatePositionMemento(String transform, Location position) {
         this.transform = transform;
@@ -25,10 +27,16 @@ public class CssTranslatePositionMemento extends PositionMemento {
      *
      * @return The current transforms. The keys are the style keys from
      * which each of the transforms were taken.
+     * @return The current transforms. The keys are the style keys from which each of the transforms were taken.
      */
     public String getTransform() {
         return transform;
     }
 
+    /**
+     * Gets position.
+     *
+     * @return the position
+     */
     public Location getPosition() { return position; }
 }

@@ -146,7 +146,7 @@ public class DomCapture {
                 String[] missingFrameXpaths = missingFrameLine.split(",");
                 for (String missingFrameXpath : missingFrameXpaths) {
                     logger.verbose("switching to specific frame : " + missingFrameXpath);
-                    WebElement frame = driver.findElement(By.xpath((missingFrameXpath)));
+                    WebElement frame = driver.findElement(By.xpath(missingFrameXpath));
                     logger.verbose("Switched to frame(" + missingFrameXpath + ") with src(" + frame.getAttribute("src") + ")");
                     switchTo.frame(frame);
                 }

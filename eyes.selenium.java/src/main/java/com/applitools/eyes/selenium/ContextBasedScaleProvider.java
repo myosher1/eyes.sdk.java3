@@ -40,6 +40,8 @@ public class ContextBasedScaleProvider implements ScaleProvider {
      * @param devicePixelRatio          The device pixel ratio of the
      *                                  platform on which the application is
      *                                  running.
+     * @param logger                    the logger.
+     * @param isMobileDevice            is mobile device.
      */
     @SuppressWarnings("WeakerAccess")
     public ContextBasedScaleProvider(Logger logger,

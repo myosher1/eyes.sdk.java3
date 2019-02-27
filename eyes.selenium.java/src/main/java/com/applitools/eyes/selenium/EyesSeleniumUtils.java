@@ -146,9 +146,11 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * Is landscape orientation boolean.
+     *
+     * @param logger the logger
      * @param driver The driver for which to check the orientation.
-     * @return {@code true} if this is a mobile device and is in landscape
-     * orientation. {@code false} otherwise.
+     * @return {@code true} if this is a mobile device and is in landscape orientation. {@code false} otherwise.
      */
     public static boolean isLandscapeOrientation(Logger logger, WebDriver driver) {
         // We can only find orientation for mobile devices.
@@ -190,6 +192,12 @@ public class EyesSeleniumUtils {
     }
 
 
+    /**
+     * Select root element string.
+     *
+     * @param executor the executor
+     * @return the string
+     */
     @SuppressWarnings("unused")
     public static String selectRootElement(JavascriptExecutor executor) {
         // FIXME: 16/06/2018 HOTFIX for returning using documentElement as default for "hideScrollbars"
@@ -214,8 +222,9 @@ public class EyesSeleniumUtils {
     /**
      * Sets the overflow of the current context's body.
      *
-     * @param executor The executor to use for setting the overflow.
-     * @param value    The overflow value to set.
+     * @param executor    The executor to use for setting the overflow.
+     * @param value       The overflow value to set.
+     * @param rootElement the root element
      * @return The previous overflow value (could be {@code null} if undefined).
      */
     public static String setOverflow(JavascriptExecutor executor,
@@ -239,6 +248,8 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * Gets current scroll position.
+     *
      * @param executor The executor to use.
      * @return The current scroll position of the current frame.
      */
@@ -263,6 +274,8 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * Gets current frame content entire size.
+     *
      * @param executor The executor to use.
      * @return The size of the entire content.
      */
@@ -283,6 +296,14 @@ public class EyesSeleniumUtils {
         return result;
     }
 
+    /**
+     * Gets entire element size.
+     *
+     * @param logger   the logger
+     * @param executor the executor
+     * @param element  the element
+     * @return the entire element size
+     */
     @SuppressWarnings("unchecked")
     public static RectangleSize getEntireElementSize(Logger logger, IEyesJsExecutor executor, WebElement element) {
         RectangleSize result;
@@ -302,6 +323,8 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * Gets viewport size.
+     *
      * @param executor The executor to use.
      * @return The viewport size.
      */
@@ -315,6 +338,8 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * Gets viewport size or display size.
+     *
      * @param logger The logger to use.
      * @param driver The web driver to use.
      * @return The viewport size of the current context, or the display size
@@ -352,6 +377,14 @@ public class EyesSeleniumUtils {
         return new RectangleSize(width, height);
     }
 
+    /**
+     * Sets browser size.
+     *
+     * @param logger       the logger
+     * @param driver       the driver
+     * @param requiredSize the required size
+     * @return the browser size
+     */
     public static boolean setBrowserSize(Logger logger, WebDriver driver,
                                          RectangleSize requiredSize) {
         final int SLEEP = 1000;
@@ -372,6 +405,15 @@ public class EyesSeleniumUtils {
         return currentSize == requiredSize;
     }
 
+    /**
+     * Sets browser size by viewport size.
+     *
+     * @param logger               the logger
+     * @param driver               the driver
+     * @param actualViewportSize   the actual viewport size
+     * @param requiredViewportSize the required viewport size
+     * @return the browser size by viewport size
+     */
     @SuppressWarnings("UnusedReturnValue")
     public static boolean setBrowserSizeByViewportSize(Logger logger, WebDriver driver,
                                                        RectangleSize actualViewportSize,
@@ -388,6 +430,8 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * Sets viewport size.
+     *
      * @param logger The logger to use.
      * @param driver The web driver to use.
      * @param size   The size to set as the viewport size.
@@ -497,9 +541,10 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * Is android boolean.
+     *
      * @param driver The driver to test.
-     * @return {@code true} if the driver is an Android driver.
-     * {@code false} otherwise.
+     * @return {@code true} if the driver is an Android driver. {@code false} otherwise.
      */
     public static boolean isAndroid(WebDriver driver) {
         driver = getUnderlyingDriver(driver);
@@ -507,9 +552,10 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * Is ios boolean.
+     *
      * @param driver The driver to test.
-     * @return {@code true} if the driver is an iOS driver.
-     * {@code false} otherwise.
+     * @return {@code true} if the driver is an iOS driver. {@code false} otherwise.
      */
     public static boolean isIOS(WebDriver driver) {
         driver = getUnderlyingDriver(driver);
@@ -517,6 +563,8 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * Gets platform version.
+     *
      * @param driver The driver to get the platform version from.
      * @return The platform version or {@code null} if it is undefined.
      */
@@ -531,6 +579,8 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * Gets device pixel ratio.
+     *
      * @param executor The executor to use.
      * @return The device pixel ratio.
      */
@@ -541,9 +591,10 @@ public class EyesSeleniumUtils {
     }
 
     /**
+     * Gets current transform.
+     *
      * @param executor The executor to use.
-     * @return The current documentElement transform values, according to
-     * {@link #JS_TRANSFORM_KEYS}.
+     * @return The current documentElement transform values, according to {@link #JS_TRANSFORM_KEYS}.
      */
     public static Map<String, String> getCurrentTransform(IEyesJsExecutor executor) {
 
@@ -566,8 +617,7 @@ public class EyesSeleniumUtils {
      * map of style keys and values.
      *
      * @param executor   The executor to use.
-     * @param transforms The transforms to set. Keys are used as style keys,
-     *                   and values are the values for those styles.
+     * @param transforms The transforms to set. Keys are used as style keys,                   and values are the values for those styles.
      */
     public static void setTransforms(IEyesJsExecutor executor,
                                      Map<String, String> transforms) {
@@ -614,6 +664,7 @@ public class EyesSeleniumUtils {
     /**
      * Returns given element visible portion size.
      *
+     * @param logger  the logger
      * @param element The element for which to return the size.
      * @return The given element's visible portion size.
      */

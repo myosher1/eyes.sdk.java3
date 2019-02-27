@@ -50,6 +50,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
      *                 negative values = counter-clockwise,
      *                 0 = force no rotation,
      *                 null = rotate automatically as needed.
+     * @param logger logger
      * @return A normalized image.
      */
     public static BufferedImage normalizeRotation(Logger logger,
@@ -397,6 +398,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     /**
      * See {@link #getDefaultContentViewportSize(boolean)}.
      * {@code forceQuery} defaults to {@code false}.
+     * @return the DefaultContentViewportSize
      */
     public RectangleSize getDefaultContentViewportSize() {
         return getDefaultContentViewportSize(true);

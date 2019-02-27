@@ -25,6 +25,11 @@ public class ContextBasedScaleProviderFactory extends ScaleProviderFactory {
      * @param devicePixelRatio          The device pixel ratio of the
      *                                  platform on which the application is
      *                                  running.
+     * @param isMobileDevice            is Mobile device
+     * @param logger                    the logger.
+     *
+     * @param scaleProviderHandler      the scale provider handler.
+     *
      */
     public ContextBasedScaleProviderFactory(Logger logger, RectangleSize topLevelContextEntireSize,
                                             RectangleSize viewportSize, double devicePixelRatio, boolean isMobileDevice,

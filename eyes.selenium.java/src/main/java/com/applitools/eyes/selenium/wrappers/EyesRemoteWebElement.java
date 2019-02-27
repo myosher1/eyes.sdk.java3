@@ -166,6 +166,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     }
 
     /**
+     * @param propStyle The Style prop
      * @return The integer value of a computed style.
      */
     public int getComputedStyleInteger(String propStyle) {
@@ -244,6 +245,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     /**
      * Scrolls to the specified location inside the element.
      * @param location The location to scroll to.
+     * @return the current location after scroll.
      */
     public Location scrollTo(Location location) {
         Object position = eyesDriver.executeScript(String.format(JS_SCROLL_TO_FORMATTED_STR,

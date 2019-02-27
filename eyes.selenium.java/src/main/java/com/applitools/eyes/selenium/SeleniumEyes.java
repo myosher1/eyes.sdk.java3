@@ -51,7 +51,13 @@ public class SeleniumEyes extends EyesBase {
     private WebElement scrollRootElement;
     private PositionProvider currentFramePositionProvider;
 
+    /**
+     * The constant UNKNOWN_DEVICE_PIXEL_RATIO.
+     */
     public static final double UNKNOWN_DEVICE_PIXEL_RATIO = 0;
+    /**
+     * The constant DEFAULT_DEVICE_PIXEL_RATIO.
+     */
     public static final double DEFAULT_DEVICE_PIXEL_RATIO = 1;
 
     private static final int USE_DEFAULT_MATCH_TIMEOUT = -1;
@@ -86,8 +92,16 @@ public class SeleniumEyes extends EyesBase {
     private EyesScreenshotFactory screenshotFactory;
     private String cachedAUTSessionId;
 
+    /**
+     * The interface Web driver action.
+     */
     @SuppressWarnings("UnusedDeclaration")
     public interface WebDriverAction {
+        /**
+         * Drive.
+         *
+         * @param driver the driver
+         */
         void drive(WebDriver driver);
     }
 
@@ -108,22 +122,47 @@ public class SeleniumEyes extends EyesBase {
         return "eyes.selenium.java/3.145.1";
     }
 
+    /**
+     * Gets driver.
+     *
+     * @return the driver
+     */
     public WebDriver getDriver() {
         return driver;
     }
 
+    /**
+     * Gets original fc.
+     *
+     * @return the original fc
+     */
     public FrameChain getOriginalFC() {
         return originalFC;
     }
 
+    /**
+     * Gets current frame position provider.
+     *
+     * @return the current frame position provider
+     */
     public PositionProvider getCurrentFramePositionProvider() {
         return currentFramePositionProvider;
     }
 
+    /**
+     * Gets region to check.
+     *
+     * @return the region to check
+     */
     public Region getRegionToCheck() {
         return regionToCheck;
     }
 
+    /**
+     * Sets region to check.
+     *
+     * @param regionToCheck the region to check
+     */
     public void setRegionToCheck(Region regionToCheck) {
         this.regionToCheck = regionToCheck;
     }
@@ -137,14 +176,29 @@ public class SeleniumEyes extends EyesBase {
         return (SeleniumConfiguration) config;
     }
 
+    /**
+     * Gets hide caret.
+     *
+     * @return the hide caret
+     */
     public boolean getHideCaret() {
         return getConfig().getHideCaret();
     }
 
+    /**
+     * Sets hide caret.
+     *
+     * @param hideCaret the hide caret
+     */
     public void setHideCaret(boolean hideCaret) {
         getConfig().setHideCaret(hideCaret);
     }
 
+    /**
+     * Should stitch content boolean.
+     *
+     * @return the boolean
+     */
     public boolean shouldStitchContent() {
         return stitchContent;
     }
@@ -152,6 +206,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * ﻿Forces a full page screenshot (by scrolling and stitching) if the
      * browser only ﻿supports viewport screenshots).
+     *
      * @param shouldForce Whether to force a full page screenshot or not.
      */
     public void setForceFullPageScreenshot(boolean shouldForce) {
@@ -159,6 +214,8 @@ public class SeleniumEyes extends EyesBase {
     }
 
     /**
+     * Gets force full page screenshot.
+     *
      * @return Whether SeleniumEyes should force a full page screenshot.
      */
     public boolean getForceFullPageScreenshot() {
@@ -177,6 +234,8 @@ public class SeleniumEyes extends EyesBase {
     }
 
     /**
+     * Gets wait before screenshots.
+     *
      * @return The time to wait just before taking a screenshot.
      */
     public int getWaitBeforeScreenshots() {
@@ -186,6 +245,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Turns on/off the automatic scrolling to a region being checked by
      * {@code checkRegion}.
+     *
      * @param shouldScroll Whether to automatically scroll to a region being validated.
      */
     public void setScrollToRegion(boolean shouldScroll) {
@@ -197,6 +257,8 @@ public class SeleniumEyes extends EyesBase {
     }
 
     /**
+     * Gets scroll to region.
+     *
      * @return Whether to automatically scroll to a region being validated.
      */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -208,6 +270,7 @@ public class SeleniumEyes extends EyesBase {
      * Set the type of stitching used for full page screenshots. When the
      * page includes fixed position header/sidebar, use {@link StitchMode#CSS}.
      * Default is {@link StitchMode#SCROLL}.
+     *
      * @param mode The stitch mode to set.
      */
     public void setStitchMode(StitchMode mode) {
@@ -216,6 +279,8 @@ public class SeleniumEyes extends EyesBase {
     }
 
     /**
+     * Gets stitch mode.
+     *
      * @return The current stitch mode settings.
      */
     public StitchMode getStitchMode() {
@@ -224,6 +289,7 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * Hide the scrollbars when taking screenshots.
+     *
      * @param shouldHide Whether to hide the scrollbars or not.
      */
     public void setHideScrollbars(boolean shouldHide) {
@@ -231,6 +297,8 @@ public class SeleniumEyes extends EyesBase {
     }
 
     /**
+     * Gets hide scrollbars.
+     *
      * @return Whether or not scrollbars are hidden when taking screenshots.
      */
     public boolean getHideScrollbars() {
@@ -238,6 +306,8 @@ public class SeleniumEyes extends EyesBase {
     }
 
     /**
+     * Gets rotation.
+     *
      * @return The image rotation model.
      */
     public ImageRotation getRotation() {
@@ -245,6 +315,8 @@ public class SeleniumEyes extends EyesBase {
     }
 
     /**
+     * Sets rotation.
+     *
      * @param rotation The image rotation model.
      */
     public void setRotation(ImageRotation rotation) {
@@ -262,6 +334,13 @@ public class SeleniumEyes extends EyesBase {
         return devicePixelRatio;
     }
 
+    /**
+     * Open web driver.
+     *
+     * @param driver        the driver
+     * @param configuration the configuration
+     * @return the web driver
+     */
     public WebDriver open(WebDriver driver, SeleniumConfiguration configuration) {
         config = configuration;
         return open(driver);
@@ -270,6 +349,12 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #open(WebDriver, String, String, RectangleSize, SessionType)}.
      * {@code sessionType} defaults to {@code null}.
+     *
+     * @param driver       the driver
+     * @param appName      the app name
+     * @param testName     the test name
+     * @param viewportSize the viewport size
+     * @return the web driver
      */
     public WebDriver open(WebDriver driver, String appName, String testName,
                           RectangleSize viewportSize) {
@@ -283,6 +368,11 @@ public class SeleniumEyes extends EyesBase {
      * See {@link #open(WebDriver, String, String, SessionType)}.
      * {@code viewportSize} defaults to {@code null}.
      * {@code sessionType} defaults to {@code null}.
+     *
+     * @param driver   the driver
+     * @param appName  the app name
+     * @param testName the test name
+     * @return the web driver
      */
     public WebDriver open(WebDriver driver, String appName, String testName) {
         config.setAppName(appName);
@@ -313,6 +403,13 @@ public class SeleniumEyes extends EyesBase {
         return open(driver);
     }
 
+    /**
+     * Open web driver.
+     *
+     * @param driver the driver
+     * @return the web driver
+     * @throws EyesException the eyes exception
+     */
     protected WebDriver open(WebDriver driver) throws EyesException {
         openLogger();
         this.cachedAUTSessionId = null;
@@ -372,6 +469,11 @@ public class SeleniumEyes extends EyesBase {
         }
     }
 
+    /**
+     * Gets scroll root element.
+     *
+     * @return the scroll root element
+     */
     public WebElement getScrollRootElement() {
         if (this.scrollRootElement == null) {
             this.scrollRootElement = driver.findElement(By.tagName("html"));
@@ -398,6 +500,12 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #open(WebDriver, String, String, RectangleSize)}.
      * {@code viewportSize} defaults to {@code null}.
+     *
+     * @param driver      the driver
+     * @param appName     the app name
+     * @param testName    the test name
+     * @param sessionType the session type
+     * @return the web driver
      */
     protected WebDriver open(WebDriver driver, String appName, String testName, SessionType sessionType) {
         return open(driver, appName, testName, null, sessionType);
@@ -415,6 +523,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkWindow(int, String)}.
      * Default match timeout is used.
+     *
      * @param tag An optional tag to be associated with the snapshot.
      */
     public void checkWindow(String tag) {
@@ -424,6 +533,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Takes a snapshot of the application under test and matches it with
      * the expected output.
+     *
      * @param matchTimeout The amount of time to retry matching (Milliseconds).
      * @param tag          An optional tag to be associated with the snapshot.
      * @throws TestFailedException Thrown if a mismatch is detected and
@@ -437,11 +547,14 @@ public class SeleniumEyes extends EyesBase {
      * Runs a test on the current window.
      * @param driver       The web driver that controls the browser hosting
      *                     the application under test.
+     *
+     * @param driver       The web driver that controls the browser hosting                     the application under test.
      * @param appName      The name of the application under test.
      * @param testName     The test name (will also be used as the tag name for the step).
      * @param viewportSize The required browser's viewport size
      *                     (i.e., the visible part of the document's body) or
      *                     {@code null} to use the current window's viewport.
+     * @param viewportSize The required browser's viewport size                     (i.e., the visible part of the document's body) or                     {@code null} to use the current window's viewport.
      */
     public void testWindow(WebDriver driver, String appName, String testName,
                            RectangleSize viewportSize) {
@@ -457,6 +570,10 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #testWindow(WebDriver, String, String, RectangleSize)}.
      * {@code viewportSize} defaults to {@code null}.
+     *
+     * @param driver   the driver
+     * @param appName  the app name
+     * @param testName the test name
      */
     public void testWindow(WebDriver driver, String appName, String testName) {
         testWindow(driver, appName, testName, null);
@@ -466,6 +583,10 @@ public class SeleniumEyes extends EyesBase {
      * See {@link #testWindow(WebDriver, String, String, RectangleSize)}.
      * {@code appName} defaults to {@code null} (which means the name set in
      * {@link #setAppName(String)} would be used.
+     *
+     * @param driver       the driver
+     * @param testName     the test name
+     * @param viewportSize the viewport size
      */
     public void testWindow(WebDriver driver, String testName,
                            RectangleSize viewportSize) {
@@ -475,6 +596,9 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #testWindow(WebDriver, String, RectangleSize)}.
      * {@code viewportSize} defaults to {@code null}.
+     *
+     * @param driver   the driver
+     * @param testName the test name
      */
     public void testWindow(WebDriver driver, String testName) {
         testWindow(driver, testName, (RectangleSize) null);
@@ -482,6 +606,7 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * Run a visual performance test.
+     *
      * @param driver   The driver to use.
      * @param appName  The name of the application being tested.
      * @param testName The test name.
@@ -529,6 +654,12 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
      * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
+     *
+     * @param driver   the driver
+     * @param appName  the app name
+     * @param testName the test name
+     * @param action   the action
+     * @param deadline the deadline
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action,
@@ -541,6 +672,11 @@ public class SeleniumEyes extends EyesBase {
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
      * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
+     *
+     * @param driver   the driver
+     * @param appName  the app name
+     * @param testName the test name
+     * @param action   the action
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action) {
@@ -554,6 +690,11 @@ public class SeleniumEyes extends EyesBase {
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
      * {@code action} defaults to {@code null}.
      * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
+     *
+     * @param driver   the driver
+     * @param appName  the app name
+     * @param testName the test name
+     * @param deadline the deadline
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, int deadline) {
@@ -566,6 +707,10 @@ public class SeleniumEyes extends EyesBase {
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
      * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
      * {@code action} defaults to {@code null}.
+     *
+     * @param driver   the driver
+     * @param appName  the app name
+     * @param testName the test name
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName) {
@@ -579,6 +724,13 @@ public class SeleniumEyes extends EyesBase {
      * Similar to {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)},
      * except this method sets the viewport size before starting the
      * performance test.
+     *
+     * @param driver       the driver
+     * @param appName      the app name
+     * @param testName     the test name
+     * @param action       the action
+     * @param deadline     the deadline
+     * @param timeout      the timeout
      * @param viewportSize The required viewport size.
      */
     public void testResponseTime(WebDriver driver, String appName,
@@ -596,6 +748,13 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
      * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
+     *
+     * @param driver       the driver
+     * @param appName      the app name
+     * @param testName     the test name
+     * @param action       the action
+     * @param deadline     the deadline
+     * @param viewportSize the viewport size
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action,
@@ -609,6 +768,12 @@ public class SeleniumEyes extends EyesBase {
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
      * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
+     *
+     * @param driver       the driver
+     * @param appName      the app name
+     * @param testName     the test name
+     * @param action       the action
+     * @param viewportSize the viewport size
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, WebDriverAction action,
@@ -623,6 +788,13 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
      * {@code action} defaults to {@code null}.
+     *
+     * @param driver       the driver
+     * @param appName      the app name
+     * @param testName     the test name
+     * @param deadline     the deadline
+     * @param timeout      the timeout
+     * @param viewportSize the viewport size
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, int deadline, int timeout,
@@ -634,6 +806,12 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #testResponseTime(WebDriver, String, String, int, int, RectangleSize)}.
      * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
+     *
+     * @param driver       the driver
+     * @param appName      the app name
+     * @param testName     the test name
+     * @param deadline     the deadline
+     * @param viewportSize the viewport size
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, int deadline,
@@ -647,6 +825,11 @@ public class SeleniumEyes extends EyesBase {
      * See {@link #testResponseTime(WebDriver, String, String, int, int, RectangleSize)}.
      * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
      * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
+     *
+     * @param driver       the driver
+     * @param appName      the app name
+     * @param testName     the test name
+     * @param viewportSize the viewport size
      */
     public void testResponseTime(WebDriver driver, String appName,
                                  String testName, RectangleSize viewportSize) {
@@ -659,6 +842,7 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * Takes multiple screenshots at once (given all <code>ICheckSettings</code> objects are on the same level).
+     *
      * @param checkSettings Multiple <code>ICheckSettings</code> object representing different regions in the viewport.
      */
     public void check(ICheckSettings... checkSettings) {
@@ -847,6 +1031,12 @@ public class SeleniumEyes extends EyesBase {
         return targetElement;
     }
 
+    /**
+     * Check.
+     *
+     * @param name          the name
+     * @param checkSettings the check settings
+     */
     public void check(String name, ICheckSettings checkSettings) {
         if (getIsDisabled()) {
             logger.log(String.format("check('%s', %s): Ignored", name, checkSettings));
@@ -891,6 +1081,11 @@ public class SeleniumEyes extends EyesBase {
         return fullWindowDom;
     }
 
+    /**
+     * Check.
+     *
+     * @param checkSettings the check settings
+     */
     public void check(ICheckSettings checkSettings) {
         if (getIsDisabled()) {
             logger.log(String.format("check(%s): Ignored", checkSettings));
@@ -1008,6 +1203,13 @@ public class SeleniumEyes extends EyesBase {
         logger.verbose("check - done!");
     }
 
+    /**
+     * Check frame fluent match result.
+     *
+     * @param name          the name
+     * @param checkSettings the check settings
+     * @return the match result
+     */
     protected MatchResult checkFrameFluent(String name, ICheckSettings checkSettings) {
         FrameChain frameChain = driver.getFrameChain().clone();
         Frame targetFrame = frameChain.pop();
@@ -1248,6 +1450,8 @@ public class SeleniumEyes extends EyesBase {
      * See {@link #checkRegion(Region, int, String)}.
      * {@code tag} defaults to {@code null}.
      * Default match timeout is used.
+     *
+     * @param region the region
      */
     public void checkRegion(Region region) {
         checkRegion(region, USE_DEFAULT_MATCH_TIMEOUT, null);
@@ -1255,6 +1459,7 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * Takes a snapshot of the application under test and matches a specific region within it with the expected output.
+     *
      * @param region       A non empty region representing the screen region to check.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
@@ -1286,6 +1491,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegion(WebElement, String)}.
      * {@code tag} defaults to {@code null}.
+     *
      * @param element The element which represents the region to check.
      */
     public void checkRegion(WebElement element) {
@@ -1296,6 +1502,7 @@ public class SeleniumEyes extends EyesBase {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(WebElement)}, otherwise
      * behaves the same as {@link #checkElement(WebElement)}.
+     *
      * @param element       The element which represents the region to check.
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
@@ -1306,6 +1513,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegion(WebElement, int, String)}.
      * Default match timeout is used.
+     *
      * @param element The element which represents the region to check.
      * @param tag     An optional tag to be associated with the snapshot.
      */
@@ -1315,8 +1523,9 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * if {@code stitchContent} is {@code false} then behaves the same {@link
-     * #checkRegion(WebElement, String)}. Otherwise
+     * #checkRegion(WebElement, String)}**. Otherwise
      * behaves the same as {@link #checkElement(WebElement, String)}.
+     *
      * @param element       The element which represents the region to check.
      * @param tag           An optional tag to be associated with the snapshot.
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
@@ -1328,6 +1537,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Takes a snapshot of the application under test and matches a region of
      * a specific element with the expected region output.
+     *
      * @param element      The element which represents the region to check.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
@@ -1341,8 +1551,9 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * if {@code stitchContent} is {@code false} then behaves the same {@link
-     * #checkRegion(WebElement, int, String)}. Otherwise
+     * #checkRegion(WebElement, int, String)}**. Otherwise
      * behaves the same as {@link #checkElement(WebElement, String)}.
+     *
      * @param element       The element which represents the region to check.
      * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the snapshot.
@@ -1355,6 +1566,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegion(By, String)}.
      * {@code tag} defaults to {@code null}.
+     *
      * @param selector The selector by which to specify which region to check.
      */
     public void checkRegion(By selector) {
@@ -1365,6 +1577,7 @@ public class SeleniumEyes extends EyesBase {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(By)}. Otherwise, behaves the
      * same as {@code #checkElement(org.openqa.selenium.By)}
+     *
      * @param selector      The selector by which to specify which region to check.
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
@@ -1375,6 +1588,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegion(By, int, String)}.
      * Default match timeout is used.
+     *
      * @param selector The selector by which to specify which region to check.
      * @param tag      An optional tag to be associated with the screenshot.
      */
@@ -1386,6 +1600,7 @@ public class SeleniumEyes extends EyesBase {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(By, String)}. Otherwise,
      * behaves the same as {@link #checkElement(By, String)}.
+     *
      * @param selector      The selector by which to specify which region to check.
      * @param tag           An optional tag to be associated with the screenshot.
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
@@ -1397,6 +1612,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Takes a snapshot of the application under test and matches a region
      * specified by the given selector with the expected region output.
+     *
      * @param selector     The selector by which to specify which region to check.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the screenshot.
@@ -1411,6 +1627,7 @@ public class SeleniumEyes extends EyesBase {
      * If {@code stitchContent} is {@code false} then behaves the same as
      * {@link #checkRegion(By, int, String)}. Otherwise,
      * behaves the same as {@link #checkElement(By, int, String)}.
+     *
      * @param selector      The selector by which to specify which region to check.
      * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the screenshot.
@@ -1439,10 +1656,7 @@ public class SeleniumEyes extends EyesBase {
      *                      as would be used in a call to
      *                      driver.switchTo().frame()).
      * @param selector      The selector by which to specify which region to check inside the frame.
-     * @param stitchContent If {@code true}, stitch the internal content of
-     *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the
-     *                      region.
+     * @param stitchContent If {@code true}, stitch the internal content of                      the region (i.e., perform                      {@link #checkElement(By, int, String)} on the                      region.
      */
     public void checkRegionInFrame(int frameIndex, By selector, boolean stitchContent) {
         checkRegionInFrame(frameIndex, selector, null, stitchContent);
@@ -1451,9 +1665,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(int, By, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
-     * @param frameIndex The index of the frame to switch to. (The same index
-     *                   as would be used in a call to
-     *                   driver.switchTo().frame()).
+     *
+     * @param frameIndex The index of the frame to switch to. (The same index                   as would be used in a call to                   driver.switchTo().frame()).
      * @param selector   The selector by which to specify which region to check inside the frame.
      * @param tag        An optional tag to be associated with the screenshot.
      */
@@ -1464,15 +1677,11 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * Default match timeout is used.
-     * @param frameIndex    The index of the frame to switch to. (The same index
-     *                      as would be used in a call to
-     *                      driver.switchTo().frame()).
+     *
+     * @param frameIndex    The index of the frame to switch to. (The same index                      as would be used in a call to                      driver.switchTo().frame()).
      * @param selector      The selector by which to specify which region to check inside the frame.
      * @param tag           An optional tag to be associated with the screenshot.
-     * @param stitchContent If {@code true}, stitch the internal content of
-     *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the
-     *                      region.
+     * @param stitchContent If {@code true}, stitch the internal content of                      the region (i.e., perform                      {@link #checkElement(By, int, String)} on the                      region.
      */
     public void checkRegionInFrame(int frameIndex, By selector, String tag, boolean stitchContent) {
         checkRegionInFrame(frameIndex, selector, USE_DEFAULT_MATCH_TIMEOUT,
@@ -1482,9 +1691,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
-     * @param frameIndex   The index of the frame to switch to. (The same index
-     *                     as would be used in a call to
-     *                     driver.switchTo().frame()).
+     *
+     * @param frameIndex   The index of the frame to switch to. (The same index                     as would be used in a call to                     driver.switchTo().frame()).
      * @param selector     The selector by which to specify which region to check inside the frame.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the screenshot.
@@ -1496,16 +1704,12 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
-     * @param frameIndex    The index of the frame to switch to. (The same index
-     *                      as would be used in a call to
-     *                      driver.switchTo().frame()).
+     *
+     * @param frameIndex    The index of the frame to switch to. (The same index                      as would be used in a call to                      driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
      * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the snapshot.
-     * @param stitchContent If {@code true}, stitch the internal content of
-     *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the
-     *                      region.
+     * @param stitchContent If {@code true}, stitch the internal content of                      the region (i.e., perform                      {@link #checkElement(By, int, String)} on the                      region.
      */
     public void checkRegionInFrame(int frameIndex, By selector,
                                    int matchTimeout, String tag,
@@ -1516,8 +1720,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
-     * @param frameNameOrId The name or id of the frame to switch to. (as would
-     *                      be used in a call to driver.switchTo().frame()).
+     *
+     * @param frameNameOrId The name or id of the frame to switch to. (as would                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector) {
@@ -1527,13 +1731,10 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code tag} defaults to {@code null}.
-     * @param frameNameOrId The name or id of the frame to switch to. (as would
-     *                      be used in a call to driver.switchTo().frame()).
+     *
+     * @param frameNameOrId The name or id of the frame to switch to. (as would                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
-     * @param stitchContent If {@code true}, stitch the internal content of
-     *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the
-     *                      region.
+     * @param stitchContent If {@code true}, stitch the internal content of                      the region (i.e., perform                      {@link #checkElement(By, int, String)} on the                      region.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector, boolean stitchContent) {
         checkRegionInFrame(frameNameOrId, selector, null, stitchContent);
@@ -1542,8 +1743,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
-     * @param frameNameOrId The name or id of the frame to switch to. (as would
-     *                      be used in a call to driver.switchTo().frame()).
+     *
+     * @param frameNameOrId The name or id of the frame to switch to. (as would                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
      * @param tag           An optional tag to be associated with the snapshot.
      */
@@ -1556,14 +1757,11 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * Default match timeout is used
-     * @param frameNameOrId The name or id of the frame to switch to. (as would
-     *                      be used in a call to driver.switchTo().frame()).
+     *
+     * @param frameNameOrId The name or id of the frame to switch to. (as would                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check.
      * @param tag           An optional tag to be associated with the snapshot.
-     * @param stitchContent If {@code true}, stitch the internal content of
-     *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the
-     *                      region.
+     * @param stitchContent If {@code true}, stitch the internal content of                      the region (i.e., perform                      {@link #checkElement(By, int, String)} on the                      region.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    String tag, boolean stitchContent) {
@@ -1574,8 +1772,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
-     * @param frameNameOrId The name or id of the frame to switch to. (as would
-     *                      be used in a call to driver.switchTo().frame()).
+     *
+     * @param frameNameOrId The name or id of the frame to switch to. (as would                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check inside the frame.
      * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the snapshot.
@@ -1588,14 +1786,12 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
-     * @param frameNameOrId The name or id of the frame to switch to. (as would
-     *                      be used in a call to driver.switchTo().frame()).
+     *
+     * @param frameNameOrId The name or id of the frame to switch to. (as would                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check inside the frame.
      * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the snapshot.
-     * @param stitchContent If {@code true}, stitch the internal content of
-     *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the region.
+     * @param stitchContent If {@code true}, stitch the internal content of                      the region (i.e., perform                      {@link #checkElement(By, int, String)} on the region.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    int matchTimeout, String tag,
@@ -1606,9 +1802,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, boolean)}.
      * {@code stitchContent} defaults to {@code null}.
-     * @param frameReference The element which is the frame to switch to. (as
-     *                       would be used in a call to
-     *                       driver.switchTo().frame()).
+     *
+     * @param frameReference The element which is the frame to switch to. (as                       would be used in a call to                       driver.switchTo().frame()).
      * @param selector       A Selector specifying the region to check inside the frame.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector) {
@@ -1618,14 +1813,10 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code tag} defaults to {@code null}.
-     * @param frameReference The element which is the frame to switch to. (as
-     *                       would be used in a call to
-     *                       driver.switchTo().frame()).
+     *
+     * @param frameReference The element which is the frame to switch to. (as                       would be used in a call to                       driver.switchTo().frame()).
      * @param selector       A Selector specifying the region to check inside the frame.
-     * @param stitchContent  If {@code true}, stitch the internal content of
-     *                       the region (i.e., perform
-     *                       {@link #checkElement(By, int, String)} on the
-     *                       region.
+     * @param stitchContent  If {@code true}, stitch the internal content of                       the region (i.e., perform                       {@link #checkElement(By, int, String)} on the                       region.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector, boolean stitchContent) {
         checkRegionInFrame(frameReference, selector, null, stitchContent);
@@ -1634,9 +1825,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
-     * @param frameReference The element which is the frame to switch to. (as
-     *                       would be used in a call to
-     *                       driver.switchTo().frame()).
+     *
+     * @param frameReference The element which is the frame to switch to. (as                       would be used in a call to                       driver.switchTo().frame()).
      * @param selector       A Selector specifying the region to check inside the frame.
      * @param tag            An optional tag to be associated with the snapshot.
      */
@@ -1647,15 +1837,11 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, int, String, boolean)}.
      * Default match timeout is used.
-     * @param frameReference The element which is the frame to switch to. (as
-     *                       would be used in a call to
-     *                       driver.switchTo().frame()).
+     *
+     * @param frameReference The element which is the frame to switch to. (as                       would be used in a call to                       driver.switchTo().frame()).
      * @param selector       A Selector specifying the region to check inside the frame.
      * @param tag            An optional tag to be associated with the snapshot.
-     * @param stitchContent  If {@code true}, stitch the internal content of
-     *                       the region (i.e., perform
-     *                       {@link #checkElement(By, int, String)} on the
-     *                       region.
+     * @param stitchContent  If {@code true}, stitch the internal content of                       the region (i.e., perform                       {@link #checkElement(By, int, String)} on the                       region.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector,
                                    String tag, boolean stitchContent) {
@@ -1666,9 +1852,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(WebElement, By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
-     * @param frameReference The element which is the frame to switch to. (as
-     *                       would be used in a call to
-     *                       driver.switchTo().frame()).
+     *
+     * @param frameReference The element which is the frame to switch to. (as                       would be used in a call to                       driver.switchTo().frame()).
      * @param selector       A Selector specifying the region to check inside the frame.
      * @param matchTimeout   The amount of time to retry matching. (Milliseconds)
      * @param tag            An optional tag to be associated with the snapshot.
@@ -1681,16 +1866,12 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
-     * @param frameReference The element which is the frame to switch to. (as
-     *                       would be used in a call to
-     *                       driver.switchTo().frame()).
+     *
+     * @param frameReference The element which is the frame to switch to. (as                       would be used in a call to                       driver.switchTo().frame()).
      * @param selector       A Selector specifying the region to check.
      * @param matchTimeout   The amount of time to retry matching. (Milliseconds)
      * @param tag            An optional tag to be associated with the snapshot.
-     * @param stitchContent  If {@code true}, stitch the internal content of
-     *                       the region (i.e., perform
-     *                       {@link #checkElement(By, int, String)} on the
-     *                       region.
+     * @param stitchContent  If {@code true}, stitch the internal content of                       the region (i.e., perform                       {@link #checkElement(By, int, String)} on the                       region.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector,
                                    int matchTimeout, String tag,
@@ -1700,6 +1881,8 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * Updates the state of scaling related parameters.
+     *
+     * @return the scale provider factory
      */
     protected ScaleProviderFactory updateScalingParams() {
         // Update the scaling params only if we haven't done so yet, and the user hasn't set anything else manually.
@@ -1741,6 +1924,11 @@ public class SeleniumEyes extends EyesBase {
                 scaleProviderHandler);
     }
 
+    /**
+     * Gets current frame scroll root element.
+     *
+     * @return the current frame scroll root element
+     */
     public WebElement getCurrentFrameScrollRootElement() {
         FrameChain fc = driver.getFrameChain().clone();
         Frame currentFrame = fc.peek();
@@ -1756,6 +1944,7 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * Verifies the current frame.
+     *
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
      */
@@ -1791,6 +1980,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkFrame(String, int, String)}.
      * {@code tag} defaults to {@code null}. Default match timeout is used.
+     *
+     * @param frameNameOrId the frame name or id
      */
     public void checkFrame(String frameNameOrId) {
         check(null, Target.frame(frameNameOrId));
@@ -1799,6 +1990,9 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkFrame(String, int, String)}.
      * Default match timeout is used.
+     *
+     * @param frameNameOrId the frame name or id
+     * @param tag           the tag
      */
     public void checkFrame(String frameNameOrId, String tag) {
         check(tag, Target.frame(frameNameOrId).fully());
@@ -1807,9 +2001,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
-     * @param frameNameOrId The name or id of the frame to check. (The same
-     *                      name/id as would be used in a call to
-     *                      driver.switchTo().frame()).
+     *
+     * @param frameNameOrId The name or id of the frame to check. (The same                      name/id as would be used in a call to                      driver.switchTo().frame()).
      * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the match.
      */
@@ -1820,6 +2013,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkFrame(int, int, String)}.
      * {@code tag} defaults to {@code null}. Default match timeout is used.
+     *
+     * @param frameIndex the frame index
      */
     public void checkFrame(int frameIndex) {
         checkFrame(frameIndex, USE_DEFAULT_MATCH_TIMEOUT, null);
@@ -1828,6 +2023,9 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkFrame(int, int, String)}.
      * Default match timeout is used.
+     *
+     * @param frameIndex the frame index
+     * @param tag        the tag
      */
     public void checkFrame(int frameIndex, String tag) {
         checkFrame(frameIndex, USE_DEFAULT_MATCH_TIMEOUT, tag);
@@ -1836,9 +2034,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
-     * @param frameIndex   The index of the frame to switch to. (The same index
-     *                     as would be used in a call to
-     *                     driver.switchTo().frame()).
+     *
+     * @param frameIndex   The index of the frame to switch to. (The same index                     as would be used in a call to                     driver.switchTo().frame()).
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the match.
      */
@@ -1859,6 +2056,8 @@ public class SeleniumEyes extends EyesBase {
      * See {@link #checkFrame(WebElement, int, String)}.
      * {@code tag} defaults to {@code null}.
      * Default match timeout is used.
+     *
+     * @param frameReference the frame reference
      */
     public void checkFrame(WebElement frameReference) {
         checkFrame(frameReference, USE_DEFAULT_MATCH_TIMEOUT, null);
@@ -1867,6 +2066,9 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkFrame(WebElement, int, String)}.
      * Default match timeout is used.
+     *
+     * @param frameReference the frame reference
+     * @param tag            the tag
      */
     public void checkFrame(WebElement frameReference, String tag) {
         checkFrame(frameReference, USE_DEFAULT_MATCH_TIMEOUT, tag);
@@ -1875,9 +2077,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Matches the frame given as parameter, by switching into the frame and
      * using stitching to get an image of the frame.
-     * @param frameReference The element which is the frame to switch to. (as
-     *                       would be used in a call to
-     *                       driver.switchTo().frame() ).
+     *
+     * @param frameReference The element which is the frame to switch to. (as                       would be used in a call to                       driver.switchTo().frame() ).
      * @param matchTimeout   The amount of time to retry matching (milliseconds).
      * @param tag            An optional tag to be associated with the match.
      */
@@ -1888,9 +2089,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Matches the frame given by the frames path, by switching into the frame
      * and using stitching to get an image of the frame.
-     * @param framePath    The path to the frame to check. This is a list of
-     *                     frame names/IDs (where each frame is nested in the
-     *                     previous frame).
+     *
+     * @param framePath    The path to the frame to check. This is a list of                     frame names/IDs (where each frame is nested in the                     previous frame).
      * @param matchTimeout The amount of time to retry matching (milliseconds).
      * @param tag          An optional tag to be associated with the match.
      */
@@ -1906,6 +2106,9 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkFrame(String[], int, String)}.
      * Default match timeout is used.
+     *
+     * @param framesPath the frames path
+     * @param tag        the tag
      */
     public void checkFrame(String[] framesPath, String tag) {
         checkFrame(framesPath, USE_DEFAULT_MATCH_TIMEOUT, tag);
@@ -1915,6 +2118,8 @@ public class SeleniumEyes extends EyesBase {
      * See {@link #checkFrame(String[], int, String)}.
      * Default match timeout is used.
      * {@code tag} defaults to {@code null}.
+     *
+     * @param framesPath the frames path
      */
     public void checkFrame(String[] framesPath) {
         checkFrame(framesPath, USE_DEFAULT_MATCH_TIMEOUT, null);
@@ -1923,13 +2128,12 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
-     * @param framePath     The path to the frame to check. This is a list of
-     *                      frame names/IDs (where each frame is nested in the previous frame).
+     *
+     * @param framePath     The path to the frame to check. This is a list of                      frame names/IDs (where each frame is nested in the previous frame).
      * @param selector      A Selector specifying the region to check.
      * @param matchTimeout  The amount of time to retry matching (milliseconds).
      * @param tag           An optional tag to be associated with the snapshot.
-     * @param stitchContent Whether or not to stitch the internal content of the
-     *                      region (i.e., perform {@link #checkElement(By, int, String)} on the region.
+     * @param stitchContent Whether or not to stitch the internal content of the                      region (i.e., perform {@link #checkElement(By, int, String)} on the region.
      */
     public void checkRegionInFrame(String[] framePath, By selector,
                                    int matchTimeout, String tag,
@@ -1945,6 +2149,11 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String[], By, int, String, boolean)}.
      * {@code stitchContent} defaults to {@code false}.
+     *
+     * @param framePath    the frame path
+     * @param selector     the selector
+     * @param matchTimeout the match timeout
+     * @param tag          the tag
      */
     public void checkRegionInFrame(String[] framePath, By selector, int matchTimeout, String tag) {
         checkRegionInFrame(framePath, selector, matchTimeout, tag, false);
@@ -1953,6 +2162,10 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(String[], By, int, String)}.
      * Default match timeout is used.
+     *
+     * @param framePath the frame path
+     * @param selector  the selector
+     * @param tag       the tag
      */
     public void checkRegionInFrame(String[] framePath, By selector, String tag) {
         checkRegionInFrame(framePath, selector, USE_DEFAULT_MATCH_TIMEOUT, tag);
@@ -1962,6 +2175,9 @@ public class SeleniumEyes extends EyesBase {
      * See {@link #checkRegionInFrame(String[], By, int, String)}.
      * Default match timeout is used.
      * {@code tag} defaults to {@code null}.
+     *
+     * @param framePath the frame path
+     * @param selector  the selector
      */
     public void checkRegionInFrame(String[] framePath, By selector) {
         checkRegionInFrame(framePath, selector, USE_DEFAULT_MATCH_TIMEOUT, null);
@@ -1970,6 +2186,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkElement(WebElement, String)}.
      * {@code tag} defaults to {@code null}.
+     *
+     * @param element the element
      */
     public void checkElement(WebElement element) {
         check(null, Target.region(element).fully());
@@ -1978,6 +2196,9 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkElement(WebElement, int, String)}.
      * Default match timeout is used.
+     *
+     * @param element the element
+     * @param tag     the tag
      */
     public void checkElement(WebElement element, String tag) {
         check(tag, Target.region(element).fully());
@@ -2060,6 +2281,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Takes a snapshot of the application under test and matches a specific
      * element with the expected region output.
+     *
      * @param element      The element to check.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the snapshot.
@@ -2072,6 +2294,8 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkElement(By, String)}.
      * {@code tag} defaults to {@code null}.
+     *
+     * @param selector the selector
      */
     public void checkElement(By selector) {
         check(null, Target.region(selector).fully());
@@ -2080,6 +2304,9 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkElement(By, int, String)}.
      * Default match timeout is used.
+     *
+     * @param selector the selector
+     * @param tag      the tag
      */
     public void checkElement(By selector, String tag) {
         check(tag, Target.region(selector).fully());
@@ -2088,11 +2315,11 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Takes a snapshot of the application under test and matches an element
      * specified by the given selector with the expected region output.
+     *
      * @param selector     Selects the element to check.
      * @param matchTimeout The amount of time to retry matching. (Milliseconds)
      * @param tag          An optional tag to be associated with the screenshot.
-     * @throws TestFailedException if a mismatch is detected and
-     *                             immediate failure reports are enabled
+     * @throws TestFailedException if a mismatch is detected and                             immediate failure reports are enabled
      */
     public void checkElement(By selector, int matchTimeout, String tag) {
         check(tag, Target.region(selector).timeout(matchTimeout).fully());
@@ -2100,6 +2327,7 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * Adds a mouse trigger.
+     *
      * @param action  Mouse action.
      * @param control The control on which the trigger is activated (context relative coordinates).
      * @param cursor  The cursor's position relative to the control.
@@ -2127,6 +2355,7 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * Adds a mouse trigger.
+     *
      * @param action  Mouse action.
      * @param element The WebElement on which the click was called.
      */
@@ -2167,6 +2396,7 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * Adds a keyboard trigger.
+     *
      * @param control The control's context-relative region.
      * @param text    The trigger's text.
      */
@@ -2192,6 +2422,7 @@ public class SeleniumEyes extends EyesBase {
 
     /**
      * Adds a keyboard trigger.
+     *
      * @param element The element for which we sent keys.
      * @param text    The trigger's text.
      */
@@ -2230,6 +2461,7 @@ public class SeleniumEyes extends EyesBase {
      * Call this method if for some
      * reason you don't want to call {@link #open(WebDriver, String, String)}
      * (or one of its variants) yet.
+     *
      * @param driver The driver to use for getting the viewport.
      * @return The viewport size of the current context.
      */
@@ -2274,6 +2506,7 @@ public class SeleniumEyes extends EyesBase {
      * Set the viewport size using the driver. Call this method if for some
      * reason you don't want to call {@link #open(WebDriver, String, String)}
      * (or one of its variants) yet.
+     *
      * @param driver The driver to use for setting the viewport.
      * @param size   The required viewport size.
      */
@@ -2652,52 +2885,111 @@ public class SeleniumEyes extends EyesBase {
         return results;
     }
 
+    /**
+     * The type Eyes selenium agent setup.
+     */
     @SuppressWarnings("UnusedDeclaration")
     class EyesSeleniumAgentSetup {
+        /**
+         * The type Web driver info.
+         */
         class WebDriverInfo {
+            /**
+             * Gets name.
+             *
+             * @return the name
+             */
             public String getName() {
                 return remoteWebDriver.getClass().getName();
             }
 
+            /**
+             * Gets capabilities.
+             *
+             * @return the capabilities
+             */
             public Capabilities getCapabilities() {
                 return remoteWebDriver.getCapabilities();
             }
         }
 
+        /**
+         * Instantiates a new Eyes selenium agent setup.
+         */
         public EyesSeleniumAgentSetup() {
             remoteWebDriver = driver.getRemoteWebDriver();
         }
 
         private RemoteWebDriver remoteWebDriver;
 
+        /**
+         * Gets selenium session id.
+         *
+         * @return the selenium session id
+         */
         public String getSeleniumSessionId() {
             return remoteWebDriver.getSessionId().toString();
         }
 
+        /**
+         * Gets web driver.
+         *
+         * @return the web driver
+         */
         public WebDriverInfo getWebDriver() {
             return new WebDriverInfo();
         }
 
+        /**
+         * Gets device pixel ratio.
+         *
+         * @return the device pixel ratio
+         */
         public double getDevicePixelRatio() {
             return SeleniumEyes.this.getDevicePixelRatio();
         }
 
+        /**
+         * Gets cut provider.
+         *
+         * @return the cut provider
+         */
         public String getCutProvider() {
             return SeleniumEyes.this.cutProviderHandler.get().getClass().getName();
         }
 
+        /**
+         * Gets scale provider.
+         *
+         * @return the scale provider
+         */
         public String getScaleProvider() {
             return SeleniumEyes.this.scaleProviderHandler.get().getClass().getName();
         }
 
+        /**
+         * Gets stitch mode.
+         *
+         * @return the stitch mode
+         */
         public StitchMode getStitchMode() {
             return SeleniumEyes.this.getStitchMode();
         }
 
+        /**
+         * Gets hide scrollbars.
+         *
+         * @return the hide scrollbars
+         */
         public boolean getHideScrollbars() {
             return SeleniumEyes.this.getHideScrollbars();
         }
 
+        /**
+         * Gets force full page screenshot.
+         *
+         * @return the force full page screenshot
+         */
         public boolean getForceFullPageScreenshot() {
             return SeleniumEyes.this.getForceFullPageScreenshot();
         }
@@ -2708,6 +3000,11 @@ public class SeleniumEyes extends EyesBase {
         return new EyesSeleniumAgentSetup();
     }
 
+    /**
+     * Gets server connector.
+     *
+     * @return the server connector
+     */
     public IServerConnector getServerConnector() {
         return this.serverConnector;
     }
