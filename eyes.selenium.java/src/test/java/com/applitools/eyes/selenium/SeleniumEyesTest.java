@@ -4,21 +4,14 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.fluent.SeleniumCheckSettings;
 import com.applitools.eyes.selenium.positioning.ImageRotation;
-import com.applitools.eyes.selenium.positioning.ScrollPositionProvider;
 import com.applitools.eyes.triggers.MouseAction;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
-
-import java.net.URL;
-
-import static org.testng.Assert.*;
 
 @Listeners(TestListener.class)
 public class SeleniumEyesTest {

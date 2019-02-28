@@ -1,4 +1,4 @@
-package com.applitools.eyes;
+package com.applitools.eyes.selenium;
 
 /**
  * Represents the types of available stitch modes.

@@ -1,7 +1,7 @@
 package com.applitools.eyes.config;
 
 import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.StitchMode;
+import com.applitools.eyes.selenium.StitchMode;
 import com.applitools.eyes.visualgridclient.model.EmulationDevice;
 import com.applitools.eyes.visualgridclient.model.EmulationInfo;
 import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;

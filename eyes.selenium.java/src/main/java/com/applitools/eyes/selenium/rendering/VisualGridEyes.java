@@ -4,6 +4,7 @@ import com.applitools.ICheckSettings;
 import com.applitools.ICheckSettingsInternal;
 import com.applitools.eyes.*;
 import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.StitchMode;
 import com.applitools.eyes.visualgridclient.model.IDebugResourceWriter;
 import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualgridclient.model.RenderingInfo;

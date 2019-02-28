@@ -5,7 +5,6 @@ import java.awt.AWTException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import com.applitools.eyes.StitchMode;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;

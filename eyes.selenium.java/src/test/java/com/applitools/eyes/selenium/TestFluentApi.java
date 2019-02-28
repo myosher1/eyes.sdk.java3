@@ -4,7 +4,6 @@ import com.applitools.ICheckSettings;
 import com.applitools.eyes.CoordinatesType;
 import com.applitools.eyes.FloatingMatchSettings;
 import com.applitools.eyes.Region;
-import com.applitools.eyes.StitchMode;
 import com.applitools.eyes.selenium.fluent.Target;
 
 import org.openqa.selenium.*;
