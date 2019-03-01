@@ -82,9 +82,9 @@ public class Eyes {
 
         this.driver = webDriver;
         if (isVisualGridEyes) {
-            return visualGridEyes.open(webDriver, seleniumConfiguration);
+            return visualGridEyes.open(webDriver, configuration);
         } else {
-            return seleniumEyes.open(webDriver, convertConfigs(seleniumConfiguration));
+            return seleniumEyes.open(webDriver, configuration);
         }
     }
 
@@ -141,12 +141,6 @@ public class Eyes {
             renderingConfiguration.setHideScrollbars(this.globalConfiguration.getHideScrollbars());
         }
         return renderingConfiguration;
-    }
-
-    private SeleniumConfiguration convertConfigs(SeleniumConfiguration renderingConfiguration) {
-        SeleniumConfiguration configuration = new SeleniumConfiguration(renderingConfiguration);
-        configuration.setViewportSize(renderingConfiguration.getViewportSize());
-        return configuration;
     }
 
     /**
