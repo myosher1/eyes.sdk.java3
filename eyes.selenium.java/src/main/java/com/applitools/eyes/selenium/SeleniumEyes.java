@@ -109,12 +109,18 @@ public class SeleniumEyes extends EyesBase {
      * Creates a new SeleniumEyes instance that interacts with the SeleniumEyes cloud
      * service.
      */
-    public SeleniumEyes() {
+    public SeleniumEyes(SeleniumConfiguration configuration) {
+        super();
+        config = configuration;
         checkFrameOrElement = false;
         doNotGetTitle = false;
         devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
         regionVisibilityStrategyHandler = new SimplePropertyHandler<>();
         regionVisibilityStrategyHandler.set(new MoveToRegionVisibilityStrategy(logger));
+    }
+
+    public SeleniumEyes() {
+        this(new SeleniumConfiguration());
     }
 
     @Override
@@ -169,7 +175,8 @@ public class SeleniumEyes extends EyesBase {
 
     @Override
     protected void ensureConfiguration() {
-        config = new SeleniumConfiguration();
+        // Do nothing (since we should have config as part of the constructor).
+        // config = new SeleniumConfiguration();
     }
 
     private SeleniumConfiguration getConfig() {

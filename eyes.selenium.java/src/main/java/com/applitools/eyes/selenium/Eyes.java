@@ -47,7 +47,7 @@ public class Eyes {
      * Instantiates a new Eyes.
      */
     public Eyes() {
-        seleniumEyes = new SeleniumEyes();
+        seleniumEyes = new SeleniumEyes(globalConfiguration);
     }
 
     /**
@@ -62,7 +62,7 @@ public class Eyes {
             visualGridEyes = new VisualGridEyes((VisualGridRunner) runner);
             isVisualGridEyes = true;
         } else {
-            seleniumEyes = new SeleniumEyes();
+            seleniumEyes = new SeleniumEyes(globalConfiguration);
             ((SeleniumRunner) runner).addEyes(this);
         }
     }
