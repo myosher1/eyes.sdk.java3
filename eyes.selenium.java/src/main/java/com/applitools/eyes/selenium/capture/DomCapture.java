@@ -142,6 +142,7 @@ public class DomCapture {
         FrameChain fc = driver.getFrameChain().clone();
         for (String missingFrameLine : missingFramesList) {
             logger.verbose("Switching to frame line :" + missingFrameLine);
+            String originLocation  = (String) driver.executeScript("return document.location.href");
             try {
                 String[] missingFrameXpaths = missingFrameLine.split(",");
                 for (String missingFrameXpath : missingFrameXpaths) {
@@ -149,6 +150,10 @@ public class DomCapture {
                     WebElement frame = driver.findElement(By.xpath(missingFrameXpath));
                     logger.verbose("Switched to frame(" + missingFrameXpath + ") with src(" + frame.getAttribute("src") + ")");
                     switchTo.frame(frame);
+                }
+                String locationAfterSwitch  = (String) driver.executeScript("return document.location.href");
+                if(locationAfterSwitch.equals(originLocation)){
+                   continue;
                 }
                 String result = getFrameDom();
                 framesData.put(missingFrameLine, result);
