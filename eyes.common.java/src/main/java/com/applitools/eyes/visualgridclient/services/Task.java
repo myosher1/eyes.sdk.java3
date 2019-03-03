@@ -3,6 +3,7 @@ package com.applitools.eyes.visualgridclient.services;
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
+import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.visualgridclient.model.*;
 import com.applitools.utils.GeneralUtils;
 
@@ -19,6 +20,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
 
     public enum TaskType {OPEN, CHECK, CLOSE, ABORT}
 
+    private SeleniumConfiguration configuration;
     private TestResults testResults;
 
     private IEyesConnector eyesConnector;
@@ -44,8 +46,9 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
 
     }
 
-    public Task(TestResults testResults, IEyesConnector eyesConnector, TaskType type, TaskListener runningTestListener,
+    public Task(SeleniumConfiguration configuration, TestResults testResults, IEyesConnector eyesConnector, TaskType type, TaskListener runningTestListener,
                 ICheckSettings checkSettings, RunningTest runningTest) {
+        this.configuration = configuration;
         this.testResults = testResults;
         this.eyesConnector = eyesConnector;
         this.type = type;
@@ -80,7 +83,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
                     logger.log("Task.run opening task");
                     String userAgent = renderResult.getUserAgent();
                     eyesConnector.setUserAgent(userAgent);
-                    eyesConnector.open(runningTest.getConfiguration());
+                    eyesConnector.open(configuration);
                     break;
 
                 case CHECK:
@@ -101,7 +104,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
 
                 case CLOSE:
                     logger.log("Task.run close task");
-                    testResults = eyesConnector.close(runningTest.getConfiguration().isThrowExceptionOn());
+                    testResults = eyesConnector.close(configuration.isThrowExceptionOn());
                     break;
 
                 case ABORT:

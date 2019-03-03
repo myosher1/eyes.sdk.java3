@@ -65,6 +65,7 @@ public class TestTopSites {
             SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
             seleniumConfiguration.setTestName("Top 10 websites - " + testedUrl);
             seleniumConfiguration.setAppName("Top Ten Sites");
+            seleniumConfiguration.setBatch(new BatchInfo("TTS - config batch"));
             String environment = "";
             EmulationInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.IPHONE4, ScreenOrientation.PORTRAIT);
             seleniumConfiguration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME, environment);

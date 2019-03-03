@@ -131,7 +131,7 @@ public class RunningTest {
 
     public Task open() {
         logger.verbose("adding Open task...");
-        Task task = new Task(null, eyes, Task.TaskType.OPEN, taskListener, null, this);
+        Task task = new Task(configuration, null, eyes, Task.TaskType.OPEN, taskListener, null, this);
         FutureTask<TestResultContainer> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         logger.verbose("locking taskList");
@@ -154,7 +154,7 @@ public class RunningTest {
         }
 
         logger.verbose("adding close task...");
-        Task task = new Task(null, eyes, Task.TaskType.CLOSE, taskListener, null, this);
+        Task task = new Task(configuration, null, eyes, Task.TaskType.CLOSE, taskListener, null, this);
         FutureTask<TestResultContainer> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         logger.verbose("locking taskList");
@@ -169,7 +169,7 @@ public class RunningTest {
 
     public Task check(ICheckSettings checkSettings) {
         logger.verbose("adding check task...");
-        Task task = new Task(null, eyes, Task.TaskType.CHECK, taskListener, checkSettings, this);
+        Task task = new Task(configuration, null, eyes, Task.TaskType.CHECK, taskListener, checkSettings, this);
         logger.verbose("locking taskList");
         synchronized (taskList) {
             this.taskList.add(task);

@@ -133,6 +133,7 @@ public class VisualGridEyes implements IRenderingEyes {
         ArgumentGuard.notNull(webDriver, "webDriver");
         ArgumentGuard.notNull(renderingConfiguration, "renderingConfiguration");
 
+        this.configuration = renderingConfiguration;
         initDriver(webDriver);
 
         logger.verbose("getting all browsers info...");
