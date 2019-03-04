@@ -366,15 +366,13 @@ public class VisualGridRunner extends EyesRunner {
         ScoreTask bestScoreTask = null;
         int bestMark = -1;
 //        logger.verbose("looking for best test in a list of " + allEyes.size());
-        synchronized (allEyes) {
-            for (IRenderingEyes eyes : allEyes) {
-                ScoreTask currentTestMark = eyes.getBestScoreTaskForOpen();
-                if (currentTestMark == null) continue;
-                int currentScore = currentTestMark.getScore();
-                if (bestMark < currentScore) {
-                    bestMark = currentScore;
-                    bestScoreTask = currentTestMark;
-                }
+        for (IRenderingEyes eyes : allEyes) {
+            ScoreTask currentTestMark = eyes.getBestScoreTaskForOpen();
+            if (currentTestMark == null) continue;
+            int currentScore = currentTestMark.getScore();
+            if (bestMark < currentScore) {
+                bestMark = currentScore;
+                bestScoreTask = currentTestMark;
             }
         }
 
