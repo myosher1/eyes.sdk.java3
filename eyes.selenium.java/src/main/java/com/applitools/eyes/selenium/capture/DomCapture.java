@@ -153,6 +153,8 @@ public class DomCapture {
                 }
                 String locationAfterSwitch  = (String) driver.executeScript("return document.location.href");
                 if(locationAfterSwitch.equals(originLocation)){
+                    logger.verbose("Switching to frame failed");
+                    framesData.put(missingFrameLine, "");
                    continue;
                 }
                 String result = getFrameDom();
