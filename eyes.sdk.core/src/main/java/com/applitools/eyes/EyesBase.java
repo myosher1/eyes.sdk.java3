@@ -2,7 +2,8 @@ package com.applitools.eyes;
 
 import com.applitools.ICheckSettings;
 import com.applitools.IDomCaptureListener;
-import com.applitools.eyes.config.Configuration;
+import com.applitools.eyes.config.IConfigurationGetter;
+import com.applitools.eyes.config.IConfigurationSetter;
 import com.applitools.eyes.visualgridclient.model.RenderingInfo;
 import com.applitools.eyes.capture.AppOutputProvider;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
@@ -40,7 +41,6 @@ import java.util.Queue;
  */
 public abstract class EyesBase {
 
-    private static final int DEFAULT_MATCH_TIMEOUT = 2000; // Milliseconds
     protected static final int USE_DEFAULT_TIMEOUT = -1;
     private static final int MAX_ITERATION = 10;
 
@@ -60,34 +60,20 @@ public abstract class EyesBase {
     // Will be checked <b>before</b> any argument validation. If true,
     // all method will immediately return without performing any action.
     private boolean isDisabled;
-
     protected Logger logger;
+
     private boolean isOpen;
-    private String agentId;
 
-    private ImageMatchSettings defaultMatchSettings;
-    private int matchTimeout;
-    private String hostApp;
-    private String hostOS;
-
-    protected Configuration config;
-
-    private FailureReports failureReports;
     private final Queue<Trigger> userInputs;
     private final List<PropertyData> properties = new ArrayList<>();
 
-    // Used for automatic save of a test run.
-    private boolean saveNewTests, saveFailedTests;
-
-    protected DebugScreenshotsProvider debugScreenshotsProvider;
     private boolean isViewportSizeSet;
-    private int stitchingOverlap = 50;
-
-    private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
-    private int validationId;
-    private boolean isSendDom;
-    protected IDomCaptureListener domCaptureListener;
     protected RenderingInfo renderInfo;
+
+    private int validationId;
+    private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
+    protected DebugScreenshotsProvider debugScreenshotsProvider;
+    protected IDomCaptureListener domCaptureListener;
 
     public EyesBase() {
 
@@ -96,33 +82,19 @@ public abstract class EyesBase {
             return;
         }
 
-        ensureConfiguration();
-
         logger = new Logger();
 
         initProviders();
 
         setServerConnector(new ServerConnector());
 
-        matchTimeout = DEFAULT_MATCH_TIMEOUT;
         runningSession = null;
-        defaultMatchSettings = new ImageMatchSettings();
-        defaultMatchSettings.setIgnoreCaret(true);
-        failureReports = FailureReports.ON_CLOSE;
         userInputs = new ArrayDeque<>();
 
-        // New tests are automatically saved by default.
-        saveNewTests = true;
-        saveFailedTests = false;
-        agentId = null;
         lastScreenshot = null;
         debugScreenshotsProvider = new NullDebugScreenshotProvider();
-        isSendDom = true;
     }
 
-    protected void ensureConfiguration() {
-        config = new Configuration();
-    }
 
     /**
      * @param hardReset If false, init providers only if they're not initialized.
@@ -169,21 +141,6 @@ public abstract class EyesBase {
         initProviders(false);
     }
 
-    /**
-     * Sets the user given agent id of the SDK. {@code null} is referred to
-     * as no id.
-     * @param agentId The agent ID to set.
-     */
-    public void setAgentId(String agentId) {
-        this.agentId = agentId;
-    }
-
-    /**
-     * @return The user given agent id of the SDK.
-     */
-    public String getAgentId() {
-        return agentId;
-    }
 
     /**
      * Sets the server connector to use. MUST BE SET IN ORDER FOR THE EYES OBJECT TO WORK!
@@ -294,88 +251,7 @@ public abstract class EyesBase {
         return isDisabled;
     }
 
-    /**
-     * @param appName The name of the application under test.
-     */
-    public void setAppName(String appName) {
-        this.config.setAppName(appName);
-    }
 
-    /**
-     * @return The name of the application under test.
-     */
-    public String getAppName() {
-        return config.getAppName();
-    }
-
-    /**
-     * Sets the branch in which the baseline for subsequent test runs resides.
-     * If the branch does not already exist it will be created under the
-     * specified parent branch (see {@link #setParentBranchName}).
-     * Changes to the baseline or model of a branch do not propagate to other
-     * branches.
-     * @param branchName Branch name or {@code null} to specify the default branch.
-     */
-    public void setBranchName(String branchName) {
-        this.config.setBranchName(branchName);
-    }
-
-    /**
-     * @return The current branch (see {@link #setBranchName(String)}).
-     */
-    public String getBranchName() {
-        return config.getBranchName();
-    }
-
-    /**
-     * Sets the branch under which new branches are created. (see {@link
-     * #setBranchName(String)}.
-     * @param branchName Branch name or {@code null} to specify the default branch.
-     */
-    public void setParentBranchName(String branchName) {
-        this.config.setParentBranchName(branchName);
-    }
-
-    /**
-     * @return The name of the current parent branch under which new branches
-     * will be created. (see {@link #setParentBranchName(String)}).
-     */
-    public String getParentBranchName() {
-        return config.getParentBranchName();
-    }
-
-    /**
-     * Sets the branch under which new branches are created. (see {@link
-     * #setBranchName(String)}.
-     * @param branchName Branch name or {@code null} to specify the default branch.
-     */
-    public void setBaselineBranchName(String branchName) {
-        this.config.setBaselineBranchName(branchName);
-    }
-
-    /**
-     * @return The name of the current parent branch under which new branches
-     * will be created. (see {@link #setBaselineBranchName(String)}).
-     */
-    public String getBaselineBranchName() {
-        return config.getBaselineBranchName();
-    }
-
-    /**
-     * Automatically save differences as a baseline.
-     * @param saveDiffs Sets whether to automatically save differences as baseline.
-     */
-    public void setSaveDiffs(Boolean saveDiffs) {
-        this.config.setSaveDiffs(saveDiffs);
-    }
-
-    /**
-     * Returns whether to automatically save differences as a baseline.
-     * @return Whether to automatically save differences as baseline.
-     */
-    public Boolean getSaveDiffs() {
-        return this.config.getSaveDiffs();
-    }
 
     /**
      * Clears the user inputs list.
@@ -398,140 +274,7 @@ public abstract class EyesBase {
         return userInputs.toArray(result);
     }
 
-    /**
-     * Sets the maximum time (in ms) a match operation tries to perform a match.
-     * @param ms Total number of ms to wait for a match.
-     */
-    public void setMatchTimeout(int ms) {
-        final int MIN_MATCH_TIMEOUT = 500;
-        if (getIsDisabled()) {
-            logger.verbose("Ignored");
-            return;
-        }
-
-        logger.verbose("Setting match timeout to: " + ms);
-        if ((ms != 0) && (MIN_MATCH_TIMEOUT > ms)) {
-            throw new IllegalArgumentException("Match timeout must be set in milliseconds, and must be > " +
-                    MIN_MATCH_TIMEOUT);
-        }
-
-        this.matchTimeout = ms;
-    }
-
-    /**
-     * @return The maximum time in ms {@link #checkWindowBase
-     * (RegionProvider, String, boolean, int)} waits for a match.
-     */
-    public int getMatchTimeout() {
-        return matchTimeout;
-    }
-
-    /**
-     * Set whether or not new tests are saved by default.
-     * @param saveNewTests True if new tests should be saved by default. False otherwise.
-     */
-    public void setSaveNewTests(boolean saveNewTests) {
-        this.saveNewTests = saveNewTests;
-    }
-
-    /**
-     * @return True if new tests are saved by default.
-     */
-    public boolean getSaveNewTests() {
-        return saveNewTests;
-    }
-
-    /**
-     * Set whether or not failed tests are saved by default.
-     * @param saveFailedTests True if failed tests should be saved by default, false otherwise.
-     */
-    public void setSaveFailedTests(boolean saveFailedTests) {
-        this.saveFailedTests = saveFailedTests;
-    }
-
-    /**
-     * @return True if failed tests are saved by default.
-     */
-    public boolean getSaveFailedTests() {
-        return saveFailedTests;
-    }
-
-    /**
-     * Sets the batch in which context future tests will run or {@code null}
-     * if tests are to run standalone.
-     * @param batch The batch info to set.
-     */
-    public void setBatch(BatchInfo batch) {
-        if (isDisabled) {
-            logger.verbose("Ignored");
-            return;
-        }
-
-        logger.verbose("setBatch(" + batch + ")");
-
-        this.config.setBatch(batch);
-    }
-
-    /**
-     * @return The currently set batch info.
-     */
-    public BatchInfo getBatch() {
-        return config.getBatch();
-    }
-
-    /**
-     * @param failureReports The failure reports setting.
-     * @see FailureReports
-     */
-    public void setFailureReports(FailureReports failureReports) {
-        this.failureReports = failureReports;
-    }
-
-    /**
-     * @return the failure reports setting.
-     */
-    public FailureReports getFailureReports() {
-        return failureReports;
-    }
-
-    /**
-     * Updates the match settings to be used for the session.
-     * @param defaultMatchSettings The match settings to be used for the session.
-     */
-    public void setDefaultMatchSettings(ImageMatchSettings
-                                                defaultMatchSettings) {
-        ArgumentGuard.notNull(defaultMatchSettings, "defaultMatchSettings");
-        this.defaultMatchSettings = defaultMatchSettings;
-    }
-
-    /**
-     * @return The match settings used for the session.
-     */
-    public ImageMatchSettings getDefaultMatchSettings() {
-        return defaultMatchSettings;
-    }
-
-    /**
-     * This function is deprecated. Please use {@link #setDefaultMatchSettings} instead.
-     * <p>
-     * The test-wide match level to use when checking application screenshot
-     * with the expected output.
-     * @param matchLevel The match level setting.
-     * @see com.applitools.eyes.MatchLevel
-     */
-    public void setMatchLevel(MatchLevel matchLevel) {
-        this.defaultMatchSettings.setMatchLevel(matchLevel);
-    }
-
-    /**
-     * @return The test-wide match level.
-     * @deprecated Please use{@link #getDefaultMatchSettings} instead.
-     */
-    public MatchLevel getMatchLevel() {
-        return defaultMatchSettings.getMatchLevel();
-    }
-
-    /**
+        /**
      * @return The base agent id of the SDK.
      */
     protected abstract String getBaseAgentId();
@@ -541,7 +284,7 @@ public abstract class EyesBase {
      * user given agent id.
      */
     public String getFullAgentId() {
-        String agentId = getAgentId();
+        String agentId = getConfigGetter().getAgentId();
         if (agentId == null) {
             return getBaseAgentId();
         }
@@ -695,37 +438,6 @@ public abstract class EyesBase {
     }
 
     /**
-     * @return Whether to ignore or the blinking caret or not when comparing images.
-     */
-    public boolean getIgnoreCaret() {
-        Boolean ignoreCaret = defaultMatchSettings.getIgnoreCaret();
-        return ignoreCaret == null ? true : ignoreCaret;
-    }
-
-    /**
-     * Sets the ignore blinking caret value.
-     * @param value The ignore value.
-     */
-    public void setIgnoreCaret(boolean value) {
-        defaultMatchSettings.setIgnoreCaret(value);
-    }
-
-    /**
-     * Returns the stitching overlap in pixels.
-     */
-    public int getStitchOverlap() {
-        return this.stitchingOverlap;
-    }
-
-    /**
-     * Sets the stitching overlap in pixels.
-     * @param pixels The width (in pixels) of the overlap.
-     */
-    public void setStitchOverlap(int pixels) {
-        this.stitchingOverlap = pixels;
-    }
-
-    /**
      * See {@link #close(boolean)}.
      * {@code throwEx} defaults to {@code true}.
      * @return The test results.
@@ -767,8 +479,8 @@ public abstract class EyesBase {
             String sessionResultsUrl = runningSession.getUrl();
 
             logger.verbose("Ending server session...");
-            boolean save = (isNewSession && saveNewTests)
-                    || (!isNewSession && saveFailedTests);
+            boolean save = (isNewSession && getConfigGetter().getSaveNewTests())
+                    || (!isNewSession && getConfigGetter().getSaveFailedTests());
             logger.verbose("Automatically save test? " + String.valueOf(save));
             TestResults results = serverConnector.stopSession(runningSession, false, save);
 
@@ -842,7 +554,7 @@ public abstract class EyesBase {
             String sessionResultsUrl = runningSession.getUrl();
 
             logger.verbose("Ending server session...");
-            boolean save = (isNewSession && saveNewTests);
+            boolean save = (isNewSession && getConfigGetter().getSaveNewTests());
 
             logger.verbose("Automatically save test? " + String.valueOf(save));
             TestResults results =
@@ -935,134 +647,6 @@ public abstract class EyesBase {
 
     protected void closeLogger() {
         logger.getLogHandler().close();
-    }
-
-    /**
-     * @param hostOS The host OS running the AUT.
-     */
-    public void setHostOS(String hostOS) {
-
-        logger.log("Host OS: " + hostOS);
-
-        if (hostOS == null || hostOS.isEmpty()) {
-            this.hostOS = null;
-        } else {
-            this.hostOS = hostOS.trim();
-        }
-    }
-
-    /**
-     * @return get the host OS running the AUT.
-     */
-    public String getHostOS() {
-        return hostOS;
-    }
-
-    /**
-     * @param hostApp The application running the AUT (e.g., Chrome).
-     */
-    public void setHostApp(String hostApp) {
-
-        logger.log("Host App: " + hostApp);
-
-        if (hostApp == null || hostApp.isEmpty()) {
-            this.hostApp = null;
-        } else {
-            this.hostApp = hostApp.trim();
-        }
-    }
-
-    /**
-     * @return The application name running the AUT.
-     */
-    public String getHostApp() {
-        return hostApp;
-    }
-
-    /**
-     * @param baselineName If specified, determines the baseline to compare
-     *                     with and disables automatic baseline inference.
-     * @deprecated Only available for backward compatibility. See {@link #setBaselineEnvName(String)}.
-     */
-    public void setBaselineName(String baselineName) {
-        setBaselineEnvName(baselineName);
-    }
-
-    /**
-     * @return The baseline name, if specified.
-     * @deprecated Only available for backward compatibility. See {@link #getBaselineEnvName()}.
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    public String getBaselineName() {
-        return getBaselineEnvName();
-    }
-
-    /**
-     * If not {@code null}, determines the name of the environment of the baseline.
-     * @param baselineEnvName The name of the baseline's environment.
-     */
-    public void setBaselineEnvName(String baselineEnvName) {
-
-        logger.log("Baseline environment name: " + baselineEnvName);
-
-        if (baselineEnvName == null || baselineEnvName.isEmpty()) {
-            this.config.setBaselineEnvName(null);
-        } else {
-            this.config.setBaselineEnvName(baselineEnvName.trim());
-        }
-    }
-
-    /**
-     * If not {@code null}, determines the name of the environment of the baseline.
-     * @return The name of the baseline's environment, or {@code null} if no such name was set.
-     */
-    public String getBaselineEnvName() {
-        return config.getBaselineEnvName();
-    }
-
-
-    /**
-     * If not {@code null} specifies a name for the environment in which the application under test is running.
-     * @param envName The name of the environment of the baseline.
-     */
-    public void setEnvName(String envName) {
-
-        logger.log("Environment name: " + envName);
-
-        if (envName == null || envName.isEmpty()) {
-            this.config.setEnvironmentName(null);
-        } else {
-            this.config.setEnvironmentName(envName.trim());
-        }
-    }
-
-    /**
-     * If not {@code null} specifies a name for the environment in which the application under test is running.
-     * @return The name of the environment of the baseline, or {@code null} if no such name was set.
-     */
-    public String getEnvName() {
-        return config.getEnvironmentName();
-    }
-
-
-    /**
-     * Superseded by {@link #setHostOS(String)} and {@link #setHostApp(String)}.
-     * Sets the OS (e.g., Windows) and application (e.g., Chrome) that host the application under test.
-     * @param hostOS  The name of the OS hosting the application under test or {@code null} to auto-detect.
-     * @param hostApp The name of the application hosting the application under test or {@code null} to auto-detect.
-     */
-    @Deprecated
-    public void setAppEnvironment(String hostOS, String hostApp) {
-        if (isDisabled) {
-            logger.verbose("Ignored");
-            return;
-        }
-
-        logger.log("Warning: SetAppEnvironment is deprecated! Please use 'setHostOS' and 'setHostApp'");
-
-        logger.verbose("setAppEnvironment(" + hostOS + ", " + hostApp + ")");
-        setHostOS(hostOS);
-        setHostApp(hostApp);
     }
 
     /**
@@ -1194,7 +778,7 @@ public abstract class EyesBase {
             retryTimeout = checkSettingsInternal.getTimeout();
         }
 
-        ImageMatchSettings defaultMatchSettings = getDefaultMatchSettings();
+        ImageMatchSettings defaultMatchSettings = getConfigGetter().getDefaultMatchSettings();
 
         // Set defaults if necessary
         if (checkSettingsInternal != null) {
@@ -1237,7 +821,7 @@ public abstract class EyesBase {
             logger.log(String.format("Mismatch! (%s)", tag));
         }
 
-        if (getFailureReports() == FailureReports.IMMEDIATE) {
+        if (getConfigGetter().getFailureReports() == FailureReports.IMMEDIATE) {
             throw new TestFailedException(String.format(
                     "Mismatch found in '%s' of '%s'",
                     sessionStartInfo.getScenarioIdOrName(),
@@ -1355,20 +939,20 @@ public abstract class EyesBase {
         }
 
         // If there's no default application name, one must be provided for the current test.
-        if (this.config.getAppName() == null) {
+        if (this.getConfigGetter().getAppName() == null) {
             ArgumentGuard.notNull(appName, "appName");
-            this.config.setAppName(appName);
+            this.getConfigSetter().setAppName(appName );
         }
 
         ArgumentGuard.notNull(testName, "testName");
-        this.config.setTestName(testName);
+        this.getConfigSetter().setTestName(testName);
 
         logger.log("Agent = " + getFullAgentId());
         logger.verbose(String.format("openBase('%s', '%s', '%s')", appName,
                 testName, viewportSize));
 
-        config.setSessionType(sessionType != null ? sessionType : SessionType.SEQUENTIAL);
-        config.setViewportSize(viewportSize);
+        getConfigSetter().setSessionType(sessionType != null ? sessionType : SessionType.SEQUENTIAL);
+        getConfigSetter().setViewportSize(viewportSize);
 
         openBase();
     }
@@ -1397,7 +981,7 @@ public abstract class EyesBase {
 
                 beforeOpen();
 
-                RectangleSize viewportSize = config.getViewportSize();
+                RectangleSize viewportSize = getConfigGetter().getViewportSize();
                 viewportSizeHandler.set(viewportSize);
 
                 try {
@@ -1442,7 +1026,7 @@ public abstract class EyesBase {
                 logger,
                 serverConnector,
                 runningSession,
-                matchTimeout,
+                getConfigGetter().getMatchTimeout(),
                 this,
                 // A callback which will call getAppOutput
                 new AppOutputProvider() {
@@ -1467,9 +1051,9 @@ public abstract class EyesBase {
     private void logOpenBase() {
         logger.log(String.format("Eyes server URL is '%s'", serverConnector.getServerUrl()));
         logger.verbose(String.format("Timeout = '%d'", serverConnector.getTimeout()));
-        logger.log(String.format("matchTimeout = '%d' ", matchTimeout));
-        logger.log(String.format("Default match settings = '%s' ", defaultMatchSettings));
-        logger.log(String.format("FailureReports = '%s' ", failureReports));
+        logger.log(String.format("matchTimeout = '%d' ", getConfigGetter().getMatchTimeout()));
+        logger.log(String.format("Default match settings = '%s' ", getConfigGetter().getDefaultMatchSettings()));
+        logger.log(String.format("FailureReports = '%s' ", getConfigGetter().getFailureReports()));
     }
 
     private void validateSessionOpen() {
@@ -1650,12 +1234,12 @@ public abstract class EyesBase {
         AppEnvironment appEnv = new AppEnvironment();
 
         // If hostOS isn't set, we'll try and extract and OS ourselves.
-        if (hostOS != null) {
-            appEnv.setOs(hostOS);
+        if (getConfigGetter().getHostOS() != null) {
+            appEnv.setOs(getConfigGetter().getHostOS());
         }
 
-        if (hostApp != null) {
-            appEnv.setHostingApp(hostApp);
+        if (getConfigGetter().getHostApp() != null) {
+            appEnv.setHostingApp(getConfigGetter().getHostApp());
         }
 
         appEnv.setInferred(getInferredEnvironment());
@@ -1673,10 +1257,10 @@ public abstract class EyesBase {
         }
         ensureViewportSize();
 
-        BatchInfo testBatch = config.getBatch();
+        BatchInfo testBatch = getConfigGetter().getBatch();
         if (testBatch == null) {
             logger.verbose("No batch set");
-            config.setBatch(new BatchInfo(null));
+            getConfigSetter().setBatch(new BatchInfo(null));
         } else {
             logger.verbose("Batch is " + testBatch);
         }
@@ -1687,15 +1271,15 @@ public abstract class EyesBase {
 
         logger.verbose("Application environment is " + appEnv);
 
-        sessionStartInfo = new SessionStartInfo(config, getFullAgentId(), null,
-                appEnv, defaultMatchSettings, properties);
+        sessionStartInfo = new SessionStartInfo(getConfigGetter(), getFullAgentId(), null,
+                appEnv, getConfigGetter().getDefaultMatchSettings(), properties);
 
         logger.verbose("Starting server session...");
         runningSession = serverConnector.startSession(sessionStartInfo);
 
         logger.verbose("Server session ID is " + runningSession.getId());
 
-        String testInfo = "'" + config.getTestName() + "' of '" + getAppName() + "' " + appEnv;
+        String testInfo = "'" + getConfigGetter().getTestName() + "' of '" + getConfigGetter().getAppName() + "' " + appEnv;
         if (runningSession.getIsNewSession()) {
             logger.log("--- New test started - " + testInfo);
             shouldMatchWindowRunOnceOnTimeout = true;
@@ -1852,5 +1436,10 @@ public abstract class EyesBase {
         this.renderInfo = this.serverConnector.getRenderInfo();
         return this.renderInfo;
     }
+
+    protected abstract IConfigurationGetter getConfigGetter();
+
+    protected abstract IConfigurationSetter getConfigSetter();
+
 
 }

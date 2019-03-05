@@ -3,6 +3,7 @@ package com.applitools.eyes.selenium;
 import com.applitools.ICheckSettings;
 import com.applitools.IDomCaptureListener;
 import com.applitools.eyes.*;
+import com.applitools.eyes.config.ISeleniumConfigurationGetter;
 import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.debug.DebugScreenshotsProvider;
 import com.applitools.eyes.events.ISessionEventHandler;
@@ -38,10 +39,10 @@ public class Eyes {
     private VisualGridEyes visualGridEyes = null;
     private SeleniumEyes seleniumEyes = null;
     private EyesRunner runner = null;
-    private SeleniumConfiguration configuration = null;
     private SeleniumConfiguration globalConfiguration = new SeleniumConfiguration();
     private WebDriver driver;
     private ImageRotation rotation;
+    private IConfigurationProvider
 
     /**
      * Instantiates a new Eyes.
@@ -327,7 +328,7 @@ public class Eyes {
         if (isVisualGridEyes) {
             this.visualGridEyes.setMatchTimeout(ms);
         } else {
-            this.seleniumEyes.setMatchTimeout(ms);
+            this.configuration.setMatchTimeout(ms);
         }
 
     }
@@ -341,7 +342,7 @@ public class Eyes {
         if (isVisualGridEyes) {
             return this.visualGridEyes.getMatchTimeout();
         } else {
-            return this.seleniumEyes.getMatchTimeout();
+            return this.configuration.getMatchTimeout();
         }
     }
 
@@ -354,7 +355,7 @@ public class Eyes {
         if (isVisualGridEyes) {
             this.visualGridEyes.setSaveNewTests(saveNewTests);
         } else {
-            this.seleniumEyes.setSaveNewTests(saveNewTests);
+            this.configuration.setSaveNewTests(saveNewTests);
         }
     }
 
@@ -367,7 +368,7 @@ public class Eyes {
         if (isVisualGridEyes) {
             return this.visualGridEyes.getSaveNewTests();
         } else {
-            return this.seleniumEyes.getSaveNewTests();
+            return this.configuration.isSaveNewTests();
         }
     }
 
@@ -380,7 +381,7 @@ public class Eyes {
         if (isVisualGridEyes) {
             this.visualGridEyes.setSaveFailedTests(saveFailedTests);
         } else {
-            this.seleniumEyes.setSaveFailedTests(saveFailedTests);
+            this.configuration.setSaveFailedTests(saveFailedTests);
         }
     }
 
@@ -393,7 +394,7 @@ public class Eyes {
         if (isVisualGridEyes) {
             return this.visualGridEyes.getSaveNewTests();
         } else {
-            return this.seleniumEyes.getSaveNewTests();
+            return this.configuration.getSaveNewTests();
         }
     }
 
@@ -2642,6 +2643,10 @@ public class Eyes {
 //            this.visualGridEyes.getS
         }
         return null;
+    }
+
+    private ISeleniumConfigurationGetter getConfigGetter(){
+        this.
     }
 
 }

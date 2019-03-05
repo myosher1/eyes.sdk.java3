@@ -8,6 +8,8 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.capture.EyesScreenshotFactory;
 import com.applitools.eyes.capture.ImageProvider;
+import com.applitools.eyes.config.ISeleniumConfigurationGetter;
+import com.applitools.eyes.config.ISeleniumConfigurationSetter;
 import com.applitools.eyes.diagnostics.TimedAppOutput;
 import com.applitools.eyes.events.ValidationInfo;
 import com.applitools.eyes.events.ValidationResult;
@@ -91,6 +93,7 @@ public class SeleniumEyes extends EyesBase {
 
     private EyesScreenshotFactory screenshotFactory;
     private String cachedAUTSessionId;
+    private ISeleniumConfigurationProvider configurationProvider;
 
     /**
      * The interface Web driver action.
@@ -109,18 +112,14 @@ public class SeleniumEyes extends EyesBase {
      * Creates a new SeleniumEyes instance that interacts with the SeleniumEyes cloud
      * service.
      */
-    public SeleniumEyes(SeleniumConfiguration configuration) {
+    public SeleniumEyes(ISeleniumConfigurationProvider configProvider) {
         super();
-        config = configuration;
+        configurationProvider = configProvider;
         checkFrameOrElement = false;
         doNotGetTitle = false;
         devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
         regionVisibilityStrategyHandler = new SimplePropertyHandler<>();
         regionVisibilityStrategyHandler.set(new MoveToRegionVisibilityStrategy(logger));
-    }
-
-    public SeleniumEyes() {
-        this(new SeleniumConfiguration());
     }
 
     @Override
@@ -173,81 +172,7 @@ public class SeleniumEyes extends EyesBase {
         this.regionToCheck = regionToCheck;
     }
 
-    @Override
-    protected void ensureConfiguration() {
-        // Do nothing (since we should have config as part of the constructor).
-        // config = new SeleniumConfiguration();
-    }
 
-    private SeleniumConfiguration getConfig() {
-        return (SeleniumConfiguration) config;
-    }
-
-    /**
-     * Gets hide caret.
-     *
-     * @return the hide caret
-     */
-    public boolean getHideCaret() {
-        return getConfig().getHideCaret();
-    }
-
-    /**
-     * Sets hide caret.
-     *
-     * @param hideCaret the hide caret
-     */
-    public void setHideCaret(boolean hideCaret) {
-        getConfig().setHideCaret(hideCaret);
-    }
-
-    /**
-     * Should stitch content boolean.
-     *
-     * @return the boolean
-     */
-    public boolean shouldStitchContent() {
-        return stitchContent;
-    }
-
-    /**
-     * ﻿Forces a full page screenshot (by scrolling and stitching) if the
-     * browser only ﻿supports viewport screenshots).
-     *
-     * @param shouldForce Whether to force a full page screenshot or not.
-     */
-    public void setForceFullPageScreenshot(boolean shouldForce) {
-        getConfig().setForceFullPageScreenshot(shouldForce);
-    }
-
-    /**
-     * Gets force full page screenshot.
-     *
-     * @return Whether SeleniumEyes should force a full page screenshot.
-     */
-    public boolean getForceFullPageScreenshot() {
-        return getConfig().getForceFullPageScreenshot();
-    }
-
-    /**
-     * Sets the time to wait just before taking a screenshot (e.g., to allow
-     * positioning to stabilize when performing a full page stitching).
-     * @param waitBeforeScreenshots The time to wait (Milliseconds). Values
-     *                              smaller or equal to 0, will cause the
-     *                              default value to be used.
-     */
-    public void setWaitBeforeScreenshots(int waitBeforeScreenshots) {
-        getConfig().setWaitBeforeScreenshots(waitBeforeScreenshots);
-    }
-
-    /**
-     * Gets wait before screenshots.
-     *
-     * @return The time to wait just before taking a screenshot.
-     */
-    public int getWaitBeforeScreenshots() {
-        return getConfig().getWaitBeforeScreenshots();
-    }
 
     /**
      * Turns on/off the automatic scrolling to a region being checked by
@@ -271,45 +196,6 @@ public class SeleniumEyes extends EyesBase {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean getScrollToRegion() {
         return !(regionVisibilityStrategyHandler.get() instanceof NopRegionVisibilityStrategy);
-    }
-
-    /**
-     * Set the type of stitching used for full page screenshots. When the
-     * page includes fixed position header/sidebar, use {@link StitchMode#CSS}.
-     * Default is {@link StitchMode#SCROLL}.
-     *
-     * @param mode The stitch mode to set.
-     */
-    public void setStitchMode(StitchMode mode) {
-        logger.verbose("setting stitch mode to " + mode);
-        getConfig().setStitchMode(mode);
-    }
-
-    /**
-     * Gets stitch mode.
-     *
-     * @return The current stitch mode settings.
-     */
-    public StitchMode getStitchMode() {
-        return getConfig().getStitchMode();
-    }
-
-    /**
-     * Hide the scrollbars when taking screenshots.
-     *
-     * @param shouldHide Whether to hide the scrollbars or not.
-     */
-    public void setHideScrollbars(boolean shouldHide) {
-        getConfig().setHideScrollbars(shouldHide);
-    }
-
-    /**
-     * Gets hide scrollbars.
-     *
-     * @return Whether or not scrollbars are hidden when taking screenshots.
-     */
-    public boolean getHideScrollbars() {
-        return getConfig().getHideScrollbars();
     }
 
     /**
@@ -344,80 +230,11 @@ public class SeleniumEyes extends EyesBase {
     /**
      * Open web driver.
      *
-     * @param driver        the driver
-     * @param configuration the configuration
-     * @return the web driver
-     */
-    public WebDriver open(WebDriver driver, SeleniumConfiguration configuration) {
-        config = configuration;
-        return open(driver);
-    }
-
-    /**
-     * See {@link #open(WebDriver, String, String, RectangleSize, SessionType)}.
-     * {@code sessionType} defaults to {@code null}.
-     *
-     * @param driver       the driver
-     * @param appName      the app name
-     * @param testName     the test name
-     * @param viewportSize the viewport size
-     * @return the web driver
-     */
-    public WebDriver open(WebDriver driver, String appName, String testName,
-                          RectangleSize viewportSize) {
-        config.setAppName(appName);
-        config.setTestName(testName);
-        config.setViewportSize(viewportSize);
-        return open(driver);
-    }
-
-    /**
-     * See {@link #open(WebDriver, String, String, SessionType)}.
-     * {@code viewportSize} defaults to {@code null}.
-     * {@code sessionType} defaults to {@code null}.
-     *
-     * @param driver   the driver
-     * @param appName  the app name
-     * @param testName the test name
-     * @return the web driver
-     */
-    public WebDriver open(WebDriver driver, String appName, String testName) {
-        config.setAppName(appName);
-        config.setTestName(testName);
-        return open(driver);
-    }
-
-    /**
-     * Starts a test.
-     * @param driver       The web driver that controls the browser hosting
-     *                     the application under test.
-     * @param appName      The name of the application under test.
-     * @param testName     The test name.
-     * @param viewportSize The required browser's viewport size
-     *                     (i.e., the visible part of the document's body) or
-     *                     {@code null} to use the current window's viewport.
-     * @param sessionType  The type of test (e.g.,  standard test / visual
-     *                     performance test).
-     * @return A wrapped WebDriver which enables SeleniumEyes trigger recording and
-     * frame handling.
-     */
-    protected WebDriver open(WebDriver driver, String appName, String testName,
-                             RectangleSize viewportSize, SessionType sessionType) {
-        config.setAppName(appName);
-        config.setTestName(testName);
-        config.setViewportSize(viewportSize);
-        config.setSessionType(sessionType);
-        return open(driver);
-    }
-
-    /**
-     * Open web driver.
-     *
      * @param driver the driver
      * @return the web driver
      * @throws EyesException the eyes exception
      */
-    protected WebDriver open(WebDriver driver) throws EyesException {
+    WebDriver open(WebDriver driver) throws EyesException {
         openLogger();
         this.cachedAUTSessionId = null;
 
@@ -455,8 +272,8 @@ public class SeleniumEyes extends EyesBase {
     }
 
     private void ensureViewportSize() {
-        if (this.config.getViewportSize() == null) {
-            this.config.setViewportSize(driver.getDefaultContentViewportSize());
+        if (this.getConfigGetter().getViewportSize() == null) {
+            this.getConfigSetter().setViewportSize(driver.getDefaultContentViewportSize());
         }
     }
 
@@ -494,7 +311,7 @@ public class SeleniumEyes extends EyesBase {
 
     private PositionProvider createPositionProvider(WebElement scrollRootElement) {
         // Setting the correct position provider.
-        StitchMode stitchMode = getStitchMode();
+        StitchMode stitchMode = getConfigGetter().getStitchMode();
         logger.verbose("initializing position provider. stitchMode: " + stitchMode);
         switch (stitchMode) {
             case CSS:
@@ -504,348 +321,6 @@ public class SeleniumEyes extends EyesBase {
         }
     }
 
-    /**
-     * See {@link #open(WebDriver, String, String, RectangleSize)}.
-     * {@code viewportSize} defaults to {@code null}.
-     *
-     * @param driver      the driver
-     * @param appName     the app name
-     * @param testName    the test name
-     * @param sessionType the session type
-     * @return the web driver
-     */
-    protected WebDriver open(WebDriver driver, String appName, String testName, SessionType sessionType) {
-        return open(driver, appName, testName, null, sessionType);
-    }
-
-    /**
-     * See {@link #checkWindow(String)}.
-     * {@code tag} defaults to {@code null}.
-     * Default match timeout is used.
-     */
-    public void checkWindow() {
-        checkWindow(null);
-    }
-
-    /**
-     * See {@link #checkWindow(int, String)}.
-     * Default match timeout is used.
-     *
-     * @param tag An optional tag to be associated with the snapshot.
-     */
-    public void checkWindow(String tag) {
-        check(tag, Target.window());
-    }
-
-    /**
-     * Takes a snapshot of the application under test and matches it with
-     * the expected output.
-     *
-     * @param matchTimeout The amount of time to retry matching (Milliseconds).
-     * @param tag          An optional tag to be associated with the snapshot.
-     * @throws TestFailedException Thrown if a mismatch is detected and
-     *                             immediate failure reports are enabled.
-     */
-    public void checkWindow(int matchTimeout, String tag) {
-        check(tag, Target.window().timeout(matchTimeout));
-    }
-
-    /**
-     * Runs a test on the current window.
-     * @param driver       The web driver that controls the browser hosting
-     *                     the application under test.
-     *
-     * @param driver       The web driver that controls the browser hosting                     the application under test.
-     * @param appName      The name of the application under test.
-     * @param testName     The test name (will also be used as the tag name for the step).
-     * @param viewportSize The required browser's viewport size
-     *                     (i.e., the visible part of the document's body) or
-     *                     {@code null} to use the current window's viewport.
-     * @param viewportSize The required browser's viewport size                     (i.e., the visible part of the document's body) or                     {@code null} to use the current window's viewport.
-     */
-    public void testWindow(WebDriver driver, String appName, String testName,
-                           RectangleSize viewportSize) {
-        open(driver, appName, testName, viewportSize);
-        try {
-            checkWindow(testName);
-            close();
-        } finally {
-            abortIfNotClosed();
-        }
-    }
-
-    /**
-     * See {@link #testWindow(WebDriver, String, String, RectangleSize)}.
-     * {@code viewportSize} defaults to {@code null}.
-     *
-     * @param driver   the driver
-     * @param appName  the app name
-     * @param testName the test name
-     */
-    public void testWindow(WebDriver driver, String appName, String testName) {
-        testWindow(driver, appName, testName, null);
-    }
-
-    /**
-     * See {@link #testWindow(WebDriver, String, String, RectangleSize)}.
-     * {@code appName} defaults to {@code null} (which means the name set in
-     * {@link #setAppName(String)} would be used.
-     *
-     * @param driver       the driver
-     * @param testName     the test name
-     * @param viewportSize the viewport size
-     */
-    public void testWindow(WebDriver driver, String testName,
-                           RectangleSize viewportSize) {
-        testWindow(driver, null, testName, viewportSize);
-    }
-
-    /**
-     * See {@link #testWindow(WebDriver, String, RectangleSize)}.
-     * {@code viewportSize} defaults to {@code null}.
-     *
-     * @param driver   the driver
-     * @param testName the test name
-     */
-    public void testWindow(WebDriver driver, String testName) {
-        testWindow(driver, testName, (RectangleSize) null);
-    }
-
-    /**
-     * Run a visual performance test.
-     *
-     * @param driver   The driver to use.
-     * @param appName  The name of the application being tested.
-     * @param testName The test name.
-     * @param action   Actions to be performed in parallel to starting the test.
-     * @param deadline The expected time until the application should have been loaded. (Seconds)
-     * @param timeout  The maximum time until the application should have been loaded. (Seconds)
-     */
-    public void testResponseTime(final WebDriver driver, String appName,
-                                 String testName, final WebDriverAction action,
-                                 int deadline, int timeout) {
-        open(driver, appName, testName, SessionType.PROGRESSION);
-        Runnable runnableAction = null;
-        if (action != null) {
-            runnableAction = new Runnable() {
-                public void run() {
-                    action.drive(driver);
-                }
-            };
-        }
-
-        MatchWindowDataWithScreenshot result =
-                super.testResponseTimeBase(NullRegionProvider.INSTANCE,
-                        runnableAction,
-                        deadline,
-                        timeout,
-                        5000);
-
-        logger.verbose("Checking if deadline was exceeded...");
-        boolean deadlineExceeded = true;
-        if (result != null) {
-            TimedAppOutput tao =
-                    (TimedAppOutput) result.getMatchWindowData().getAppOutput();
-            long resultElapsed = tao.getElapsed();
-            long deadlineMs = deadline * 1000;
-            logger.verbose(String.format(
-                    "Deadline: %d, Elapsed time for match: %d",
-                    deadlineMs, resultElapsed));
-            deadlineExceeded = resultElapsed > deadlineMs;
-        }
-        logger.verbose("Deadline exceeded? " + deadlineExceeded);
-
-        closeResponseTime(deadlineExceeded);
-    }
-
-    /**
-     * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
-     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
-     *
-     * @param driver   the driver
-     * @param appName  the app name
-     * @param testName the test name
-     * @param action   the action
-     * @param deadline the deadline
-     */
-    public void testResponseTime(WebDriver driver, String appName,
-                                 String testName, WebDriverAction action,
-                                 int deadline) {
-        testResponseTime(driver, appName, testName, action, deadline,
-                (deadline + RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
-    }
-
-    /**
-     * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
-     * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
-     *
-     * @param driver   the driver
-     * @param appName  the app name
-     * @param testName the test name
-     * @param action   the action
-     */
-    public void testResponseTime(WebDriver driver, String appName,
-                                 String testName, WebDriverAction action) {
-        testResponseTime(driver, appName, testName, action,
-                RESPONSE_TIME_DEFAULT_DEADLINE,
-                (RESPONSE_TIME_DEFAULT_DEADLINE +
-                        RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
-    }
-
-    /**
-     * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
-     * {@code action} defaults to {@code null}.
-     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
-     *
-     * @param driver   the driver
-     * @param appName  the app name
-     * @param testName the test name
-     * @param deadline the deadline
-     */
-    public void testResponseTime(WebDriver driver, String appName,
-                                 String testName, int deadline) {
-        testResponseTime(driver, appName, testName, null, deadline,
-                (deadline + RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
-    }
-
-    /**
-     * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)}.
-     * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
-     * {@code action} defaults to {@code null}.
-     *
-     * @param driver   the driver
-     * @param appName  the app name
-     * @param testName the test name
-     */
-    public void testResponseTime(WebDriver driver, String appName,
-                                 String testName) {
-        testResponseTime(driver, appName, testName, null,
-                RESPONSE_TIME_DEFAULT_DEADLINE,
-                (RESPONSE_TIME_DEFAULT_DEADLINE +
-                        RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE));
-    }
-
-    /**
-     * Similar to {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int)},
-     * except this method sets the viewport size before starting the
-     * performance test.
-     *
-     * @param driver       the driver
-     * @param appName      the app name
-     * @param testName     the test name
-     * @param action       the action
-     * @param deadline     the deadline
-     * @param timeout      the timeout
-     * @param viewportSize The required viewport size.
-     */
-    public void testResponseTime(WebDriver driver, String appName,
-                                 String testName, WebDriverAction action,
-                                 int deadline, int timeout,
-                                 RectangleSize viewportSize) {
-        // Notice we specifically use the setViewportSize overload which does
-        // not handle frames (as we want to make sure this is as fast as
-        // possible).
-        setViewportSize(driver, viewportSize);
-
-        testResponseTime(driver, appName, testName, action, deadline, timeout);
-    }
-
-    /**
-     * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
-     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
-     *
-     * @param driver       the driver
-     * @param appName      the app name
-     * @param testName     the test name
-     * @param action       the action
-     * @param deadline     the deadline
-     * @param viewportSize the viewport size
-     */
-    public void testResponseTime(WebDriver driver, String appName,
-                                 String testName, WebDriverAction action,
-                                 int deadline, RectangleSize viewportSize) {
-        testResponseTime(driver, appName, testName, action, deadline,
-                (deadline + RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE),
-                viewportSize);
-    }
-
-    /**
-     * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
-     * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
-     *
-     * @param driver       the driver
-     * @param appName      the app name
-     * @param testName     the test name
-     * @param action       the action
-     * @param viewportSize the viewport size
-     */
-    public void testResponseTime(WebDriver driver, String appName,
-                                 String testName, WebDriverAction action,
-                                 RectangleSize viewportSize) {
-        testResponseTime(driver, appName, testName, action,
-                RESPONSE_TIME_DEFAULT_DEADLINE,
-                (RESPONSE_TIME_DEFAULT_DEADLINE +
-                        RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE),
-                viewportSize);
-    }
-
-    /**
-     * See {@link #testResponseTime(WebDriver, String, String, WebDriverAction, int, int, RectangleSize)}.
-     * {@code action} defaults to {@code null}.
-     *
-     * @param driver       the driver
-     * @param appName      the app name
-     * @param testName     the test name
-     * @param deadline     the deadline
-     * @param timeout      the timeout
-     * @param viewportSize the viewport size
-     */
-    public void testResponseTime(WebDriver driver, String appName,
-                                 String testName, int deadline, int timeout,
-                                 RectangleSize viewportSize) {
-        testResponseTime(driver, appName, testName, null, deadline, timeout,
-                viewportSize);
-    }
-
-    /**
-     * See {@link #testResponseTime(WebDriver, String, String, int, int, RectangleSize)}.
-     * {@code timeout} defaults to {@code deadline} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
-     *
-     * @param driver       the driver
-     * @param appName      the app name
-     * @param testName     the test name
-     * @param deadline     the deadline
-     * @param viewportSize the viewport size
-     */
-    public void testResponseTime(WebDriver driver, String appName,
-                                 String testName, int deadline,
-                                 RectangleSize viewportSize) {
-        testResponseTime(driver, appName, testName, deadline,
-                (deadline + RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE),
-                viewportSize);
-    }
-
-    /**
-     * See {@link #testResponseTime(WebDriver, String, String, int, int, RectangleSize)}.
-     * {@code deadline} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE}.
-     * {@code timeout} defaults to {@link #RESPONSE_TIME_DEFAULT_DEADLINE} + {@link #RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE}.
-     *
-     * @param driver       the driver
-     * @param appName      the app name
-     * @param testName     the test name
-     * @param viewportSize the viewport size
-     */
-    public void testResponseTime(WebDriver driver, String appName,
-                                 String testName, RectangleSize viewportSize) {
-        testResponseTime(driver, appName, testName,
-                RESPONSE_TIME_DEFAULT_DEADLINE,
-                (RESPONSE_TIME_DEFAULT_DEADLINE +
-                        RESPONSE_TIME_DEFAULT_DIFF_FROM_DEADLINE),
-                viewportSize);
-    }
 
     /**
      * Takes multiple screenshots at once (given all <code>ICheckSettings</code> objects are on the same level).
@@ -858,13 +333,13 @@ public class SeleniumEyes extends EyesBase {
             return;
         }
 
-        boolean originalForceFPS = getConfig().getForceFullPageScreenshot();
+        boolean originalForceFPS = getConfigGetter().getForceFullPageScreenshot();
 
         if (checkSettings.length > 1) {
-            getConfig().setForceFullPageScreenshot(true);
+            getConfigSetter().setForceFullPageScreenshot(true);
         }
 
-        logger.verbose(config.toString());
+        logger.verbose(getConfigGetter().toString());
 
         Dictionary<Integer, GetRegion> getRegions = new Hashtable<>();
         Dictionary<Integer, ICheckSettingsInternal> checkSettingsInternalDictionary = new Hashtable<>();
@@ -902,7 +377,7 @@ public class SeleniumEyes extends EyesBase {
         setPositionProvider(createPositionProvider());
 
         matchRegions(getRegions, checkSettingsInternalDictionary, checkSettings);
-        getConfig().setForceFullPageScreenshot(originalForceFPS);
+        getConfigSetter().setForceFullPageScreenshot(originalForceFPS);
     }
 
     private void matchRegions(Dictionary<Integer, GetRegion> getRegions,
@@ -917,7 +392,7 @@ public class SeleniumEyes extends EyesBase {
 
         Region bBox = findBoundingBox(getRegions, checkSettings);
 
-        MatchWindowTask mwt = new MatchWindowTask(logger, serverConnector, runningSession, getMatchTimeout(), this);
+        MatchWindowTask mwt = new MatchWindowTask(logger, serverConnector, runningSession, getConfigGetter().getMatchTimeout(), this);
 
         ScaleProviderFactory scaleProviderFactory = updateScalingParams();
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
@@ -1102,7 +577,7 @@ public class SeleniumEyes extends EyesBase {
         ArgumentGuard.notNull(checkSettings, "checkSettings");
         ArgumentGuard.notOfType(checkSettings, ISeleniumCheckTarget.class, "checkSettings");
 
-        logger.verbose(config.toString());
+        logger.verbose(getConfigGetter().toString());
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
         ISeleniumCheckTarget seleniumCheckTarget = (checkSettings instanceof ISeleniumCheckTarget) ? (ISeleniumCheckTarget) checkSettings : null;
@@ -2237,7 +1712,7 @@ public class SeleniumEyes extends EyesBase {
 
             String displayStyle = eyesElement.getComputedStyle("display");
 
-            if (getConfig().getHideScrollbars()) {
+            if (getConfigGetter().getHideScrollbars()) {
                 originalOverflow = eyesElement.getOverflow();
                 eyesElement.setOverflow("hidden");
             }
@@ -2541,7 +2016,7 @@ public class SeleniumEyes extends EyesBase {
         if (EyesSeleniumUtils.isMobileDevice(driver)) {
             return new FrameChain(logger);
         }
-        if (getConfig().getHideScrollbars() || (getConfig().getStitchMode() == StitchMode.CSS && stitchContent)) {
+        if (getConfigGetter().getHideScrollbars() || (getConfigGetter().getStitchMode() == StitchMode.CSS && stitchContent)) {
             FrameChain originalFC = driver.getFrameChain().clone();
             FrameChain fc = driver.getFrameChain().clone();
             Frame frame = fc.peek();
@@ -2576,7 +2051,7 @@ public class SeleniumEyes extends EyesBase {
         if (EyesSeleniumUtils.isMobileDevice(driver)) {
             return;
         }
-        if (getConfig().getHideScrollbars() || (getConfig().getStitchMode() == StitchMode.CSS && stitchContent)) {
+        if (getConfigGetter().getHideScrollbars() || (getConfigGetter().getStitchMode() == StitchMode.CSS && stitchContent)) {
             ((EyesTargetLocator) driver.switchTo()).frames(frameChain);
             FrameChain originalFC = frameChain.clone();
             FrameChain fc = frameChain.clone();
@@ -2675,7 +2150,7 @@ public class SeleniumEyes extends EyesBase {
             logger.verbose("Building screenshot object...");
             result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
                     new RectangleSize(entireFrameOrElement.getWidth(), entireFrameOrElement.getHeight()));
-        } else if (getConfig().getForceFullPageScreenshot() || stitchContent) {
+        } else if (getConfigGetter().getForceFullPageScreenshot() || stitchContent) {
             logger.verbose("Full page screenshot requested.");
 
             // Save the current frame path.
@@ -2761,11 +2236,11 @@ public class SeleniumEyes extends EyesBase {
         PositionProvider originProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
 
         return new FullPageCaptureAlgorithm(logger, regionPositionCompensation,
-                getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
+                getConfigGetter().getWaitBeforeScreenshots(), debugScreenshotsProvider, screenshotFactory,
                 originProvider,
                 scaleProviderFactory,
                 cutProviderHandler.get(),
-                getStitchOverlap(),
+                getConfigGetter().getStitchingOverlap(),
                 imageProvider);
     }
 
@@ -2980,7 +2455,7 @@ public class SeleniumEyes extends EyesBase {
          * @return the stitch mode
          */
         public StitchMode getStitchMode() {
-            return SeleniumEyes.this.getStitchMode();
+            return getConfigGetter().getStitchMode();
         }
 
         /**
@@ -2989,7 +2464,7 @@ public class SeleniumEyes extends EyesBase {
          * @return the hide scrollbars
          */
         public boolean getHideScrollbars() {
-            return SeleniumEyes.this.getHideScrollbars();
+            return getConfigGetter().getHideScrollbars();
         }
 
         /**
@@ -2998,7 +2473,7 @@ public class SeleniumEyes extends EyesBase {
          * @return the force full page screenshot
          */
         public boolean getForceFullPageScreenshot() {
-            return SeleniumEyes.this.getForceFullPageScreenshot();
+            return SeleniumEyes.this.getConfigGetter().getForceFullPageScreenshot();
         }
     }
 
@@ -3019,5 +2494,13 @@ public class SeleniumEyes extends EyesBase {
     @Override
     public boolean isSendDom() {
         return !EyesSeleniumUtils.isMobileDevice(driver) && super.isSendDom();
+    }
+
+    protected ISeleniumConfigurationSetter getConfigSetter(){
+        return configurationProvider.set();
+    }
+
+    protected ISeleniumConfigurationGetter getConfigGetter(){
+        return configurationProvider.get();
     }
 }

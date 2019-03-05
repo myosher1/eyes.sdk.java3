@@ -3,6 +3,7 @@ package com.applitools.eyes.selenium.rendering;
 import com.applitools.ICheckSettings;
 import com.applitools.ICheckSettingsInternal;
 import com.applitools.eyes.*;
+import com.applitools.eyes.config.ISeleniumConfigurationSetter;
 import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.StitchMode;
 import com.applitools.eyes.visualgridclient.model.IDebugResourceWriter;
@@ -54,7 +55,6 @@ public class VisualGridEyes implements IRenderingEyes {
     private Boolean isDisabled;
     private MatchLevel matchLevel = MatchLevel.STRICT;
     private Boolean forceFullPageScreenshot = null;
-    private SeleniumConfiguration configuration = new SeleniumConfiguration();
     private String agentId;
     private IServerConnector serverConnector = null;
     private String baselineEnvName;
@@ -133,7 +133,6 @@ public class VisualGridEyes implements IRenderingEyes {
         ArgumentGuard.notNull(webDriver, "webDriver");
         ArgumentGuard.notNull(renderingConfiguration, "renderingConfiguration");
 
-        this.configuration = renderingConfiguration;
         initDriver(webDriver);
 
         logger.verbose("getting all browsers info...");
