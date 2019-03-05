@@ -35,7 +35,7 @@ public final class TestDomCapture {
 
         // Navigate the browser to the "hello world!" web-site.
 //        driver.get("https://www.usatoday.com");
-        driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/");
+        driver.get("https://www.reactine.ca/");
 //        driver.get("https://nikita-andreev.github.io/applitools/dom_capture.html?aaa");
         Thread.sleep(5000);
 
