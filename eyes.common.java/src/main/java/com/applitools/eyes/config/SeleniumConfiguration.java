@@ -73,6 +73,7 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
         this.browsersInfo = browsersInfo;
         this.concurrentSessions = 1;
         this.testName = testName;
+        this.viewportSize = viewportSize;
         this.setAppName(appName);
     }
     @Override

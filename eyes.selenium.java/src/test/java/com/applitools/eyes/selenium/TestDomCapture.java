@@ -1,7 +1,7 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.IDomCaptureListener;
-import com.applitools.eyes.ProxySettings;
+import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.utils.GeneralUtils;
@@ -24,20 +24,23 @@ public final class TestDomCapture {
 
         eyes.setLogHandler(new StdoutLogHandler(true));
         eyes.setServerUrl("https://eyes.applitools.com/");
-        eyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
+//        eyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
 
         // Switch sendDom flag on
         eyes.setSendDom(true);
+        BatchInfo batchInfo = new BatchInfo("TTS - config batch");
+        batchInfo.setId("RCA_Batch_ID");
+        eyes.setBatch(batchInfo);
 //        try {
 
-        eyes.open(driver, "DOM Capture Test", "DOM Capture V2 - usa today",
+        eyes.open(driver, "DOM Capture with config Test", "DOM Capture V2 - usa today",
                 new RectangleSize(800, 600));
 
         // Navigate the browser to the "hello world!" web-site.
 //        driver.get("https://www.usatoday.com");
-        driver.get("https://applitools.github.io/demo/TestPages/FramesTestPage/");
+        driver.get("https://applitools.com/");
 //        driver.get("https://nikita-andreev.github.io/applitools/dom_capture.html?aaa");
-        Thread.sleep(5000);
+//        Thread.sleep(5000);
 
         final CountDownLatch latch = new CountDownLatch(1);
         eyes.setOnDomCapture(new IDomCaptureListener() {
