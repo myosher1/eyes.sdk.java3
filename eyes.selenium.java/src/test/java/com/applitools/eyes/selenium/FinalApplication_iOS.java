@@ -39,7 +39,7 @@ public class FinalApplication_iOS {
     }
 
     public static void function() throws InterruptedException, AWTException {
-        SeleniumEyes eyes = new SeleniumEyes();
+        Eyes eyes = new Eyes();
         eyes.setSaveNewTests(false);
         eyes.setForceFullPageScreenshot(true);
         eyes.setStitchMode(StitchMode.CSS);

@@ -42,11 +42,11 @@ public class TestTopSites {
                 {"https://facebook.com"},
                 {"https://youtube.com"},
                 {"https://amazon.com"},
-                {"https://ebay.com"},
+//                {"https://ebay.com"},
                 {"https://twitter.com"},
                 {"https://wikipedia.org"},
                 {"https://instagram.com"},
-                {"https://www.target.com/c/blankets-throws/-/N-d6wsb?lnk=ThrowsBlankets%E2%80%9C,tc"},
+//                {"https://www.target.com/c/blankets-throws/-/N-d6wsb?lnk=ThrowsBlankets%E2%80%9C,tc"},
         };
     }
 

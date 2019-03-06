@@ -3,7 +3,7 @@ package com.applitools.eyes.demo;
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.config.Configuration;
+import com.applitools.eyes.config.IConfigurationSetter;
 import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
@@ -53,7 +53,7 @@ public class TestSuite {
         this.checkSettings = Target.window();
     }
 
-    private void initConfig(Configuration configuration) {
+    private void initConfig(IConfigurationSetter configuration) {
         configuration.setAppName("Applitools Java3 Demo");
     }
 

@@ -18,8 +18,6 @@ public interface IRenderingEyes {
 
     ScoreTask getBestScoreTaskForOpen();
 
-    void setBatch(BatchInfo batchInfo);
-
     List<Future<TestResultContainer>> close();
 
     interface EyesListener{

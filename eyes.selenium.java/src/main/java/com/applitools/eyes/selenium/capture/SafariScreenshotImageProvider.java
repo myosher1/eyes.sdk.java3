@@ -76,7 +76,7 @@ public class SafariScreenshotImageProvider implements ImageProvider {
             } else {
                 logger.verbose("device not found in list. returning original image.");
             }
-        } else if (!eyes.getForceFullPageScreenshot()) {
+        } else if (!eyes.getConfigGetter().getForceFullPageScreenshot()) {
 
             Location loc;
             FrameChain currentFrameChain = ((EyesWebDriver) eyes.getDriver()).getFrameChain();

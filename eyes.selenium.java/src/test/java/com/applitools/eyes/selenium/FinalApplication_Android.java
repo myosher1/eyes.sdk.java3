@@ -51,7 +51,7 @@ public class FinalApplication_Android {
         function();
     }
     public static void function() throws InterruptedException, AWTException {
-        SeleniumEyes eyes = new SeleniumEyes();
+        Eyes eyes = new Eyes();
         eyes.setSaveNewTests(false);
         eyes.setForceFullPageScreenshot(true);
         eyes.setImageCut(new FixedCutProvider(URL_BAR_SIZE, NAVIGATION_BAR_SIZE, 0, 0));

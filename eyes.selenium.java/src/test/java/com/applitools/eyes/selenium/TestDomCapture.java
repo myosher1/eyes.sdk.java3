@@ -1,6 +1,7 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.IDomCaptureListener;
+import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.utils.GeneralUtils;
@@ -23,7 +24,7 @@ public final class TestDomCapture {
 
         eyes.setLogHandler(new StdoutLogHandler(true));
         eyes.setServerUrl("https://eyes.applitools.com/");
-//        VisualGridEyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
+        eyes.setProxy(new ProxySettings("http://127.0.0.1:8888"));
 
         // Switch sendDom flag on
         eyes.setSendDom(true);

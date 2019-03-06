@@ -21,7 +21,7 @@ public class CheckRegionInFrameOffsetTest {
         // Test 1
         WebDriver driver = new ChromeDriver();
 
-        SeleniumEyes eyes = new SeleniumEyes();
+        Eyes eyes = new Eyes();
 
         eyes.setForceFullPageScreenshot(true);
         eyes.setStitchMode(StitchMode.CSS);

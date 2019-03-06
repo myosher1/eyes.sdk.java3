@@ -46,7 +46,7 @@ public class AndroidTest {
 
     @Test(dataProvider = "data")
     public void TestAndroidChromeCrop(String deviceName, String deviceOrientation, String platformVersion, boolean fully) throws MalformedURLException {
-        SeleniumEyes eyes = new SeleniumEyes();
+        Eyes eyes = new Eyes();
 
         eyes.setBatch(batchInfo);
 

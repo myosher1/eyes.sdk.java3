@@ -5,6 +5,9 @@ package com.applitools.eyes.images;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
+import com.applitools.eyes.config.Configuration;
+import com.applitools.eyes.config.IConfigurationGetter;
+import com.applitools.eyes.config.IConfigurationSetter;
 import com.applitools.eyes.events.ValidationInfo;
 import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.TestFailedException;
@@ -17,11 +20,12 @@ import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
 
-public class Eyes extends EyesBase {
+public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurationSetter {
 
     private String title;
     private EyesImagesScreenshot screenshot;
     private String inferred;
+    private Configuration config;
 
     /**
      * Get the base agent id.
@@ -287,6 +291,16 @@ public class Eyes extends EyesBase {
         return viewportSizeHandler.get();
     }
 
+    @Override
+    public SessionType getSessionType() {
+        return config.getSessionType();
+    }
+
+    @Override
+    public FailureReports getFailureReports() {
+        return config.getFailureReports();
+    }
+
     /**
      * Set the viewport size.
      * @param size The required viewport size.
@@ -295,6 +309,16 @@ public class Eyes extends EyesBase {
     public void setViewportSize(RectangleSize size) {
         ArgumentGuard.notNull(size, "size");
         viewportSizeHandler.set(new RectangleSize(size.getWidth(), size.getHeight()));
+    }
+
+    @Override
+    public void setSessionType(SessionType sessionType) {
+        config.setSessionType(sessionType);
+    }
+
+    @Override
+    public void setFailureReports(FailureReports failureReports) {
+        config.setFailureReports(failureReports);
     }
 
     /**
@@ -395,4 +419,416 @@ public class Eyes extends EyesBase {
 
         return result.getAsExpected();
     }
+
+    /**
+     * @param appName The name of the application under test.
+     */
+    public void setAppName(String appName) {
+        this.config.setAppName(appName);
+    }
+
+    @Override
+    public void setTestName(String testName) {
+
+    }
+
+    /**
+     * @return The name of the application under test.
+     */
+    public String getAppName() {
+        return config.getAppName();
+    }
+
+    @Override
+    public String getTestName() {
+        return null;
+    }
+
+    /**
+     * Sets the branch in which the baseline for subsequent test runs resides.
+     * If the branch does not already exist it will be created under the
+     * specified parent branch (see {@link #setParentBranchName}).
+     * Changes to the baseline or model of a branch do not propagate to other
+     * branches.
+     * @param branchName Branch name or {@code null} to specify the default branch.
+     */
+    public void setBranchName(String branchName) {
+        this.config.setBranchName(branchName);
+    }
+
+    @Override
+    public void setAgentId(String agentId) {
+
+    }
+
+    /**
+     * @return The current branch (see {@link #setBranchName(String)}).
+     */
+    public String getBranchName() {
+        return config.getBranchName();
+    }
+
+    @Override
+    public String getAgentId() {
+        return null;
+    }
+
+    /**
+     * Sets the branch under which new branches are created. (see {@link
+     * #setBranchName(String)}.
+     * @param branchName Branch name or {@code null} to specify the default branch.
+     */
+    public void setParentBranchName(String branchName) {
+        this.config.setParentBranchName(branchName);
+    }
+
+    /**
+     * @return The name of the current parent branch under which new branches
+     * will be created. (see {@link #setParentBranchName(String)}).
+     */
+    public String getParentBranchName() {
+        return config.getParentBranchName();
+    }
+
+    /**
+     * Sets the branch under which new branches are created. (see {@link
+     * #setBranchName(String)}.
+     * @param branchName Branch name or {@code null} to specify the default branch.
+     */
+    public void setBaselineBranchName(String branchName) {
+        this.config.setBaselineBranchName(branchName);
+    }
+
+    /**
+     * @return The name of the current parent branch under which new branches
+     * will be created. (see {@link #setBaselineBranchName(String)}).
+     */
+    public String getBaselineBranchName() {
+        return config.getBaselineBranchName();
+    }
+
+    /**
+     * Automatically save differences as a baseline.
+     * @param saveDiffs Sets whether to automatically save differences as baseline.
+     */
+    public void setSaveDiffs(Boolean saveDiffs) {
+        this.config.setSaveDiffs(saveDiffs);
+    }
+
+    /**
+     * Returns whether to automatically save differences as a baseline.
+     * @return Whether to automatically save differences as baseline.
+     */
+    public Boolean getSaveDiffs() {
+        return this.config.getSaveDiffs();
+    }
+
+    /**
+     * Sets the maximum time (in ms) a match operation tries to perform a match.
+     * @param ms Total number of ms to wait for a match.
+     */
+    public void setMatchTimeout(int ms) {
+        final int MIN_MATCH_TIMEOUT = 500;
+        if (getIsDisabled()) {
+            logger.verbose("Ignored");
+            return;
+        }
+
+        logger.verbose("Setting match timeout to: " + ms);
+        if ((ms != 0) && (MIN_MATCH_TIMEOUT > ms)) {
+            throw new IllegalArgumentException("Match timeout must be set in milliseconds, and must be > " +
+                    MIN_MATCH_TIMEOUT);
+        }
+
+        this.config.setMatchTimeout(ms);
+    }
+
+    /**
+     * @return The maximum time in ms {@link #checkWindowBase
+     * (RegionProvider, String, boolean, int)} waits for a match.
+     */
+    public int getMatchTimeout() {
+        return this.config.getMatchTimeout();
+    }
+
+    /**
+     * Set whether or not new tests are saved by default.
+     * @param saveNewTests True if new tests should be saved by default. False otherwise.
+     */
+    public void setSaveNewTests(boolean saveNewTests) {
+        this.config.setSaveNewTests(saveNewTests);
+    }
+
+    /**
+     * @return True if new tests are saved by default.
+     */
+    public boolean getSaveNewTests() {
+        return config.getSaveNewTests();
+    }
+
+    /**
+     * Set whether or not failed tests are saved by default.
+     * @param saveFailedTests True if failed tests should be saved by default, false otherwise.
+     */
+    public void setSaveFailedTests(boolean saveFailedTests) {
+        this.config.setSaveFailedTests(saveFailedTests);
+    }
+
+    /**
+     * @return True if failed tests are saved by default.
+     */
+    public boolean getSaveFailedTests() {
+        return config.getSaveFailedTests();
+    }
+
+    /**
+     * Sets the batch in which context future tests will run or {@code null}
+     * if tests are to run standalone.
+     * @param batch The batch info to set.
+     */
+    public void setBatch(BatchInfo batch) {
+        if (getIsDisabled()) {
+            logger.verbose("Ignored");
+            return;
+        }
+
+        logger.verbose("setBatch(" + batch + ")");
+
+        this.config.setBatch(batch);
+    }
+
+    @Override
+    protected <T extends IConfigurationGetter> T getConfigGetter() {
+        return (T) config;
+    }
+
+    @Override
+    protected <T extends IConfigurationSetter> T getConfigSetter() {
+        return (T) config;
+    }
+
+    /**
+     * @return The currently set batch info.
+     */
+    public BatchInfo getBatch() {
+        return config.getBatch();
+    }
+
+
+    /**
+     * Updates the match settings to be used for the session.
+     * @param defaultMatchSettings The match settings to be used for the session.
+     */
+    public void setDefaultMatchSettings(ImageMatchSettings
+                                                defaultMatchSettings) {
+        ArgumentGuard.notNull(defaultMatchSettings, "defaultMatchSettings");
+        config.setDefaultMatchSettings(defaultMatchSettings);
+    }
+
+    /**
+     * @return The match settings used for the session.
+     */
+    public ImageMatchSettings getDefaultMatchSettings() {
+        return config.getDefaultMatchSettings();
+    }
+
+    /**
+     * This function is deprecated. Please use {@link #setDefaultMatchSettings} instead.
+     * <p>
+     * The test-wide match level to use when checking application screenshot
+     * with the expected output.
+     * @param matchLevel The match level setting.
+     * @see com.applitools.eyes.MatchLevel
+     */
+    public void setMatchLevel(MatchLevel matchLevel) {
+        config.getDefaultMatchSettings().setMatchLevel(matchLevel);
+    }
+
+    /**
+     * @return The test-wide match level.
+     * @deprecated Please use{@link #getDefaultMatchSettings} instead.
+     */
+    public MatchLevel getMatchLevel() {
+        return config.getDefaultMatchSettings().getMatchLevel();
+    }
+
+    /**
+     * @return Whether to ignore or the blinking caret or not when comparing images.
+     */
+    public boolean getIgnoreCaret() {
+        Boolean ignoreCaret = config.getDefaultMatchSettings().getIgnoreCaret();
+        return ignoreCaret == null ? true : ignoreCaret;
+    }
+
+    /**
+     * Sets the ignore blinking caret value.
+     * @param value The ignore value.
+     */
+    public void setIgnoreCaret(boolean value) {
+        config.getDefaultMatchSettings().setIgnoreCaret(value);
+    }
+
+    /**
+     * Returns the stitching overlap in pixels.
+     */
+    public int getStitchOverlap() {
+        return config.getStitchingOverlap();
+    }
+
+    /**
+     * Sets the stitching overlap in pixels.
+     * @param pixels The width (in pixels) of the overlap.
+     */
+    public void setStitchOverlap(int pixels) {
+        this.config.setStitchingOverlap(pixels);
+    }
+
+    /**
+     * @param hostOS The host OS running the AUT.
+     */
+    public void setHostOS(String hostOS) {
+
+        logger.log("Host OS: " + hostOS);
+
+        if (hostOS == null || hostOS.isEmpty()) {
+            this.config.setHostOS(null);
+        } else {
+            this.setHostOS(hostOS.trim());
+        }
+    }
+
+    @Override
+    public void setStitchingOverlap(int stitchingOverlap) {
+
+    }
+
+    /**
+     * @return get the host OS running the AUT.
+     */
+    public String getHostOS() {
+        return config.getHostOS();
+    }
+
+    @Override
+    public int getStitchingOverlap() {
+        return 0;
+    }
+
+    /**
+     * @param hostApp The application running the AUT (e.g., Chrome).
+     */
+    public void setHostApp(String hostApp) {
+
+        logger.log("Host App: " + hostApp);
+
+        if (hostApp == null || hostApp.isEmpty()) {
+            this.config.setHostApp(null);
+        } else {
+            this.setHostApp(hostApp.trim());
+        }
+    }
+
+    /**
+     * @return The application name running the AUT.
+     */
+    public String getHostApp() {
+        return config.getHostApp();
+    }
+
+    /**
+     * @param baselineName If specified, determines the baseline to compare
+     *                     with and disables automatic baseline inference.
+     * @deprecated Only available for backward compatibility. See {@link #setBaselineEnvName(String)}.
+     */
+    public void setBaselineName(String baselineName) {
+        setBaselineEnvName(baselineName);
+    }
+
+    /**
+     * @return The baseline name, if specified.
+     * @deprecated Only available for backward compatibility. See {@link #getBaselineEnvName()}.
+     */
+    @SuppressWarnings("UnusedDeclaration")
+    public String getBaselineName() {
+        return getBaselineEnvName();
+    }
+
+    /**
+     * If not {@code null}, determines the name of the environment of the baseline.
+     * @param baselineEnvName The name of the baseline's environment.
+     */
+    public void setBaselineEnvName(String baselineEnvName) {
+
+        logger.log("Baseline environment name: " + baselineEnvName);
+
+        if (baselineEnvName == null || baselineEnvName.isEmpty()) {
+            this.config.setBaselineEnvName(null);
+        } else {
+            this.config.setBaselineEnvName(baselineEnvName.trim());
+        }
+    }
+
+    @Override
+    public void setEnvironmentName(String environmentName) {
+
+    }
+
+    /**
+     * If not {@code null}, determines the name of the environment of the baseline.
+     * @return The name of the baseline's environment, or {@code null} if no such name was set.
+     */
+    public String getBaselineEnvName() {
+        return config.getBaselineEnvName();
+    }
+
+    @Override
+    public String getEnvironmentName() {
+        return null;
+    }
+
+
+    /**
+     * If not {@code null} specifies a name for the environment in which the application under test is running.
+     * @param envName The name of the environment of the baseline.
+     */
+    public void setEnvName(String envName) {
+
+        logger.log("Environment name: " + envName);
+
+        if (envName == null || envName.isEmpty()) {
+            this.config.setEnvironmentName(null);
+        } else {
+            this.config.setEnvironmentName(envName.trim());
+        }
+    }
+
+    /**
+     * If not {@code null} specifies a name for the environment in which the application under test is running.
+     * @return The name of the environment of the baseline, or {@code null} if no such name was set.
+     */
+    public String getEnvName() {
+        return config.getEnvironmentName();
+    }
+
+
+    /**
+     * Superseded by {@link #setHostOS(String)} and {@link #setHostApp(String)}.
+     * Sets the OS (e.g., Windows) and application (e.g., Chrome) that host the application under test.
+     * @param hostOS  The name of the OS hosting the application under test or {@code null} to auto-detect.
+     * @param hostApp The name of the application hosting the application under test or {@code null} to auto-detect.
+     */
+    @Deprecated
+    public void setAppEnvironment(String hostOS, String hostApp) {
+        if (getIsDisabled()) {
+            logger.verbose("Ignored");
+            return;
+        }
+
+        logger.log("Warning: SetAppEnvironment is deprecated! Please use 'setHostOS' and 'setHostApp'");
+
+        logger.verbose("setAppEnvironment(" + hostOS + ", " + hostApp + ")");
+        setHostOS(hostOS);
+        setHostApp(hostApp);
+    }
+
 }

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SeleniumConfiguration extends Configuration {
+public class SeleniumConfiguration extends Configuration implements ISeleniumConfigurationGetter, ISeleniumConfigurationSetter {
 
     private static final int DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100;
     private boolean forceFullPageScreenshot;
@@ -27,45 +27,6 @@ public class SeleniumConfiguration extends Configuration {
     public enum BrowserType {CHROME, FIREFOX}
     private List<RenderBrowserInfo> browsersInfo = new ArrayList<>();
 
-    public boolean getForceFullPageScreenshot() {
-        return forceFullPageScreenshot;
-    }
-    
-    public int getWaitBeforeScreenshots() {
-        return waitBeforeScreenshots;
-    }
-
-    public void setWaitBeforeScreenshots(int waitBeforeScreenshots) {
-        if (waitBeforeScreenshots <= 0) {
-            this.waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
-        } else {
-            this.waitBeforeScreenshots = waitBeforeScreenshots;
-        }
-    }
-
-    public StitchMode getStitchMode() {
-        return stitchMode;
-    }
-
-    public void setStitchMode(StitchMode stitchMode) {
-        this.stitchMode = stitchMode;
-    }
-
-    public boolean getHideScrollbars() {
-        return hideScrollbars;
-    }
-
-    public void setHideScrollbars(boolean hideScrollbars) {
-        this.hideScrollbars = hideScrollbars;
-    }
-
-    public boolean getHideCaret() {
-        return hideCaret;
-    }
-
-    public void setHideCaret(boolean hideCaret) {
-        this.hideCaret = hideCaret;
-    }
 
 
     public SeleniumConfiguration(SeleniumConfiguration configuration) {
@@ -87,14 +48,13 @@ public class SeleniumConfiguration extends Configuration {
         this.concurrentSessions = 1;
     }
 
-
     public SeleniumConfiguration(int concurrentSessions, boolean isThrowExceptionOn, String testName) {
         this.concurrentSessions = concurrentSessions;
         this.isThrowExceptionOn = isThrowExceptionOn;
         this.testName = testName;
     }
 
-    public SeleniumConfiguration(Configuration configuration) {
+    public SeleniumConfiguration(IConfigurationGetter configuration) {
         super(configuration);
         ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
         RectangleSize viewportSize = configuration.getViewportSize();
@@ -103,6 +63,7 @@ public class SeleniumConfiguration extends Configuration {
         this.concurrentSessions = 1;
         this.testName = configuration.getTestName();
     }
+
 
     public SeleniumConfiguration(String appName, String testName,
                                   RectangleSize viewportSize) {
@@ -114,67 +75,128 @@ public class SeleniumConfiguration extends Configuration {
         this.testName = testName;
         this.setAppName(appName);
     }
-    
-    public SeleniumConfiguration addBrowsers(RenderBrowserInfo... browsersInfo) {
+    @Override
+    public boolean getForceFullPageScreenshot() {
+        return forceFullPageScreenshot;
+    }
+
+    @Override
+    public int getWaitBeforeScreenshots() {
+        return waitBeforeScreenshots;
+    }
+
+    @Override
+    public void setWaitBeforeScreenshots(int waitBeforeScreenshots) {
+        if (waitBeforeScreenshots <= 0) {
+            this.waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
+        } else {
+            this.waitBeforeScreenshots = waitBeforeScreenshots;
+        }
+    }
+
+    @Override
+    public StitchMode getStitchMode() {
+        return stitchMode;
+    }
+
+    @Override
+    public void setStitchMode(StitchMode stitchMode) {
+        this.stitchMode = stitchMode;
+    }
+
+    @Override
+    public boolean getHideScrollbars() {
+        return hideScrollbars;
+    }
+
+    @Override
+    public void setHideScrollbars(boolean hideScrollbars) {
+        this.hideScrollbars = hideScrollbars;
+    }
+
+    @Override
+    public boolean getHideCaret() {
+        return hideCaret;
+    }
+
+    @Override
+    public void setHideCaret(boolean hideCaret) {
+        this.hideCaret = hideCaret;
+    }
+
+    @Override
+    public ISeleniumConfigurationSetter addBrowsers(RenderBrowserInfo... browsersInfo) {
         this.browsersInfo.addAll(Arrays.asList(browsersInfo));
         return this;
     }
 
-    public SeleniumConfiguration addBrowser(RenderBrowserInfo browserInfo) {
+    @Override
+    public ISeleniumConfigurationSetter addBrowser(RenderBrowserInfo browserInfo) {
         browsersInfo.add(browserInfo);
         return this;
     }
 
-    public SeleniumConfiguration addBrowser(int width, int height, BrowserType browserType, String baselineEnvName) {
+    @Override
+    public ISeleniumConfigurationSetter addBrowser(int width, int height, BrowserType browserType, String baselineEnvName) {
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType, baselineEnvName, null);
         addBrowser(browserInfo);
         return this;
     }
 
-    public SeleniumConfiguration addBrowser(int width, int height, BrowserType browserType) {
+    @Override
+    public ISeleniumConfigurationSetter addBrowser(int width, int height, BrowserType browserType) {
         return addBrowser(width, height, browserType, null);
     }
 
-    public SeleniumConfiguration addDeviceEmulation(EmulationDevice emulationDevice, String baselineEnvName){
+    @Override
+    public ISeleniumConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice, String baselineEnvName){
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationDevice.getWidth(), emulationDevice.getWidth(),
                 BrowserType.CHROME, baselineEnvName);
         this.browsersInfo.add(browserInfo);
         return this;
     }
-    public SeleniumConfiguration addDeviceEmulation(EmulationDevice emulationDevice){
+    @Override
+    public ISeleniumConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice){
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationDevice.getWidth(), emulationDevice.getWidth(),
                 BrowserType.CHROME, null);
         this.browsersInfo.add(browserInfo);
         return this;
     }
 
-    public SeleniumConfiguration addDeviceEmulation(EmulationInfo emulationInfo, String baselineEnvName){
+    @Override
+    public ISeleniumConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo, String baselineEnvName){
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(0, 0, BrowserType.CHROME, baselineEnvName, emulationInfo);
         this.browsersInfo.add(browserInfo);
         return this;
     }
-    public SeleniumConfiguration addDeviceEmulation(EmulationInfo emulationInfo){
+    @Override
+    public ISeleniumConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo){
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(0, 0, BrowserType.CHROME, null, emulationInfo);
         this.browsersInfo.add(browserInfo);
         return this;
     }
 
+    @Override
     public int getConcurrentSessions() {
         return concurrentSessions;
     }
 
+    @Override
     public List<RenderBrowserInfo> getBrowsersInfo() {
         return browsersInfo;
     }
 
+    @Override
     public void setBrowsersInfo(List<RenderBrowserInfo> browsersInfo) {
         this.browsersInfo = browsersInfo;
     }
 
+    @Override
     public boolean isThrowExceptionOn() {
         return isThrowExceptionOn;
     }
 
+    @Override
     public void setThrowExceptionOn(boolean throwExceptionOn) {
         isThrowExceptionOn = throwExceptionOn;
     }
@@ -203,12 +225,24 @@ public class SeleniumConfiguration extends Configuration {
         return super.viewportSize;
     }
 
+    @Override
     public boolean isForceFullPageScreenshot() {
         return forceFullPageScreenshot;
     }
 
+    @Override
     public void setForceFullPageScreenshot(boolean forceFullPageScreenshot) {
         this.forceFullPageScreenshot = forceFullPageScreenshot;
+    }
+
+    @Override
+    public boolean isRenderingConfig() {
+        return isRenderingConfig;
+    }
+
+    @Override
+    public void setRenderingConfig(boolean renderingConfig) {
+        isRenderingConfig = renderingConfig;
     }
     @Override
     public String toString() {
@@ -218,13 +252,5 @@ public class SeleniumConfiguration extends Configuration {
                 "\n\tstitchMode = " + stitchMode +
                 "\n\thideScrollbars = " + hideScrollbars +
                 "\n\thideCaret = " + hideCaret ;
-    }
-
-    public boolean isRenderingConfig() {
-        return isRenderingConfig;
-    }
-
-    public void setRenderingConfig(boolean renderingConfig) {
-        isRenderingConfig = renderingConfig;
     }
 }

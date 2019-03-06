@@ -20,7 +20,7 @@ public final class WixExample {
         options.addArguments("test-type", "start-maximized", "disable-popup-blocking", "disable-infobars");
 
         WebDriver driver = new ChromeDriver(options);
-        SeleniumEyes eyes = new SeleniumEyes();
+        Eyes eyes = new Eyes();
 //        VisualGridEyes.setServerUrl(URI.create("https://localhost.applitools.com"));
         eyes.setMatchTimeout(0);
 
