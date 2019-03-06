@@ -33,7 +33,5 @@ public interface ISeleniumConfigurationGetter extends IConfigurationGetter{
 
     boolean isRenderingConfig();
 
-    boolean isStitchContent();
-
-    boolean isSendDom();
+    Configuration cloneConfig();
 }

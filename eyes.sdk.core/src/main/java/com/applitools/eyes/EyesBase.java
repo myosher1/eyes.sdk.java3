@@ -1418,7 +1418,7 @@ public abstract class EyesBase {
     protected abstract String getAUTSessionId();
 
     public boolean isSendDom() {
-        return isSendDom;
+        return getConfigGetter().isSendDom();
     }
 
     public void setOnDomCapture(IDomCaptureListener listener) {
@@ -1426,7 +1426,7 @@ public abstract class EyesBase {
     }
 
     public void setSendDom(boolean isSendDom) {
-        this.isSendDom = isSendDom;
+        this.getConfigSetter().setSendDom(isSendDom);
     }
 
     public RenderingInfo getRenderingInfo() {
@@ -1437,9 +1437,25 @@ public abstract class EyesBase {
         return this.renderInfo;
     }
 
-    protected abstract IConfigurationGetter getConfigGetter();
+    /**
+     * Sets the batch in which context future tests will run or {@code null}
+     * if tests are to run standalone.
+     * @param batch The batch info to set.
+     */
+    public void setBatch(BatchInfo batch) {
+        if (isDisabled) {
+            logger.verbose("Ignored");
+            return;
+        }
 
-    protected abstract IConfigurationSetter getConfigSetter();
+        logger.verbose("setBatch(" + batch + ")");
+
+        this.getConfigSetter().setBatch(batch);
+    }
+
+    protected abstract <T extends IConfigurationGetter> T getConfigGetter();
+
+    protected abstract <T extends IConfigurationSetter> T getConfigSetter();
 
 
 }

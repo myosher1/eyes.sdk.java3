@@ -18,8 +18,6 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     private StitchMode stitchMode = StitchMode.SCROLL;
     private boolean hideScrollbars = true;
     private boolean hideCaret = true;
-    private boolean stitchContent;
-    private boolean isSendDom = true;
 
     //Rendering Configuration
     private int concurrentSessions = 3;
@@ -254,25 +252,5 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
                 "\n\tstitchMode = " + stitchMode +
                 "\n\thideScrollbars = " + hideScrollbars +
                 "\n\thideCaret = " + hideCaret ;
-    }
-
-    @Override
-    public boolean isStitchContent() {
-        return stitchContent;
-    }
-
-    @Override
-    public void setStitchContent(boolean stitchContent) {
-        this.stitchContent = stitchContent;
-    }
-
-    @Override
-    public boolean isSendDom() {
-        return isSendDom;
-    }
-
-    @Override
-    public void setSendDom(boolean sendDom) {
-        isSendDom = sendDom;
     }
 }

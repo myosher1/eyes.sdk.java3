@@ -44,4 +44,8 @@ public interface IConfigurationGetter {
     SessionType getSessionType();
 
     FailureReports getFailureReports();
+
+    boolean isSendDom();
+
+    boolean getIgnoreCaret();
 }

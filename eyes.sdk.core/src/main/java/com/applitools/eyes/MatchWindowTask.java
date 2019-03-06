@@ -203,14 +203,14 @@ public class MatchWindowTask {
 
             MatchLevel matchLevel = checkSettingsInternal.getMatchLevel();
             if (matchLevel == null) {
-                matchLevel = eyes.getDefaultMatchSettings().getMatchLevel();
+                matchLevel = eyes.getConfigGetter().getDefaultMatchSettings().getMatchLevel();
             }
 
             imageMatchSettings = new ImageMatchSettings(matchLevel, null, false);
 
             Boolean ignoreCaret = checkSettingsInternal.getIgnoreCaret();
             if (ignoreCaret == null) {
-                ignoreCaret = eyes.getDefaultMatchSettings().getIgnoreCaret();
+                ignoreCaret = eyes.getConfigGetter().getDefaultMatchSettings().getIgnoreCaret();
             }
 
             imageMatchSettings.setIgnoreCaret(ignoreCaret);

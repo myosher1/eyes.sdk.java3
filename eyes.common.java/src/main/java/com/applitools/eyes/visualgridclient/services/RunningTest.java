@@ -3,7 +3,7 @@ package com.applitools.eyes.visualgridclient.services;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.config.ISeleniumConfigurationProvider;
 import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualgridclient.model.TestResultContainer;
 
@@ -19,7 +19,7 @@ public class RunningTest {
     private AtomicBoolean isTestClose = new AtomicBoolean(false);
     private AtomicBoolean isTestInExceptionMode = new AtomicBoolean(false);
     private RunningTestListener listener;
-    private SeleniumConfiguration configuration;
+    private ISeleniumConfigurationProvider configurationProvider;
     private HashMap<Task, FutureTask<TestResultContainer>> taskToFutureMapping = new HashMap<>();
     private Logger logger;
 
@@ -68,10 +68,10 @@ public class RunningTest {
         }
     };
 
-    public RunningTest(IEyesConnector eyes, SeleniumConfiguration configuration, RenderBrowserInfo browserInfo, Logger logger, RunningTestListener listener) {
+    public RunningTest(IEyesConnector eyes, ISeleniumConfigurationProvider configuration, RenderBrowserInfo browserInfo, Logger logger, RunningTestListener listener) {
         this.eyes = eyes;
         this.browserInfo = browserInfo;
-        this.configuration = configuration;
+        this.configurationProvider = configuration;
         this.listener = listener;
         this.logger = logger;
     }
@@ -131,7 +131,7 @@ public class RunningTest {
 
     public Task open() {
         logger.verbose("adding Open task...");
-        Task task = new Task(configuration, null, eyes, Task.TaskType.OPEN, taskListener, null, this);
+        Task task = new Task(configurationProvider, null, eyes, Task.TaskType.OPEN, taskListener, null, this);
         FutureTask<TestResultContainer> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         logger.verbose("locking taskList");
@@ -154,7 +154,7 @@ public class RunningTest {
         }
 
         logger.verbose("adding close task...");
-        Task task = new Task(configuration, null, eyes, Task.TaskType.CLOSE, taskListener, null, this);
+        Task task = new Task(configurationProvider, null, eyes, Task.TaskType.CLOSE, taskListener, null, this);
         FutureTask<TestResultContainer> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         logger.verbose("locking taskList");
@@ -169,7 +169,7 @@ public class RunningTest {
 
     public Task check(ICheckSettings checkSettings) {
         logger.verbose("adding check task...");
-        Task task = new Task(configuration, null, eyes, Task.TaskType.CHECK, taskListener, checkSettings, this);
+        Task task = new Task(configurationProvider, null, eyes, Task.TaskType.CHECK, taskListener, checkSettings, this);
         logger.verbose("locking taskList");
         synchronized (taskList) {
             this.taskList.add(task);
@@ -221,9 +221,5 @@ public class RunningTest {
 
     Logger getLogger() {
         return logger;
-    }
-
-    public SeleniumConfiguration getConfiguration() {
-        return configuration;
     }
 }

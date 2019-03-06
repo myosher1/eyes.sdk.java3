@@ -8,9 +8,7 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.capture.EyesScreenshotFactory;
 import com.applitools.eyes.capture.ImageProvider;
-import com.applitools.eyes.config.ISeleniumConfigurationGetter;
-import com.applitools.eyes.config.ISeleniumConfigurationSetter;
-import com.applitools.eyes.diagnostics.TimedAppOutput;
+import com.applitools.eyes.config.*;
 import com.applitools.eyes.events.ValidationInfo;
 import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.TestFailedException;
@@ -21,7 +19,6 @@ import com.applitools.eyes.positioning.*;
 import com.applitools.eyes.scaling.FixedScaleProviderFactory;
 import com.applitools.eyes.scaling.NullScaleProvider;
 import com.applitools.eyes.selenium.capture.*;
-import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.exceptions.EyesDriverOperationException;
 import com.applitools.eyes.selenium.fluent.*;
 import com.applitools.eyes.selenium.frames.Frame;
@@ -76,7 +73,6 @@ public class SeleniumEyes extends EyesBase {
     private boolean checkFrameOrElement;
     private Region regionToCheck;
     private String originalOverflow;
-    private boolean stitchContent;
 
     private ImageRotation rotation;
     private double devicePixelRatio;
@@ -94,6 +90,16 @@ public class SeleniumEyes extends EyesBase {
     private EyesScreenshotFactory screenshotFactory;
     private String cachedAUTSessionId;
     private ISeleniumConfigurationProvider configurationProvider;
+    private boolean stitchContent;
+
+    /**
+     * Should stitch content boolean.
+     *
+     * @return the boolean
+     */
+    public boolean shouldStitchContent() {
+        return stitchContent;
+    }
 
     /**
      * The interface Web driver action.
@@ -112,9 +118,9 @@ public class SeleniumEyes extends EyesBase {
      * Creates a new SeleniumEyes instance that interacts with the SeleniumEyes cloud
      * service.
      */
-    public SeleniumEyes(ISeleniumConfigurationProvider configProvider) {
+    public SeleniumEyes(ISeleniumConfigurationProvider configurationProvider) {
         super();
-        configurationProvider = configProvider;
+        this.configurationProvider = configurationProvider;
         checkFrameOrElement = false;
         doNotGetTitle = false;
         devicePixelRatio = UNKNOWN_DEVICE_PIXEL_RATIO;
@@ -172,8 +178,6 @@ public class SeleniumEyes extends EyesBase {
         this.regionToCheck = regionToCheck;
     }
 
-
-
     /**
      * Turns on/off the automatic scrolling to a region being checked by
      * {@code checkRegion}.
@@ -197,7 +201,6 @@ public class SeleniumEyes extends EyesBase {
     public boolean getScrollToRegion() {
         return !(regionVisibilityStrategyHandler.get() instanceof NopRegionVisibilityStrategy);
     }
-
     /**
      * Gets rotation.
      *
@@ -234,7 +237,7 @@ public class SeleniumEyes extends EyesBase {
      * @return the web driver
      * @throws EyesException the eyes exception
      */
-    WebDriver open(WebDriver driver) throws EyesException {
+    protected WebDriver open(WebDriver driver) throws EyesException {
         openLogger();
         this.cachedAUTSessionId = null;
 
@@ -319,6 +322,39 @@ public class SeleniumEyes extends EyesBase {
             default:
                 return new ScrollPositionProvider(logger, this.jsExecutor, scrollRootElement);
         }
+    }
+
+
+    /**
+     * See {@link #checkWindow(String)}.
+     * {@code tag} defaults to {@code null}.
+     * Default match timeout is used.
+     */
+    public void checkWindow() {
+        checkWindow(null);
+    }
+
+    /**
+     * See {@link #checkWindow(int, String)}.
+     * Default match timeout is used.
+     *
+     * @param tag An optional tag to be associated with the snapshot.
+     */
+    public void checkWindow(String tag) {
+        check(tag, Target.window());
+    }
+
+    /**
+     * Takes a snapshot of the application under test and matches it with
+     * the expected output.
+     *
+     * @param matchTimeout The amount of time to retry matching (Milliseconds).
+     * @param tag          An optional tag to be associated with the snapshot.
+     * @throws TestFailedException Thrown if a mismatch is detected and
+     *                             immediate failure reports are enabled.
+     */
+    public void checkWindow(int matchTimeout, String tag) {
+        check(tag, Target.window().timeout(matchTimeout));
     }
 
 
@@ -1940,14 +1976,10 @@ public class SeleniumEyes extends EyesBase {
     }
 
     /**
-     * Call this method if for some
-     * reason you don't want to call {@link #open(WebDriver, String, String)}
-     * (or one of its variants) yet.
-     *
      * @param driver The driver to use for getting the viewport.
      * @return The viewport size of the current context.
      */
-    public static RectangleSize getViewportSize(WebDriver driver) {
+    static RectangleSize getViewportSize(WebDriver driver) {
         ArgumentGuard.notNull(driver, "driver");
         return EyesSeleniumUtils.getViewportSizeOrDisplaySize(new Logger(), driver);
     }
@@ -1985,14 +2017,11 @@ public class SeleniumEyes extends EyesBase {
     }
 
     /**
-     * Set the viewport size using the driver. Call this method if for some
-     * reason you don't want to call {@link #open(WebDriver, String, String)}
-     * (or one of its variants) yet.
      *
      * @param driver The driver to use for setting the viewport.
      * @param size   The required viewport size.
      */
-    public static void setViewportSize(WebDriver driver, RectangleSize size) {
+    static void setViewportSize(WebDriver driver, RectangleSize size) {
         ArgumentGuard.notNull(driver, "driver");
         EyesSeleniumUtils.setViewportSize(new Logger(), driver, size);
     }
@@ -2123,7 +2152,7 @@ public class SeleniumEyes extends EyesBase {
         EyesWebDriverScreenshot result;
 
         Object activeElement = null;
-        if (getHideCaret()) {
+        if (getConfigGetter().getHideCaret()) {
             try {
                 activeElement = driver.executeScript("var activeElement = document.activeElement; activeElement && activeElement.blur(); return activeElement;");
             } catch (WebDriverException e) {
@@ -2208,7 +2237,7 @@ public class SeleniumEyes extends EyesBase {
             result = new EyesWebDriverScreenshot(logger, driver, screenshotImage);
         }
 
-        if (getHideCaret() && activeElement != null) {
+        if (getConfigGetter().getHideCaret() && activeElement != null) {
             try {
                 driver.executeScript("arguments[0].focus();", activeElement);
             } catch (WebDriverException e) {
@@ -2455,7 +2484,7 @@ public class SeleniumEyes extends EyesBase {
          * @return the stitch mode
          */
         public StitchMode getStitchMode() {
-            return getConfigGetter().getStitchMode();
+            return SeleniumEyes.this.getConfigGetter().getStitchMode();
         }
 
         /**
@@ -2464,7 +2493,7 @@ public class SeleniumEyes extends EyesBase {
          * @return the hide scrollbars
          */
         public boolean getHideScrollbars() {
-            return getConfigGetter().getHideScrollbars();
+            return SeleniumEyes.this.getConfigGetter().getHideScrollbars();
         }
 
         /**
@@ -2496,11 +2525,15 @@ public class SeleniumEyes extends EyesBase {
         return !EyesSeleniumUtils.isMobileDevice(driver) && super.isSendDom();
     }
 
-    protected ISeleniumConfigurationSetter getConfigSetter(){
-        return configurationProvider.set();
-    }
-
-    protected ISeleniumConfigurationGetter getConfigGetter(){
+    @Override
+    public ISeleniumConfigurationGetter getConfigGetter() {
         return configurationProvider.get();
     }
+
+    @Override
+    protected ISeleniumConfigurationSetter getConfigSetter() {
+        return this.configurationProvider.set();
+    }
+
+
 }

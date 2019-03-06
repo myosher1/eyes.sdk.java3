@@ -2,7 +2,7 @@ package com.applitools.eyes.config;
 
 import com.applitools.eyes.*;
 
-public interface IConfigurationSetter{
+public interface IConfigurationSetter {
 
     void setSaveNewTests(boolean saveNewTests);
 
@@ -43,4 +43,8 @@ public interface IConfigurationSetter{
     void setSessionType(SessionType sessionType);
 
     void setFailureReports(FailureReports failureReports);
+
+    void setSendDom(boolean sendDom);
+
+    void setIgnoreCaret(boolean value);
 }

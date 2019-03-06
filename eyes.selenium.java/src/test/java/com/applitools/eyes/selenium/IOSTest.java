@@ -93,7 +93,7 @@ public class IOSTest {
 
     @Test(dataProvider = "data")
     public void TestIOSSafariCrop(String deviceName, String deviceOrientation, String platformVersion, boolean fully) throws MalformedURLException {
-        SeleniumEyes eyes = new SeleniumEyes();
+        Eyes eyes = new Eyes();
         eyes.setServerConnector(new ServerConnector());
 
         eyes.setBatch(batchInfo);

@@ -14,7 +14,7 @@ import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
 @Listeners(TestListener.class)
-public class SeleniumEyesTest {
+public class SeleniumEyesCompileTest {
     private Eyes eyes;
     private Region region = new Region(10, 10, 10, 10);
     private WebElement webElement = null;
@@ -28,7 +28,7 @@ public class SeleniumEyesTest {
     private WebDriver driver;
 
 
-    public SeleniumEyesTest() {
+    public SeleniumEyesCompileTest() {
 
 
     }
@@ -608,26 +608,6 @@ public class SeleniumEyesTest {
     @Test
     public void testCheckWindow2() {
         eyes.checkWindow(5, "tag");
-    }
-
-    @Test
-    public void testTestWindow() {
-        eyes.testWindow(driver, "appName", "testName");
-    }
-
-    @Test
-    public void testTestWindow1() {
-        eyes.testWindow(driver, "appName", "testName", new RectangleSize(10, 10));
-    }
-
-    @Test
-    public void testTestWindow2() {
-        eyes.testWindow(driver, "TestName", new RectangleSize(10, 10));
-    }
-
-    @Test
-    public void testTestWindow3() {
-        eyes.testWindow(driver, "testName");
     }
 
     @Test

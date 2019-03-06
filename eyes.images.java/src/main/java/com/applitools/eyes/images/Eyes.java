@@ -291,6 +291,16 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
         return viewportSizeHandler.get();
     }
 
+    @Override
+    public SessionType getSessionType() {
+        return config.getSessionType();
+    }
+
+    @Override
+    public FailureReports getFailureReports() {
+        return config.getFailureReports();
+    }
+
     /**
      * Set the viewport size.
      * @param size The required viewport size.
@@ -299,6 +309,16 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
     public void setViewportSize(RectangleSize size) {
         ArgumentGuard.notNull(size, "size");
         viewportSizeHandler.set(new RectangleSize(size.getWidth(), size.getHeight()));
+    }
+
+    @Override
+    public void setSessionType(SessionType sessionType) {
+        config.setSessionType(sessionType);
+    }
+
+    @Override
+    public void setFailureReports(FailureReports failureReports) {
+        config.setFailureReports(failureReports);
     }
 
     /**
@@ -407,11 +427,21 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
         this.config.setAppName(appName);
     }
 
+    @Override
+    public void setTestName(String testName) {
+
+    }
+
     /**
      * @return The name of the application under test.
      */
     public String getAppName() {
         return config.getAppName();
+    }
+
+    @Override
+    public String getTestName() {
+        return null;
     }
 
     /**
@@ -426,11 +456,21 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
         this.config.setBranchName(branchName);
     }
 
+    @Override
+    public void setAgentId(String agentId) {
+
+    }
+
     /**
      * @return The current branch (see {@link #setBranchName(String)}).
      */
     public String getBranchName() {
         return config.getBranchName();
+    }
+
+    @Override
+    public String getAgentId() {
+        return null;
     }
 
     /**
@@ -523,7 +563,7 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
      * @return True if new tests are saved by default.
      */
     public boolean getSaveNewTests() {
-        return config.isSaveNewTests();
+        return config.getSaveNewTests();
     }
 
     /**
@@ -538,7 +578,7 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
      * @return True if failed tests are saved by default.
      */
     public boolean getSaveFailedTests() {
-        return config.isSaveFailedTests();
+        return config.getSaveFailedTests();
     }
 
     /**
@@ -555,6 +595,16 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
         logger.verbose("setBatch(" + batch + ")");
 
         this.config.setBatch(batch);
+    }
+
+    @Override
+    protected <T extends IConfigurationGetter> T getConfigGetter() {
+        return (T) config;
+    }
+
+    @Override
+    protected <T extends IConfigurationSetter> T getConfigSetter() {
+        return (T) config;
     }
 
     /**
@@ -647,11 +697,21 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
         }
     }
 
+    @Override
+    public void setStitchingOverlap(int stitchingOverlap) {
+
+    }
+
     /**
      * @return get the host OS running the AUT.
      */
     public String getHostOS() {
         return config.getHostOS();
+    }
+
+    @Override
+    public int getStitchingOverlap() {
+        return 0;
     }
 
     /**
@@ -708,12 +768,22 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
         }
     }
 
+    @Override
+    public void setEnvironmentName(String environmentName) {
+
+    }
+
     /**
      * If not {@code null}, determines the name of the environment of the baseline.
      * @return The name of the baseline's environment, or {@code null} if no such name was set.
      */
     public String getBaselineEnvName() {
         return config.getBaselineEnvName();
+    }
+
+    @Override
+    public String getEnvironmentName() {
+        return null;
     }
 
 

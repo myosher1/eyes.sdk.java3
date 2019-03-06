@@ -3,7 +3,7 @@ package com.applitools.eyes.selenium.rendering;
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
-import com.applitools.eyes.config.Configuration;
+import com.applitools.eyes.config.*;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.visualgridclient.services.IEyesConnector;
 import com.applitools.eyes.visualgridclient.services.IResourceFuture;
@@ -18,6 +18,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     private RenderBrowserInfo browserInfo;
     private String userAgent;
     private String device;
+    private Configuration config = new SeleniumConfiguration();
 
     public EyesConnector(RenderBrowserInfo browserInfo, RateLimiter rateLimiter) {
         this.browserInfo = browserInfo;
@@ -27,9 +28,9 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     /**
      * ﻿Starts a new test without setting the viewport size of the AUT.
      */
-    public void open(Configuration config) {
+    public void open(ISeleniumConfigurationProvider config) {
         logger.verbose("opening EyesConnector with viewport size: " + browserInfo.getViewportSize());
-        this.config = config.cloneConfig();
+        this.config = config.get().cloneConfig();
         this.config.setViewportSize(browserInfo.getViewportSize());
         this.config.setBaselineEnvName(browserInfo.getBaselineEnvName());
         openBase();
@@ -66,7 +67,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
         ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) checkSettings;
 
-        MatchWindowTask matchWindowTask = new MatchWindowTask(this.logger, this.serverConnector, this.runningSession, getMatchTimeout(), this);
+        MatchWindowTask matchWindowTask = new MatchWindowTask(this.logger, this.serverConnector, this.runningSession, getConfigGetter().getMatchTimeout(), this);
 
         ImageMatchSettings imageMatchSettings = matchWindowTask.createImageMatchSettings(checkSettingsInternal, null);
 
@@ -135,6 +136,16 @@ class EyesConnector extends EyesBase implements IEyesConnector {
         return null;
     }
 
+    @Override
+    protected <T extends IConfigurationGetter> T getConfigGetter() {
+        return (T) config;
+    }
+
+    @Override
+    protected <T extends IConfigurationSetter> T getConfigSetter() {
+        return (T) config;
+    }
+
     public void setRenderInfo(RenderingInfo renderInfo) {
         this.renderInfo = renderInfo;
         this.serverConnector.setRenderingInfo(renderInfo);
@@ -156,18 +167,8 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public void setHideCaret(boolean hideCaret) {
-
-    }
-
-    @Override
     public void setApiKey(String apiKey) {
         super.setApiKey(apiKey);
-    }
-
-    @Override
-    public void setAgentId(String agentId) {
-        super.setAgentId(agentId);
     }
 
     @Override
@@ -176,28 +177,13 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public void setAppName(String appName) {
-        super.setAppName(appName);
-    }
-
-    @Override
     public void setBranchName(String branchName) {
-        super.setBranchName(branchName);
+        getConfigSetter().setBranchName(branchName);
     }
 
     @Override
-    public String getParentBranchName() {
-        return super.getParentBranchName();
-    }
-
-    @Override
-    public void setBaselineBranchName(String branchName) {
-        super.setBaselineBranchName(branchName);
-    }
-
-    @Override
-    public void setMatchLevel(MatchLevel matchLevel) {
-        super.setMatchLevel(matchLevel);
+    public void setParentBranchName(String parentBranchName) {
+        getConfigSetter().setParentBranchName(parentBranchName);
     }
 
     @Override

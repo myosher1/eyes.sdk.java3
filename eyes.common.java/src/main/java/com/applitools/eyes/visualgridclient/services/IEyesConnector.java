@@ -3,6 +3,7 @@ package com.applitools.eyes.visualgridclient.services;
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
 import com.applitools.eyes.config.Configuration;
+import com.applitools.eyes.config.ISeleniumConfigurationProvider;
 import com.applitools.eyes.visualgridclient.model.*;
 
 import java.net.URI;
@@ -21,7 +22,7 @@ public interface IEyesConnector {
 
     URI getServerUrl();
 
-    void open(Configuration config);
+    void open(ISeleniumConfigurationProvider configProvider);
 
     TestResults close(boolean throwExceptionOn);
 
@@ -54,10 +55,6 @@ public interface IEyesConnector {
     void setBranchName(String branchName);
 
     void setParentBranchName(String parentBranchName);
-
-    void setHideCaret(boolean hideCaret);
-
-    void setMatchLevel(MatchLevel matchLevel);
 
     void setDevice(String device);
 

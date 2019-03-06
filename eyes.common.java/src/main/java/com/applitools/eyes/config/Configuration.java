@@ -24,7 +24,8 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     // Used for automatic save of a test run.
     private boolean saveNewTests, saveFailedTests;
     private int stitchingOverlap = 50;
-    private FailureReports failureReports =  FailureReports.ON_CLOSE;;
+    private boolean isSendDom = true;
+    private FailureReports failureReports =  FailureReports.ON_CLOSE;
 
     protected Configuration(IConfigurationGetter configuration) {
         this.batch = configuration.getBatch();
@@ -278,5 +279,32 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
                 "\n\ttestName = " + testName +
                 "\n\tviewportSize = " + viewportSize +
                 "\n\tsessionType = " + sessionType;
+    }
+
+    @Override
+    public boolean isSendDom() {
+        return isSendDom;
+    }
+
+    @Override
+    public void setSendDom(boolean sendDom) {
+        isSendDom = sendDom;
+    }
+
+    /**
+     * @return Whether to ignore or the blinking caret or not when comparing images.
+     */
+    @Override
+    public boolean getIgnoreCaret() {
+        Boolean ignoreCaret = getDefaultMatchSettings().getIgnoreCaret();
+        return ignoreCaret == null ? true : ignoreCaret;
+    }
+    /**
+     * Sets the ignore blinking caret value.
+     * @param value The ignore value.
+     */
+    @Override
+    public void setIgnoreCaret(boolean value) {
+        defaultMatchSettings.setIgnoreCaret(value);
     }
 }

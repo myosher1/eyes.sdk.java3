@@ -44,7 +44,4 @@ public interface ISeleniumConfigurationSetter extends IConfigurationSetter{
 
     void setRenderingConfig(boolean renderingConfig);
 
-    void setStitchContent(boolean stitchContent);
-
-    void setSendDom(boolean sendDom);
 }

@@ -31,7 +31,7 @@ public class iOSNativeTest {
         WebDriver driver = new IOSDriver(new URL(url), capabilities);
 
         // Initialize the VisualGridEyes SDK and set your private API key.
-        SeleniumEyes eyes = new SeleniumEyes();
+        Eyes eyes = new Eyes();
         eyes.setServerConnector(new ServerConnector());
         LogHandler logHandler = new StdoutLogHandler(true);
         eyes.setLogHandler(logHandler);
