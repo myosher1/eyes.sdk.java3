@@ -45,7 +45,8 @@ public class TestISeleniumVGEyesSelenium extends TestEyesBase {
         configuration.setTestName("Top Sites - " + testedUrl);
         configuration.setAppName("Top Sites");
         configuration.setBatch(batchInfo);
-        eyes.open(webDriver, configuration);
+        eyes.setConfiguration(configuration);
+        eyes.open(webDriver);
         return eyes;
     }
 

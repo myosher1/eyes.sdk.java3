@@ -56,7 +56,8 @@ public final class TestRenderingGridServiceWithJsHook {
             seleniumConfiguration.addBrowser(400, 300, SeleniumConfiguration.BrowserType.CHROME);
             //VisualGridEyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             eyes.setServerUrl("https://eyes.applitools.com/");
-            ((Eyes) eyes).open(webDriver, seleniumConfiguration);
+            eyes.setConfiguration(seleniumConfiguration);
+            ((Eyes) eyes).open(webDriver);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             String jshook = "document.body.style='background-color: red'";
             eyes.check(Target.window().withName("test").fully().sendDom(false).webHook(jshook));
@@ -82,7 +83,8 @@ public final class TestRenderingGridServiceWithJsHook {
             seleniumConfiguration.setTestName("Vans Gallery page");
             seleniumConfiguration.setAppName("RenderingGridIntegration");
             seleniumConfiguration.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.CHROME, null);
-            eyes.open(webDriver, seleniumConfiguration);
+            eyes.setConfiguration(seleniumConfiguration);
+            eyes.open(webDriver);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }

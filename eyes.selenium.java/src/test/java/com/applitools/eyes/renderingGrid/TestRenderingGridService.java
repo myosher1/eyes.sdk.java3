@@ -61,7 +61,8 @@ public final class TestRenderingGridService {
             seleniumConfiguration.addBrowser(400, 300, SeleniumConfiguration.BrowserType.CHROME);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //VisualGridEyes.setServerUrl("https://eyes.applitools.com/");
-            eyes.open(webDriver, seleniumConfiguration);
+            eyes.setConfiguration(seleniumConfiguration);
+            eyes.open(webDriver);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             eyes.check(Target.window().withName("test").fully(false).sendDom(false));
             TestResults close = eyes.close();

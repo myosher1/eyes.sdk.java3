@@ -47,7 +47,8 @@ public class TestSuite {
         configuration.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.CHROME);
         configuration.addBrowser(1920, 1000, SeleniumConfiguration.BrowserType.CHROME);
 
-        eyes.open(webDriver, configuration);
+        eyes.setConfiguration(configuration);
+        eyes.open(webDriver);
         this.eyes = eyes;
 
         this.checkSettings = Target.window();

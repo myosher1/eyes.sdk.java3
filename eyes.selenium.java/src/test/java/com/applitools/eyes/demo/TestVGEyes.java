@@ -64,7 +64,8 @@ public class TestVGEyes extends TestEyesBase {
             seleniumConfiguration.addDeviceEmulation(emulationInfo);
 
             logger.log("created configurations for url " + testedUrl);
-            eyes.open(webDriver, seleniumConfiguration);
+            eyes.setConfiguration(seleniumConfiguration);
+            eyes.open(webDriver);
             this.eyes = eyes;
         } catch (Throwable e) {
             GeneralUtils.logExceptionStackTrace(logger, e);

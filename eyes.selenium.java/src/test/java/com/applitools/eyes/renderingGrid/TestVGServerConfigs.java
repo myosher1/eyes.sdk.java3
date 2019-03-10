@@ -84,7 +84,8 @@ public class TestVGServerConfigs {
         seleniumConfiguration.addBrowser(100, 100, SeleniumConfiguration.BrowserType.FIREFOX);
         ChromeDriver webDriver = new ChromeDriver();
         try {
-            eyes.open(webDriver, seleniumConfiguration);
+            eyes.setConfiguration(seleniumConfiguration);
+            eyes.open(webDriver);
             Assert.assertEquals(eyes.getServerUrl().toString(), this.expectedServer);
             Assert.assertEquals(eyes.getApiKey(), this.expectedKey);
             Assert.assertEquals(eyes.getIsDisabled(), this.expectedDisabled);

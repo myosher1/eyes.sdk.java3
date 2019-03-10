@@ -182,7 +182,8 @@ public final class TestMultiThreadWithServiceLockService {
         seleniumConfiguration.setAppName("RenderingGridIntegration");
         seleniumConfiguration.addBrowsers(browsersInfo);
         eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888));
-        eyes.open(webDriver, seleniumConfiguration);
+        eyes.setConfiguration(seleniumConfiguration);
+        eyes.open(webDriver);
         eyes.check(Target.window().withName("test").sendDom(false));
         TestResults close = eyes.close();
         Assert.assertNotNull(close);

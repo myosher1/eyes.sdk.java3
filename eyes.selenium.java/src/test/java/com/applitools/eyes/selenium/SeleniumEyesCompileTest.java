@@ -56,7 +56,8 @@ public class SeleniumEyesCompileTest {
 
         WebDriver webDriver = new ChromeDriver();
 
-        driver = eyes.open(webDriver, new SeleniumConfiguration(new RectangleSize(100, 100)));
+        eyes.setConfiguration( new SeleniumConfiguration(new RectangleSize(100, 100)));
+        driver = eyes.open(webDriver);
 
     }
 
@@ -587,7 +588,7 @@ public class SeleniumEyesCompileTest {
 
     @Test
     public void testOpen() {
-        eyes.open(this.driver, new SeleniumConfiguration());
+        eyes.open(this.driver);
     }
 
     @Test

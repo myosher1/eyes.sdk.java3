@@ -84,7 +84,8 @@ public class Test_VG_USA_Today {
 
             eyes.getLogger().log("created configurations for url " + testedUrl);
 
-            eyes.open(webDriver, seleniumConfiguration);
+            eyes.setConfiguration(seleniumConfiguration);
+            eyes.open(webDriver);
 
             eyes.getLogger().log("running check for url " + testedUrl);
 

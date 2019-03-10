@@ -75,7 +75,8 @@ public class TestTopSites {
             logger.log("created configurations for url " + testedUrl);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //VisualGridEyes.setServerUrl("https://eyes.applitools.com/");
-            eyes.open(webDriver, seleniumConfiguration);
+            eyes.setConfiguration(seleniumConfiguration);
+            eyes.open(webDriver);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }

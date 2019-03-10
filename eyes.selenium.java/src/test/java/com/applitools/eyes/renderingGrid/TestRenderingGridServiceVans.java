@@ -144,7 +144,8 @@ public class TestRenderingGridServiceVans {
             seleniumConfiguration.addDeviceEmulation(emulationDevice);
             seleniumConfiguration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.iPhone6_7_8_Plus, ScreenOrientation.LANDSCAPE));
             logger.log("created configurations for url " + testedUrl);
-            eyes.open(webDriver, seleniumConfiguration);
+            eyes.setConfiguration(seleniumConfiguration);
+            eyes.open(webDriver);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }

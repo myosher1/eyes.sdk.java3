@@ -81,7 +81,7 @@ public final class TestRenderingGridMultiThreadService {
         seleniumConfiguration.setAppName("RenderingGridIntegration");
         seleniumConfiguration.addBrowsers(browsersInfo);
         eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
-        eyes.open(webDriver, seleniumConfiguration);
+        eyes.open(webDriver);
         eyes.check(Target.window().withName("test").sendDom(false));
         TestResults close = eyes.close();
         Assert.assertNotNull(close);
