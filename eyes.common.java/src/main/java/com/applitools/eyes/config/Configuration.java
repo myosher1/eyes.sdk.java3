@@ -40,10 +40,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
         this.testName = configuration.getTestName();
         this.viewportSize = configuration.getViewportSize();
         this.sessionType = configuration.getSessionType();
-        defaultMatchSettings.setIgnoreCaret(true);
-        agentId = null;
-        saveNewTests = true;
-        saveFailedTests = false;
+        defaultMatchSettings.setIgnoreCaret(configuration.getDefaultMatchSettings().getIgnoreCaret());
+        saveNewTests = configuration.getSaveNewTests();
+        saveFailedTests = configuration.getSaveFailedTests();
     }
 
     public Configuration() {
