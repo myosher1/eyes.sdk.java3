@@ -73,76 +73,15 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * Open web driver.
      *
      * @param webDriver             the web driver
-     * @param seleniumConfiguration the selenium configuration
      * @return the web driver
      */
-    public WebDriver open(WebDriver webDriver, SeleniumConfiguration seleniumConfiguration) {
-        ArgumentGuard.notNull(seleniumConfiguration, "seleniumConfiguration");
-        seleniumConfiguration.setRenderingConfig(isVisualGridEyes);
-
-        configuration = mergeConfigurations(seleniumConfiguration);
-
+    public WebDriver open(WebDriver webDriver) {
         this.driver = webDriver;
         if (isVisualGridEyes) {
             return visualGridEyes.open(webDriver);
         } else {
             return seleniumEyes.open(webDriver);
         }
-    }
-
-    private SeleniumConfiguration mergeConfigurations(SeleniumConfiguration renderingConfiguration) {
-        if (renderingConfiguration.getTestName() == null) {
-            renderingConfiguration.setTestName(this.configuration.getTestName());
-        }
-        if (renderingConfiguration.getBaselineEnvName() == null) {
-            renderingConfiguration.setBaselineEnvName(this.configuration.getBaselineEnvName());
-        }
-        if (renderingConfiguration.getBatch() == null) {
-            renderingConfiguration.setBatch(this.configuration.getBatch());
-        }
-        if (renderingConfiguration.getBranchName() == null) {
-            renderingConfiguration.setBranchName(this.configuration.getBranchName());
-        }
-        if (renderingConfiguration.getParentBranchName() == null) {
-            renderingConfiguration.setParentBranchName(this.configuration.getParentBranchName());
-        }
-        if (renderingConfiguration.getAgentId() == null) {
-            renderingConfiguration.setAgentId(this.configuration.getAgentId());
-        }
-        if (renderingConfiguration.getAppName() == null) {
-            renderingConfiguration.setAppName(this.configuration.getAppName());
-        }
-        if (renderingConfiguration.getEnvironmentName() == null) {
-            renderingConfiguration.setEnvironmentName(this.configuration.getEnvironmentName());
-        }
-        if (renderingConfiguration.getSaveDiffs() == null) {
-            renderingConfiguration.setSaveDiffs(this.configuration.getSaveDiffs());
-        }
-        if (renderingConfiguration.getSessionType() == null) {
-            renderingConfiguration.setSessionType(this.configuration.getSessionType());
-        }
-        if (renderingConfiguration.getTestName() == null) {
-            renderingConfiguration.setTestName(this.configuration.getTestName());
-        }
-        if (renderingConfiguration.getViewportSize() == null) {
-            renderingConfiguration.setViewportSize(this.configuration.getViewportSize());
-        }
-        if (!renderingConfiguration.isThrowExceptionOn()) {
-            renderingConfiguration.setThrowExceptionOn(this.configuration.isThrowExceptionOn());
-        }
-        if (renderingConfiguration.getBaselineBranchName() == null) {
-            renderingConfiguration.setBaselineBranchName(this.configuration.getBaselineBranchName());
-        }
-        if (!renderingConfiguration.getForceFullPageScreenshot()) {
-            renderingConfiguration.setForceFullPageScreenshot(this.configuration.getForceFullPageScreenshot());
-        }
-        if (!renderingConfiguration.getHideCaret()) {
-            renderingConfiguration.setHideCaret(this.configuration.getHideCaret());
-        }
-        if (!renderingConfiguration.getHideScrollbars()) {
-            renderingConfiguration.setHideScrollbars(this.configuration.getHideScrollbars());
-        }
-        return renderingConfiguration;
     }
 
     /**
@@ -1431,7 +1370,10 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public WebDriver open(WebDriver driver, String appName, String testName) {
         RectangleSize viewportSize = SeleniumEyes.getViewportSize(driver);
-        return open(driver, new SeleniumConfiguration(appName, testName, viewportSize));
+        this.configuration.setAppName(appName);
+        this.configuration.setTestName(testName);
+        this.configuration.setViewportSize(viewportSize);
+        return open(driver);
     }
 
     /**
@@ -1445,7 +1387,10 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public WebDriver open(WebDriver driver, String appName, String testName,
                           RectangleSize viewportSize) {
-        return open(driver, new SeleniumConfiguration(appName, testName, viewportSize));
+        this.configuration.setAppName(appName);
+        this.configuration.setTestName(testName);
+        this.configuration.setViewportSize(viewportSize);
+        return open(driver);
     }
 
     /**
@@ -2288,5 +2233,14 @@ public class Eyes implements ISeleniumConfigurationProvider {
     @Override
     public ISeleniumConfigurationSetter set() {
         return configuration;
+    }
+
+
+    public SeleniumConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    public void setConfiguration(SeleniumConfiguration configuration) {
+        this.configuration = configuration;
     }
 }
