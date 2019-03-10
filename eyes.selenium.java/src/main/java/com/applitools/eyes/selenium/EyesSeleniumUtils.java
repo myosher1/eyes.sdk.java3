@@ -233,10 +233,11 @@ public class EyesSeleniumUtils {
         ArgumentGuard.notNull(executor, "executor");
         ArgumentGuard.notNull(rootElement, "rootElement");
 
-        String script = String.format(
-                "var origOF = arguments[0].style.overflow; " +
-                        "arguments[0].style.overflow = '%s'; " +
-                        "return origOF;", value);
+        String script = String.format("var origOF = arguments[0].style.overflow;" +
+                "arguments[0].style.overflow = '{0}';" +	            "arguments[0].style.overflow = '{0}';" +
+                "return origOF;"+
+                "if ('{0}'.toUpperCase() === 'HIDDEN' && origOF.toUpperCase() !== 'HIDDEN') arguments[0].setAttribute('data-applitools-original-overflow',origOF);" +
+                "return origOF;", value);
 
         try {
             String result = (String) executor.executeScript(script, rootElement);

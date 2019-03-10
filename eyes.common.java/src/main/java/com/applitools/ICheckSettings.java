@@ -156,4 +156,12 @@ public interface ICheckSettings {
      * @return An updated clone of this settings object.
      */
     ICheckSettings withName(String name);
+
+    boolean isUseDom();
+
+    ICheckSettings setUseDom(boolean useDom);
+
+    boolean isEnablePatterns();
+
+    ICheckSettings setEnablePatterns(boolean enablePatterns);
 }

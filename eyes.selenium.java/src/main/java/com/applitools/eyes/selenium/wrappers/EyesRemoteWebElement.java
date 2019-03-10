@@ -2,6 +2,7 @@ package com.applitools.eyes.selenium.wrappers;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.positioning.PositionProvider;
+import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import com.applitools.eyes.selenium.SizeAndBorders;
 import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.utils.ArgumentGuard;
@@ -22,17 +23,17 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     private final RemoteWebElement webElement;
     private Method executeMethod;
 
-    private final String JS_GET_COMPUTED_STYLE_FORMATTED_STR =
-            "var elem = arguments[0]; " +
-                    "var styleProp = '%s'; " +
-                    "if (window.getComputedStyle) { " +
-                    "return window.getComputedStyle(elem, null)" +
-                    ".getPropertyValue(styleProp);" +
-                    "} else if (elem.currentStyle) { " +
-                    "return elem.currentStyle[styleProp];" +
-                    "} else { " +
-                    "return null;" +
-                    "}";
+//    private final String JS_GET_COMPUTED_STYLE_FORMATTED_STR =
+//            "var elem = arguments[0]; " +
+//                    "var styleProp = '%s'; " +
+//                    "if (window.getComputedStyle) { " +
+//                    "return window.getComputedStyle(elem, null)" +
+//                    ".getPropertyValue(styleProp);" +
+//                    "} else if (elem.currentStyle) { " +
+//                    "return elem.currentStyle[styleProp];" +
+//                    "} else { " +
+//                    "return null;" +
+//                    "}";
 
     private final String JS_GET_SCROLL_LEFT =
             "return arguments[0].scrollLeft;";
@@ -160,8 +161,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
      * @return The value of the style property of the element, or {@code null}.
      */
     public String getComputedStyle(String propStyle) {
-        String scriptToExec = String.format
-                (JS_GET_COMPUTED_STYLE_FORMATTED_STR, propStyle);
+        String scriptToExec =  EyesSeleniumUtils.setOverflow(eyesDriver, propStyle, this);
         return (String) eyesDriver.executeScript(scriptToExec, this);
     }
 

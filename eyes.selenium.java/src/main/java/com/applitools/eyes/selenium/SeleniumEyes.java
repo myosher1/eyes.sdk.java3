@@ -433,6 +433,8 @@ public class SeleniumEyes extends EyesBase {
         ScaleProviderFactory scaleProviderFactory = updateScalingParams();
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
 
+        markElementForLayoutRCA();
+
         BufferedImage screenshotImage = algo.getStitchedRegion(
                 Region.EMPTY,
                 bBox, positionProviderHandler.get());
@@ -1757,7 +1759,7 @@ public class SeleniumEyes extends EyesBase {
             Borders borderWidths = sizeAndBorders.getBorders();
             RectangleSize elementSize = sizeAndBorders.getSize();
 
-            if (!displayStyle.equals("inline") &&
+            if (!("inline").equals(displayStyle) &&
                     elementSize.getHeight() <= effectiveViewport.getHeight() &&
                     elementSize.getWidth() <= effectiveViewport.getWidth()) {
                 elementPositionProvider = new ElementPositionProvider(logger, driver, eyesElement);
@@ -2175,6 +2177,7 @@ public class SeleniumEyes extends EyesBase {
             } else {
                 entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, elementPositionProvider);
             }
+            markElementForLayoutRCA();
 
             logger.verbose("Building screenshot object...");
             result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
@@ -2205,7 +2208,8 @@ public class SeleniumEyes extends EyesBase {
                     location.getY() + sizeAndBorders.getBorders().getTop(),
                     sizeAndBorders.getSize().getWidth(),
                     sizeAndBorders.getSize().getHeight());
-            ////////////
+
+            markElementForLayoutRCA();
 
             BufferedImage fullPageImage = algo.getStitchedRegion(region, null, positionProviderHandler.get());
 
@@ -2258,6 +2262,13 @@ public class SeleniumEyes extends EyesBase {
 
         logger.verbose("Done!");
         return result;
+    }
+
+    private void markElementForLayoutRCA() {
+        WebElement scrolledElement = ((ISeleniumPositionProvider) getPositionProvider()).getScrolledElement();
+        if (scrolledElement != null) {
+            jsExecutor.executeScript("var e = arguments[0]; if (e != null) e.setAttribute('data-applitools-scroll','true');", scrolledElement);
+        }
     }
 
     private FullPageCaptureAlgorithm createFullPageCaptureAlgorithm(ScaleProviderFactory scaleProviderFactory) {

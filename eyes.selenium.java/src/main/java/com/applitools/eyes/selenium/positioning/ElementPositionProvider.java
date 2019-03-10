@@ -8,7 +8,7 @@ import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.*;
 
-public class ElementPositionProvider implements PositionProvider {
+public class ElementPositionProvider implements PositionProvider ,ISeleniumPositionProvider{
     private final Logger logger;
     private final EyesRemoteWebElement element;
 
@@ -22,7 +22,9 @@ public class ElementPositionProvider implements PositionProvider {
                 (EyesRemoteWebElement) element : new EyesRemoteWebElement(logger, driver, element);
 
         logger.verbose("creating ElementPositionProvider");
-    }
+        }
+
+
 
     /**
      * @return The scroll position of the current element.
@@ -70,5 +72,14 @@ public class ElementPositionProvider implements PositionProvider {
     public void restoreState(PositionMemento state) {
         ElementPositionMemento s = (ElementPositionMemento) state;
         setPosition(new Location(s.getX(), s.getY()));
+    }
+
+    public EyesRemoteWebElement getElement() {
+        return element;
+    }
+
+    @Override
+    public WebElement getScrolledElement() {
+        return getScrolledElement();
     }
 }

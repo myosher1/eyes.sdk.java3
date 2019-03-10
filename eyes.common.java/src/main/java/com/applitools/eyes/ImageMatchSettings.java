@@ -16,6 +16,7 @@ public class ImageMatchSettings {
     private Region contentRegions[];
     private FloatingMatchSettings floatingMatchSettings[];
     private boolean useDom;
+    public boolean enablePatterns;
 
     public ImageMatchSettings(MatchLevel matchLevel, ExactMatchSettings exact, boolean useDom) {
         this.matchLevel = matchLevel;
@@ -185,5 +186,13 @@ public class ImageMatchSettings {
     public String toString() {
         return String.format("Match level: %s, Exact match settings: %s",
                 matchLevel, exact);
+    }
+
+    public boolean isEnablePatterns() {
+        return enablePatterns;
+    }
+
+    public void setEnablePatterns(boolean enablePatterns) {
+        this.enablePatterns = enablePatterns;
     }
 }
