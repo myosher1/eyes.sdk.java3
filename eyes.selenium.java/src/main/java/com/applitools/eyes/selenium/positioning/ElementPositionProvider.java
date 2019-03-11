@@ -80,6 +80,6 @@ public class ElementPositionProvider implements PositionProvider ,ISeleniumPosit
 
     @Override
     public WebElement getScrolledElement() {
-        return getScrolledElement();
+        return element;
     }
 }

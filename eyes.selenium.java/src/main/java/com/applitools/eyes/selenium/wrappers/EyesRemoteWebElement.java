@@ -23,17 +23,17 @@ public class EyesRemoteWebElement extends RemoteWebElement {
     private final RemoteWebElement webElement;
     private Method executeMethod;
 
-//    private final String JS_GET_COMPUTED_STYLE_FORMATTED_STR =
-//            "var elem = arguments[0]; " +
-//                    "var styleProp = '%s'; " +
-//                    "if (window.getComputedStyle) { " +
-//                    "return window.getComputedStyle(elem, null)" +
-//                    ".getPropertyValue(styleProp);" +
-//                    "} else if (elem.currentStyle) { " +
-//                    "return elem.currentStyle[styleProp];" +
-//                    "} else { " +
-//                    "return null;" +
-//                    "}";
+    private final String JS_GET_COMPUTED_STYLE_FORMATTED_STR =
+            "var elem = arguments[0]; " +
+                    "var styleProp = '%s'; " +
+                    "if (window.getComputedStyle) { " +
+                    "return window.getComputedStyle(elem, null)" +
+                    ".getPropertyValue(styleProp);" +
+                    "} else if (elem.currentStyle) { " +
+                    "return elem.currentStyle[styleProp];" +
+                    "} else { " +
+                    "return null;" +
+                    "}";
 
     private final String JS_GET_SCROLL_LEFT =
             "return arguments[0].scrollLeft;";
@@ -161,7 +161,8 @@ public class EyesRemoteWebElement extends RemoteWebElement {
      * @return The value of the style property of the element, or {@code null}.
      */
     public String getComputedStyle(String propStyle) {
-        String scriptToExec =  EyesSeleniumUtils.setOverflow(eyesDriver, propStyle, this);
+        String scriptToExec = String.format
+                (JS_GET_COMPUTED_STYLE_FORMATTED_STR, propStyle);
         return (String) eyesDriver.executeScript(scriptToExec, this);
     }
 
@@ -271,7 +272,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
      * @param overflow The overflow to set.
      */
     public void setOverflow(String overflow) {
-        eyesDriver.executeScript(String.format(JS_SET_OVERFLOW_FORMATTED_STR, overflow), this);
+        EyesSeleniumUtils.setOverflow(eyesDriver, overflow, this);
     }
 
     @Override

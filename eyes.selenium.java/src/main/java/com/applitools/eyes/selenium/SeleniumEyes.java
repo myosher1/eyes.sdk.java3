@@ -201,6 +201,7 @@ public class SeleniumEyes extends EyesBase {
     public boolean getScrollToRegion() {
         return !(regionVisibilityStrategyHandler.get() instanceof NopRegionVisibilityStrategy);
     }
+
     /**
      * Gets rotation.
      *
@@ -430,14 +431,15 @@ public class SeleniumEyes extends EyesBase {
 
         MatchWindowTask mwt = new MatchWindowTask(logger, serverConnector, runningSession, getConfigGetter().getMatchTimeout(), this);
 
+
         ScaleProviderFactory scaleProviderFactory = updateScalingParams();
         FullPageCaptureAlgorithm algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
-
-        markElementForLayoutRCA();
 
         BufferedImage screenshotImage = algo.getStitchedRegion(
                 Region.EMPTY,
                 bBox, positionProviderHandler.get());
+
+        markElementForLayoutRCA(null);
 
         debugScreenshotsProvider.save(screenshotImage, "original");
         EyesWebDriverScreenshot screenshot = new EyesWebDriverScreenshot(logger, driver, screenshotImage, null, bBox.getNegativeLocation());
@@ -1160,6 +1162,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(int, By, String)}.
      * {@code tag} defaults to {@code null}.
+     *
      * @param frameIndex The index of the frame to switch to. (The same index
      *                   as would be used in a call to
      *                   driver.switchTo().frame()).
@@ -1172,6 +1175,7 @@ public class SeleniumEyes extends EyesBase {
     /**
      * See {@link #checkRegionInFrame(int, By, String)}.
      * {@code tag} defaults to {@code null}.
+     *
      * @param frameIndex    The index of the frame to switch to. (The same index
      *                      as would be used in a call to
      *                      driver.switchTo().frame()).
@@ -2019,7 +2023,6 @@ public class SeleniumEyes extends EyesBase {
     }
 
     /**
-     *
      * @param driver The driver to use for setting the viewport.
      * @param size   The required viewport size.
      */
@@ -2173,11 +2176,13 @@ public class SeleniumEyes extends EyesBase {
             if (elementPositionProvider == null) {
                 WebElement scrollRootElement = driver.findElement(By.tagName("html"));
                 PositionProvider elemPositionProvider = this.getElementPositionProvider(scrollRootElement);
+                markElementForLayoutRCA(elemPositionProvider);
                 entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, elemPositionProvider);
             } else {
+                markElementForLayoutRCA(elementPositionProvider);
                 entireFrameOrElement = algo.getStitchedRegion(regionToCheck, null, elementPositionProvider);
             }
-            markElementForLayoutRCA();
+
 
             logger.verbose("Building screenshot object...");
             result = new EyesWebDriverScreenshot(logger, driver, entireFrameOrElement,
@@ -2209,7 +2214,7 @@ public class SeleniumEyes extends EyesBase {
                     sizeAndBorders.getSize().getWidth(),
                     sizeAndBorders.getSize().getHeight());
 
-            markElementForLayoutRCA();
+            markElementForLayoutRCA(null);
 
             BufferedImage fullPageImage = algo.getStitchedRegion(region, null, positionProviderHandler.get());
 
@@ -2264,10 +2269,15 @@ public class SeleniumEyes extends EyesBase {
         return result;
     }
 
-    private void markElementForLayoutRCA() {
-        WebElement scrolledElement = ((ISeleniumPositionProvider) getPositionProvider()).getScrolledElement();
+    private void markElementForLayoutRCA(PositionProvider elemPositionProvider) {
+        ISeleniumPositionProvider positionProvider = elemPositionProvider != null ? (ISeleniumPositionProvider) elemPositionProvider : ((ISeleniumPositionProvider) getPositionProvider());
+        WebElement scrolledElement = positionProvider.getScrolledElement();
         if (scrolledElement != null) {
-            jsExecutor.executeScript("var e = arguments[0]; if (e != null) e.setAttribute('data-applitools-scroll','true');", scrolledElement);
+            try {
+                jsExecutor.executeScript("var e = arguments[0]; if (e != null) e.setAttribute('data-applitools-scroll','true');", scrolledElement);
+            } catch (Exception e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
         }
     }
 
