@@ -20,7 +20,6 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     private boolean hideCaret = true;
 
     //Rendering Configuration
-    private int concurrentSessions = 3;
     private boolean isThrowExceptionOn = false;
     private Boolean isRenderingConfig = false;
 
@@ -33,7 +32,6 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
         super(configuration);
 
         this.browsersInfo = configuration.browsersInfo;
-        this.concurrentSessions = configuration.concurrentSessions;
         this.isThrowExceptionOn = configuration.isThrowExceptionOn;
         this.testName = configuration.testName;
     }
@@ -45,11 +43,9 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
         ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
         browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, null));
         this.browsersInfo = browsersInfo;
-        this.concurrentSessions = 1;
     }
 
     public SeleniumConfiguration(int concurrentSessions, boolean isThrowExceptionOn, String testName) {
-        this.concurrentSessions = concurrentSessions;
         this.isThrowExceptionOn = isThrowExceptionOn;
         this.testName = testName;
     }
@@ -60,7 +56,6 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
         RectangleSize viewportSize = configuration.getViewportSize();
         browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, configuration.getBaselineEnvName()));
         this.browsersInfo = browsersInfo;
-        this.concurrentSessions = 1;
         this.testName = configuration.getTestName();
     }
 
@@ -71,7 +66,6 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
         ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
         browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, null));
         this.browsersInfo = browsersInfo;
-        this.concurrentSessions = 1;
         this.testName = testName;
         this.viewportSize = viewportSize;
         this.setAppName(appName);
@@ -176,12 +170,6 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
         this.browsersInfo.add(browserInfo);
         return this;
     }
-
-    @Override
-    public int getConcurrentSessions() {
-        return concurrentSessions;
-    }
-
     @Override
     public List<RenderBrowserInfo> getBrowsersInfo() {
         return browsersInfo;

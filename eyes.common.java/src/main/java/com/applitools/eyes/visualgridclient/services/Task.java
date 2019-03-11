@@ -2,6 +2,7 @@ package com.applitools.eyes.visualgridclient.services;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.Logger;
+import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.config.ISeleniumConfigurationProvider;
 import com.applitools.eyes.visualgridclient.model.*;
@@ -82,7 +83,9 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
                 case OPEN:
                     logger.log("Task.run opening task");
                     String userAgent = renderResult.getUserAgent();
+                    RectangleSize deviceSize = renderResult.getDeviceSize();
                     eyesConnector.setUserAgent(userAgent);
+                    eyesConnector.setDeviceSize(deviceSize);
                     eyesConnector.open(configurationProvider);
                     break;
 

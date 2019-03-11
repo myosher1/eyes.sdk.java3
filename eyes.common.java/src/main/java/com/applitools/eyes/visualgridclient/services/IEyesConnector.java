@@ -58,4 +58,7 @@ public interface IEyesConnector {
 
     void setDevice(String device);
 
+    RectangleSize getDeviceSize();
+
+    void setDeviceSize(RectangleSize deviceSize);
 }

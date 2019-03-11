@@ -18,6 +18,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     private RenderBrowserInfo browserInfo;
     private String userAgent;
     private String device;
+    private RectangleSize deviceSize;
     private Configuration config = new SeleniumConfiguration();
 
     public EyesConnector(RenderBrowserInfo browserInfo, RateLimiter rateLimiter) {
@@ -31,7 +32,12 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     public void open(ISeleniumConfigurationProvider config) {
         logger.verbose("opening EyesConnector with viewport size: " + browserInfo.getViewportSize());
         this.config = config.get().cloneConfig();
-        this.config.setViewportSize(browserInfo.getViewportSize());
+        if (device != null) {
+            this.config.setViewportSize(deviceSize);
+        }
+        else{
+            this.config.setViewportSize(browserInfo.getViewportSize());
+        }
         this.config.setBaselineEnvName(browserInfo.getBaselineEnvName());
         openBase();
     }
@@ -202,5 +208,15 @@ class EyesConnector extends EyesBase implements IEyesConnector {
         appEnv.setDeviceInfo(device);
         logger.log("Done!");
         return appEnv;
+    }
+
+    @Override
+    public RectangleSize getDeviceSize() {
+        return deviceSize;
+    }
+
+    @Override
+    public void setDeviceSize(RectangleSize deviceSize) {
+        this.deviceSize = deviceSize;
     }
 }

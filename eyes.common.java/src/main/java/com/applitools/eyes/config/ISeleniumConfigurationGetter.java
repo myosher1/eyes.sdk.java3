@@ -17,8 +17,6 @@ public interface ISeleniumConfigurationGetter extends IConfigurationGetter{
 
     boolean getHideCaret();
 
-    int getConcurrentSessions();
-
     List<RenderBrowserInfo> getBrowsersInfo();
 
     boolean isThrowExceptionOn();
