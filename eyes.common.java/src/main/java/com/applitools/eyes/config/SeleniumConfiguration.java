@@ -133,7 +133,7 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
 
     @Override
     public ISeleniumConfigurationSetter addBrowser(int width, int height, BrowserType browserType, String baselineEnvName) {
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType, baselineEnvName, null);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType, baselineEnvName);
         addBrowser(browserInfo);
         return this;
     }
@@ -160,13 +160,13 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
 
     @Override
     public ISeleniumConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo, String baselineEnvName){
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(0, 0, BrowserType.CHROME, baselineEnvName, emulationInfo);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
         this.browsersInfo.add(browserInfo);
         return this;
     }
     @Override
     public ISeleniumConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo){
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(0, 0, BrowserType.CHROME, null, emulationInfo);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo);
         this.browsersInfo.add(browserInfo);
         return this;
     }

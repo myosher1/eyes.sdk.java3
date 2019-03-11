@@ -7,27 +7,38 @@ public class RenderBrowserInfo {
 
     private RectangleSize viewportSize;
     private SeleniumConfiguration.BrowserType browserType;
-    private String platform = "linux";
+    private final String platform = "linux";
     private EmulationBaseInfo emulationInfo;
-    private String sizeMode = "full-page";
+    private final String sizeMode = "full-page";
     private String baselineEnvName;
 
 
-    public RenderBrowserInfo(int width, int height, SeleniumConfiguration.BrowserType browserType, String baselineEnvName, EmulationBaseInfo emulationInfo) {
-        this.baselineEnvName = baselineEnvName;
-        this.viewportSize = new RectangleSize(width, height);
+    public RenderBrowserInfo(RectangleSize viewportSize, SeleniumConfiguration.BrowserType browserType, String baselineEnvName) {
+        this.viewportSize = viewportSize;
         this.browserType = browserType;
-        this.emulationInfo = emulationInfo;
+        this.baselineEnvName = baselineEnvName;
     }
 
-    public RenderBrowserInfo(EmulationBaseInfo emulationInfo, String sizeMode, String baselineEnvName) {
+    public RenderBrowserInfo(RectangleSize viewportSize, SeleniumConfiguration.BrowserType browserType) {
+        this.viewportSize = viewportSize;
+        this.browserType = browserType;
+    }
+
+    public RenderBrowserInfo(EmulationBaseInfo emulationInfo, String baselineEnvName) {
         this.emulationInfo = emulationInfo;
-        this.sizeMode = sizeMode;
         this.baselineEnvName = baselineEnvName;
+    }
+
+    public RenderBrowserInfo(EmulationBaseInfo emulationInfo) {
+        this.emulationInfo = emulationInfo;
     }
 
     public RenderBrowserInfo(int width, int height, SeleniumConfiguration.BrowserType browserType, String baselineEnvName) {
-        this(width, height, browserType,  baselineEnvName, null);
+        this(new RectangleSize(width, height), browserType, baselineEnvName);
+    }
+
+    public RenderBrowserInfo(int width, int height, SeleniumConfiguration.BrowserType browserType) {
+        this(new RectangleSize(width, height), browserType, null);
     }
 
     public int getWidth() {
@@ -58,10 +69,6 @@ public class RenderBrowserInfo {
 
     public String getPlatform() {
         return platform;
-    }
-
-    public void setPlatform(String platform) {
-        this.platform = platform;
     }
 
     public EmulationBaseInfo getEmulationInfo() {
