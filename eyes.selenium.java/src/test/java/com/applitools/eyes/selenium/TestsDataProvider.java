@@ -64,15 +64,4 @@ public class TestsDataProvider {
         return permutations.toArray(new Object[0][]);
     }
 
-//    public static void main(String[] args) {
-//        Object[][] dpRes = dp();
-//        for (Object[] pers:dpRes) {
-//            for (Object p:pers) {
-//                System.out.print(p);
-//                System.out.print(",");
-//            }
-//            System.out.println();
-//        }
-//        System.out.println();
-//    }
 }

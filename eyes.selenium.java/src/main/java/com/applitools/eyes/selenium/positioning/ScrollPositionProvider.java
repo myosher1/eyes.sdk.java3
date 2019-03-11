@@ -6,7 +6,7 @@ import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.WebElement;
 
-public class ScrollPositionProvider implements PositionProvider {
+public class ScrollPositionProvider implements PositionProvider, ISeleniumPositionProvider {
 
 
     protected final Logger logger;
@@ -93,5 +93,10 @@ public class ScrollPositionProvider implements PositionProvider {
     public void restoreState(PositionMemento state) {
         ScrollPositionMemento s = (ScrollPositionMemento) state;
         setPosition(new Location(s.getX(), s.getY()));
+    }
+
+    @Override
+    public WebElement getScrolledElement() {
+        return this.scrollRootElement;
     }
 }

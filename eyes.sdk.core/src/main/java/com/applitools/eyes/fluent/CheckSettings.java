@@ -24,6 +24,8 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     private List<GetFloatingRegion> floatingRegions = new ArrayList<>();
     private int timeout = -1;
     protected String name;
+    private boolean useDom;
+    private boolean enablePatterns;
 
     protected CheckSettings() { }
 
@@ -425,4 +427,27 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         this.stitchContent = stitchContent;
     }
 
+    @Override
+    public boolean isUseDom() {
+        return useDom;
+    }
+
+    @Override
+    public ICheckSettings setUseDom(boolean useDom) {
+        CheckSettings clone = this.clone();
+        clone.useDom = useDom;
+        return clone;
+    }
+
+    @Override
+    public boolean isEnablePatterns() {
+        return enablePatterns;
+    }
+
+    @Override
+    public ICheckSettings setEnablePatterns(boolean enablePatterns) {
+        CheckSettings clone = this.clone();
+        clone.enablePatterns = enablePatterns;
+        return clone;
+    }
 }

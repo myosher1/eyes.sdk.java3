@@ -7,7 +7,9 @@ import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.util.concurrent.CountDownLatch;
@@ -51,7 +53,8 @@ public final class TestDomCapture {
             }
         });
 
-        eyes.checkWindow("Test DOM diffs");
+        WebElement element = driver.findElement(By.className("video-container"));
+        eyes.checkElement(element, "Test DOM diffs");
 
         latch.await();
         ObjectMapper mapper = new ObjectMapper();
