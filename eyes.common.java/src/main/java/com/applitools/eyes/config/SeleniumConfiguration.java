@@ -8,6 +8,7 @@ import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class SeleniumConfiguration extends Configuration implements ISeleniumConfigurationGetter, ISeleniumConfigurationSetter {
@@ -172,7 +173,12 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     }
     @Override
     public List<RenderBrowserInfo> getBrowsersInfo() {
-        return browsersInfo;
+        if (browsersInfo != null && !browsersInfo.isEmpty()) {
+            return browsersInfo;
+        }
+
+        RenderBrowserInfo renderBrowserInfo = new RenderBrowserInfo(this.viewportSize.getWidth(), this.viewportSize.getHeight(), BrowserType.CHROME, baselineEnvName);
+        return Collections.singletonList(renderBrowserInfo);
     }
 
     @Override
