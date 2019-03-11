@@ -20,6 +20,12 @@ public class RenderBrowserInfo {
         this.emulationInfo = emulationInfo;
     }
 
+    public RenderBrowserInfo(EmulationBaseInfo emulationInfo, String sizeMode, String baselineEnvName) {
+        this.emulationInfo = emulationInfo;
+        this.sizeMode = sizeMode;
+        this.baselineEnvName = baselineEnvName;
+    }
+
     public RenderBrowserInfo(int width, int height, SeleniumConfiguration.BrowserType browserType, String baselineEnvName) {
         this(width, height, browserType,  baselineEnvName, null);
     }

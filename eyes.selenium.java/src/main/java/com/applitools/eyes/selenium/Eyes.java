@@ -164,7 +164,6 @@ public class Eyes implements ISeleniumConfigurationProvider {
         return null;
     }
 
-
     /**
      * If a test is running, aborts it. Otherwise, does nothing.
      */
@@ -313,12 +312,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param batch The batch info to set.
      */
     public void setBatch(BatchInfo batch) {
-
-        if (isVisualGridEyes) {
-            visualGridEyes.setBatch(batch);
-        } else {
-            seleniumEyes.setBatch(batch);
-        }
+        this.configuration.setBatch(batch);
     }
 
     /**
