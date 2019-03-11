@@ -2,6 +2,7 @@ package com.applitools.eyes.selenium.wrappers;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.positioning.PositionProvider;
+import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import com.applitools.eyes.selenium.SizeAndBorders;
 import com.applitools.eyes.triggers.MouseAction;
 import com.applitools.utils.ArgumentGuard;
@@ -271,7 +272,7 @@ public class EyesRemoteWebElement extends RemoteWebElement {
      * @param overflow The overflow to set.
      */
     public void setOverflow(String overflow) {
-        eyesDriver.executeScript(String.format(JS_SET_OVERFLOW_FORMATTED_STR, overflow), this);
+        EyesSeleniumUtils.setOverflow(eyesDriver, overflow, this);
     }
 
     @Override

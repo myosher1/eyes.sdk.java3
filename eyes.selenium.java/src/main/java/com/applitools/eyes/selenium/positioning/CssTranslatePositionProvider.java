@@ -11,7 +11,7 @@ import org.openqa.selenium.WebElement;
  * A {@link PositionProvider} which is based on CSS translates. This is
  * useful when we want to stitch a page which contains fixed position elements.
  */
-public class CssTranslatePositionProvider implements PositionProvider {
+public class CssTranslatePositionProvider implements PositionProvider, ISeleniumPositionProvider{
 
     protected final Logger logger;
     protected final IEyesJsExecutor executor;
@@ -72,5 +72,10 @@ public class CssTranslatePositionProvider implements PositionProvider {
                 String.format(JSSetTransform, ((CssTranslatePositionMemento)state).getTransform()),
                 this.scrollRootElement);
         lastSetPosition = ((CssTranslatePositionMemento)state).getPosition();
+    }
+
+    @Override
+    public WebElement getScrolledElement() {
+        return scrollRootElement;
     }
 }
