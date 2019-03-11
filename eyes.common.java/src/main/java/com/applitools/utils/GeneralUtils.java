@@ -37,10 +37,11 @@ public class GeneralUtils {
     }
 
     /**
+     * Read to end string.
+     *
      * @param inputStream The stream which content we would like to read.
      * @return The entire contents of the input stream as a string.
-     * @throws java.io.IOException If there was a problem reading/writing
-     *                             from/to the streams used during the operation.
+     * @throws IOException the io exception
      */
     @SuppressWarnings("UnusedDeclaration")
     public static String readToEnd(InputStream inputStream) throws IOException {
@@ -83,8 +84,7 @@ public class GeneralUtils {
      * 1123 string.
      *
      * @param calendar The date and time which we would like to format.
-     * @return An RFC 1123 formatted string representing the input date and
-     * time.
+     * @return An RFC 1123 formatted string representing the input date and time.
      */
     public static String toRfc1123(Calendar calendar) {
         ArgumentGuard.notNull(calendar, "calendar");
@@ -104,10 +104,8 @@ public class GeneralUtils {
      * string.
      *
      * @param dateTime An ISO 8601 formatted string.
-     * @return A {@link java.util.Calendar} instance representing the given
-     * date and time.
-     * @throws java.text.ParseException If {@code dateTime} is not in the ISO
-     *                                  8601 format.
+     * @return A {@link java.util.Calendar} instance representing the given date and time.
+     * @throws ParseException the parse exception
      */
     public static Calendar fromISO8601DateTime(String dateTime)
             throws ParseException {
@@ -145,6 +143,8 @@ public class GeneralUtils {
     }
 
     /**
+     * Gets date.
+     *
      * @param format The date format parser.
      * @param date   The date string in a format matching {@code format}.
      * @return The {@link java.util.Date} represented by the input string.
@@ -159,10 +159,11 @@ public class GeneralUtils {
     }
 
     /**
+     * Gets full seconds elapsed time millis.
+     *
      * @param start The start time. (Milliseconds)
      * @param end   The end time. (Milliseconds).
-     * @return The elapsed time between the start and end times, rounded up
-     * to a full second, in milliseconds.
+     * @return The elapsed time between the start and end times, rounded up to a full second, in milliseconds.
      */
     public static long getFullSecondsElapsedTimeMillis(long start, long end) {
         return ((long) Math.ceil((end - start) / 1000.0)) * 1000;
@@ -206,6 +207,12 @@ public class GeneralUtils {
         return sb.toString();
     }
 
+    /**
+     * Log exception stack trace.
+     *
+     * @param logger the logger
+     * @param ex     the ex
+     */
     public static void logExceptionStackTrace(Logger logger, Throwable ex) {
         ByteArrayOutputStream stream = new ByteArrayOutputStream(2048);
         PrintWriter writer = new PrintWriter(stream, true);
@@ -220,6 +227,11 @@ public class GeneralUtils {
         }
     }
 
+    /**
+     * Gets default server url.
+     *
+     * @return the default server url
+     */
     public static URI getDefaultServerUrl() {
         try {
             return new URI("https://eyesapi.applitools.com");
@@ -229,6 +241,8 @@ public class GeneralUtils {
     }
 
     /**
+     * Get gzip byte array output stream byte [ ].
+     *
      * @param domJson JSON as string to be gzipped
      * @return byte[] of the gzipped string
      */
@@ -246,8 +260,11 @@ public class GeneralUtils {
     }
 
     /**
+     * Get un gzip byte array output stream byte [ ].
+     *
      * @param gZippedString byte array gzipped encoded
      * @return byte[] of the ungzipped byte array
+     * @throws IOException the io exception
      */
     public static byte[] getUnGzipByteArrayOutputStream(byte[] gZippedString) throws IOException {
         java.io.ByteArrayInputStream bytein = new java.io.ByteArrayInputStream(gZippedString);
@@ -266,6 +283,14 @@ public class GeneralUtils {
     }
 
 
+    /**
+     * Parse json to object t.
+     *
+     * @param <T>                the type parameter
+     * @param executeScripString the execute scrip string
+     * @return the t
+     * @throws IOException the io exception
+     */
     public static <T> T parseJsonToObject(String executeScripString) throws IOException {
         T executeScriptMap;
         ObjectMapper mapper = new ObjectMapper();
@@ -274,11 +299,23 @@ public class GeneralUtils {
         return executeScriptMap;
     }
 
+    /**
+     * Gets sha 256 hash.
+     *
+     * @param content the content
+     * @return the sha 256 hash
+     */
     public static String getSha256hash(Byte[] content) {
         byte[] bytes = ArrayUtils.toPrimitive(content);
         return getSha256hash(bytes);
     }
 
+    /**
+     * Gets sha 256 hash.
+     *
+     * @param content the content
+     * @return the sha 256 hash
+     */
     public static String getSha256hash(byte[] content) {
         byte[] buffer = new byte[8192];
         int count;

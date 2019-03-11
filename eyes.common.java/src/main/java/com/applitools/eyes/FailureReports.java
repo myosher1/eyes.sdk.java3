@@ -10,8 +10,7 @@ public enum FailureReports {
     IMMEDIATE,
 
     /**
-     * Failures are reported when tests are completed (i.e., when
-     * {@link EyesBase#close()} is called).
+     * Failures are reported when tests are completed 
      */
     ON_CLOSE,
 }

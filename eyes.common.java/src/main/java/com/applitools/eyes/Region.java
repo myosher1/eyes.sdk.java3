@@ -24,8 +24,14 @@ public class Region {
     @JsonProperty("coordinatesType")
     private CoordinatesType coordinatesType;
 
+    /**
+     * The constant EMPTY.
+     */
     public static final Region EMPTY = new Region(0, 0, 0, 0, CoordinatesType.SCREENSHOT_AS_IS);
 
+    /**
+     * Make empty.
+     */
     protected void makeEmpty() {
         left = EMPTY.getLeft();
         top = EMPTY.getTop();
@@ -34,6 +40,14 @@ public class Region {
         this.coordinatesType = EMPTY.getCoordinatesType();
     }
 
+    /**
+     * Instantiates a new Region.
+     *
+     * @param left   the left
+     * @param top    the top
+     * @param width  the width
+     * @param height the height
+     */
     @JsonCreator()
     public Region(@JsonProperty("left") int left,
                   @JsonProperty("top") int top,
@@ -42,6 +56,15 @@ public class Region {
         this(left, top, width, height, CoordinatesType.SCREENSHOT_AS_IS);
     }
 
+    /**
+     * Instantiates a new Region.
+     *
+     * @param left            the left
+     * @param top             the top
+     * @param width           the width
+     * @param height          the height
+     * @param coordinatesType the coordinates type
+     */
     public Region(int left, int top, int width, int height, CoordinatesType coordinatesType) {
         ArgumentGuard.greaterThanOrEqualToZero(width, "width");
         ArgumentGuard.greaterThanOrEqualToZero(height, "height");
@@ -54,6 +77,8 @@ public class Region {
     }
 
     /**
+     * Is empty boolean.
+     *
      * @return true if the region is empty, false otherwise.
      */
     public boolean isEmpty() {
@@ -64,6 +89,8 @@ public class Region {
     }
 
     /**
+     * Is size empty boolean.
+     *
      * @return true if the region's size is 0, false otherwise.
      */
     public boolean isSizeEmpty() {
@@ -92,10 +119,23 @@ public class Region {
         return (left + top + width + height);
     }
 
+    /**
+     * Instantiates a new Region.
+     *
+     * @param location the location
+     * @param size     the size
+     */
     public Region(Location location, RectangleSize size) {
         this(location, size, CoordinatesType.SCREENSHOT_AS_IS);
     }
 
+    /**
+     * Instantiates a new Region.
+     *
+     * @param location        the location
+     * @param size            the size
+     * @param coordinatesType the coordinates type
+     */
     public Region(Location location, RectangleSize size, CoordinatesType coordinatesType) {
         ArgumentGuard.notNull(location, "location");
         ArgumentGuard.notNull(size, "size");
@@ -107,6 +147,11 @@ public class Region {
         this.coordinatesType = coordinatesType;
     }
 
+    /**
+     * Instantiates a new Region.
+     *
+     * @param other the other
+     */
     public Region(Region other) {
         ArgumentGuard.notNull(other, "other");
 
@@ -118,6 +163,8 @@ public class Region {
     }
 
     /**
+     * Gets location.
+     *
      * @return The (left, top) position of the current region.
      */
     public Location getLocation() {
@@ -125,6 +172,8 @@ public class Region {
     }
 
     /**
+     * Gets negative location.
+     *
      * @return The (-left, -top) position of the current region.
      */
     public Location getNegativeLocation() {
@@ -133,6 +182,7 @@ public class Region {
 
     /**
      * Get an offset region.
+     *
      * @param dx The X axis offset.
      * @param dy The Y axis offset.
      * @return A region with an offset location.
@@ -144,6 +194,7 @@ public class Region {
     /**
      * Get a region which is a scaled version of the current region.
      * IMPORTANT: This also scales the LOCATION(!!) of the region (not just its size).
+     *
      * @param scaleRatio The ratio by which to scale the region.
      * @return A new region which is a scaled version of the current region.
      */
@@ -152,6 +203,8 @@ public class Region {
     }
 
     /**
+     * Gets size.
+     *
      * @return The size of the region.
      */
     public RectangleSize getSize() {
@@ -159,17 +212,26 @@ public class Region {
     }
 
     /**
+     * Gets coordinates type.
+     *
      * @return The region's coordinate type.
      */
     public CoordinatesType getCoordinatesType() {
         return this.coordinatesType;
     }
 
+    /**
+     * Sets coordinates type.
+     *
+     * @param value the value
+     */
     public void setCoordinatesType(CoordinatesType value) {
         this.coordinatesType = value;
     }
 
     /**
+     * Sets size.
+     *
      * @param size The updated size of the region.
      */
     public void setSize(RectangleSize size) {
@@ -179,6 +241,7 @@ public class Region {
 
     /**
      * Set the (top,left) position of the current region
+     *
      * @param location The (top,left) position to set.
      */
     public void setLocation(Location location) {
@@ -305,15 +368,11 @@ public class Region {
 
     /**
      * Returns a list of sub-regions which compose the current region.
+     *
      * @param subRegionSize The default sub-region size to use.
-     * @param isFixedSize   If {@code false}, then sub-regions might have a
-     *                      size which is smaller then {@code subRegionSize}
-     *                      (thus there will be no overlap of regions).
-     *                      Otherwise, all sub-regions will have the same
-     *                      size, but sub-regions might overlap.
+     * @param isFixedSize   If {@code false}, then sub-regions might have a                      size which is smaller then {@code subRegionSize}                      (thus there will be no overlap of regions).                      Otherwise, all sub-regions will have the same                      size, but sub-regions might overlap.
      * @return The sub-regions composing the current region. If {@code
-     * subRegionSize} is equal or greater than the current region,
-     * only a single region is returned.
+     * subRegionSize} is equal or greater than the current region, only a single region is returned.
      */
     public Iterable<Region> getSubRegions(RectangleSize subRegionSize,
                                           boolean isFixedSize) {
@@ -325,9 +384,11 @@ public class Region {
     }
 
     /**
-     * @see #getSubRegions(RectangleSize, boolean) .
+     * Gets sub regions.
      *
-     * {@code isFixedSize} defaults to {@code false}.
+     * @param subRegionSize the sub region size
+     * @return the sub regions
+     * @see #getSubRegions(RectangleSize, boolean) #getSubRegions(RectangleSize, boolean). {@code isFixedSize} defaults to {@code false}.
      */
     public Iterable<Region> getSubRegions(RectangleSize subRegionSize) {
         return getSubRegions(subRegionSize, false);
@@ -335,10 +396,9 @@ public class Region {
 
     /**
      * Check if a region is contained within the current region.
-     * @param other The region to check if it is contained within the current
-     *              region.
-     * @return True if {@code other} is contained within the current region,
-     * false otherwise.
+     *
+     * @param other The region to check if it is contained within the current              region.
+     * @return True if {@code other} is contained within the current region, false otherwise.
      */
     @SuppressWarnings("UnusedDeclaration")
     public boolean contains(Region other) {
@@ -355,9 +415,9 @@ public class Region {
     /**
      * Check if a specified location is contained within this region.
      * <p>
+     *
      * @param location The location to test.
-     * @return True if the location is contained within this region,
-     * false otherwise.
+     * @return True if the location is contained within this region, false otherwise.
      */
     public boolean contains(Location location) {
         return location.getX() >= left
@@ -368,6 +428,7 @@ public class Region {
 
     /**
      * Check if a region is intersected with the current region.
+     *
      * @param other The region to check intersection with.
      * @return True if the regions are intersected, false otherwise.
      */
@@ -389,6 +450,7 @@ public class Region {
 
     /**
      * Replaces this region with the intersection of itself and {@code other}
+     *
      * @param other The region with which to intersect.
      */
     public void intersect(Region other) {
@@ -423,39 +485,84 @@ public class Region {
         height = intersectionHeight;
     }
 
+    /**
+     * Gets left.
+     *
+     * @return the left
+     */
     public int getLeft() {
         return left;
     }
 
+    /**
+     * Gets top.
+     *
+     * @return the top
+     */
     public int getTop() {
         return top;
     }
 
+    /**
+     * Gets width.
+     *
+     * @return the width
+     */
     public int getWidth() {
         return width;
     }
 
+    /**
+     * Gets height.
+     *
+     * @return the height
+     */
     public int getHeight() {
         return height;
     }
 
 
+    /**
+     * Sets left.
+     *
+     * @param value the value
+     */
     public void setLeft(int value) {
         left = value;
     }
 
+    /**
+     * Sets top.
+     *
+     * @param value the value
+     */
     public void setTop(int value) {
         top = value;
     }
 
+    /**
+     * Sets width.
+     *
+     * @param value the value
+     */
     public void setWidth(int value) {
         width = value;
     }
 
+    /**
+     * Sets height.
+     *
+     * @param value the value
+     */
     public void setHeight(int value) {
         height = value;
     }
 
+    /**
+     * Gets middle offset.
+     *
+     * @return the middle offset
+     */
     public Location getMiddleOffset() {
         int middleX = width / 2;
         int middleY = height / 2;
@@ -463,6 +570,12 @@ public class Region {
         return new Location(middleX, middleY);
     }
 
+    /**
+     * Expand to contain region.
+     *
+     * @param region the region
+     * @return the region
+     */
     public Region expandToContain(Region region) {
         int left = Math.min(this.left, region.left);
         int top = Math.min(this.top, region.top);
