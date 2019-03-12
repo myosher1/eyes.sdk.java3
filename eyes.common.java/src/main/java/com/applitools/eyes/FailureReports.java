@@ -10,7 +10,7 @@ public enum FailureReports {
     IMMEDIATE,
 
     /**
-     * Failures are reported when tests are completed 
+     * Failures are reported when tests are completed
      */
     ON_CLOSE,
 }

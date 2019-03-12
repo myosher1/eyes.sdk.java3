@@ -42,11 +42,17 @@ public class RenderBrowserInfo {
     }
 
     public int getWidth() {
-        return viewportSize.getWidth();
+        if (viewportSize != null) {
+            return viewportSize.getWidth();
+        }
+        return 0;
     }
 
     public int getHeight() {
-        return viewportSize.getHeight();
+        if (viewportSize != null) {
+            return viewportSize.getHeight();
+        }
+        return 0;
     }
 
     public RectangleSize getViewportSize() {
@@ -54,13 +60,15 @@ public class RenderBrowserInfo {
     }
 
     public String getBrowserType() {
-        switch (this.browserType) {
-            case CHROME:
-                return "chrome";
-            case FIREFOX:
-                return "firefox";
+        if (browserType != null) {
+            switch (this.browserType) {
+                case CHROME:
+                    return "chrome";
+                case FIREFOX:
+                    return "firefox";
+            }
         }
-        return "";
+        return "chrome";
     }
 
     public void setBrowserType(SeleniumConfiguration.BrowserType browserType) {
