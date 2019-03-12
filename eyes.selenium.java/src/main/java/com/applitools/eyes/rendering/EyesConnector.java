@@ -99,7 +99,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
     @Override
     protected String getBaseAgentId() {
-        return "eyes.selenium.visualgrid.java/3.148.1";
+        return "eyes.selenium.visualgrid.java/3.150.0";
     }
 
     @Override
