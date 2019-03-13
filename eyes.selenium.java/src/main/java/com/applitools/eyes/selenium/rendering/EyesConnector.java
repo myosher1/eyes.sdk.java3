@@ -34,9 +34,14 @@ class EyesConnector extends EyesBase implements IEyesConnector {
         this.config = config.get().cloneConfig();
         if (device != null) {
             this.config.setViewportSize(deviceSize);
-        }
-        else{
+        } else if (browserInfo.getViewportSize() != null) {
             this.config.setViewportSize(browserInfo.getViewportSize());
+        } else {
+            //this means it's a emulationInfo
+            if (browserInfo.getEmulationInfo() instanceof EmulationDevice) {
+                EmulationDevice emulationDevice = (EmulationDevice) browserInfo.getEmulationInfo();
+                this.config.setViewportSize(new RectangleSize(emulationDevice.getWidth(), emulationDevice.getHeight()));
+            }
         }
         this.config.setBaselineEnvName(browserInfo.getBaselineEnvName());
         openBase();

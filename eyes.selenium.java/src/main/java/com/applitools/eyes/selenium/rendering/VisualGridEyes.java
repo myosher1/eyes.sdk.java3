@@ -117,7 +117,6 @@ public class VisualGridEyes implements IRenderingEyes {
         if (getIsDisabled()) return webDriver;
         logger.verbose("enter");
 
-
         ArgumentGuard.notNull(webDriver, "webDriver");
         initDriver(webDriver);
 

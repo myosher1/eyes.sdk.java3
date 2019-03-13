@@ -128,7 +128,7 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
 
     @Override
     public ISeleniumConfigurationSetter addBrowser(RenderBrowserInfo browserInfo) {
-        browsersInfo.add(browserInfo);
+        addBrowserInfo(browserInfo);
         return this;
     }
 
@@ -148,27 +148,30 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     public ISeleniumConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice, String baselineEnvName){
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationDevice.getWidth(), emulationDevice.getWidth(),
                 BrowserType.CHROME, baselineEnvName);
-        this.browsersInfo.add(browserInfo);
+        addBrowserInfo(browserInfo);
         return this;
     }
     @Override
     public ISeleniumConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice){
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationDevice.getWidth(), emulationDevice.getWidth(),
-                BrowserType.CHROME, null);
-        this.browsersInfo.add(browserInfo);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationDevice);
+        addBrowserInfo(browserInfo);
         return this;
+    }
+
+    private void addBrowserInfo(RenderBrowserInfo browserInfo) {
+        this.browsersInfo.add(browserInfo);
     }
 
     @Override
     public ISeleniumConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo, String baselineEnvName){
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
-        this.browsersInfo.add(browserInfo);
+        addBrowserInfo(browserInfo);
         return this;
     }
     @Override
     public ISeleniumConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo){
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo);
-        this.browsersInfo.add(browserInfo);
+        addBrowserInfo(browserInfo);
         return this;
     }
     @Override

@@ -770,6 +770,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private void pollRenderingStatus(Map<RunningRender, RenderRequest> runningRenders) {
         logger.verbose("enter");
         List<String> ids = getRenderIds(runningRenders.keySet());
+        logger.verbose("render ids : "+ids);
         int numOfIterations = 0;
 
         boolean isMaxIterationNotReached = false;
