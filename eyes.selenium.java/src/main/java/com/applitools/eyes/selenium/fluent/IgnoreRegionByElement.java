@@ -2,14 +2,17 @@ package com.applitools.eyes.selenium.fluent;
 
 import com.applitools.eyes.*;
 import com.applitools.eyes.fluent.GetRegion;
+import com.applitools.eyes.selenium.rendering.IGetSeleniumRegion;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class IgnoreRegionByElement implements GetRegion {
+public class IgnoreRegionByElement implements GetRegion, IGetSeleniumRegion {
     private WebElement element;
 
     public IgnoreRegionByElement(WebElement element) {
@@ -35,5 +38,10 @@ public class IgnoreRegionByElement implements GetRegion {
                 CoordinatesType.SCREENSHOT_AS_IS));
 
         return value;
+    }
+
+    @Override
+    public List<WebElement> getElements(WebDriver webDriver) {
+        return Arrays.asList(element);
     }
 }

@@ -6,6 +6,7 @@ import com.applitools.eyes.Logger;
 import com.applitools.eyes.config.ISeleniumConfigurationProvider;
 import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualgridclient.model.TestResultContainer;
+import com.applitools.eyes.visualgridclient.model.VisualGridSelector;
 
 import java.util.*;
 import java.util.concurrent.FutureTask;
@@ -22,6 +23,7 @@ public class RunningTest {
     private ISeleniumConfigurationProvider configurationProvider;
     private HashMap<Task, FutureTask<TestResultContainer>> taskToFutureMapping = new HashMap<>();
     private Logger logger;
+    private List<VisualGridSelector[]> regionSelectors;
 
     public interface RunningTestListener {
 
@@ -74,6 +76,7 @@ public class RunningTest {
         this.configurationProvider = configuration;
         this.listener = listener;
         this.logger = logger;
+        this.regionSelectors = regionSelectors;
     }
 
     public boolean isTestOpen() {
@@ -131,7 +134,7 @@ public class RunningTest {
 
     public Task open() {
         logger.verbose("adding Open task...");
-        Task task = new Task(configurationProvider, null, eyes, Task.TaskType.OPEN, taskListener, null, this);
+        Task task = new Task(configurationProvider, null, eyes, Task.TaskType.OPEN, taskListener, null, this, regionSelectors);
         FutureTask<TestResultContainer> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         logger.verbose("locking taskList");
@@ -154,7 +157,7 @@ public class RunningTest {
         }
 
         logger.verbose("adding close task...");
-        Task task = new Task(configurationProvider, null, eyes, Task.TaskType.CLOSE, taskListener, null, this);
+        Task task = new Task(configurationProvider, null, eyes, Task.TaskType.CLOSE, taskListener, null, this, regionSelectors);
         FutureTask<TestResultContainer> futureTask = new FutureTask<>(task);
         this.taskToFutureMapping.put(task, futureTask);
         logger.verbose("locking taskList");
@@ -167,9 +170,9 @@ public class RunningTest {
         return this.taskToFutureMapping.get(task);
     }
 
-    public Task check(ICheckSettings checkSettings) {
+    public Task check(ICheckSettings checkSettings, List<VisualGridSelector[]> regionSelectors) {
         logger.verbose("adding check task...");
-        Task task = new Task(configurationProvider, null, eyes, Task.TaskType.CHECK, taskListener, checkSettings, this);
+        Task task = new Task(configurationProvider, null, eyes, Task.TaskType.CHECK, taskListener, checkSettings, this, regionSelectors);
         logger.verbose("locking taskList");
         synchronized (taskList) {
             this.taskList.add(task);

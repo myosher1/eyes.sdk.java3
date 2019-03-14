@@ -141,7 +141,7 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
 
     @Override
     public ISeleniumConfigurationSetter addBrowser(int width, int height, BrowserType browserType) {
-        return addBrowser(width, height, browserType, null);
+        return addBrowser(width, height, browserType, baselineEnvName);
     }
 
     @Override
@@ -153,7 +153,7 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     }
     @Override
     public ISeleniumConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice){
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationDevice);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationDevice, baselineEnvName);
         addBrowserInfo(browserInfo);
         return this;
     }
@@ -170,7 +170,7 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     }
     @Override
     public ISeleniumConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo){
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
         addBrowserInfo(browserInfo);
         return this;
     }

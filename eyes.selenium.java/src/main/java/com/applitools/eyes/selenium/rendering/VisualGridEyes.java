@@ -6,19 +6,21 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.config.ISeleniumConfigurationGetter;
 import com.applitools.eyes.config.ISeleniumConfigurationProvider;
 import com.applitools.eyes.config.ISeleniumConfigurationSetter;
-import com.applitools.eyes.visualgridclient.model.IDebugResourceWriter;
-import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
-import com.applitools.eyes.visualgridclient.model.RenderingInfo;
-import com.applitools.eyes.visualgridclient.model.TestResultContainer;
+import com.applitools.eyes.fluent.CheckSettings;
+import com.applitools.eyes.fluent.GetFloatingRegion;
+import com.applitools.eyes.fluent.GetRegion;
+import com.applitools.eyes.visualgridclient.model.*;
 import com.applitools.eyes.visualgridclient.services.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -42,6 +44,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
     private String PROCESS_RESOURCES;
     private JavascriptExecutor jsExecutor;
+    private WebDriver webDriver;
     private RenderingInfo renderingInfo;
     private IEyesConnector VGEyesConnector;
     private IDebugResourceWriter debugResourceWriter;
@@ -52,6 +55,26 @@ public class VisualGridEyes implements IRenderingEyes {
     private boolean isDisabled;
     private IServerConnector serverConnector = null;
     private ISeleniumConfigurationProvider configProvider;
+
+    private static final String GET_ELEMENT_XPATH_JS =
+            "var el = arguments[0];" +
+                    "var xpath = '';" +
+                    "do {" +
+                    " var parent = el.parentElement;" +
+                    " var index = 1;" +
+                    " if (parent !== null) {" +
+                    "  var children = parent.children;" +
+                    "  for (var childIdx in children) {" +
+                    "    var child = children[childIdx];" +
+                    "    if (child === el) break;" +
+                    "    if (child.tagName === el.tagName) index++;" +
+                    "  }" +
+                    "}" +
+                    "xpath = '/' + el.tagName + '[' + index + ']' + xpath;" +
+                    " el = parent;" +
+                    "} while (el !== null);" +
+                    "return '/' + xpath;";
+
 
     {
         try {
@@ -67,6 +90,7 @@ public class VisualGridEyes implements IRenderingEyes {
         this.renderingGridManager = renderingGridManager;
         this.logger = renderingGridManager.getLogger();
     }
+
     private RunningTest.RunningTestListener testListener = new RunningTest.RunningTestListener() {
         @Override
         public void onTaskComplete(Task task, RunningTest test) {
@@ -134,6 +158,7 @@ public class VisualGridEyes implements IRenderingEyes {
         logger.verbose("done");
         return webDriver;
     }
+
     private IEyesConnector createVGEyesConnector(RenderBrowserInfo browserInfo) {
         logger.verbose("creating VisualGridEyes server connector");
         EyesConnector VGEyesConnector = new EyesConnector(browserInfo, renderingGridManager.getRateLimiter());
@@ -172,6 +197,7 @@ public class VisualGridEyes implements IRenderingEyes {
     }
 
     private void initDriver(WebDriver webDriver) {
+        this.webDriver = webDriver;
         if (webDriver instanceof JavascriptExecutor) {
             this.jsExecutor = (JavascriptExecutor) webDriver;
         }
@@ -369,6 +395,7 @@ public class VisualGridEyes implements IRenderingEyes {
         List<Task> taskList = new ArrayList<>();
 
         ICheckSettingsInternal settingsInternal = (ICheckSettingsInternal) checkSettings;
+
         String sizeMode = settingsInternal.getSizeMode();
 
         //First check config
@@ -385,15 +412,19 @@ public class VisualGridEyes implements IRenderingEyes {
 
         logger.verbose("Dom extracted  (" + checkSettings.toString() + ")");
 
+        List<VisualGridSelector[]> regionsXPaths = getRegionsXPaths(checkSettings);
+
+        logger.verbose("regionXPaths : "+regionsXPaths);
+
         for (final RunningTest test : testList) {
-            Task checkTask = test.check(checkSettings);
+            Task checkTask = test.check(checkSettings, regionsXPaths);
             taskList.add(checkTask);
         }
 
         logger.verbose("added check tasks  (" + checkSettings.toString() + ")");
 
         this.renderingGridManager.check(checkSettings, debugResourceWriter, scriptResult,
-                this.VGEyesConnector, taskList, openTasks,
+                this.VGEyesConnector, taskList, openTasks, checkSettings,
                 new VisualGridRunner.RenderListener() {
                     @Override
                     public void onRenderSuccess() {
@@ -404,7 +435,7 @@ public class VisualGridEyes implements IRenderingEyes {
                     public void onRenderFailed(Exception e) {
                         GeneralUtils.logExceptionStackTrace(logger, e);
                     }
-                });
+                }, regionsXPaths);
 
         logger.verbose("created renderTask  (" + checkSettings.toString() + ")");
     }
@@ -477,6 +508,7 @@ public class VisualGridEyes implements IRenderingEyes {
     /**
      * Sets the batch in which context future tests will run or {@code null}
      * if tests are to run standalone.
+     *
      * @param batch The batch info to set.
      */
     public void setBatch(BatchInfo batch) {
@@ -489,4 +521,54 @@ public class VisualGridEyes implements IRenderingEyes {
 
         this.getConfigSetter().setBatch(batch);
     }
+
+    private List<VisualGridSelector[]> getRegionsXPaths(ICheckSettings checkSettings) {
+        List<VisualGridSelector[]> result = new ArrayList<>();
+        ICheckSettingsInternal csInternal = (ICheckSettingsInternal) checkSettings;
+        List<WebElementRegion>[] elementLists = collectSeleniumRegions(csInternal);
+        for (List<WebElementRegion> elementList : elementLists) {
+            List<VisualGridSelector> xpaths = new ArrayList<>();
+            for (WebElementRegion webElementRegion : elementList) {
+                String xpath = (String) jsExecutor.executeScript(GET_ELEMENT_XPATH_JS, webElementRegion.getElement());
+                xpaths.add(new VisualGridSelector(xpath, webElementRegion.getRegion()));
+            }
+            result.add(xpaths.toArray(new VisualGridSelector[0]));
+        }
+
+        return result;
+    }
+
+    private List<WebElementRegion>[] collectSeleniumRegions(ICheckSettingsInternal csInternal) {
+        CheckSettings settings = (CheckSettings) csInternal;
+        GetRegion[] ignoreRegions = settings.getIgnoreRegions();
+        GetRegion[] layoutRegions = settings.getLayoutRegions();
+        GetRegion[] strictRegions = settings.getStrictRegions();
+        GetRegion[] contentRegions = settings.getContentRegions();
+        GetFloatingRegion[] floatingRegions = settings.getFloatingRegions();
+
+        List<WebElementRegion> ignoreElements = getElementsFromRegions(Arrays.asList(ignoreRegions));
+        List<WebElementRegion> layoutElements = getElementsFromRegions(Arrays.asList(layoutRegions));
+        List<WebElementRegion> strictElements = getElementsFromRegions(Arrays.asList(strictRegions));
+        List<WebElementRegion> contentElements = getElementsFromRegions(Arrays.asList(contentRegions));
+        List<WebElementRegion> floatingElements = getElementsFromRegions(Arrays.asList(floatingRegions));
+
+        List<WebElementRegion>[] lists = new List[]{ignoreElements, layoutElements, strictElements, contentElements, floatingElements};
+        return lists;
+    }
+
+    private List<WebElementRegion> getElementsFromRegions(List regionsProvider) {
+        List<WebElementRegion> elements = new ArrayList<>();
+        for (Object getRegion : regionsProvider) {
+            if (getRegion instanceof IGetSeleniumRegion)
+            {
+                IGetSeleniumRegion getSeleniumRegion = (IGetSeleniumRegion) getRegion;
+                List<WebElement> webElements = getSeleniumRegion.getElements(webDriver);
+                for (WebElement webElement : webElements) {
+                    elements.add(new WebElementRegion(webElement, getRegion));
+                }
+            }
+        }
+        return elements;
+    }
+
 }

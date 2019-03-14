@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class  RenderRequest {
@@ -40,12 +42,12 @@ public class  RenderRequest {
     private Object scriptHooks;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private String[] selectorsToFindRegionsFor;
+    private List<VisualGridSelector> selectorsToFindRegionsFor;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private boolean sendDom;
 
-    public RenderRequest(String webHook, String url, RGridDom dom, Map<String, RGridResource> resources, RenderInfo renderInfo, String platform, String browserName, Object scriptHooks, String[] selectorsToFindRegionsFor, boolean sendDom, Task task) {
+    public RenderRequest(String webHook, String url, RGridDom dom, Map<String, RGridResource> resources, RenderInfo renderInfo, String platform, String browserName, Object scriptHooks, List<VisualGridSelector> selectorsToFindRegionsFor, boolean sendDom, Task task) {
         this.webhook = webHook;
         this.url = url;
         this.dom = dom;
@@ -116,11 +118,11 @@ public class  RenderRequest {
         this.scriptHooks = scriptHooks;
     }
 
-    public String[] getSelectorsToFindRegionsFor() {
+    public List<VisualGridSelector> getSelectorsToFindRegionsFor() {
         return selectorsToFindRegionsFor;
     }
 
-    public void setSelectorsToFindRegionsFor(String[] selectorsToFindRegionsFor) {
+    public void setSelectorsToFindRegionsFor(List<VisualGridSelector> selectorsToFindRegionsFor) {
         this.selectorsToFindRegionsFor = selectorsToFindRegionsFor;
     }
 

@@ -3,15 +3,13 @@ package com.applitools.eyes.selenium.fluent;
 import com.applitools.eyes.*;
 import com.applitools.eyes.fluent.GetRegion;
 import com.applitools.eyes.selenium.SeleniumEyes;
-import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
-import org.openqa.selenium.Point;
-import org.openqa.selenium.WebElement;
+import com.applitools.eyes.selenium.rendering.IGetSeleniumRegion;
+import org.openqa.selenium.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class IgnoreRegionBySelector implements GetRegion {
+public class IgnoreRegionBySelector implements GetRegion , IGetSeleniumRegion {
     private By selector;
 
     public IgnoreRegionBySelector(By selector) {
@@ -40,5 +38,10 @@ public class IgnoreRegionBySelector implements GetRegion {
                     CoordinatesType.SCREENSHOT_AS_IS));
         }
         return values;
+    }
+
+    @Override
+    public List<WebElement> getElements(WebDriver webDriver) {
+        return webDriver.findElements(selector);
     }
 }

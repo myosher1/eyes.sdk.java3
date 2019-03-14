@@ -3,6 +3,7 @@ package com.applitools.eyes.visualgridclient.services;
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.Region;
 import com.applitools.eyes.TestResults;
 import com.applitools.eyes.config.ISeleniumConfigurationProvider;
 import com.applitools.eyes.visualgridclient.model.*;
@@ -36,6 +37,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
     private RenderingTask renderingTask = null;
 
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
+    private final List<VisualGridSelector[]> regionSelectors;
 
     interface TaskListener {
 
@@ -48,11 +50,12 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
     }
 
     public Task(ISeleniumConfigurationProvider seleniumConfigurationProvider, TestResults testResults, IEyesConnector eyesConnector, TaskType type, TaskListener runningTestListener,
-                ICheckSettings checkSettings, RunningTest runningTest) {
+                ICheckSettings checkSettings, RunningTest runningTest, List<VisualGridSelector[]> regionSelectors) {
         this.configurationProvider = seleniumConfigurationProvider;
         this.testResults = testResults;
         this.eyesConnector = eyesConnector;
         this.type = type;
+        this.regionSelectors = regionSelectors;
         this.listeners.add(runningTestListener);
         this.logger = runningTest.getLogger();
         this.checkSettings = checkSettings;
@@ -94,13 +97,13 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
                     try {
                         String imageLocation = renderResult.getImageLocation();
                         String domLocation = renderResult.getDomLocation();
+                        List<Region> regions = renderResult.getSelectorRegions();
                         if (imageLocation == null) {
                             logger.verbose("CHECKING IMAGE WITH NULL LOCATION - ");
                             logger.verbose(renderResult.toString());
                         }
-                        eyesConnector.matchWindow(imageLocation, domLocation, checkSettings);
+                        eyesConnector.matchWindow(imageLocation, domLocation, checkSettings, regions, this.regionSelectors);
                     } catch (Exception e) {
-
                         GeneralUtils.logExceptionStackTrace(logger,e);
                     }
                     break;

@@ -25,7 +25,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     private int timeout = -1;
     protected String name;
     private boolean useDom;
-    private boolean enablePatterns;
+    protected boolean enablePatterns;
 
     protected CheckSettings() { }
 

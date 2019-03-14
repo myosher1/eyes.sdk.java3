@@ -597,4 +597,17 @@ public class Region {
     public String toString() {
         return "(" + left + ", " + top + ") " + width + "x" + height + ", " + coordinatesType;
     }
+
+    public int getArea(){
+        return this.getWidth() * this.getHeight();
+    }
+
+    @JsonProperty("x")
+    public void setX(int x){
+        this.left = x;
+    }
+    @JsonProperty("y")
+    public void setY(int y){
+        this.top = y;
+    }
 }

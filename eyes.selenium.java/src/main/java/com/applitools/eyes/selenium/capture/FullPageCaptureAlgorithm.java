@@ -66,7 +66,7 @@ public class FullPageCaptureAlgorithm {
     /**
      * Returns a stitching of a region.
      * @param region           The region to stitch. If {@code Region.EMPTY}, the entire image will be stitched.
-     * @param fullArea         The wanted area of the resulting image. If unknown, pass in {@code null} or {@code RectangleSize.EMPTY}.
+     * @param fullArea         The wanted getArea of the resulting image. If unknown, pass in {@code null} or {@code RectangleSize.EMPTY}.
      * @param positionProvider A provider of the scrolling implementation.
      * @return An image which represents the stitched region.
      */

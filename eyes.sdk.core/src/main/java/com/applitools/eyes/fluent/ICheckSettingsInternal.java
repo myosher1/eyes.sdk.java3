@@ -14,4 +14,7 @@ public interface ICheckSettingsInternal extends com.applitools.ICheckSettingsInt
     GetFloatingRegion[] getFloatingRegions();
 
     Boolean getIgnoreCaret();
+
+    public boolean isEnablePatterns();
+
 }
