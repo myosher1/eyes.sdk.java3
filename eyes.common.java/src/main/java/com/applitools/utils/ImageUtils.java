@@ -506,12 +506,12 @@ public class ImageUtils {
         Region imageRegion = new Region(0,0, image.getWidth(), image.getHeight());
         imageRegion.intersect(regionToCrop);
         if (imageRegion.isSizeEmpty()){
-            logger.log("WARNING - requested cropped area results in zero-size image! Cropped not performed. Returning original image.");
+            logger.log("WARNING - requested cropped getArea results in zero-size image! Cropped not performed. Returning original image.");
             return image;
         }
 
         if (!imageRegion.equals(regionToCrop)){
-            logger.log("WARNING - requested cropped area overflows image boundaries.");
+            logger.log("WARNING - requested cropped getArea overflows image boundaries.");
         }
 
         BufferedImage croppedImage = Scalr.crop(image, imageRegion.getLeft(),

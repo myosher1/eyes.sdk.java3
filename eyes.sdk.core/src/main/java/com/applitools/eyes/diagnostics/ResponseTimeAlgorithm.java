@@ -361,9 +361,9 @@ public class ResponseTimeAlgorithm {
      * @param serverConnector The server connector to use for matching.
      * @param runningSession The session for which we perform the match.
      * @param dataToSearch The model inside which we search for a match.
-     * @param fromIndex The index in the search area from which to start
+     * @param fromIndex The index in the search getArea from which to start
      *                  searching. (inclusive)
-     * @param toIndex The index in the search area up to which to perform the
+     * @param toIndex The index in the search getArea up to which to perform the
      *                search. (inclusive).
      * @param earliestMatchIndex The currently known earliest match index.
      * @return The index of earliest match found.

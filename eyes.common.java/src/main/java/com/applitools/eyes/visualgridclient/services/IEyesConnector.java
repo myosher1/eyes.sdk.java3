@@ -2,7 +2,6 @@ package com.applitools.eyes.visualgridclient.services;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
-import com.applitools.eyes.config.Configuration;
 import com.applitools.eyes.config.ISeleniumConfigurationProvider;
 import com.applitools.eyes.visualgridclient.model.*;
 
@@ -40,7 +39,7 @@ public interface IEyesConnector {
 
     IResourceFuture createResourceFuture(RGridResource rg);
 
-    MatchResult matchWindow(String resultImageURL, String domLocation, ICheckSettings checkSettings);
+    MatchResult matchWindow(String resultImageURL, String domLocation, ICheckSettings checkSettings, List<Region> regions, List<VisualGridSelector[]> regionSelectors);
 
     void setRenderInfo(RenderingInfo renderingInfo);
 

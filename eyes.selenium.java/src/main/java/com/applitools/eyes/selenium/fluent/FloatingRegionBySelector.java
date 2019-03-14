@@ -4,14 +4,17 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.fluent.GetFloatingRegion;
 import com.applitools.eyes.selenium.SeleniumEyes;
 import com.applitools.eyes.selenium.EyesSeleniumUtils;
+import com.applitools.eyes.selenium.rendering.IGetSeleniumRegion;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Point;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class FloatingRegionBySelector implements GetFloatingRegion {
+public class FloatingRegionBySelector implements GetFloatingRegion , IGetSeleniumRegion {
 
     private By selector;
     private int maxUpOffset;
@@ -52,5 +55,10 @@ public class FloatingRegionBySelector implements GetFloatingRegion {
         }
 
         return values;
+    }
+
+    @Override
+    public List<WebElement> getElements(WebDriver webDriver) {
+        return webDriver.findElements(this.selector);
     }
 }

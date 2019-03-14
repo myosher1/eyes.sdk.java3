@@ -45,6 +45,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private Logger logger;
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
     private AtomicBoolean isForcePutNeeded;
+    private final List<VisualGridSelector[]> regionSelectors;
     private IDebugResourceWriter debugResourceWriter;
     private HashMap<String, Object> result = null;
     private AtomicInteger framesLevel = new AtomicInteger();
@@ -61,7 +62,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckSettings checkSettings,
                          List<Task> taskList, List<Task> openTasks, VisualGridRunner renderingGridManager,
-                         IDebugResourceWriter debugResourceWriter, RenderTaskListener listener) {
+                         IDebugResourceWriter debugResourceWriter, RenderTaskListener listener, List<VisualGridSelector[]> regionSelectors) {
 
         this.eyesConnector = eyesConnector;
         this.scriptResult = scriptResult;
@@ -73,6 +74,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         this.putResourceCache = renderingGridManager.getPutResourceCache();
         this.logger = renderingGridManager.getLogger();
         this.debugResourceWriter = debugResourceWriter;
+        this.regionSelectors = regionSelectors;
         this.listeners.add(listener);
 
         String renderingGridForcePut = System.getenv("APPLITOOLS_RENDERING_GRID_FORCE_PUT");
@@ -331,7 +333,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
         }
 
-}
+    }
 
     private RenderRequest[] prepareDataForRG(HashMap<String, Object> result) throws ExecutionException, InterruptedException, JsonProcessingException {
 
@@ -503,6 +505,15 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         List<RenderRequest> allRequestsForRG = new ArrayList<>();
         ICheckSettingsInternal rcInternal = (ICheckSettingsInternal) checkSettings;
 
+
+        List<VisualGridSelector> regionSelectorsList = new ArrayList<>();
+
+        for (VisualGridSelector[] regionSelector : this.regionSelectors) {
+            for (VisualGridSelector visualGridSelector : regionSelector) {
+                regionSelectorsList.add(visualGridSelector);
+            }
+        }
+
         for (Task task : this.taskList) {
 
             RenderBrowserInfo browserInfo = task.getBrowserInfo();
@@ -510,7 +521,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), ((ICheckSettingsInternal) checkSettings).getSizeMode(), rcInternal.getRegion(), browserInfo.getEmulationInfo());
 
             RenderRequest request = new RenderRequest(this.renderingInfo.getResultsUrl(), url, dom,
-                    resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), rcInternal.getScriptHooks(), null, rcInternal.isSendDom(), task);
+                    resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), rcInternal.getScriptHooks(), regionSelectorsList, rcInternal.isSendDom(), task);
 
             allRequestsForRG.add(request);
         }
@@ -770,7 +781,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private void pollRenderingStatus(Map<RunningRender, RenderRequest> runningRenders) {
         logger.verbose("enter");
         List<String> ids = getRenderIds(runningRenders.keySet());
-        logger.verbose("render ids : "+ids);
+        logger.verbose("render ids : " + ids);
         int numOfIterations = 0;
 
         boolean isMaxIterationNotReached = false;
@@ -806,8 +817,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
             isMaxIterationNotReached = numOfIterations < MAX_ITERATIONS;
 
-            if(!isMaxIterationNotReached){
-                logger.log("Max iteration reached for url - "+ this.dom.getUrl());
+            if (!isMaxIterationNotReached) {
+                logger.log("Max iteration reached for url - " + this.dom.getUrl());
             }
 
         } while (!ids.isEmpty() && isMaxIterationNotReached);
@@ -866,7 +877,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                         }
                         logger.verbose("setting task " + task + " render result: " + renderStatusResults + " to url " + this.result.get("url"));
                         String error = renderStatusResults.getError();
-                        if(error != null){
+                        if (error != null) {
                             GeneralUtils.logExceptionStackTrace(logger, new Exception(error));
                         }
                         task.setRenderResult(renderStatusResults);
