@@ -116,7 +116,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      *
      * @param isDisabled If true, all interactions with this API will be                   silently ignored.
      */
-    public void setIsDisabled(boolean isDisabled) {
+    public void setIsDisabled(Boolean isDisabled) {
         if (isVisualGridEyes) {
             visualGridEyes.setIsDisabled(isDisabled);
         } else {
@@ -1570,7 +1570,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public void checkWindow(String tag) {
         if (!this.isVisualGridEyes) {
-            this.seleniumEyes.checkWindow();
+            this.seleniumEyes.checkWindow(tag);
         } else {
             this.visualGridEyes.check(tag, new CheckSettings(15000));
         }

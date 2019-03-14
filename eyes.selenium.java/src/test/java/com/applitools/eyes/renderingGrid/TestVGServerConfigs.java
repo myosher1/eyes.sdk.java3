@@ -22,6 +22,7 @@ public class TestVGServerConfigs {
     private final String expectedServer;
     private final String expectedKey;
     private final boolean expectedDisabled;
+    private final String tag;
     private VisualGridRunner renderingManager;
 
 
@@ -32,7 +33,7 @@ public class TestVGServerConfigs {
                                Boolean isDisabled2,
                                String expectedServer,
                                String expectedKey,
-                               boolean expectedDisabled) {
+                               boolean expectedDisabled, String tag) {
         this.server1 = server1;
         this.server2 = server2;
         this.key1 = key1;
@@ -42,6 +43,7 @@ public class TestVGServerConfigs {
         this.expectedServer = expectedServer;
         this.expectedKey = expectedKey;
         this.expectedDisabled = expectedDisabled;
+        this.tag = tag;
     }
 
     @BeforeClass
@@ -61,14 +63,14 @@ public class TestVGServerConfigs {
         String key1 = System.getenv("APPLITOOLS_API_KEY");
         String key2 = System.getenv("FABRICAM_DEMO_EYES_API_KEY");
         return new Object[][]{
-                {server1, server2, key1, key2, false, false, server2, key2, false},
-                {null, server2, key1, key2, false, false, server2, key2, false},
-                {null, null, key1, null, false, null, EyesBase.getDefaultServerUrl().toString(), key1, false},
-                {null, server2, key1, key2, false, null, server2, key2, false},
-                {null, server2, null, key2, false, null, server2, key2, false},
-                {null, server2, null, key2, false, true, server2, key2, true},
-                {server1, null, key1, null, true, null, server1, key1, true},
-                {server1, null, key1, null, true, false, server1, key1, false},
+                {server1, server2, key1, key2, false, false, server2, key2, false, "tag1"},
+                {null, server2, key1, key2, false, false, server2, key2, false, "tag2"},
+                {null, null, key1, null, false, null, EyesBase.getDefaultServerUrl().toString(), key1, false, "tag3"},
+                {null, server2, key1, key2, false, null, server2, key2, false, "tag4"},
+                {null, server2, null, key2, false, null, server2, key2, false, "tag5"},
+                {null, server2, null, key2, false, true, server2, key2, true, "tag6"},
+                {server1, null, key1, null, true, null, server1, key1, true, "tag7"},
+                {server1, null, key1, null, true, false, server1, key1, false, "tag8"},
         };
     }
 
@@ -88,6 +90,10 @@ public class TestVGServerConfigs {
             eyes.open(webDriver);
             Assert.assertEquals(eyes.getServerUrl().toString(), this.expectedServer);
             Assert.assertEquals(eyes.getApiKey(), this.expectedKey);
+            if (eyes.getIsDisabled() != expectedDisabled) {
+                System.out.println("TestVGServerConfigs.test - "+ this.tag);
+                eyes.getIsDisabled();
+            }
             Assert.assertEquals(eyes.getIsDisabled(), this.expectedDisabled);
         } finally {
             webDriver.quit();

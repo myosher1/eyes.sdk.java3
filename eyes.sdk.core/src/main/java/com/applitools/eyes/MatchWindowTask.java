@@ -231,19 +231,24 @@ public class MatchWindowTask {
     private static void collectSimpleRegions(ICheckSettingsInternal checkSettingsInternal,
                                               ImageMatchSettings imageMatchSettings, EyesBase eyes,
                                               EyesScreenshot screenshot) {
-        imageMatchSettings.setIgnoreRegions(collectSimpleRegions(eyes, screenshot, checkSettingsInternal.getIgnoreRegions()).toArray(new Region[0]));
-        imageMatchSettings.setStrictRegions(collectSimpleRegions(eyes, screenshot, checkSettingsInternal.getStrictRegions()).toArray(new Region[0]));
-        imageMatchSettings.setLayoutRegions(collectSimpleRegions(eyes, screenshot, checkSettingsInternal.getLayoutRegions()).toArray(new Region[0]));
-        imageMatchSettings.setContentRegions(collectSimpleRegions(eyes, screenshot, checkSettingsInternal.getContentRegions()).toArray(new Region[0]));
+        imageMatchSettings.setIgnoreRegions(collectSimpleRegions(eyes, screenshot, checkSettingsInternal.getIgnoreRegions()));
+        imageMatchSettings.setStrictRegions(collectSimpleRegions(eyes, screenshot, checkSettingsInternal.getStrictRegions()));
+        imageMatchSettings.setLayoutRegions(collectSimpleRegions(eyes, screenshot, checkSettingsInternal.getLayoutRegions()));
+        imageMatchSettings.setContentRegions(collectSimpleRegions(eyes, screenshot, checkSettingsInternal.getContentRegions()));
     }
 
-    private static List<List<Region>> collectSimpleRegions(EyesBase eyes,
+    private static Region[] collectSimpleRegions(EyesBase eyes,
                                                            EyesScreenshot screenshot, GetRegion[] regionProviders) {
         List<List<Region>> mutableRegions = new ArrayList<>();
         for (GetRegion regionProvider : regionProviders) {
             mutableRegions.add(regionProvider.getRegions(eyes, screenshot, false));
         }
-        return mutableRegions;
+
+        List<Region> allRegions = new ArrayList<>();
+        for (List<Region> mutableRegion : mutableRegions) {
+            allRegions.addAll(mutableRegion);
+        }
+        return allRegions.toArray(new Region[0]);
     }
 
     private static void collectFloatingRegions(ICheckSettingsInternal checkSettingsInternal,

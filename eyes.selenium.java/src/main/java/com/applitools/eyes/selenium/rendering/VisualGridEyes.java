@@ -52,7 +52,7 @@ public class VisualGridEyes implements IRenderingEyes {
     private List<Future<TestResultContainer>> futures = null;
     private String branchName = null;
     private String parentBranchName = null;
-    private boolean isDisabled;
+    private Boolean isDisabled;
     private IServerConnector serverConnector = null;
     private ISeleniumConfigurationProvider configProvider;
 
@@ -244,12 +244,12 @@ public class VisualGridEyes implements IRenderingEyes {
         this.apiKey = apiKey;
     }
 
-    public void setIsDisabled(boolean disabled) {
+    public void setIsDisabled(Boolean disabled) {
         this.isDisabled = disabled;
     }
 
     public boolean getIsDisabled() {
-        return this.renderingGridManager.getIsDisabled();
+        return this.isDisabled == null ? this.renderingGridManager.getIsDisabled() : this.isDisabled;
     }
 
     public void setBranchName(String branchName) {
