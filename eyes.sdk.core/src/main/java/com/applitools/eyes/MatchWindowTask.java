@@ -204,14 +204,14 @@ public class MatchWindowTask {
             if (vgs.getCategory() instanceof IGetFloatingRegionOffsets) {
                 IGetFloatingRegionOffsets gfr = (IGetFloatingRegionOffsets) vgs.getCategory();
                 FloatingMatchSettings fms = new FloatingMatchSettings(
-                        gfr.getMaxLeftOffset(),
-                        gfr.getMaxUpOffset(),
-                        gfr.getMaxRightOffset(),
-                        gfr.getMaxDownOffset(),
-                        mr.getTop(),
                         mr.getLeft(),
+                        mr.getTop(),
                         mr.getWidth(),
-                        mr.getHeight()
+                        mr.getHeight(),
+                        gfr.getMaxUpOffset(),
+                        gfr.getMaxDownOffset(),
+                        gfr.getMaxLeftOffset(),
+                        gfr.getMaxRightOffset()
                 );
                 floatingMatchSettings.add(fms);
             }
