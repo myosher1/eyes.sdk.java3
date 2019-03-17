@@ -908,12 +908,18 @@ public class Eyes extends EyesBase implements IEyes {
 
         logger.verbose(String.format("check(\"%s\", checkSettings) - begin", name));
 
-        this.stitchContent = checkSettingsInternal.getStitchContent();
+        if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+            this.stitchContent = checkSettingsInternal.getStitchContent();
+        }
+
         final Region targetRegion = checkSettingsInternal.getTargetRegion();
         this.scrollRootElement = this.getScrollRootElement(seleniumCheckTarget);
 
         currentFramePositionProvider = null;
-        setPositionProvider(createPositionProvider());
+        if (!EyesSeleniumUtils.isMobileDevice(driver)) {
+            setPositionProvider(createPositionProvider());
+        }
+
         this.originalFC = driver.getFrameChain().clone();
 
         ValidationInfo validationInfo = this.fireValidationWillStartEvent(name);
@@ -2444,7 +2450,10 @@ public class Eyes extends EyesBase implements IEyes {
                             ? originalFrameChain.getDefaultContentScrollPosition()
                             : Location.ZERO;
 
-            switchTo.frames(this.originalFC);
+            if (!EyesSeleniumUtils.isMobileDevice(this.driver)) {
+                switchTo.frames(this.originalFC);
+            }
+
             algo = createFullPageCaptureAlgorithm(scaleProviderFactory);
             ////////////
             EyesRemoteWebElement eyesScrollRootElement;
