@@ -1,10 +1,16 @@
 package com.applitools.eyes.renderingGrid;
 
-import com.applitools.eyes.*;
+import com.applitools.eyes.BatchInfo;
+import com.applitools.eyes.FileLogger;
+import com.applitools.eyes.Logger;
+import com.applitools.eyes.TestResults;
 import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.model.*;
+import com.applitools.eyes.visualgridclient.model.EmulationDevice;
+import com.applitools.eyes.visualgridclient.model.EmulationInfo;
+import com.applitools.eyes.visualgridclient.model.ScreenOrientation;
+import com.applitools.eyes.visualgridclient.model.TestResultSummary;
 import com.applitools.eyes.visualgridclient.services.EyesRunner;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
@@ -14,11 +20,10 @@ import org.testng.Assert;
 import org.testng.ITestContext;
 import org.testng.annotations.*;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class TestTopSites {
+public class TestVG_EmulationDevices {
     private static final SeleniumConfiguration.BrowserType CHROME = SeleniumConfiguration.BrowserType.CHROME;
     private static final SeleniumConfiguration.BrowserType FIREFOX = SeleniumConfiguration.BrowserType.FIREFOX;
     private static final EmulationInfo.DeviceName IPHONE4 = EmulationInfo.DeviceName.IPHONE4;
@@ -50,11 +55,11 @@ public class TestTopSites {
                 {"https://google.com"},
                 {"https://facebook.com"},
                 {"https://youtube.com"},
-//                {"https://amazon.com"},
+                {"https://amazon.com"},
 //                {"https://ebay.com"},
 //                {"https://twitter.com"},
-//                {"https://wikipedia.org"},
-//                {"https://instagram.com"},
+                {"https://wikipedia.org"},
+                {"https://instagram.com"},
                 {"https://www.target.com/c/blankets-throws/-/N-d6wsb?lnk=ThrowsBlankets%E2%80%9C,tc"},
         };
     }
@@ -73,26 +78,15 @@ public class TestTopSites {
             seleniumConfiguration.setAppName("VG hello world");
             seleniumConfiguration.setBatch(batchInfo);
             seleniumConfiguration.setBaselineEnvName("michael");
-            String environment = "";
-//            seleniumConfiguration.addBrowser(1024, 768, CHROME);
-//            seleniumConfiguration.addBrowser(900, 600, CHROME);
-//            seleniumConfiguration.addBrowser(1024, 786, FIREFOX);
-//            seleniumConfiguration.addBrowser(900, 600, FIREFOX);
-            //%%%% stop add-browser-simple
-
-            //%%%% start add-device-info
-//            seleniumConfiguration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME, environment);
-//            seleniumConfiguration.addBrowser(700, 500, SeleniumConfiguration.BrowserType.CHROME, environment);
-//            seleniumConfiguration.addBrowser(1600, 1200, SeleniumConfiguration.BrowserType.FIREFOX, environment);
             EmulationDevice emulationDevice = new EmulationDevice(300, 400, 1f, true, ScreenOrientation.LANDSCAPE);
+            seleniumConfiguration.addDeviceEmulation(emulationDevice);
             seleniumConfiguration.addDeviceEmulation(new EmulationInfo(IPHONE4, PORTRAIT));
             EmulationInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.IPHONE4, ScreenOrientation.PORTRAIT);
             seleniumConfiguration.addDeviceEmulation(emulation);
-//            seleniumConfiguration.addDeviceEmulation(emulationDevice);
-//            logger.log("created configurations for url " + testedUrl);
+            seleniumConfiguration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.iPhone_X, ScreenOrientation.PORTRAIT));
+            seleniumConfiguration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE));
             logger.log("created configurations for url " + testedUrl);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
-            //VisualGridEyes.setServerU;rl("https://eyes.applitools.com/");
             eyes.setConfiguration(seleniumConfiguration);
             eyes.open(webDriver, "Michael's App name", " michael test name");
         } catch (Exception e) {

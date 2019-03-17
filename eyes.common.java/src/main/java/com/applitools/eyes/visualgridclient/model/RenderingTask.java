@@ -287,7 +287,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         for (PutFuture future : allPuts) {
             logger.verbose("calling future.get on " + future.toString());
             try {
-                future.get(10, TimeUnit.SECONDS);
+                future.get(20, TimeUnit.SECONDS);
             } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }

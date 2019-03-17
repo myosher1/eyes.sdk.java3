@@ -74,4 +74,11 @@ public class EmulationInfo extends EmulationBaseInfo {
     }
 
 
+    @Override
+    public String toString() {
+        return "EmulationInfo{" +
+                "deviceName=" + deviceName +
+                ", screenOrientation=" + screenOrientation +
+                '}';
+    }
 }

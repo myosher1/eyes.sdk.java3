@@ -590,10 +590,9 @@ public class ServerConnector extends RestClient
             ArgumentGuard.notNull(renderIds, "renderIds");
             this.logger.verbose("called for render: " + Arrays.toString(renderIds));
 
-
             WebTarget target = restClient.target(renderingInfo.getServiceUrl()).path((RENDER_STATUS));
-            target.property(ClientProperties.CONNECT_TIMEOUT, 1000);
-            target.property(ClientProperties.READ_TIMEOUT, 1000);
+            target.property(ClientProperties.CONNECT_TIMEOUT, 15000);
+            target.property(ClientProperties.READ_TIMEOUT, 15000);
             Invocation.Builder request = target.request(MediaType.TEXT_PLAIN);
             request.header("X-Auth-Token", renderingInfo.getAccessToken());
 

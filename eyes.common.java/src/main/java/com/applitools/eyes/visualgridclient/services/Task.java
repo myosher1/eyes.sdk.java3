@@ -186,7 +186,8 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
     public void setRenderError(String renderId) {
         logger.verbose("enter - renderId: " + renderId);
         for (TaskListener listener : listeners) {
-            listener.onTaskFailed(new Error("Render Failed for " + this.getBrowserInfo() + " (renderId: " + renderId + ")"), this);
+            exception = new Error("Render Failed for " + this.getBrowserInfo() + " (renderId: " + renderId + ")");
+            listener.onTaskFailed(exception, this);
         }
         logger.verbose("exit - renderId: " + renderId);
     }
