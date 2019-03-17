@@ -26,7 +26,7 @@ import java.util.Calendar;
 public class TestVG_EmulationDevices {
     private static final SeleniumConfiguration.BrowserType CHROME = SeleniumConfiguration.BrowserType.CHROME;
     private static final SeleniumConfiguration.BrowserType FIREFOX = SeleniumConfiguration.BrowserType.FIREFOX;
-    private static final EmulationInfo.DeviceName IPHONE4 = EmulationInfo.DeviceName.IPHONE4;
+    private static final EmulationInfo.DeviceName IPHONE4 = EmulationInfo.DeviceName.iPhone_4;
     private static final ScreenOrientation PORTRAIT = ScreenOrientation.PORTRAIT;
     private EyesRunner visualGridRunner;
 
@@ -81,7 +81,7 @@ public class TestVG_EmulationDevices {
             EmulationDevice emulationDevice = new EmulationDevice(300, 400, 1f, true, ScreenOrientation.LANDSCAPE);
             seleniumConfiguration.addDeviceEmulation(emulationDevice);
             seleniumConfiguration.addDeviceEmulation(new EmulationInfo(IPHONE4, PORTRAIT));
-            EmulationInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.IPHONE4, ScreenOrientation.PORTRAIT);
+            EmulationInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
             seleniumConfiguration.addDeviceEmulation(emulation);
             seleniumConfiguration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.iPhone_X, ScreenOrientation.PORTRAIT));
             seleniumConfiguration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE));

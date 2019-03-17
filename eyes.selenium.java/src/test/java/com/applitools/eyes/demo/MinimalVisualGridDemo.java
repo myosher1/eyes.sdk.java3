@@ -50,7 +50,7 @@ public class MinimalVisualGridDemo {
         sconf.addBrowser(1600, 1200, SeleniumConfiguration.BrowserType.CHROME);
 
         // Add iPhone 4 device emulation
-        EmulationInfo iphone4 = new EmulationInfo(EmulationInfo.DeviceName.IPHONE4, ScreenOrientation.PORTRAIT);
+        EmulationInfo iphone4 = new EmulationInfo(EmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
         sconf.addDeviceEmulation(iphone4);
 
         // Add custom mobile device emulation

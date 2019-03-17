@@ -58,7 +58,7 @@ public class TestVGEyes extends TestEyesBase {
             seleniumConfiguration.addBrowser(1600, 1200, SeleniumConfiguration.BrowserType.CHROME, environment);
 
             EmulationDevice emulationDevice = new EmulationDevice(300, 400, 0.5f, true, ScreenOrientation.LANDSCAPE);
-            EmulationInfo emulationInfo = new EmulationInfo(EmulationInfo.DeviceName.Galaxy_Note_II, ScreenOrientation.PORTRAIT);
+            EmulationInfo emulationInfo = new EmulationInfo(EmulationInfo.DeviceName.Galaxy_Note_2, ScreenOrientation.PORTRAIT);
 
             seleniumConfiguration.addDeviceEmulation(emulationDevice, environment);
             seleniumConfiguration.addDeviceEmulation(emulationInfo);
