@@ -119,7 +119,6 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
                         testResults = eyesConnector.abortIfNotClosed();
                     }
                     else{
-                        this.exception = new Error("Rendering Failed");
                         logger.log("Closing a not opened test");
                     }
             }
