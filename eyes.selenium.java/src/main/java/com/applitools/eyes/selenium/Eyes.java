@@ -361,7 +361,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return The match settings used for the session.
      */
     public ImageMatchSettings getDefaultMatchSettings() {
-            return this.configuration.getDefaultMatchSettings();
+        return this.configuration.getDefaultMatchSettings();
 
     }
 
@@ -375,7 +375,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @see com.applitools.eyes.MatchLevel
      */
     public void setMatchLevel(MatchLevel matchLevel) {
-            this.configuration.getDefaultMatchSettings().setMatchLevel(matchLevel);
+        this.configuration.getDefaultMatchSettings().setMatchLevel(matchLevel);
     }
 
     /**
@@ -385,7 +385,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @deprecated Please use{@link #getDefaultMatchSettings} instead.
      */
     public MatchLevel getMatchLevel() {
-            return this.configuration.getDefaultMatchSettings().getMatchLevel();
+        return this.configuration.getDefaultMatchSettings().getMatchLevel();
     }
 
     /**
@@ -671,7 +671,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return Whether to ignore or the blinking caret or not when comparing images.
      */
     public boolean getIgnoreCaret() {
-            return this.configuration.getIgnoreCaret();
+        return this.configuration.getIgnoreCaret();
     }
 
     /**
@@ -691,7 +691,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return Returns the stitching overlap in pixels.
      */
     public int getStitchOverlap() {
-            return this.configuration.getStitchingOverlap();
+        return this.configuration.getStitchingOverlap();
     }
 
     /**
@@ -1435,7 +1435,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param waitBeforeScreenshots The time to wait (Milliseconds). Values                              smaller or equal to 0, will cause the                              default value to be used.
      */
     public void setWaitBeforeScreenshots(int waitBeforeScreenshots) {
-            this.configuration.setWaitBeforeScreenshots(waitBeforeScreenshots);
+        this.configuration.setWaitBeforeScreenshots(waitBeforeScreenshots);
     }
 
     /**
@@ -1444,7 +1444,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return The time to wait just before taking a screenshot.
      */
     public int getWaitBeforeScreenshots() {
-            return this.configuration.getWaitBeforeScreenshots();
+        return this.configuration.getWaitBeforeScreenshots();
     }
 
 
@@ -1481,7 +1481,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param mode The stitch mode to set.
      */
     public void setStitchMode(StitchMode mode) {
-            this.configuration.setStitchMode(mode);
+        this.configuration.setStitchMode(mode);
     }
 
     /**
@@ -1490,7 +1490,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return The current stitch mode settings.
      */
     public StitchMode getStitchMode() {
-            return this.configuration.getStitchMode();
+        return this.configuration.getStitchMode();
     }
 
     /**
@@ -1499,7 +1499,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param shouldHide Whether to hide the scrollbars or not.
      */
     public void setHideScrollbars(boolean shouldHide) {
-            this.configuration.setHideScrollbars(shouldHide);
+        this.configuration.setHideScrollbars(shouldHide);
     }
 
     /**
@@ -1508,7 +1508,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return Whether or not scrollbars are hidden when taking screenshots.
      */
     public boolean getHideScrollbars() {
-            return this.configuration.getHideScrollbars();
+        return this.configuration.getHideScrollbars();
     }
 
     /**
@@ -1783,7 +1783,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param agentId The agent ID to set.
      */
     public void setAgentId(String agentId) {
-            this.configuration.setAgentId(agentId);
+        this.configuration.setAgentId(agentId);
     }
 
     /**
@@ -1792,7 +1792,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return The user given agent id of the SDK.
      */
     public String getAgentId() {
-            return this.configuration.getAgentId();
+        return this.configuration.getAgentId();
     }
 
     /**
