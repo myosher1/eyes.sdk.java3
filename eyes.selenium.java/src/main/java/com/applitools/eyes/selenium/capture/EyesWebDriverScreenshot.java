@@ -160,7 +160,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             if (sp == null) {
                 sp = new Location(0, 0);
             }
-        } catch (WebDriverException e) {
+        } catch (Exception e) {
             sp = new Location(0, 0);
         }
         return sp;
@@ -176,7 +176,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
             // we'll use the viewport size as the frame's size.
             try {
                 frameSize = positionProvider.getEntireSize();
-            } catch (WebDriverException e) {
+            } catch (Exception e) {
                 frameSize = this.driver.getDefaultContentViewportSize();
             }
         }

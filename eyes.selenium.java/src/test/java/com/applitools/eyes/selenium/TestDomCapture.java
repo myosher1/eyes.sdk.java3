@@ -49,6 +49,8 @@ public final class TestDomCapture {
         });
 
         eyes.checkWindow("Test DOM diffs");
+//        WebElement element = driver.findElement(By.className("video-container"));
+//        eyes.checkElement(element, "Test DOM diffs");
 
         latch.await();
         ObjectMapper mapper = new ObjectMapper();
