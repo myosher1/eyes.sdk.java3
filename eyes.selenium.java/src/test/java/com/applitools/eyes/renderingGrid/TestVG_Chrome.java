@@ -160,9 +160,9 @@ public class TestVG_Chrome {
         try {
             logger.log("running check for url " + testedUrl);
             try {
-                eyes.checkRegion(new Region(100, 200, 400, 800), 15_000, "checkRegion()");
+                eyes.checkRegion(new Region(100, 100, 400, 600), 15_000, "checkRegion()");
 
-                eyes.check(Target.region(new Region(100, 200, 400, 800)).withName("Target.region()"));
+                eyes.check(Target.region(new Region(100, 100, 400, 600)).withName("Target.region()"));
 
                 eyes.checkRegion(By.className("cover-button"));
 
