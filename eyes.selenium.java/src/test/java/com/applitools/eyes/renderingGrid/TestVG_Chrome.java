@@ -21,7 +21,8 @@ import org.testng.annotations.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class TestVGChrome {
+@SuppressWarnings("Duplicates")
+public class TestVG_Chrome {
 
     private EyesRunner visualGridRunner;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd_HH_mm_ss_SSS");
@@ -50,6 +51,8 @@ public class TestVGChrome {
         batchInfo.setId("Target");
         eyes.setBatch(batchInfo);
 
+        eyes.setLogHandler(new StdoutLogHandler());
+
         Logger logger = eyes.getLogger();
         logger.log("creating WebDriver: " + testedUrl);
 
@@ -57,20 +60,21 @@ public class TestVGChrome {
             SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
             seleniumConfiguration.setTestName("Chrome - " + testedUrl);
             seleniumConfiguration.setAppName("Test VG Chrome");
-            seleniumConfiguration.setBatch(new BatchInfo("Test"));
+            seleniumConfiguration.setBatch(new BatchInfo("Test VG with Chrome"));
             String environment = "";
-            EmulationInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.Nexus_6, ScreenOrientation.PORTRAIT);
             seleniumConfiguration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME, environment);
             seleniumConfiguration.addBrowser(1024, 768, SeleniumConfiguration.BrowserType.CHROME, environment);
             seleniumConfiguration.addBrowser(1368, 768, SeleniumConfiguration.BrowserType.CHROME, environment);
             seleniumConfiguration.addBrowser(1920, 1080, SeleniumConfiguration.BrowserType.CHROME, environment);
-            seleniumConfiguration.addDeviceEmulation(emulation);
+            seleniumConfiguration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.Nexus_6, ScreenOrientation.PORTRAIT));
+            seleniumConfiguration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.iPhone_X, ScreenOrientation.PORTRAIT));
             logger.log("created configurations for url " + testedUrl);
             eyes.setConfiguration(seleniumConfiguration);
             eyes.open(webDriver);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
+        eyes.setSaveNewTests(false);
         return eyes;
     }
 
@@ -166,6 +170,38 @@ public class TestVGChrome {
                 eyes.check(Target.region(By.id("tns1-ow")));
 
                 eyes.check(Target.window().ignore(By.id("tns1-ow")));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            eyes.getLogger().log("calling VisualGridEyes.close() for url " + testedUrl);
+            TestResults close = eyes.close(true);
+            Assert.assertNotNull(close);
+            logger.log("end of `try` block for url " + testedUrl);
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        } finally {
+            logger.log("closing WebDriver for url " + testedUrl);
+            webDriver.quit();
+            logger.log("url " + testedUrl + " - done with browser.");
+        }
+    }
+
+    @Test(dataProvider = "dp")
+    public void testVariables(String testedUrl) {
+        visualGridRunner.getLogger().log("entering with url " + testedUrl);
+        WebDriver webDriver = new ChromeDriver();
+        webDriver.get(testedUrl);
+        Eyes eyes = initEyes(webDriver, testedUrl);
+        Logger logger = eyes.getLogger();
+        logger.log("navigated to " + testedUrl);
+
+        try {
+            logger.log("running check for url " + testedUrl);
+            try {
+                eyes.setHostOS("Windows"); // Should be Linux
+                eyes.setHostApp("Safari"); // Should be Chrome
+
+                eyes.checkWindow("Check HostOS and HostApp");
             } catch (Exception e) {
                 e.printStackTrace();
             }
