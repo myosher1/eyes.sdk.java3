@@ -179,7 +179,7 @@ public class DomCapture {
                         if (cssTreeNode.allImportRules != null && !cssTreeNode.allImportRules.isEmpty()) {
                             cssTreeNode.downloadNodeCss();
                         }
-                        cssData.put(missingCssUrl, cssTreeNode.calcCss());
+                        cssData.put(missingCssUrl, EfficientStringReplace.CleanForJSON(cssTreeNode.calcCss()));
                     }
 
                     @Override
@@ -253,7 +253,7 @@ public class DomCapture {
 
     class CssTreeNode {
         URL url;
-        String css;
+        String css = "";
         StringBuilder sb = new StringBuilder();
         List<CssTreeNode> decedents = new ArrayList<>();
         ICommonsList<CSSImportRule> allImportRules;
@@ -300,7 +300,7 @@ public class DomCapture {
                         downloadCss(cssTreeNode, new IDownloadListener<String>() {
                             @Override
                             public void onDownloadComplete(String downloadedString, String contentType) {
-                                parseCSS(cssTreeNode, downloadedString);
+                                parseCSS(cssTreeNode, EfficientStringReplace.CleanForJSON(downloadedString));
                                 if (!cssTreeNode.allImportRules.isEmpty()) {
                                     cssTreeNode.downloadNodeCss();
 
@@ -353,7 +353,7 @@ public class DomCapture {
             public void onDownloadComplete(String downloadedString, String contentType) {
                 try {
                     logger.verbose("Download Complete");
-                    node.setCss(URLEncoder.encode(downloadedString, "UTF-8"));
+                    node.setCss(downloadedString);
                     listener.onDownloadComplete(downloadedString, "String");
 
                 } catch (Exception e) {
@@ -367,6 +367,7 @@ public class DomCapture {
 
             @Override
             public void onDownloadFailed() {
+                listener.onDownloadComplete("", "String");
                 cssPhaser.arriveAndDeregister();
                 logger.verbose("Download Failed");
                 logger.verbose("cssPhaser.arriveAndDeregister(); " + node.url);

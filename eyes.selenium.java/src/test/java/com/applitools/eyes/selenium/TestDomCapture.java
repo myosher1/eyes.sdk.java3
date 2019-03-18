@@ -40,7 +40,7 @@ public final class TestDomCapture {
 
         // Navigate the browser to the "hello world!" web-site.
 //        driver.get("https://www.usatoday.com");
-        driver.get("https://applitools.com/");
+        driver.get("https://cashproonline.bankofamerica.com/AuthenticationFrameworkWeb/cpo/login/public/loginMain.faces");
 //        driver.get("https://nikita-andreev.github.io/applitools/dom_capture.html?aaa");
 //        Thread.sleep(5000);
 
@@ -53,8 +53,10 @@ public final class TestDomCapture {
             }
         });
 
-        WebElement element = driver.findElement(By.className("video-container"));
-        eyes.checkElement(element, "Test DOM diffs");
+//        WebElement element = driver.findElement(By.className("video-container"));
+//        eyes.checkElement(element, "Test DOM diffs");
+
+        eyes.checkWindow();
 
         latch.await();
         ObjectMapper mapper = new ObjectMapper();
