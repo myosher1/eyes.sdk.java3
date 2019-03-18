@@ -66,6 +66,10 @@ public class RenderBrowserInfo {
                     return "chrome";
                 case FIREFOX:
                     return "firefox";
+                case IE:
+                    return "ie";
+                case EDGE:
+                    return "edge";
             }
         }
         return "chrome";
@@ -76,7 +80,17 @@ public class RenderBrowserInfo {
     }
 
     public String getPlatform() {
-        return platform;
+        if (browserType != null) {
+            switch (this.browserType) {
+                case CHROME:
+                case FIREFOX:
+                    return "linux";
+                case IE:
+                case EDGE:
+                    return "windows";
+            }
+        }
+        return "linux";
     }
 
     public EmulationBaseInfo getEmulationInfo() {

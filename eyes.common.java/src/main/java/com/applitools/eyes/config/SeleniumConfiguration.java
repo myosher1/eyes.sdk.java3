@@ -24,7 +24,7 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     private boolean isThrowExceptionOn = false;
     private Boolean isRenderingConfig = false;
 
-    public enum BrowserType {CHROME, FIREFOX}
+    public enum BrowserType {CHROME, FIREFOX, IE, EDGE}
     private List<RenderBrowserInfo> browsersInfo = new ArrayList<>();
 
 
