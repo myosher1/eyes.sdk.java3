@@ -61,4 +61,60 @@ public class EfficientStringReplace {
         }
         return result.toString();
     }
+
+    public static String CleanForJSON(String s)
+    {
+
+        if (s == null || s.length() == 0)
+        {
+            return "";
+        }
+
+        char c = '\0';
+        int i;
+        int len = s.length();
+        StringBuilder sb = new StringBuilder(len + 4);
+        String t;
+
+        for (i = 0; i < len; i += 1)
+        {
+            c = s.charAt(i);
+            switch (c)
+            {
+                case '\\':
+                case '"':
+                case '/':
+                    sb.append('\\');
+                    sb.append(c);
+                    break;
+                case '\b':
+                    sb.append("\\b");
+                    break;
+                case '\t':
+                    sb.append("\\t");
+                    break;
+                case '\n':
+                    sb.append("\\n");
+                    break;
+                case '\f':
+                    sb.append("\\f");
+                    break;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                default:
+                    if (c < ' ')
+                    {
+                        t = String.format("%04x", c);
+                        sb.append("\\u").append(t.substring(t.length() - 4));
+                    }
+                    else
+                    {
+                        sb.append(c);
+                    }
+                    break;
+            }
+        }
+        return sb.toString();
+    }
 }
