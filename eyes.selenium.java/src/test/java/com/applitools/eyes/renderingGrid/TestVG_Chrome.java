@@ -21,7 +21,6 @@ import org.testng.annotations.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-@SuppressWarnings("Duplicates")
 public class TestVG_Chrome {
 
     private EyesRunner visualGridRunner;
