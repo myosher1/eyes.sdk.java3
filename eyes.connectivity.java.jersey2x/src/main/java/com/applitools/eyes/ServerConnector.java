@@ -609,6 +609,12 @@ public class ServerConnector extends RestClient
                 if (validStatusCodes.contains(response.getStatus())) {
                     this.logger.verbose("request succeeded");
                     RenderStatusResults[] renderStatusResults = parseResponseWithJsonData(response, validStatusCodes, RenderStatusResults[].class);
+                    for (int i = 0; i < renderStatusResults.length; i++) {
+                        RenderStatusResults renderStatusResult = renderStatusResults[i];
+                        if(renderStatusResult != null && renderStatusResult.getStatus() == RenderStatus.ERROR){
+                            logger.verbose("error on render id - "+renderStatusResult);
+                        }
+                    }
                     return Arrays.asList(renderStatusResults);
                 }
             } catch (JsonProcessingException e) {

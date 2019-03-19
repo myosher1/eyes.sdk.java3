@@ -69,8 +69,10 @@ public class TestTopSites {
             String environment = "";
             EmulationInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
             seleniumConfiguration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME, environment);
-            seleniumConfiguration.addBrowser(700, 500, SeleniumConfiguration.BrowserType.CHROME, environment);
+            seleniumConfiguration.addBrowser(700, 500, SeleniumConfiguration.BrowserType.FIREFOX, environment);
+            seleniumConfiguration.addBrowser(700, 500, SeleniumConfiguration.BrowserType.IE, environment);
             seleniumConfiguration.addBrowser(1600, 1200, SeleniumConfiguration.BrowserType.CHROME, environment);
+            seleniumConfiguration.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.EDGE, environment);
             seleniumConfiguration.addDeviceEmulation(emulation);
             logger.log("created configurations for url " + testedUrl);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));

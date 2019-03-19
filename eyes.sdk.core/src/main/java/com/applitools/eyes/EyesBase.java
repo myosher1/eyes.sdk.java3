@@ -1335,7 +1335,9 @@ public abstract class EyesBase {
         logger.verbose("Done getting screenshot!");
 
         // Cropping by region if necessary
+        Location location = null;
         if (!region.isSizeEmpty()) {
+            location = region.getLocation();
             screenshot = screenshot.getSubScreenshot(region, false);
             debugScreenshotsProvider.save(screenshot.getImage(), "SUB_SCREENSHOT");
         }
@@ -1361,7 +1363,7 @@ public abstract class EyesBase {
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
-        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl, null), screenshot);
+        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl, null), screenshot, location);
         logger.verbose("Done!");
         return result;
     }

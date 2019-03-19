@@ -5,6 +5,7 @@ package com.applitools.eyes.capture;
 
 import com.applitools.eyes.AppOutput;
 import com.applitools.eyes.EyesScreenshot;
+import com.applitools.eyes.Location;
 
 /**
  * A container for a AppOutput along with the screenshot used for creating it.
@@ -13,10 +14,12 @@ import com.applitools.eyes.EyesScreenshot;
 public class AppOutputWithScreenshot {
     private final AppOutput appOutput;
     private final EyesScreenshot screenshot;
+    private Location location;
 
-    public AppOutputWithScreenshot(AppOutput appOutput, EyesScreenshot screenshot) {
+    public AppOutputWithScreenshot(AppOutput appOutput, EyesScreenshot screenshot, Location location) {
         this.appOutput = appOutput;
         this.screenshot = screenshot;
+        this.location = location;
     }
 
     public AppOutput getAppOutput() {

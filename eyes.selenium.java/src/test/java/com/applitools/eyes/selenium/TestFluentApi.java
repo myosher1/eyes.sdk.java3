@@ -235,4 +235,9 @@ public class TestFluentApi extends TestSetup {
         eyes.check(targets.toArray(new ICheckSettings[0]));
         eyes.setStitchMode(originalStitchMode);
     }
+
+    @Test
+    public void TestSimpleRegion(){
+        getEyes().check(Target.window().region(new Region(50, 50, 100, 100)));
+    }
 }

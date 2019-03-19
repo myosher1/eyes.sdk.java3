@@ -168,11 +168,12 @@ public class MatchWindowTask {
         int currentTypeRegionCount = regionSelectors.get(0).length;
 
         List<List<MutableRegion>> mutableRegions = new ArrayList<>();
-        mutableRegions.add(new ArrayList<MutableRegion>());
-        mutableRegions.add(new ArrayList<MutableRegion>());
-        mutableRegions.add(new ArrayList<MutableRegion>());
-        mutableRegions.add(new ArrayList<MutableRegion>());
-        mutableRegions.add(new ArrayList<MutableRegion>());
+        mutableRegions.add(new ArrayList<MutableRegion>()); // Ignore Regions
+        mutableRegions.add(new ArrayList<MutableRegion>()); // Layout Regions
+        mutableRegions.add(new ArrayList<MutableRegion>()); // Strict Regions
+        mutableRegions.add(new ArrayList<MutableRegion>()); // Content Regions
+        mutableRegions.add(new ArrayList<MutableRegion>()); // Floating Regions
+        mutableRegions.add(new ArrayList<MutableRegion>()); // Target Element Location
 
         for (Region region : regions) {
             boolean canAddRegion = false;
@@ -190,10 +191,18 @@ public class MatchWindowTask {
             mutableRegions.get(currentTypeIndex).add(mr);
         }
 
-        imageMatchSettings.setIgnoreRegions(filterEmptyEntries(mutableRegions.get(0)));
-        imageMatchSettings.setLayoutRegions(filterEmptyEntries(mutableRegions.get(1)));
-        imageMatchSettings.setStrictRegions(filterEmptyEntries(mutableRegions.get(2)));
-        imageMatchSettings.setContentRegions(filterEmptyEntries(mutableRegions.get(3)));
+        Location location = Location.ZERO;
+
+        // If target element location available
+        if (mutableRegions.get(5).size() > 0)
+        {
+            location = mutableRegions.get(5).get(0).getLocation();
+        }
+
+        imageMatchSettings.setIgnoreRegions(filterEmptyEntries(mutableRegions.get(0), location));
+        imageMatchSettings.setLayoutRegions(filterEmptyEntries(mutableRegions.get(1), location));
+        imageMatchSettings.setStrictRegions(filterEmptyEntries(mutableRegions.get(2), location));
+        imageMatchSettings.setContentRegions(filterEmptyEntries(mutableRegions.get(3), location));
 
         List<FloatingMatchSettings> floatingMatchSettings = new ArrayList<>();
         for (int i = 0; i < regionSelectors.get(4).length; i++) {
@@ -219,10 +228,11 @@ public class MatchWindowTask {
         imageMatchSettings.setFloatingRegions(floatingMatchSettings.toArray(new FloatingMatchSettings[0]));
     }
 
-    private static MutableRegion[] filterEmptyEntries(List<MutableRegion> list) {
-        for (int i = list.size() - 1; i >= 0; i--) {
-            MutableRegion mutableRegion = list.get(i);
-            if (mutableRegion.getArea() == 0) list.remove(i);
+    private static MutableRegion[] filterEmptyEntries(List<MutableRegion> list, Location location) {
+        for (int i = list.size() - 1; i >= 0; i--)
+        {
+            if (list.get(i).getArea() == 0) list.remove(i);
+            list.get(i).offset(-location.getX(), -location.getY());
         }
         return list.toArray(new MutableRegion[0]);
     }

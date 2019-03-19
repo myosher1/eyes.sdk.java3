@@ -3,6 +3,7 @@ package com.applitools.eyes.fluent;
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;
+import com.applitools.eyes.visualgridclient.model.VisualGridSelector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -442,6 +443,11 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     @Override
     public boolean isEnablePatterns() {
         return enablePatterns;
+    }
+
+    @Override
+    public VisualGridSelector GetTargetSelector() {
+        return null;
     }
 
     @Override
