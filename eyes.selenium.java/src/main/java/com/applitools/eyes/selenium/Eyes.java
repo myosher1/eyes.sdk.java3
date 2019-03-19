@@ -569,7 +569,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param value The property value.
      */
     public void addProperty(String name, String value) {
-        if (isVisualGridEyes) {
+        if (!isVisualGridEyes) {
             this.seleniumEyes.addProperty(name, value);
         }
     }
@@ -578,7 +578,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * Clears the list of custom properties.
      */
     public void clearProperties() {
-        if (isVisualGridEyes) {
+        if (!isVisualGridEyes) {
             this.seleniumEyes.clearProperties();
         }
     }

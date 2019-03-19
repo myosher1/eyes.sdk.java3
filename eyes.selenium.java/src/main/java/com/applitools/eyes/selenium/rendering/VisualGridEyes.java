@@ -9,10 +9,13 @@ import com.applitools.eyes.config.ISeleniumConfigurationSetter;
 import com.applitools.eyes.fluent.CheckSettings;
 import com.applitools.eyes.fluent.GetFloatingRegion;
 import com.applitools.eyes.fluent.GetRegion;
+import com.applitools.eyes.selenium.fluent.ISeleniumCheckTarget;
+import com.applitools.eyes.selenium.fluent.SeleniumCheckSettings;
 import com.applitools.eyes.visualgridclient.model.*;
 import com.applitools.eyes.visualgridclient.services.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -380,6 +383,7 @@ public class VisualGridEyes implements IRenderingEyes {
     public void check(String name, ICheckSettings checkSettings) {
         if (getIsDisabled()) return;
         ArgumentGuard.notNull(checkSettings, "checkSettings");
+        trySetTargetSelector((SeleniumCheckSettings)checkSettings);
         checkSettings = checkSettings.withName(name);
         this.check(checkSettings);
     }
@@ -440,6 +444,25 @@ public class VisualGridEyes implements IRenderingEyes {
         logger.verbose("created renderTask  (" + checkSettings.toString() + ")");
     }
 
+    private void trySetTargetSelector(SeleniumCheckSettings checkSettings)
+    {
+        ISeleniumCheckTarget seleniumCheckTarget = checkSettings;
+        WebElement element = seleniumCheckTarget.getTargetElement();
+        if (element == null)
+        {
+            By targetSelector = seleniumCheckTarget.getTargetSelector();
+            if (targetSelector != null)
+            {
+                element = webDriver.findElement(targetSelector);
+            }
+        }
+
+        if (element == null) return;
+
+        String xpath = (String)jsExecutor.executeScript(GET_ELEMENT_XPATH_JS, element);
+        VisualGridSelector vgs = new VisualGridSelector(xpath, "target");
+        checkSettings.setTargetSelector(vgs);
+    }
     private synchronized List<Task> addOpenTaskToAllRunningTest() {
         logger.verbose("enter");
         List<Task> tasks = new ArrayList<>();
@@ -529,6 +552,7 @@ public class VisualGridEyes implements IRenderingEyes {
         for (List<WebElementRegion> elementList : elementLists) {
             List<VisualGridSelector> xpaths = new ArrayList<>();
             for (WebElementRegion webElementRegion : elementList) {
+                if (webElementRegion.getElement() == null) continue;
                 String xpath = (String) jsExecutor.executeScript(GET_ELEMENT_XPATH_JS, webElementRegion.getElement());
                 xpaths.add(new VisualGridSelector(xpath, webElementRegion.getRegion()));
             }
@@ -552,7 +576,22 @@ public class VisualGridEyes implements IRenderingEyes {
         List<WebElementRegion> contentElements = getElementsFromRegions(Arrays.asList(contentRegions));
         List<WebElementRegion> floatingElements = getElementsFromRegions(Arrays.asList(floatingRegions));
 
-        List<WebElementRegion>[] lists = new List[]{ignoreElements, layoutElements, strictElements, contentElements, floatingElements};
+
+        WebElement targetElement = ((ISeleniumCheckTarget)csInternal).getTargetElement();
+        if (targetElement == null)
+        {
+            By targetSelector = ((ISeleniumCheckTarget)csInternal).getTargetSelector();
+            if (targetSelector != null)
+            {
+                targetElement = webDriver.findElement(targetSelector);
+            }
+        }
+
+        WebElementRegion target = new WebElementRegion(targetElement, "target");
+        List<WebElementRegion> targetElementList = new ArrayList<>();
+        targetElementList.add(target);
+
+        List<WebElementRegion>[] lists = new List[]{ignoreElements, layoutElements, strictElements, contentElements, floatingElements, targetElementList};
         return lists;
     }
 

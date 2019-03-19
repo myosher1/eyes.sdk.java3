@@ -3,6 +3,8 @@ package com.applitools.eyes.selenium.fluent;
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;
 import com.applitools.eyes.fluent.CheckSettings;
+import com.applitools.eyes.fluent.ICheckSettingsInternal;
+import com.applitools.eyes.visualgridclient.model.VisualGridSelector;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -22,24 +24,28 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
 
     // For Rendering Grid
     private static final String BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot";
-    private String selector;
+    private VisualGridSelector selector;
     private Region region;
     private Map<String, String> scriptHooks = new HashMap<>();
     private boolean isSendDom;
 
-    SeleniumCheckSettings() {
+    public SeleniumCheckSettings() {
     }
 
-    SeleniumCheckSettings(Region region) {
+    public SeleniumCheckSettings(Region region) {
         super(region);
     }
 
-    SeleniumCheckSettings(By targetSelector) {
+    public SeleniumCheckSettings(By targetSelector) {
         this.targetSelector = targetSelector;
     }
 
-    SeleniumCheckSettings(WebElement targetElement) {
+    public SeleniumCheckSettings(WebElement targetElement) {
         this.targetElement = targetElement;
+    }
+
+    public SeleniumCheckSettings(String tag) {
+        this.name = tag;
     }
 
     @Override
@@ -414,12 +420,7 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return scrollRootSelector;
     }
 
-    public SeleniumCheckSettings(String selector) {
-        this.selector = selector;
-    }
-
-    public SeleniumCheckSettings(String selector, Region region, boolean isSendDom) {
-        this.selector = selector;
+    public SeleniumCheckSettings(Region region, boolean isSendDom) {
         this.region = region;
         this.isSendDom = isSendDom;
     }
@@ -432,16 +433,23 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     public String getSizeMode() {
 
 
-        if (region != null) {
+        ICheckSettingsInternal checkSettingsInternal = this;
+        boolean stitchContent = checkSettingsInternal.getStitchContent();
+        if (region == null) {
+            region  = checkSettingsInternal.getTargetRegion();
+        }
+        if (region == null && GetTargetSelector() == null)
+        {
+            return stitchContent ? "full-page" : "viewport";
+        }
+        else if (region != null)
+        {
             return "region";
-        } else if(selector != null){
+        }
+        else /* if (selector != null) */
+        {
             return "selector";
         }
-          return "full-page";
-    }
-
-    public String getSelector() {
-        return selector;
     }
 
     public Region getRegion() {
@@ -470,4 +478,15 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         clone.setScirptHook(hook);
         return clone;
     }
+
+    @Override
+    public VisualGridSelector GetTargetSelector() {
+        return this.selector;
+    }
+
+    public void setTargetSelector(VisualGridSelector selector) {
+        this.selector = selector;
+    }
+
+
 }

@@ -1,10 +1,7 @@
 package com.applitools.eyes.visualgridclient.services;
 
 import com.applitools.ICheckSettings;
-import com.applitools.eyes.Logger;
-import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.Region;
-import com.applitools.eyes.TestResults;
+import com.applitools.eyes.*;
 import com.applitools.eyes.config.ISeleniumConfigurationProvider;
 import com.applitools.eyes.visualgridclient.model.*;
 import com.applitools.utils.GeneralUtils;
@@ -102,7 +99,17 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
                             logger.verbose("CHECKING IMAGE WITH NULL LOCATION - ");
                             logger.verbose(renderResult.toString());
                         }
-                        eyesConnector.matchWindow(imageLocation, domLocation, checkSettings, regions, this.regionSelectors);
+                        Location location = null;
+                        if (regionSelectors.size() > 0)
+                        {
+                            VisualGridSelector[] targetSelector = regionSelectors.get(regionSelectors.size() - 1);
+                            if (targetSelector.length > 0 && "target".equals(targetSelector[0].getCategory()))
+                            {
+                                location = regions.get(regions.size() - 1).getLocation();
+                            }
+                        }
+
+                        eyesConnector.matchWindow(imageLocation, domLocation, checkSettings, regions, this.regionSelectors, location);
                     } catch (Exception e) {
                         GeneralUtils.logExceptionStackTrace(logger,e);
                     }
@@ -185,7 +192,7 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
     public void setRenderError(String renderId) {
         logger.verbose("enter - renderId: " + renderId);
         for (TaskListener listener : listeners) {
-            exception = new Error("Render Failed for " + this.getBrowserInfo() + " (renderId: " + renderId + ")");
+            exception = new Error("Render Failed for " + this.getBrowserInfo() + " (renderId: " + renderId + ") with reason: ");
             listener.onTaskFailed(exception, this);
         }
         logger.verbose("exit - renderId: " + renderId);

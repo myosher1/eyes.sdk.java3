@@ -2,6 +2,7 @@ package com.applitools;
 
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;
+import com.applitools.eyes.visualgridclient.model.VisualGridSelector;
 
 import java.util.Map;
 
@@ -23,4 +24,6 @@ public interface ICheckSettingsInternal {
     boolean isSendDom();
 
     void setSizeMode(String sizeMode);
+
+    VisualGridSelector GetTargetSelector();
 }

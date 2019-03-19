@@ -518,7 +518,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
             RenderBrowserInfo browserInfo = task.getBrowserInfo();
 
-            RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), ((ICheckSettingsInternal) checkSettings).getSizeMode(), rcInternal.getRegion(), browserInfo.getEmulationInfo());
+            RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), ((ICheckSettingsInternal) checkSettings).getSizeMode(), rcInternal.getRegion(), rcInternal.GetTargetSelector(), browserInfo.getEmulationInfo());
 
             RenderRequest request = new RenderRequest(this.renderingInfo.getResultsUrl(), url, dom,
                     resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), rcInternal.getScriptHooks(), regionSelectorsList, rcInternal.isSendDom(), task);
@@ -783,11 +783,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         List<String> ids = getRenderIds(runningRenders.keySet());
         logger.verbose("render ids : " + ids);
         int numOfIterations = 0;
-
+        List<RenderStatusResults> renderStatusResultsList = null;
         boolean isMaxIterationNotReached = false;
         do {
-
-            List<RenderStatusResults> renderStatusResultsList = null;
             try {
                 renderStatusResultsList = this.eyesConnector.renderStatusById(ids.toArray(new String[0]));
             } catch (Exception e) {
@@ -823,12 +821,18 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
         } while (!ids.isEmpty() && isMaxIterationNotReached);
 
+        if(!ids.isEmpty()){
+            logger.verbose("Render ids that didn't complete in time : ");
+            logger.verbose(ids.toString());
+        }
+
         for (String id : ids) {
             for (RunningRender renderedRender : runningRenders.keySet()) {
-                if (renderedRender.getRenderId().equalsIgnoreCase(id)) {
+                String renderId = renderedRender.getRenderId();
+                if (renderId.equalsIgnoreCase(id)) {
+                    logger.verbose("removing failed render id: " + id);
                     Task task = runningRenders.get(renderedRender).getTask();
                     task.setRenderError(id);
-                    logger.verbose("removing failed render id: " + id);
                     break;
                 }
             }

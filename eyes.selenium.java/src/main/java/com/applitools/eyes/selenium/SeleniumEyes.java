@@ -477,8 +477,9 @@ public class SeleniumEyes extends EyesBase {
             debugScreenshotsProvider.save(subScreenshot.getImage(), String.format("subscreenshot_%s", name));
 
             ImageMatchSettings ims = mwt.createImageMatchSettings(checkSettingsInternal, subScreenshot, this);
+            Location location = subScreenshot.getLocationInScreenshot(Location.ZERO, CoordinatesType.SCREENSHOT_AS_IS);
             AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()), null, null);
-            AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, subScreenshot);
+            AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, subScreenshot, location);
             MatchResult matchResult = mwt.performMatch(new ArrayList<Trigger>(), appOutputWithScreenshot, name, false, checkSettingsInternal,ims, this);
 
             logger.verbose("matchResult.asExcepted: " + matchResult.getAsExpected());
