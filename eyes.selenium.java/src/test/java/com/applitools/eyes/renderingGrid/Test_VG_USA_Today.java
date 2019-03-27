@@ -4,7 +4,7 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.TestResultSummary;
@@ -76,15 +76,15 @@ public class Test_VG_USA_Today {
         } catch(Exception e){}
 
         try {
-            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
-            seleniumConfiguration.setTestName("USAToday - RCA demo");
-            seleniumConfiguration.setAppName("USA Today website");
+            Configuration configuration = new Configuration();
+            configuration.setTestName("USAToday - RCA demo");
+            configuration.setAppName("USA Today website");
 
-            seleniumConfiguration.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.CHROME);
+            configuration.addBrowser(1200, 800, Configuration.BrowserType.CHROME);
 
             eyes.getLogger().log("created configurations for url " + testedUrl);
 
-            eyes.setConfiguration(seleniumConfiguration);
+            eyes.setConfiguration(configuration);
             eyes.open(webDriver);
 
             eyes.getLogger().log("running check for url " + testedUrl);

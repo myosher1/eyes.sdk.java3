@@ -5,6 +5,7 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.config.*;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
+import com.applitools.eyes.selenium.IConfigurationGetter;
 import com.applitools.eyes.visualgridclient.services.IEyesConnector;
 import com.applitools.eyes.visualgridclient.services.IResourceFuture;
 import com.applitools.eyes.visualgridclient.model.*;
@@ -19,7 +20,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     private String userAgent;
     private String device;
     private RectangleSize deviceSize;
-    private Configuration config = new SeleniumConfiguration();
+    private IConfigurationGetter configurationGetter;
 
     public EyesConnector(RenderBrowserInfo browserInfo, RateLimiter rateLimiter) {
         this.browserInfo = browserInfo;
@@ -28,22 +29,11 @@ class EyesConnector extends EyesBase implements IEyesConnector {
 
     /**
      * ﻿Starts a new test without setting the viewport size of the AUT.
+     * @param config
      */
-    public void open(ISeleniumConfigurationProvider config) {
+    public void open(IConfigurationGetter config) {
+        this.configurationGetter = config;
         logger.verbose("opening EyesConnector with viewport size: " + browserInfo.getViewportSize());
-        this.config = config.get().cloneConfig();
-        if (device != null) {
-            this.config.setViewportSize(deviceSize);
-        } else if (browserInfo.getViewportSize() != null) {
-            this.config.setViewportSize(browserInfo.getViewportSize());
-        } else {
-            //this means it's a emulationInfo
-            if (browserInfo.getEmulationInfo() instanceof EmulationDevice) {
-                EmulationDevice emulationDevice = (EmulationDevice) browserInfo.getEmulationInfo();
-                this.config.setViewportSize(new RectangleSize(emulationDevice.getWidth(), emulationDevice.getHeight()));
-            }
-        }
-        this.config.setBaselineEnvName(browserInfo.getBaselineEnvName());
         openBase();
     }
 
@@ -148,13 +138,13 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    protected <T extends IConfigurationGetter> T getConfigGetter() {
-        return (T) config;
+    protected <T extends com.applitools.eyes.config.IConfigurationGetter> T getConfigGetter() {
+        return (T) configurationGetter;
     }
 
     @Override
     protected <T extends IConfigurationSetter> T getConfigSetter() {
-        return (T) config;
+        return (T) configurationGetter;
     }
 
     public void setRenderInfo(RenderingInfo renderInfo) {
@@ -223,5 +213,35 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     @Override
     public void setDeviceSize(RectangleSize deviceSize) {
         this.deviceSize = deviceSize;
+    }
+
+    @Override
+    public RunningSession getSession() {
+        return this.runningSession;
+    }
+
+    @Override
+    protected RectangleSize getViewportSizeForOpen() {
+        if (device != null) {
+            return deviceSize;
+        } else if (browserInfo.getViewportSize() != null) {
+            return browserInfo.getViewportSize();
+        } else {
+            //this means it's a emulationInfo
+            if (browserInfo.getEmulationInfo() instanceof EmulationDevice) {
+                EmulationDevice emulationDevice = (EmulationDevice) browserInfo.getEmulationInfo();
+                return new RectangleSize(emulationDevice.getWidth(), emulationDevice.getHeight());
+            }
+        }
+        return super.getViewportSizeForOpen();
+    }
+
+    @Override
+    protected String getBaselineEnvName() {
+        String baselineEnvName = this.browserInfo.getBaselineEnvName();
+        if (baselineEnvName != null) {
+            return baselineEnvName;
+        }
+        return getConfigGetter().getBaselineEnvName();
     }
 }

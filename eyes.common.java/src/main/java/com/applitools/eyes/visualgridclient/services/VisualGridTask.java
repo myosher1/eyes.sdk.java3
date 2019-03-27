@@ -2,7 +2,7 @@ package com.applitools.eyes.visualgridclient.services;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
-import com.applitools.eyes.config.ISeleniumConfigurationProvider;
+import com.applitools.eyes.selenium.IConfigurationGetter;
 import com.applitools.eyes.visualgridclient.model.*;
 import com.applitools.utils.GeneralUtils;
 
@@ -11,15 +11,16 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Task implements Callable<TestResultContainer>, CompletableTask {
+public class VisualGridTask implements Callable<TestResultContainer>, CompletableTask {
 
 
     private final Logger logger;
+
     private boolean isSent;
 
     public enum TaskType {OPEN, CHECK, CLOSE, ABORT}
 
-    private ISeleniumConfigurationProvider configurationProvider;
+    private IConfigurationGetter configurationGetter;
     private TestResults testResults;
 
     private IEyesConnector eyesConnector;
@@ -32,23 +33,22 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
     private RunningTest runningTest;
     private Error exception;
     private RenderingTask renderingTask = null;
-
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
     private final List<VisualGridSelector[]> regionSelectors;
 
     interface TaskListener {
 
-        void onTaskComplete(Task task);
+        void onTaskComplete(VisualGridTask visualGridTask);
 
-        void onTaskFailed(Error e, Task task);
+        void onTaskFailed(Error e, VisualGridTask visualGridTask);
 
         void onRenderComplete();
 
     }
 
-    public Task(ISeleniumConfigurationProvider seleniumConfigurationProvider, TestResults testResults, IEyesConnector eyesConnector, TaskType type, TaskListener runningTestListener,
-                ICheckSettings checkSettings, RunningTest runningTest, List<VisualGridSelector[]> regionSelectors) {
-        this.configurationProvider = seleniumConfigurationProvider;
+    public VisualGridTask(IConfigurationGetter seleniumConfigurationProvider, TestResults testResults, IEyesConnector eyesConnector, TaskType type, TaskListener runningTestListener,
+                          ICheckSettings checkSettings, RunningTest runningTest, List<VisualGridSelector[]> regionSelectors) {
+        this.configurationGetter = seleniumConfigurationProvider;
         this.testResults = testResults;
         this.eyesConnector = eyesConnector;
         this.type = type;
@@ -81,65 +81,60 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
             testResults = null;
             switch (type) {
                 case OPEN:
-                    logger.log("Task.run opening task");
+                    logger.verbose("VisualGridTask.run opening task");
                     String userAgent = renderResult.getUserAgent();
                     RectangleSize deviceSize = renderResult.getDeviceSize();
                     eyesConnector.setUserAgent(userAgent);
                     eyesConnector.setDeviceSize(deviceSize);
-                    eyesConnector.open(configurationProvider);
+                    eyesConnector.open(configurationGetter);
+                    logger.verbose("Eyes Open Done.");
                     break;
 
                 case CHECK:
-                    logger.log("Task.run check task");
-                    try {
-                        String imageLocation = renderResult.getImageLocation();
-                        String domLocation = renderResult.getDomLocation();
-                        List<Region> regions = renderResult.getSelectorRegions();
-                        if (imageLocation == null) {
-                            logger.verbose("CHECKING IMAGE WITH NULL LOCATION - ");
-                            logger.verbose(renderResult.toString());
-                        }
-                        Location location = null;
-                        if (regionSelectors.size() > 0)
-                        {
-                            VisualGridSelector[] targetSelector = regionSelectors.get(regionSelectors.size() - 1);
-                            if (targetSelector.length > 0 && "target".equals(targetSelector[0].getCategory()))
-                            {
-                                location = regions.get(regions.size() - 1).getLocation();
-                            }
-                        }
+                    logger.verbose("VisualGridTask.run check task");
 
-                        eyesConnector.matchWindow(imageLocation, domLocation, checkSettings, regions, this.regionSelectors, location);
-                    } catch (Exception e) {
-                        GeneralUtils.logExceptionStackTrace(logger,e);
+                    String imageLocation = renderResult.getImageLocation();
+                    String domLocation = renderResult.getDomLocation();
+                    List<Region> regions = renderResult.getSelectorRegions();
+                    if (imageLocation == null) {
+                        logger.verbose("CHECKING IMAGE WITH NULL LOCATION - ");
+                        logger.verbose(renderResult.toString());
                     }
+                    Location location = null;
+                    if (regionSelectors.size() > 0) {
+                        VisualGridSelector[] targetSelector = regionSelectors.get(regionSelectors.size() - 1);
+                        if (targetSelector.length > 0 && "target".equals(targetSelector[0].getCategory())) {
+                            location = regions.get(regions.size() - 1).getLocation();
+                        }
+                    }
+
+                    eyesConnector.matchWindow(imageLocation, domLocation, checkSettings, regions, this.regionSelectors, location);
+                    logger.verbose("match done");
                     break;
 
                 case CLOSE:
-                    logger.log("Task.run close task");
-                    testResults = eyesConnector.close(configurationProvider.get().isThrowExceptionOn());
+                    logger.verbose("VisualGridTask.run close task");
+                    testResults = eyesConnector.close(configurationGetter.isThrowExceptionOn());
+                    logger.verbose("Eyes Close Done.");
                     break;
 
                 case ABORT:
-                    logger.log("Task.run abort task");
+                    logger.verbose("VisualGridTask.run abort task");
                     if (runningTest.isTestOpen()) {
                         testResults = eyesConnector.abortIfNotClosed();
-                    }
-                    else{
-                        logger.log("Closing a not opened test");
+                    } else {
+                        logger.verbose("Closing a not opened test");
                     }
             }
             @SuppressWarnings("UnnecessaryLocalVariable")
             TestResultContainer testResultContainer = new TestResultContainer(testResults, this.exception);
             notifySuccessAllListeners();
-            return testResultContainer;
-        } catch (Exception e) {
-            GeneralUtils.logExceptionStackTrace(logger, e);
-            notifyFailureAllListeners(new Error(e));
-        } finally {
-            logger.verbose("marking task as complete: " + this.configurationProvider.get().getTestName());
             this.isTaskComplete.set(true);
-            //call the callback
+            return testResultContainer;
+        } catch (Throwable e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+            this.exception = new Error(e);
+            notifyFailureAllListeners(new Error(e));
         }
         return null;
     }
@@ -189,10 +184,10 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
         this.listeners.add(listener);
     }
 
-    public void setRenderError(String renderId) {
+    public void setRenderError(String renderId, String error) {
         logger.verbose("enter - renderId: " + renderId);
         for (TaskListener listener : listeners) {
-            exception = new Error("Render Failed for " + this.getBrowserInfo() + " (renderId: " + renderId + ") with reason: ");
+            exception = new Error("Render Failed for " + this.getBrowserInfo() + " (renderId: " + renderId + ") with reason: " + error);
             listener.onTaskFailed(exception, this);
         }
         logger.verbose("exit - renderId: " + renderId);
@@ -210,11 +205,16 @@ public class Task implements Callable<TestResultContainer>, CompletableTask {
 
     @Override
     public String toString() {
-        return "Task - Type: " + type + " ; Browser Info: " + getBrowserInfo();
+        return "VisualGridTask - Type: " + type + " ; Browser Info: " + getBrowserInfo();
     }
 
     public void setRenderingTask(RenderingTask renderingTask) {
         this.renderingTask = renderingTask;
     }
+
+    public RunningSession getSession(){
+        return this.eyesConnector.getSession();
+    }
+
 }
 

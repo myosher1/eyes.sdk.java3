@@ -2,10 +2,10 @@ package com.applitools.eyes.visualgridclient.services;
 
 public class ScoreTask {
 
-    private Task task;
+    private VisualGridTask task;
     private int score;
 
-    ScoreTask(Task task, int score) {
+    ScoreTask(VisualGridTask task, int score) {
         this.task = task;
         this.score = score;
     }
@@ -14,7 +14,7 @@ public class ScoreTask {
         return score;
     }
 
-    Task getTask(){
+    VisualGridTask getVisualGridTask(){
         task.setIsSent();
         return task;
     }

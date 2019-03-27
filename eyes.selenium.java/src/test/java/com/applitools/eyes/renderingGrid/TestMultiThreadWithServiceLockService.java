@@ -4,12 +4,12 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.CompletableTask;
 import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
-import com.applitools.eyes.visualgridclient.services.Task;
+import com.applitools.eyes.visualgridclient.services.VisualGridTask;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -55,9 +55,9 @@ public final class TestMultiThreadWithServiceLockService {
             public void run() {
                 String baselineEnvName = "";
                 TestThreadMethod("VG-MultiThreadBatchC11", threadALock,
-                        new RenderBrowserInfo(800, 600, SeleniumConfiguration.BrowserType.CHROME, baselineEnvName),
-                        new RenderBrowserInfo(700, 500, SeleniumConfiguration.BrowserType.CHROME, baselineEnvName),
-                        new RenderBrowserInfo(400, 300, SeleniumConfiguration.BrowserType.CHROME, baselineEnvName));
+                        new RenderBrowserInfo(800, 600, Configuration.BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(700, 500, Configuration.BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(400, 300, Configuration.BrowserType.CHROME, baselineEnvName));
             }
         }, "ThreadA");
 
@@ -66,8 +66,8 @@ public final class TestMultiThreadWithServiceLockService {
             public void run() {
                 String baselineEnvName = "";
                 TestThreadMethod("VG-MultiThreadBatchC22", threadBLock,
-                        new RenderBrowserInfo(840, 680, SeleniumConfiguration.BrowserType.CHROME, baselineEnvName),
-                        new RenderBrowserInfo(750, 530, SeleniumConfiguration.BrowserType.CHROME, baselineEnvName));
+                        new RenderBrowserInfo(840, 680, Configuration.BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(750, 530, Configuration.BrowserType.CHROME, baselineEnvName));
             }
         }, "ThreadB");
 
@@ -85,9 +85,9 @@ public final class TestMultiThreadWithServiceLockService {
 
 
         //Get all tasks
-        List<CompletableTask> allOpenTasks = renderingManager.getAllTasksByType(Task.TaskType.OPEN);
-        List<CompletableTask> allCheckTasks = renderingManager.getAllTasksByType(Task.TaskType.CHECK);
-        List<CompletableTask> allCloseTasks = renderingManager.getAllTasksByType(Task.TaskType.CLOSE);
+        List<CompletableTask> allOpenTasks = renderingManager.getAllTasksByType(VisualGridTask.TaskType.OPEN);
+        List<CompletableTask> allCheckTasks = renderingManager.getAllTasksByType(VisualGridTask.TaskType.CHECK);
+        List<CompletableTask> allCloseTasks = renderingManager.getAllTasksByType(VisualGridTask.TaskType.CLOSE);
         List<CompletableTask> allRenderingTasks = (List<CompletableTask>) renderingManager.getAllRenderingTasks();
 
 
@@ -170,19 +170,19 @@ public final class TestMultiThreadWithServiceLockService {
 
     private void checkAllTaskAreNotComplete(List<CompletableTask> allOpenTasks, String type) throws Exception {
         for (CompletableTask task : allOpenTasks) {
-            Assert.assertFalse(task.getIsTaskComplete(), type + " Task is complete without notify openerService");
+            Assert.assertFalse(task.getIsTaskComplete(), type + " VisualGridTask is complete without notify openerService");
         }
     }
 
     private void TestThreadMethod(String batchName, Object lock, RenderBrowserInfo... browsersInfo) {
         Eyes eyes = new Eyes(renderingManager);
         eyes.setBatch(new BatchInfo(batchName));
-        SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
-        seleniumConfiguration.setTestName("Open Concurrency with Batch 3");
-        seleniumConfiguration.setAppName("RenderingGridIntegration");
-        seleniumConfiguration.addBrowsers(browsersInfo);
+        Configuration configuration = new Configuration();
+        configuration.setTestName("Open Concurrency with Batch 3");
+        configuration.setAppName("RenderingGridIntegration");
+        configuration.addBrowsers(browsersInfo);
         eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888));
-        eyes.setConfiguration(seleniumConfiguration);
+        eyes.setConfiguration(configuration);
         eyes.open(webDriver);
         eyes.check(Target.window().withName("test").sendDom(false));
         TestResults close = eyes.close();

@@ -4,7 +4,7 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.*;
@@ -135,16 +135,16 @@ public class TestRenderingGridServiceVans {
         logger.log("creating WebDriver: " + testedUrl);
 
         try {
-            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
-            seleniumConfiguration.setTestName("Vans Gallery page - with ");
-            seleniumConfiguration.setAppName("RenderingGridIntegration");
-            EmulationDevice emulationDevice = new EmulationDevice(400 , 800 , 2.25f, true, ScreenOrientation.PORTRAIT);
-            seleniumConfiguration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME);
-            seleniumConfiguration.addBrowser(1600, 1200, SeleniumConfiguration.BrowserType.CHROME);
-            seleniumConfiguration.addDeviceEmulation(emulationDevice);
-            seleniumConfiguration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.iPhone6_7_8_Plus, ScreenOrientation.LANDSCAPE));
+            Configuration configuration = new Configuration();
+            configuration.setTestName("Vans Gallery page - with ");
+            configuration.setAppName("RenderingGridIntegration");
+            EmulationDevice emulationDevice = new EmulationDevice(400 , 800 , 2.25f, ScreenOrientation.PORTRAIT);
+            configuration.addBrowser(800, 600, Configuration.BrowserType.CHROME);
+            configuration.addBrowser(1600, 1200, Configuration.BrowserType.CHROME);
+            configuration.addDeviceEmulation(emulationDevice);
+            configuration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.iPhone6_7_8_Plus, ScreenOrientation.LANDSCAPE));
             logger.log("created configurations for url " + testedUrl);
-            eyes.setConfiguration(seleniumConfiguration);
+            eyes.setConfiguration(configuration);
             eyes.open(webDriver);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);

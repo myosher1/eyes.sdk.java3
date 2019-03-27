@@ -4,7 +4,7 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.EmulationDevice;
@@ -24,8 +24,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class TestVG_EmulationDevices {
-    private static final SeleniumConfiguration.BrowserType CHROME = SeleniumConfiguration.BrowserType.CHROME;
-    private static final SeleniumConfiguration.BrowserType FIREFOX = SeleniumConfiguration.BrowserType.FIREFOX;
+    private static final Configuration.BrowserType CHROME = Configuration.BrowserType.CHROME;
+    private static final Configuration.BrowserType FIREFOX = Configuration.BrowserType.FIREFOX;
     private static final EmulationInfo.DeviceName IPHONE4 = EmulationInfo.DeviceName.iPhone_4;
     private static final ScreenOrientation PORTRAIT = ScreenOrientation.PORTRAIT;
     private EyesRunner visualGridRunner;
@@ -73,21 +73,21 @@ public class TestVG_EmulationDevices {
         logger.log("creating WebDriver: " + testedUrl);
 
         try {
-            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
-            seleniumConfiguration.setTestName("VG hello world - " + testedUrl);
-            seleniumConfiguration.setAppName("VG hello world");
-            seleniumConfiguration.setBatch(batchInfo);
-            seleniumConfiguration.setBaselineEnvName("michael");
-            EmulationDevice emulationDevice = new EmulationDevice(300, 400, 1f, true, ScreenOrientation.LANDSCAPE);
-            seleniumConfiguration.addDeviceEmulation(emulationDevice);
-            seleniumConfiguration.addDeviceEmulation(new EmulationInfo(IPHONE4, PORTRAIT));
+            Configuration configuration = new Configuration();
+            configuration.setTestName("VG hello world - " + testedUrl);
+            configuration.setAppName("VG hello world");
+            configuration.setBatch(batchInfo);
+            configuration.setBaselineEnvName("michael");
+            EmulationDevice emulationDevice = new EmulationDevice(300, 400, 1f, ScreenOrientation.LANDSCAPE);
+            configuration.addDeviceEmulation(emulationDevice);
+            configuration.addDeviceEmulation(new EmulationInfo(IPHONE4, PORTRAIT));
             EmulationInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
-            seleniumConfiguration.addDeviceEmulation(emulation);
-            seleniumConfiguration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.iPhone_X, ScreenOrientation.PORTRAIT));
-            seleniumConfiguration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE));
+            configuration.addDeviceEmulation(emulation);
+            configuration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.iPhone_X, ScreenOrientation.PORTRAIT));
+            configuration.addDeviceEmulation(new EmulationInfo(EmulationInfo.DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE));
             logger.log("created configurations for url " + testedUrl);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
-            eyes.setConfiguration(seleniumConfiguration);
+            eyes.setConfiguration(configuration);
             eyes.open(webDriver, "Michael's App name", " michael test name");
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);

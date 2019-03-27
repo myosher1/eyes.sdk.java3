@@ -1,11 +1,11 @@
-package com.applitools.eyes.config;
+package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.selenium.StitchMode;
+import com.applitools.eyes.config.Configuration;
 import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
 
 import java.util.List;
 
-public interface ISeleniumConfigurationGetter extends IConfigurationGetter{
+public interface IConfigurationGetter extends com.applitools.eyes.config.IConfigurationGetter {
 
     boolean getForceFullPageScreenshot();
 

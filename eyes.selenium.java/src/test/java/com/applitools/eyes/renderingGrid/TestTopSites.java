@@ -1,7 +1,7 @@
 package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.*;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.*;
@@ -53,31 +53,33 @@ public class TestTopSites {
     private Eyes initEyes(WebDriver webDriver, String testedUrl) {
         Eyes eyes = new Eyes(visualGridRunner);
         BatchInfo batchInfo = new BatchInfo("Top Ten Sites");
-        batchInfo.setId("Target");
+        batchInfo.setId("Target2");
         eyes.setBatch(batchInfo);
-
+        eyes.setEnvName("TTS - migel");
         initLogging(testedUrl, eyes);
 
         Logger logger = eyes.getLogger();
         logger.log("creating WebDriver: " + testedUrl);
 
         try {
-            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
-            seleniumConfiguration.setTestName("Top 10 websites - " + testedUrl);
-            seleniumConfiguration.setAppName("Top Ten Sites");
-            seleniumConfiguration.setBatch(new BatchInfo("TTS - config batch"));
-            String environment = "";
+            Configuration configuration = new Configuration();
+            configuration.setTestName("Top 10 websites - " + testedUrl);
+            configuration.setAppName("Top Ten Sites");
+            configuration.setBatch(new BatchInfo("TTS - config batch"));
+            configuration.setBranchName("TTS - config branch");
+            configuration.setBaselineEnvName("My Other Env Name");
+            String environment = "My env name";
             EmulationInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
-            seleniumConfiguration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME, environment);
-            seleniumConfiguration.addBrowser(700, 500, SeleniumConfiguration.BrowserType.FIREFOX, environment);
-            seleniumConfiguration.addBrowser(700, 500, SeleniumConfiguration.BrowserType.IE, environment);
-            seleniumConfiguration.addBrowser(1600, 1200, SeleniumConfiguration.BrowserType.CHROME, environment);
-            seleniumConfiguration.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.EDGE, environment);
-            seleniumConfiguration.addDeviceEmulation(emulation);
+            configuration.addBrowser(800, 600, Configuration.BrowserType.CHROME, environment);
+            configuration.addBrowser(700, 500, Configuration.BrowserType.FIREFOX, environment);
+            configuration.addBrowser(700, 500, Configuration.BrowserType.IE, environment);
+            configuration.addBrowser(1600, 1200, Configuration.BrowserType.CHROME, environment);
+//            configuration.addBrowser(1200, 800, Configuration.BrowserType.EDGE, environment);
+            configuration.addDeviceEmulation(emulation);
             logger.log("created configurations for url " + testedUrl);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //VisualGridEyes.setServerUrl("https://eyes.applitools.com/");
-            eyes.setConfiguration(seleniumConfiguration);
+            eyes.setConfiguration(configuration);
             eyes.open(webDriver);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);

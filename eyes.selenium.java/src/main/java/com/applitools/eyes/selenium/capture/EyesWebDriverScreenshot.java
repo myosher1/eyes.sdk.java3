@@ -115,7 +115,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
         this.screenshotType = updateScreenshotType(screenshotType, image);
 
         PositionProvider positionProvider;
-        SeleniumEyes eyes = driver.getEyes();
+        Eyes eyes = driver.getEyes();
         PositionProvider currentFramePositionProvider = eyes.getCurrentFramePositionProvider();
         if (currentFramePositionProvider != null) {
             positionProvider = currentFramePositionProvider;

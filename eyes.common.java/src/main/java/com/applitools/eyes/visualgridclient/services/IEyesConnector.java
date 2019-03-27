@@ -2,7 +2,7 @@ package com.applitools.eyes.visualgridclient.services;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
-import com.applitools.eyes.config.ISeleniumConfigurationProvider;
+import com.applitools.eyes.selenium.IConfigurationGetter;
 import com.applitools.eyes.visualgridclient.model.*;
 
 import java.net.URI;
@@ -21,7 +21,7 @@ public interface IEyesConnector {
 
     URI getServerUrl();
 
-    void open(ISeleniumConfigurationProvider configProvider);
+    void open(IConfigurationGetter configProvider);
 
     TestResults close(boolean throwExceptionOn);
 
@@ -60,4 +60,6 @@ public interface IEyesConnector {
     RectangleSize getDeviceSize();
 
     void setDeviceSize(RectangleSize deviceSize);
+
+    RunningSession getSession();
 }

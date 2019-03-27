@@ -1,7 +1,7 @@
 package com.applitools.eyes.demo;
 
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.EmulationDevice;
@@ -34,8 +34,8 @@ public class MinimalVisualGridDemo {
         // Create Eyes object with the runner, meaning it'll be a Visual Grid eyes.
         Eyes eyes = new Eyes(runner);
 
-        // Create SeleniumConfiguration.
-        SeleniumConfiguration sconf = new SeleniumConfiguration();
+        // Create Configuration.
+        Configuration sconf = new Configuration();
 
         // Set test name
         sconf.setTestName("Visual Grid Demo");
@@ -44,17 +44,17 @@ public class MinimalVisualGridDemo {
         sconf.setAppName("Visual Grid Demo");
 
         // Add browsers
-        sconf.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME);
-        sconf.addBrowser(700, 500, SeleniumConfiguration.BrowserType.CHROME);
-        sconf.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.CHROME);
-        sconf.addBrowser(1600, 1200, SeleniumConfiguration.BrowserType.CHROME);
+        sconf.addBrowser(800, 600, Configuration.BrowserType.CHROME);
+        sconf.addBrowser(700, 500, Configuration.BrowserType.CHROME);
+        sconf.addBrowser(1200, 800, Configuration.BrowserType.CHROME);
+        sconf.addBrowser(1600, 1200, Configuration.BrowserType.CHROME);
 
         // Add iPhone 4 device emulation
         EmulationInfo iphone4 = new EmulationInfo(EmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
         sconf.addDeviceEmulation(iphone4);
 
         // Add custom mobile device emulation
-        EmulationDevice customMobile = new EmulationDevice(1024, 768, 2, true, ScreenOrientation.LANDSCAPE);
+        EmulationDevice customMobile = new EmulationDevice(1024, 768, 2, ScreenOrientation.LANDSCAPE);
         sconf.addDeviceEmulation(customMobile);
 
         // Set the configuration object to eyes

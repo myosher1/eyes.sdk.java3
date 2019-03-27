@@ -27,8 +27,10 @@ public class MutableRegion extends Region {
         super(region);
     }
 
-    public Region offset(int x, int y){
-        throw new Error("No Implementation error");
+    public Region offset(int x, int y) {
+        this.setLeft(this.getLeft() + x);
+        this.setTop(this.getTop() + y);
+        return this;
     }
 
 }

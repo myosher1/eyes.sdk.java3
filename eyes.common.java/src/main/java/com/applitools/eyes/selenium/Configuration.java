@@ -1,17 +1,14 @@
-package com.applitools.eyes.config;
+package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.selenium.StitchMode;
-import com.applitools.eyes.visualgridclient.model.EmulationDevice;
-import com.applitools.eyes.visualgridclient.model.EmulationInfo;
-import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
+import com.applitools.eyes.visualgridclient.model.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class SeleniumConfiguration extends Configuration implements ISeleniumConfigurationGetter, ISeleniumConfigurationSetter {
+public class Configuration extends com.applitools.eyes.config.Configuration implements IConfigurationGetter, IConfigurationSetter {
 
     private static final int DEFAULT_WAIT_BEFORE_SCREENSHOTS = 100;
     private boolean forceFullPageScreenshot;
@@ -25,44 +22,46 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     private Boolean isRenderingConfig = false;
 
     public enum BrowserType {CHROME, FIREFOX, IE, EDGE}
+
     private List<RenderBrowserInfo> browsersInfo = new ArrayList<>();
 
-
-
-    public SeleniumConfiguration(SeleniumConfiguration configuration) {
-        super(configuration);
-
-        this.browsersInfo = configuration.browsersInfo;
-        this.isThrowExceptionOn = configuration.isThrowExceptionOn;
-        this.testName = configuration.testName;
+    @SuppressWarnings("IncompleteCopyConstructor")
+    public Configuration(IConfigurationGetter other) {
+        super(other);
+        this.forceFullPageScreenshot = other.getForceFullPageScreenshot();
+        this.waitBeforeScreenshots = other.getWaitBeforeScreenshots();
+        this.stitchMode = other.getStitchMode();
+        this.hideScrollbars = other.getHideScrollbars();
+        this.hideCaret = other.getHideCaret();
+        this.isThrowExceptionOn = other.isThrowExceptionOn();
+        this.isRenderingConfig = other.isRenderingConfig();
+        if (other.getBrowsersInfo() == null) {
+            ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
+            RectangleSize viewportSize = other.getViewportSize();
+            browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, other.getBaselineEnvName()));
+            this.browsersInfo = browsersInfo;
+        } else {
+            this.browsersInfo = other.getBrowsersInfo();
+        }
     }
 
-    public SeleniumConfiguration() {}
+    public Configuration() {
+    }
 
-    public SeleniumConfiguration(RectangleSize viewportSize) {
+    public Configuration(RectangleSize viewportSize) {
         super();
         ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
         browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, null));
         this.browsersInfo = browsersInfo;
     }
 
-    public SeleniumConfiguration(int concurrentSessions, boolean isThrowExceptionOn, String testName) {
+    public Configuration(boolean isThrowExceptionOn, String testName) {
         this.isThrowExceptionOn = isThrowExceptionOn;
         this.testName = testName;
     }
 
-    public SeleniumConfiguration(IConfigurationGetter configuration) {
-        super(configuration);
-        ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
-        RectangleSize viewportSize = configuration.getViewportSize();
-        browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, configuration.getBaselineEnvName()));
-        this.browsersInfo = browsersInfo;
-        this.testName = configuration.getTestName();
-    }
-
-
-    public SeleniumConfiguration(String appName, String testName,
-                                  RectangleSize viewportSize) {
+    public Configuration(String appName, String testName,
+                         RectangleSize viewportSize) {
         super();
         ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
         browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, null));
@@ -71,6 +70,7 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
         this.viewportSize = viewportSize;
         this.setAppName(appName);
     }
+
     @Override
     public boolean getForceFullPageScreenshot() {
         return forceFullPageScreenshot;
@@ -121,38 +121,39 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     }
 
     @Override
-    public ISeleniumConfigurationSetter addBrowsers(RenderBrowserInfo... browsersInfo) {
+    public IConfigurationSetter addBrowsers(RenderBrowserInfo... browsersInfo) {
         this.browsersInfo.addAll(Arrays.asList(browsersInfo));
         return this;
     }
 
     @Override
-    public ISeleniumConfigurationSetter addBrowser(RenderBrowserInfo browserInfo) {
+    public IConfigurationSetter addBrowser(RenderBrowserInfo browserInfo) {
         addBrowserInfo(browserInfo);
         return this;
     }
 
     @Override
-    public ISeleniumConfigurationSetter addBrowser(int width, int height, BrowserType browserType, String baselineEnvName) {
+    public IConfigurationSetter addBrowser(int width, int height, BrowserType browserType, String baselineEnvName) {
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(width, height, browserType, baselineEnvName);
         addBrowser(browserInfo);
         return this;
     }
 
     @Override
-    public ISeleniumConfigurationSetter addBrowser(int width, int height, BrowserType browserType) {
+    public IConfigurationSetter addBrowser(int width, int height, BrowserType browserType) {
         return addBrowser(width, height, browserType, baselineEnvName);
     }
 
     @Override
-    public ISeleniumConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice, String baselineEnvName){
+    public IConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice, String baselineEnvName) {
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationDevice.getWidth(), emulationDevice.getWidth(),
                 BrowserType.CHROME, baselineEnvName);
         addBrowserInfo(browserInfo);
         return this;
     }
+
     @Override
-    public ISeleniumConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice){
+    public IConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice) {
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationDevice, baselineEnvName);
         addBrowserInfo(browserInfo);
         return this;
@@ -163,17 +164,43 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     }
 
     @Override
-    public ISeleniumConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo, String baselineEnvName){
+    public IConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo, String baselineEnvName) {
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
         addBrowserInfo(browserInfo);
         return this;
     }
+
     @Override
-    public ISeleniumConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo){
+    public IConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo) {
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
         addBrowserInfo(browserInfo);
         return this;
     }
+
+    @Override
+    public IConfigurationSetter addDeviceEmulation(EmulationInfo.DeviceName deviceName, ScreenOrientation orientation) {
+        EmulationBaseInfo emulationInfo = new EmulationInfo(deviceName, orientation);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
+        addBrowserInfo(browserInfo);
+        return this;
+    }
+
+    @Override
+    public IConfigurationSetter addDeviceEmulation(EmulationInfo.DeviceName deviceName) {
+        EmulationBaseInfo emulationInfo = new EmulationInfo(deviceName, ScreenOrientation.PORTRAIT);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
+        addBrowserInfo(browserInfo);
+        return this;
+    }
+
+    @Override
+    public IConfigurationSetter addDeviceEmulation(int width, int height) {
+        EmulationBaseInfo emulationInfo = new EmulationDevice(width, height, 1, ScreenOrientation.PORTRAIT);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
+        addBrowserInfo(browserInfo);
+        return this;
+    }
+
     @Override
     public List<RenderBrowserInfo> getBrowsersInfo() {
         if (browsersInfo != null && !browsersInfo.isEmpty()) {
@@ -210,12 +237,12 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     }
 
     @Override
-    public SeleniumConfiguration cloneConfig() {
-        return new SeleniumConfiguration(this);
+    public Configuration cloneConfig() {
+        return new Configuration(this);
     }
 
     @Override
-    public RectangleSize getViewportSize(){
+    public RectangleSize getViewportSize() {
         if (isRenderingConfig) {
             RenderBrowserInfo renderBrowserInfo = this.browsersInfo.get(0);
             return new RectangleSize(renderBrowserInfo.getWidth(), renderBrowserInfo.getHeight());
@@ -242,6 +269,7 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
     public void setRenderingConfig(boolean renderingConfig) {
         isRenderingConfig = renderingConfig;
     }
+
     @Override
     public String toString() {
         return super.toString() +
@@ -249,6 +277,6 @@ public class SeleniumConfiguration extends Configuration implements ISeleniumCon
                 "\n\twaitBeforeScreenshots = " + waitBeforeScreenshots +
                 "\n\tstitchMode = " + stitchMode +
                 "\n\thideScrollbars = " + hideScrollbars +
-                "\n\thideCaret = " + hideCaret ;
+                "\n\thideCaret = " + hideCaret;
     }
 }

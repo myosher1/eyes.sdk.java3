@@ -231,8 +231,13 @@ public class MatchWindowTask {
     private static MutableRegion[] filterEmptyEntries(List<MutableRegion> list, Location location) {
         for (int i = list.size() - 1; i >= 0; i--)
         {
-            if (list.get(i).getArea() == 0) list.remove(i);
-            list.get(i).offset(-location.getX(), -location.getY());
+            MutableRegion mutableRegion = list.get(i);
+            if (mutableRegion.getArea() == 0){
+                list.remove(i);
+            }
+            else{
+                mutableRegion.offset(-location.getX(), -location.getY());
+            }
         }
         return list.toArray(new MutableRegion[0]);
     }

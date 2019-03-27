@@ -1,6 +1,5 @@
 package com.applitools.eyes.visualgridclient.services;
 
-import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.visualgridclient.model.TestResultContainer;
 
 import java.util.List;
@@ -22,7 +21,7 @@ public interface IRenderingEyes {
 
     interface EyesListener{
 
-        void onTaskComplete(Task task, IRenderingEyes eyes);
+        void onTaskComplete(VisualGridTask visualGridTask, IRenderingEyes eyes);
 
         void onRenderComplete();
     }

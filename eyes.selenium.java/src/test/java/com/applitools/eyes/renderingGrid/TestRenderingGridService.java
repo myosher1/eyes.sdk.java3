@@ -3,7 +3,7 @@ package com.applitools.eyes.renderingGrid;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.FileDebugResourceWriter;
@@ -53,15 +53,15 @@ public final class TestRenderingGridService {
         eyes.setBatch(new BatchInfo("SimpleVisualGridBatch"));
 
         try {
-            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
-            seleniumConfiguration.setTestName("Open Concurrency with Batch 2");
-            seleniumConfiguration.setAppName("RenderingGridIntegration");
-            seleniumConfiguration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME);
-            seleniumConfiguration.addBrowser(700, 500, SeleniumConfiguration.BrowserType.CHROME);
-            seleniumConfiguration.addBrowser(400, 300, SeleniumConfiguration.BrowserType.CHROME);
+            Configuration configuration = new Configuration();
+            configuration.setTestName("Open Concurrency with Batch 2");
+            configuration.setAppName("RenderingGridIntegration");
+            configuration.addBrowser(800, 600, Configuration.BrowserType.CHROME);
+            configuration.addBrowser(700, 500, Configuration.BrowserType.CHROME);
+            configuration.addBrowser(400, 300, Configuration.BrowserType.CHROME);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //VisualGridEyes.setServerUrl("https://eyes.applitools.com/");
-            eyes.setConfiguration(seleniumConfiguration);
+            eyes.setConfiguration(configuration);
             eyes.open(webDriver);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             eyes.check(Target.window().withName("test").fully(false).sendDom(false));

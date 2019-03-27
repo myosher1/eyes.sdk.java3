@@ -2,13 +2,11 @@ package com.applitools.eyes.visualgridclient.services;
 
 import com.applitools.eyes.LogHandler;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.visualgridclient.model.FileDebugResourceWriter;
 import com.applitools.eyes.visualgridclient.model.TestResultSummary;
 
 public abstract class EyesRunner {
 
-    protected final Logger logger = new Logger();
+    protected Logger logger = new Logger();
     private String serverUrl;
 
     public abstract TestResultSummary getAllTestResults();

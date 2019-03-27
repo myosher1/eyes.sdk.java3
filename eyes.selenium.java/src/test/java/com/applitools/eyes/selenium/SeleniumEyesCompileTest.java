@@ -1,7 +1,6 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.*;
-import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.selenium.fluent.SeleniumCheckSettings;
 import com.applitools.eyes.selenium.positioning.ImageRotation;
 import com.applitools.eyes.triggers.MouseAction;
@@ -56,7 +55,7 @@ public class SeleniumEyesCompileTest {
 
         WebDriver webDriver = new ChromeDriver();
 
-        eyes.setConfiguration( new SeleniumConfiguration(new RectangleSize(100, 100)));
+        eyes.setConfiguration( new Configuration(new RectangleSize(100, 100)));
         driver = eyes.open(webDriver);
 
     }

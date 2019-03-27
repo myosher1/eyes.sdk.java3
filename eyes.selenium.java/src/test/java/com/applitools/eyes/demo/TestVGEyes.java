@@ -4,7 +4,7 @@ import com.applitools.ICheckSettings;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.Logger;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.*;
@@ -47,24 +47,24 @@ public class TestVGEyes extends TestEyesBase {
         Logger logger = eyes.getLogger();
         logger.log("creating WebDriver: " + testedUrl);
         try {
-            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
-            seleniumConfiguration.setTestName("Top Sites - " + testedUrl);
-            seleniumConfiguration.setAppName("Top Sites");
+            Configuration configuration = new Configuration();
+            configuration.setTestName("Top Sites - " + testedUrl);
+            configuration.setAppName("Top Sites");
 
             String environment = "VeryCoolEnvironment";
-            seleniumConfiguration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME, environment);
-            seleniumConfiguration.addBrowser(700, 500, SeleniumConfiguration.BrowserType.CHROME, environment);
-            seleniumConfiguration.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.CHROME, environment);
-            seleniumConfiguration.addBrowser(1600, 1200, SeleniumConfiguration.BrowserType.CHROME, environment);
+            configuration.addBrowser(800, 600, Configuration.BrowserType.CHROME, environment);
+            configuration.addBrowser(700, 500, Configuration.BrowserType.CHROME, environment);
+            configuration.addBrowser(1200, 800, Configuration.BrowserType.CHROME, environment);
+            configuration.addBrowser(1600, 1200, Configuration.BrowserType.CHROME, environment);
 
-            EmulationDevice emulationDevice = new EmulationDevice(300, 400, 0.5f, true, ScreenOrientation.LANDSCAPE);
+            EmulationDevice emulationDevice = new EmulationDevice(300, 400, 0.5f, ScreenOrientation.LANDSCAPE);
             EmulationInfo emulationInfo = new EmulationInfo(EmulationInfo.DeviceName.Galaxy_Note_2, ScreenOrientation.PORTRAIT);
 
-            seleniumConfiguration.addDeviceEmulation(emulationDevice, environment);
-            seleniumConfiguration.addDeviceEmulation(emulationInfo);
+            configuration.addDeviceEmulation(emulationDevice, environment);
+            configuration.addDeviceEmulation(emulationInfo);
 
             logger.log("created configurations for url " + testedUrl);
-            eyes.setConfiguration(seleniumConfiguration);
+            eyes.setConfiguration(configuration);
             eyes.open(webDriver);
             this.eyes = eyes;
         } catch (Throwable e) {

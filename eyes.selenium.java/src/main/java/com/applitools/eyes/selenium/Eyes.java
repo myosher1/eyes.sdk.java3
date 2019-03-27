@@ -3,10 +3,6 @@ package com.applitools.eyes.selenium;
 import com.applitools.ICheckSettings;
 import com.applitools.IDomCaptureListener;
 import com.applitools.eyes.*;
-import com.applitools.eyes.config.ISeleniumConfigurationGetter;
-import com.applitools.eyes.config.ISeleniumConfigurationProvider;
-import com.applitools.eyes.config.ISeleniumConfigurationSetter;
-import com.applitools.eyes.config.SeleniumConfiguration;
 import com.applitools.eyes.debug.DebugScreenshotsProvider;
 import com.applitools.eyes.events.ISessionEventHandler;
 import com.applitools.eyes.exceptions.TestFailedException;
@@ -26,6 +22,7 @@ import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.net.URI;
 import java.util.List;
@@ -41,8 +38,8 @@ public class Eyes implements ISeleniumConfigurationProvider {
     private VisualGridEyes visualGridEyes = null;
     private SeleniumEyes seleniumEyes = null;
     private EyesRunner runner = null;
-    private SeleniumConfiguration configuration = new SeleniumConfiguration();
-    private WebDriver driver;
+    private Configuration configuration = new Configuration();
+    private EyesWebDriver driver;
     private ImageRotation rotation;
 
     /**
@@ -76,9 +73,9 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return the web driver
      */
     public WebDriver open(WebDriver webDriver) {
-        this.driver = webDriver;
+        this.driver = new EyesWebDriver(getLogger(), this, (RemoteWebDriver) webDriver);
         if (isVisualGridEyes) {
-            return visualGridEyes.open(webDriver);
+            return visualGridEyes.open(driver);
         } else {
             return seleniumEyes.open(webDriver);
         }
@@ -2220,21 +2217,25 @@ public class Eyes implements ISeleniumConfigurationProvider {
     }
 
     @Override
-    public ISeleniumConfigurationGetter get() {
+    public IConfigurationGetter get() {
         return configuration;
     }
 
     @Override
-    public ISeleniumConfigurationSetter set() {
+    public IConfigurationSetter set() {
         return configuration;
     }
 
 
-    public SeleniumConfiguration getConfiguration() {
+    public Configuration getConfiguration() {
         return configuration;
     }
 
-    public void setConfiguration(SeleniumConfiguration configuration) {
+    public void setConfiguration(Configuration configuration) {
         this.configuration = configuration;
+    }
+
+    public List<Future<TestResultContainer>> getCloseFutures() {
+        return this.visualGridEyes.getAllCloseFutures();
     }
 }

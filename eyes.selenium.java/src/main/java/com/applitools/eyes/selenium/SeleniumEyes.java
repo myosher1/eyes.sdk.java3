@@ -8,7 +8,6 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.capture.EyesScreenshotFactory;
 import com.applitools.eyes.capture.ImageProvider;
-import com.applitools.eyes.config.*;
 import com.applitools.eyes.events.ValidationInfo;
 import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.TestFailedException;
@@ -283,7 +282,7 @@ public class SeleniumEyes extends EyesBase {
 
     private void initDriver(WebDriver driver) {
         if (driver instanceof RemoteWebDriver) {
-            this.driver = new EyesWebDriver(logger, this, (RemoteWebDriver) driver);
+            this.driver = (EyesWebDriver) driver;
         } else if (driver instanceof EyesWebDriver) {
             this.driver = (EyesWebDriver) driver;
         } else {
@@ -2547,12 +2546,12 @@ public class SeleniumEyes extends EyesBase {
     }
 
     @Override
-    public ISeleniumConfigurationGetter getConfigGetter() {
+    public IConfigurationGetter getConfigGetter() {
         return configurationProvider.get();
     }
 
     @Override
-    protected ISeleniumConfigurationSetter getConfigSetter() {
+    protected IConfigurationSetter getConfigSetter() {
         return this.configurationProvider.set();
     }
 
