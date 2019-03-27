@@ -12,7 +12,7 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     private String environmentName;
     private Boolean saveDiffs;
     private SessionType sessionType;
-    protected BatchInfo batch;
+    protected BatchInfo batch = new BatchInfo(null);
     protected String baselineEnvName;
     protected String appName;
     protected String testName;
@@ -27,22 +27,28 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     private boolean isSendDom = true;
     private FailureReports failureReports =  FailureReports.ON_CLOSE;
 
-    protected Configuration(IConfigurationGetter configuration) {
-        this.batch = configuration.getBatch();
-        this.branchName = configuration.getBranchName();
-        this.parentBranchName = configuration.getParentBranchName();
-        this.baselineBranchName = configuration.getBaselineBranchName();
-        this.agentId = configuration.getAgentId();
-        this.baselineEnvName = configuration.getAgentId();
-        this.environmentName = configuration.getEnvironmentName();
-        this.saveDiffs = configuration.getSaveDiffs();
-        this.appName = configuration.getAppName();
-        this.testName = configuration.getTestName();
-        this.viewportSize = configuration.getViewportSize();
-        this.sessionType = configuration.getSessionType();
-        defaultMatchSettings.setIgnoreCaret(configuration.getDefaultMatchSettings().getIgnoreCaret());
-        saveNewTests = configuration.getSaveNewTests();
-        saveFailedTests = configuration.getSaveFailedTests();
+    public Configuration(IConfigurationGetter other) {
+        this.branchName = other.getBranchName();
+        this.parentBranchName = other.getParentBranchName();
+        this.baselineBranchName = other.getBaselineBranchName();
+        this.agentId = other.getAgentId();
+        this.environmentName = other.getEnvironmentName();
+        this.saveDiffs = other.getSaveDiffs();
+        this.sessionType = other.getSessionType();
+        this.batch = other.getBatch();
+        this.baselineEnvName = other.getBaselineEnvName();
+        this.appName = other.getAppName();
+        this.testName = other.getTestName();
+        this.viewportSize = other.getViewportSize();
+        this.defaultMatchSettings = other.getDefaultMatchSettings();
+        this.matchTimeout = other.getMatchTimeout();
+        this.hostApp = other.getHostApp();
+        this.hostOS = other.getHostOS();
+        this.saveNewTests = other.getSaveNewTests();
+        this.saveFailedTests = other.getSaveFailedTests();
+        this.stitchingOverlap = other.getStitchingOverlap();
+        this.isSendDom = other.isSendDom();
+        this.failureReports = other.getFailureReports();
     }
 
     public Configuration() {

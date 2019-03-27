@@ -4,7 +4,7 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
@@ -47,9 +47,9 @@ public final class TestRenderingGridMultiThreadService {
             public void run() {
 
                 TestThreadMethod("VG-2ThreadBatchC11",
-                        new RenderBrowserInfo(800, 600, SeleniumConfiguration.BrowserType.CHROME, baselineEnvName),
-                        new RenderBrowserInfo(700, 500, SeleniumConfiguration.BrowserType.CHROME, baselineEnvName),
-                        new RenderBrowserInfo(400, 300, SeleniumConfiguration.BrowserType.CHROME, baselineEnvName));
+                        new RenderBrowserInfo(800, 600, Configuration.BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(700, 500, Configuration.BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(400, 300, Configuration.BrowserType.CHROME, baselineEnvName));
             }
         });
 
@@ -57,8 +57,8 @@ public final class TestRenderingGridMultiThreadService {
             @Override
             public void run() {
                 TestThreadMethod("VG-2ThreadBatchC22",
-                        new RenderBrowserInfo(840, 680, SeleniumConfiguration.BrowserType.CHROME, baselineEnvName),
-                        new RenderBrowserInfo(750, 530, SeleniumConfiguration.BrowserType.CHROME, baselineEnvName));
+                        new RenderBrowserInfo(840, 680, Configuration.BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(750, 530, Configuration.BrowserType.CHROME, baselineEnvName));
             }
         });
 
@@ -76,10 +76,10 @@ public final class TestRenderingGridMultiThreadService {
     private void TestThreadMethod(String batchName, RenderBrowserInfo... browsersInfo) {
         Eyes eyes = new Eyes(renderingManager);
         eyes.setBatch(new BatchInfo(batchName));
-        SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
-        seleniumConfiguration.setTestName("Open Concurrency with Batch 3");
-        seleniumConfiguration.setAppName("RenderingGridIntegration");
-        seleniumConfiguration.addBrowsers(browsersInfo);
+        Configuration configuration = new Configuration();
+        configuration.setTestName("Open Concurrency with Batch 3");
+        configuration.setAppName("RenderingGridIntegration");
+        configuration.addBrowsers(browsersInfo);
         eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
         eyes.open(webDriver);
         eyes.check(Target.window().withName("test").sendDom(false));

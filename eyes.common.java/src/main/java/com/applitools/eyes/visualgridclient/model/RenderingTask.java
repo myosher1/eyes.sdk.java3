@@ -6,7 +6,7 @@ import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualgridclient.services.IEyesConnector;
 import com.applitools.eyes.visualgridclient.services.IResourceFuture;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
-import com.applitools.eyes.visualgridclient.services.Task;
+import com.applitools.eyes.visualgridclient.services.VisualGridTask;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -17,6 +17,7 @@ import com.helger.css.decl.*;
 import com.helger.css.reader.CSSReader;
 import org.apache.commons.codec.binary.Base64;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,8 +38,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private IEyesConnector eyesConnector;
     private String scriptResult;
     private ICheckSettings checkSettings;
-    private List<Task> taskList;
-    private List<Task> openTaskList;
+    private List<VisualGridTask> visualGridTaskList;
+    private List<VisualGridTask> openVisualGridTaskList;
     private RenderingInfo renderingInfo;
     private final Map<String, IResourceFuture> fetchedCacheMap;
     private final Map<String, PutFuture> putResourceCache;
@@ -50,6 +51,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private HashMap<String, Object> result = null;
     private AtomicInteger framesLevel = new AtomicInteger();
     private RGridDom dom = null;
+    private final boolean forceFullPageScreenshot;
+
     private boolean isTaskStarted = false;
     private boolean isTaskCompleted = false;
     private boolean isTaskInException = false;
@@ -61,20 +64,21 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     public RenderingTask(IEyesConnector eyesConnector, String scriptResult, ICheckSettings checkSettings,
-                         List<Task> taskList, List<Task> openTasks, VisualGridRunner renderingGridManager,
-                         IDebugResourceWriter debugResourceWriter, RenderTaskListener listener, List<VisualGridSelector[]> regionSelectors) {
+                         List<VisualGridTask> visualGridTaskList, List<VisualGridTask> openVisualGridTasks, VisualGridRunner renderingGridManager,
+                         IDebugResourceWriter debugResourceWriter, RenderTaskListener listener, List<VisualGridSelector[]> regionSelectors, boolean forceFullPageScreenshot) {
 
         this.eyesConnector = eyesConnector;
         this.scriptResult = scriptResult;
         this.checkSettings = checkSettings;
-        this.taskList = taskList;
-        this.openTaskList = openTasks;
+        this.visualGridTaskList = visualGridTaskList;
+        this.openVisualGridTaskList = openVisualGridTasks;
         this.renderingInfo = renderingGridManager.getRenderingInfo();
         this.fetchedCacheMap = renderingGridManager.getCachedResources();
         this.putResourceCache = renderingGridManager.getPutResourceCache();
         this.logger = renderingGridManager.getLogger();
         this.debugResourceWriter = debugResourceWriter;
         this.regionSelectors = regionSelectors;
+        this.forceFullPageScreenshot = forceFullPageScreenshot;
         this.listeners.add(listener);
 
         String renderingGridForcePut = System.getenv("APPLITOOLS_RENDERING_GRID_FORCE_PUT");
@@ -82,103 +86,106 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     @Override
-    public RenderStatusResults call() throws Exception {
+    public RenderStatusResults call() {
 
-        this.isTaskStarted = true;
-
-        addRenderingTaskToOpenTasks();
-
-        logger.verbose("enter");
-
-        boolean isSecondRequestAlreadyHappened = false;
-
-        logger.verbose("step 1");
-
-        //Parse to Map
-        result = GeneralUtils.parseJsonToObject(scriptResult);
-        logger.verbose("step 2");
-        //Build RenderRequests
-        RenderRequest[] requests = prepareDataForRG(result);
-
-        logger.verbose("step 3");
-        boolean stillRunning = true;
-        int fetchFails = 0;
-        boolean isForcePutAlreadyDone = false;
-        List<RunningRender> runningRenders = null;
-        do {
-
-            try {
-
-                runningRenders = this.eyesConnector.render(requests);
-
-            } catch (Exception e) {
-
-                Thread.sleep(1500);
-                logger.verbose("/render throws exception... sleeping for 1.5s");
-                GeneralUtils.logExceptionStackTrace(logger, e);
-                if (e.getMessage().contains("Second request, yet still some resources were not PUT in renderId")) {
-                    if (isSecondRequestAlreadyHappened) {
-                        logger.verbose("Second request already happened");
-                    }
-                    isSecondRequestAlreadyHappened = true;
-                }
-                logger.verbose("ERROR " + e.getMessage());
-                fetchFails++;
-            }
-            logger.verbose("step 4.1");
-            if (runningRenders == null) {
-                logger.verbose("ERROR - runningRenders is null.");
-                continue;
-            }
-
-            for (int i = 0; i < requests.length; i++) {
-                RenderRequest request = requests[i];
-                request.setRenderId(runningRenders.get(i).getRenderId());
-            }
-            logger.verbose("step 4.2");
-
-            RunningRender runningRender = runningRenders.get(0);
-            RenderStatus worstStatus = runningRender.getRenderStatus();
-
-            worstStatus = calcWorstStatus(runningRenders, worstStatus);
-
-            boolean isNeedMoreDom = runningRender.isNeedMoreDom();
-
-            if (isForcePutNeeded.get() && !isForcePutAlreadyDone) {
-                forcePutAllResources(requests[0].getResources(), runningRender);
-                isForcePutAlreadyDone = true;
-            }
-
-            logger.verbose("step 4.3");
-            stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom || fetchFails > MAX_FETCH_FAILS;
-            if (stillRunning) {
-                sendMissingResources(runningRenders, requests[0].getDom(), requests[0].getResources(), isNeedMoreDom);
-            }
-
-            logger.verbose("step 4.4");
-
-        } while (stillRunning);
-
-        Map<RunningRender, RenderRequest> mapping = mapRequestToRunningRender(runningRenders, requests);
-
-        logger.verbose("step 5");
         try {
-            pollRenderingStatus(mapping);
-        } catch (Exception e) {
-            this.isTaskInException = true;
+            this.isTaskStarted = true;
+
+            addRenderingTaskToOpenTasks();
+
+            logger.verbose("enter");
+
+            boolean isSecondRequestAlreadyHappened = false;
+
+            logger.verbose("step 1");
+
+            //Parse to Map
+            result = GeneralUtils.parseJsonToObject(scriptResult);
+            logger.verbose("step 2");
+            //Build RenderRequests
+            RenderRequest[] requests = prepareDataForRG(result);
+
+            logger.verbose("step 3");
+            boolean stillRunning = true;
+            int fetchFails = 0;
+            boolean isForcePutAlreadyDone = false;
+            List<RunningRender> runningRenders = null;
+            do {
+                try {
+
+                    runningRenders = this.eyesConnector.render(requests);
+
+                } catch (Exception e) {
+
+                    Thread.sleep(1500);
+                    logger.verbose("/render throws exception... sleeping for 1.5s");
+                    GeneralUtils.logExceptionStackTrace(logger, e);
+                    if (e.getMessage().contains("Second request, yet still some resources were not PUT in renderId")) {
+                        if (isSecondRequestAlreadyHappened) {
+                            logger.verbose("Second request already happened");
+                        }
+                        isSecondRequestAlreadyHappened = true;
+                    }
+                    logger.verbose("ERROR " + e.getMessage());
+                    fetchFails++;
+                }
+                logger.verbose("step 4.1");
+                if (runningRenders == null) {
+                    logger.verbose("ERROR - runningRenders is null.");
+                    continue;
+                }
+
+                for (int i = 0; i < requests.length; i++) {
+                    RenderRequest request = requests[i];
+                    request.setRenderId(runningRenders.get(i).getRenderId());
+                }
+                logger.verbose("step 4.2");
+
+                RunningRender runningRender = runningRenders.get(0);
+                RenderStatus worstStatus = runningRender.getRenderStatus();
+
+                worstStatus = calcWorstStatus(runningRenders, worstStatus);
+
+                boolean isNeedMoreDom = runningRender.isNeedMoreDom();
+
+                if (isForcePutNeeded.get() && !isForcePutAlreadyDone) {
+                    forcePutAllResources(requests[0].getResources(), runningRender);
+                    isForcePutAlreadyDone = true;
+                }
+
+                logger.verbose("step 4.3");
+                stillRunning = worstStatus == RenderStatus.NEED_MORE_RESOURCE || isNeedMoreDom || fetchFails > MAX_FETCH_FAILS;
+                if (stillRunning) {
+                    sendMissingResources(runningRenders, requests[0].getDom(), requests[0].getResources(), isNeedMoreDom);
+                }
+
+                logger.verbose("step 4.4");
+
+            } while (stillRunning);
+
+            Map<RunningRender, RenderRequest> mapping = mapRequestToRunningRender(runningRenders, requests);
+
+            logger.verbose("step 5");
+            try {
+                pollRenderingStatus(mapping);
+            } catch (Exception e) {
+                this.isTaskInException = true;
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
+
+            isTaskCompleted = true;
+        } catch (IOException | ExecutionException | InterruptedException e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
-
-        isTaskCompleted = true;
-        logger.verbose("exit");
+        logger.verbose("Finished rendering task - exit");
 
         return null;
     }
 
     private void addRenderingTaskToOpenTasks() {
-        if (this.openTaskList != null) {
-            for (Task task : openTaskList) {
-                task.setRenderingTask(this);
+        if (this.openVisualGridTaskList != null) {
+            for (VisualGridTask visualGridTask : openVisualGridTaskList) {
+                visualGridTask.setRenderingTask(this);
             }
         }
     }
@@ -195,7 +202,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     if (url.equals(this.dom.getUrl())) {
                         resource = this.dom.asResource();
                     } else {
-                        logger.log("Resource not found Exiting...");
+                        logger.verbose("Resource not found Exiting...");
                         return;
                     }
                 } else {
@@ -311,7 +318,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             IResourceFuture resourceFuture = fetchedCacheMap.get(url);
             if (resourceFuture == null) {
                 logger.verbose("fetchedCacheMap.get(url) == null - " + url);
-                logger.log("Resource put requested but never downloaded(maybe a Frame)");
+                logger.verbose("Resource put requested but never downloaded(maybe a Frame)");
                 resource = resources.get(url);
             } else {
                 try {
@@ -347,7 +354,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         //Fetch all resources
         fetchAllResources(allBlobs, resourceUrls);
         if (!resourceUrls.isEmpty()) {
-            logger.log("ERROR resourceUrl is not empty!!!!!***************************");
+            logger.verbose("ERROR resourceUrl is not empty!!!!!***************************");
         }
 
         logger.verbose("done fetching resources.");
@@ -503,7 +510,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
         //Create RG requests
         List<RenderRequest> allRequestsForRG = new ArrayList<>();
-        ICheckSettingsInternal rcInternal = (ICheckSettingsInternal) checkSettings;
+        ICheckSettingsInternal checkSettingsInternal = (ICheckSettingsInternal) this.checkSettings;
+        ICheckSettingsInternal rcInternal = checkSettingsInternal;
 
 
         List<VisualGridSelector> regionSelectorsList = new ArrayList<>();
@@ -514,14 +522,21 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
         }
 
-        for (Task task : this.taskList) {
+        for (VisualGridTask visualGridTask : this.visualGridTaskList) {
 
-            RenderBrowserInfo browserInfo = task.getBrowserInfo();
+            RenderBrowserInfo browserInfo = visualGridTask.getBrowserInfo();
 
-            RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(), ((ICheckSettingsInternal) checkSettings).getSizeMode(), rcInternal.getRegion(), rcInternal.GetTargetSelector(), browserInfo.getEmulationInfo());
+            String sizeMode = checkSettingsInternal.getSizeMode();
+
+            if(sizeMode.equalsIgnoreCase("viewport") && forceFullPageScreenshot){
+                sizeMode = "fullpage";
+            }
+
+            RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(),
+                    sizeMode, rcInternal.getRegion(), rcInternal.GetTargetSelector(), browserInfo.getEmulationInfo());
 
             RenderRequest request = new RenderRequest(this.renderingInfo.getResultsUrl(), url, dom,
-                    resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), rcInternal.getScriptHooks(), regionSelectorsList, rcInternal.isSendDom(), task);
+                    resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), rcInternal.getScriptHooks(), regionSelectorsList, rcInternal.isSendDom(), visualGridTask);
 
             allRequestsForRG.add(request);
         }
@@ -557,7 +572,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private String getCss(byte[] contentBytes, String contentTypeStr) {
-        logger.log("enter");
+        logger.verbose("enter");
         if (contentTypeStr == null) return null;
         if (contentBytes.length == 0) return null;
         String[] parts = contentTypeStr.split(";");
@@ -586,7 +601,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
-        logger.log("exit");
+        logger.verbose("exit");
         return css;
     }
 
@@ -716,7 +731,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 }
 
                 // If resource is not being fetched yet (limited guarantee)
-                IEyesConnector eyesConnector = this.taskList.get(0).getEyesConnector();
+                IEyesConnector eyesConnector = this.visualGridTaskList.get(0).getEyesConnector();
                 IResourceFuture future = eyesConnector.getResource(link);
 
                 if (!this.fetchedCacheMap.containsKey(url)) {
@@ -746,7 +761,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
-            logger.log("done writing to debugWriter");
+            logger.verbose("done writing to debugWriter");
             String urlAsString = resource.getUrl();
 
             removeUrlFromList(urlAsString, resourceUrls);
@@ -784,12 +799,13 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("render ids : " + ids);
         int numOfIterations = 0;
         List<RenderStatusResults> renderStatusResultsList = null;
-        boolean isMaxIterationNotReached = false;
+        boolean isMaxIterationNotReached = true;
         do {
             try {
                 renderStatusResultsList = this.eyesConnector.renderStatusById(ids.toArray(new String[0]));
             } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
+                numOfIterations++;
                 continue;
             }
             if (renderStatusResultsList == null || renderStatusResultsList.isEmpty() || renderStatusResultsList.get(0) == null) {
@@ -798,6 +814,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 } catch (InterruptedException e) {
                     GeneralUtils.logExceptionStackTrace(logger, e);
                 }
+                numOfIterations++;
                 continue;
             }
 
@@ -816,7 +833,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             isMaxIterationNotReached = numOfIterations < MAX_ITERATIONS;
 
             if (!isMaxIterationNotReached) {
-                logger.log("Max iteration reached for url - " + this.dom.getUrl());
+                logger.verbose("Max iteration reached for url - " + this.dom.getUrl());
             }
 
         } while (!ids.isEmpty() && isMaxIterationNotReached);
@@ -831,8 +848,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 String renderId = renderedRender.getRenderId();
                 if (renderId.equalsIgnoreCase(id)) {
                     logger.verbose("removing failed render id: " + id);
-                    Task task = runningRenders.get(renderedRender).getTask();
-                    task.setRenderError(id);
+                    VisualGridTask visualGridTask = runningRenders.get(renderedRender).getVisualGridTask();
+                    visualGridTask.setRenderError(id, "too long rendering(rendering exceeded 150 sec)");
                     break;
                 }
             }
@@ -863,28 +880,30 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 String removedId = ids.remove(j);
 
                 for (RunningRender renderedRender : runningRenders.keySet()) {
-                    if (renderedRender.getRenderId().equalsIgnoreCase(removedId)) {
-                        Task task = runningRenders.get(renderedRender).getTask();
-                        Iterator<Task> iterator = openTaskList.iterator();
+                    String renderId = renderedRender.getRenderId();
+                    if (renderId.equalsIgnoreCase(removedId)) {
+                        VisualGridTask visualGridTask = runningRenders.get(renderedRender).getVisualGridTask();
+                        Iterator<VisualGridTask> iterator = openVisualGridTaskList.iterator();
                         while (iterator.hasNext()) {
-                            Task openTask = iterator.next();
-                            if (openTask.getRunningTest() == task.getRunningTest()) {
+                            VisualGridTask openVisualGridTask = iterator.next();
+                            if (openVisualGridTask.getRunningTest() == visualGridTask.getRunningTest()) {
                                 if (isRenderedStatus) {
-                                    logger.verbose("setting openTask " + openTask + " render result: " + renderStatusResults + " to url " + this.result.get("url"));
-                                    openTask.setRenderResult(renderStatusResults);
+                                    logger.verbose("setting openVisualGridTask " + openVisualGridTask + " render result: " + renderStatusResults + " to url " + this.result.get("url"));
+                                    openVisualGridTask.setRenderResult(renderStatusResults);
                                 } else {
-                                    logger.verbose("setting openTask " + openTask + " render error: " + removedId + " to url " + this.result.get("url"));
-                                    openTask.setRenderError(removedId);
+                                    logger.verbose("setting openVisualGridTask " + openVisualGridTask + " render error: " + removedId + " to url " + this.result.get("url"));
+                                    openVisualGridTask.setRenderError(removedId, renderStatusResults.getError());
                                 }
                                 iterator.remove();
                             }
                         }
-                        logger.verbose("setting task " + task + " render result: " + renderStatusResults + " to url " + this.result.get("url"));
+                        logger.verbose("setting visualGridTask " + visualGridTask + " render result: " + renderStatusResults + " to url " + this.result.get("url"));
                         String error = renderStatusResults.getError();
                         if (error != null) {
                             GeneralUtils.logExceptionStackTrace(logger, new Exception(error));
+                            visualGridTask.setRenderError(renderId, error);
                         }
-                        task.setRenderResult(renderStatusResults);
+                        visualGridTask.setRenderResult(renderStatusResults);
                         break;
                     }
                 }

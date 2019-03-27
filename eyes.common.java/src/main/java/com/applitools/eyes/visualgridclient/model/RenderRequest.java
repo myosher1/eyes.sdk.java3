@@ -1,11 +1,10 @@
 package com.applitools.eyes.visualgridclient.model;
 
-import com.applitools.eyes.visualgridclient.services.Task;
+import com.applitools.eyes.visualgridclient.services.VisualGridTask;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +14,7 @@ public class  RenderRequest {
     private String renderId;
 
     @JsonIgnore
-    private final Task task;
+    private final VisualGridTask visualGridTask;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String webhook;
@@ -47,7 +46,7 @@ public class  RenderRequest {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private boolean sendDom;
 
-    public RenderRequest(String webHook, String url, RGridDom dom, Map<String, RGridResource> resources, RenderInfo renderInfo, String platform, String browserName, Object scriptHooks, List<VisualGridSelector> selectorsToFindRegionsFor, boolean sendDom, Task task) {
+    public RenderRequest(String webHook, String url, RGridDom dom, Map<String, RGridResource> resources, RenderInfo renderInfo, String platform, String browserName, Object scriptHooks, List<VisualGridSelector> selectorsToFindRegionsFor, boolean sendDom, VisualGridTask visualGridTask) {
         this.webhook = webHook;
         this.url = url;
         this.dom = dom;
@@ -58,7 +57,7 @@ public class  RenderRequest {
         this.scriptHooks = scriptHooks;
         this.selectorsToFindRegionsFor = selectorsToFindRegionsFor;
         this.sendDom = sendDom;
-        this.task = task;
+        this.visualGridTask = visualGridTask;
 
     }
 
@@ -143,8 +142,8 @@ public class  RenderRequest {
         return map;
     }
 
-    public Task getTask() {
-        return task;
+    public VisualGridTask getVisualGridTask() {
+        return visualGridTask;
     }
 
     public String getWebhook() {

@@ -19,6 +19,10 @@ public class EyesService extends Thread {
 
     protected Logger logger;
 
+    public void setLogger(Logger logger) {
+        this.logger = logger;
+    }
+
     interface Tasker {
         FutureTask<TestResultContainer> getNextTask();
     }
@@ -40,14 +44,18 @@ public class EyesService extends Thread {
 
     @Override
     public void run() {
-        while (isServiceOn) {
-            pauseIfNeeded();
-            runNextTask();
+        try {
+            while (isServiceOn) {
+                pauseIfNeeded();
+                runNextTask();
+            }
+            if (this.executor != null) {
+                this.executor.shutdown();
+            }
+            logger.log("Service '" + this.getName() + "' is finished");
+        } catch (Throwable e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
-        if (this.executor != null) {
-            this.executor.shutdown();
-        }
-        logger.log("Service '" + this.getName() + "' is finished");
     }
 
     protected void pauseIfNeeded() {

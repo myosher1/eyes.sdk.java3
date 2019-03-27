@@ -1,6 +1,7 @@
 package com.applitools.eyes.visualgridclient.services;
 
 import com.applitools.ICheckSettings;
+import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualgridclient.model.*;
 import com.applitools.utils.GeneralUtils;
 
@@ -23,7 +24,6 @@ public class VisualGridRunner extends EyesRunner {
     private RenderingGridService renderingGridService;
     private ThreadGroup servicesGroup = new ThreadGroup("Services Group");
     private final List<IRenderingEyes> eyesToOpenList = Collections.synchronizedList(new ArrayList<IRenderingEyes>(200));
-    private final List<IRenderingEyes> eyesToCloseList = Collections.synchronizedList(new ArrayList<IRenderingEyes>(200));
     private final List<IRenderingEyes> allEyes = Collections.synchronizedList(new ArrayList<IRenderingEyes>(200));
     private Map<String, IResourceFuture> cachedResources = Collections.synchronizedMap(new HashMap<String, IResourceFuture>());
     private Map<String, PutFuture> putResourceCache = Collections.synchronizedMap(new HashMap<String, PutFuture>());
@@ -105,52 +105,32 @@ public class VisualGridRunner extends EyesRunner {
 
     private IRenderingEyes.EyesListener eyesListener = new IRenderingEyes.EyesListener() {
         @Override
-        public void onTaskComplete(Task task, IRenderingEyes eyes) {
-            logger.verbose("Enter with: " + task.getType());
-            Task.TaskType type = task.getType();
+        public void onTaskComplete(VisualGridTask visualGridTask, IRenderingEyes eyes) {
+            logger.verbose("Enter with: " + visualGridTask.getType());
+            VisualGridTask.TaskType type = visualGridTask.getType();
             try {
                 switch (type) {
 
                     case OPEN:
                         logger.verbose("locking eyesToOpenList");
                         synchronized (eyesToOpenList) {
-                            logger.verbose("removing task " + task.toString());
+                            logger.verbose("removing visualGridTask " + visualGridTask.toString());
                             eyesToOpenList.remove(eyes);
                         }
                         logger.verbose("releasing eyesToOpenList");
                         break;
                     case CLOSE:
-                        logger.verbose("Task Close.");
+                        logger.verbose("VisualGridTask Close.");
                         eyesOpenerService.decrementConcurrency();
-                        logger.verbose("locking eyesToCloseList");
-                        synchronized (eyesToCloseList) {
-                            if (eyes.isEyesClosed()) {
-                                eyesToCloseList.remove(eyes);
-//                                allEyes.remove(eyes);
-                            }
-                        }
-                        logger.verbose("releasing eyesToCloseList");
-                        logger.verbose("locking openerServiceConcurrencyLock");
                         synchronized (openerServiceConcurrencyLock) {
                             openerServiceConcurrencyLock.notify();
                         }
                         logger.verbose("releasing openerServiceConcurrencyLock");
                         break;
                     case ABORT:
-                        logger.verbose("Task Abort.");
-                        logger.verbose("locking eyesToCloseList");
-                        synchronized (eyesToCloseList) {
-                            if (eyes.isEyesClosed()) {
-                                eyesToCloseList.remove(eyes);
-//                                allEyes.remove(eyes);
-                            }
-                        }
-                        logger.verbose("releasing eyesToCloseList");
-                        logger.verbose("locking openerServiceConcurrencyLock");
                         synchronized (openerServiceConcurrencyLock) {
                             openerServiceConcurrencyLock.notify();
                         }
-                        logger.verbose("releasing openerServiceConcurrencyLock");
                         break;
                     case CHECK:
                         logger.verbose("Check complete.");
@@ -164,9 +144,7 @@ public class VisualGridRunner extends EyesRunner {
 
         @Override
         public void onRenderComplete() {
-            logger.verbose("enter");
             notifyAllServices();
-            logger.verbose("exit");
         }
 
     };
@@ -243,7 +221,7 @@ public class VisualGridRunner extends EyesRunner {
                         try {
                             nextTestToRender = getNextRenderingTask();
                             if (nextTestToRender == null) {
-                                renderingServiceLock.wait(300);
+                                renderingServiceLock.wait(500);
 //                                logger.log("Rendering service woke up");
                                 nextTestToRender = getNextRenderingTask();
                             }
@@ -273,25 +251,31 @@ public class VisualGridRunner extends EyesRunner {
     }
 
     private FutureTask<TestResultContainer> getNextCheckTask() {
-        ScoreTask bestScoreTask = null;
-        int bestScore = -1;
-        synchronized (allEyes) {
-            for (IRenderingEyes eyes : allEyes) {
-                ScoreTask currentScoreTask = eyes.getBestScoreTaskForCheck();
-                if (currentScoreTask == null) continue;
-                int currentTestMark = currentScoreTask.getScore();
-                if (bestScore < currentTestMark) {
-                    bestScoreTask = currentScoreTask;
-                    bestScore = currentTestMark;
+        VisualGridTask visualGridTask = null;
+        try {
+            ScoreTask bestScoreTask = null;
+            int bestScore = -1;
+            synchronized (allEyes) {
+                for (IRenderingEyes eyes : allEyes) {
+                    ScoreTask currentScoreTask = eyes.getBestScoreTaskForCheck();
+
+                    if (currentScoreTask == null) continue;
+                    int currentTestMark = currentScoreTask.getScore();
+                    if (bestScore < currentTestMark) {
+                        bestScoreTask = currentScoreTask;
+                        bestScore = currentTestMark;
+                    }
                 }
             }
-        }
 
-        if (bestScoreTask == null) {
-            return null;
+            if (bestScoreTask == null) {
+                return null;
+            }
+            visualGridTask = bestScoreTask.getVisualGridTask();
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
-        Task task = bestScoreTask.getTask();
-        return new FutureTask<>(task);
+        return new FutureTask<>(visualGridTask);
     }
 
     private RenderingTask getNextRenderingTask() {
@@ -311,8 +295,8 @@ public class VisualGridRunner extends EyesRunner {
 
     private FutureTask<TestResultContainer> getNextTestToClose() {
         RunningTest runningTest;
-        synchronized (eyesToCloseList) {
-            for (IRenderingEyes eyes : eyesToCloseList) {
+        synchronized (allEyes) {
+            for (IRenderingEyes eyes : allEyes) {
                 runningTest = eyes.getNextTestToClose();
                 if (runningTest != null) {
                     return runningTest.getNextCloseTask();
@@ -322,6 +306,37 @@ public class VisualGridRunner extends EyesRunner {
         return null;
     }
 
+    private synchronized FutureTask<TestResultContainer> getNextTestToOpen() {
+        ScoreTask bestScoreTask = null;
+        int bestMark = -1;
+//        logger.verbose("looking for best test in a list of " + allEyes.size());
+        synchronized (allEyes) {
+            for (IRenderingEyes eyes : allEyes) {
+                ScoreTask currentTestMark = null;
+                try {
+                    currentTestMark = eyes.getBestScoreTaskForOpen();
+                } catch (Exception e) {
+                    GeneralUtils.logExceptionStackTrace(logger,e);
+                }
+                if (currentTestMark == null) continue;
+                int currentScore = currentTestMark.getScore();
+                if (bestMark < currentScore) {
+                    bestMark = currentScore;
+                    bestScoreTask = currentTestMark;
+                }
+            }
+        }
+
+        if (bestScoreTask == null) {
+//            logger.verbose("no test found.");
+            return null;
+        }
+
+        logger.verbose("found test with mark " + bestMark);
+        logger.verbose("calling getNextOpenTaskAndRemove on " + bestScoreTask.toString());
+        VisualGridTask nextOpenVisualGridTask = bestScoreTask.getVisualGridTask();
+        return new FutureTask<>(nextOpenVisualGridTask);
+    }
     public void open(IRenderingEyes eyes, RenderingInfo renderingInfo) {
         logger.verbose("enter");
         if (this.renderingInfo == null) {
@@ -360,32 +375,6 @@ public class VisualGridRunner extends EyesRunner {
         logger.verbose("exit");
     }
 
-    private synchronized FutureTask<TestResultContainer> getNextTestToOpen() {
-        ScoreTask bestScoreTask = null;
-        int bestMark = -1;
-//        logger.verbose("looking for best test in a list of " + allEyes.size());
-        synchronized (allEyes) {
-            for (IRenderingEyes eyes : allEyes) {
-                ScoreTask currentTestMark = eyes.getBestScoreTaskForOpen();
-                if (currentTestMark == null) continue;
-                int currentScore = currentTestMark.getScore();
-                if (bestMark < currentScore) {
-                    bestMark = currentScore;
-                    bestScoreTask = currentTestMark;
-                }
-            }
-        }
-
-        if (bestScoreTask == null) {
-//            logger.verbose("no test found.");
-            return null;
-        }
-
-        logger.verbose("found test with mark " + bestMark);
-        logger.verbose("calling getNextOpenTaskAndRemove on " + bestScoreTask.toString());
-        Task nextOpenTask = bestScoreTask.getTask();
-        return new FutureTask<>(nextOpenTask);
-    }
 
     public TestResultSummary getAllTestResults() {
         return getAllTestResults(false);
@@ -395,16 +384,13 @@ public class VisualGridRunner extends EyesRunner {
         logger.verbose("enter");
         Map<IRenderingEyes, List<Future<TestResultContainer>>> allFutures = new HashMap<>();
         for (IRenderingEyes eyes : allEyes) {
-            List<Future<TestResultContainer>> value = eyes.close();
-            allFutures.put(eyes, value);
-            synchronized (this.eyesToCloseList) {
-                if (!this.eyesToCloseList.contains(eyes)) {
-                    this.eyesToCloseList.add(eyes);
-                }
+            List<Future<TestResultContainer>> futureList = eyes.close();
+            List<Future<TestResultContainer>> futures = allFutures.get(eyes);
+            if (futures != null && !futures.isEmpty()) {
+                futureList.addAll(futures);
             }
+            allFutures.put(eyes, futureList);
         }
-
-        logger.verbose("eyesToCloseList.size: " + eyesToCloseList.size());
 
         notifyAllServices();
         List<TestResultContainer> allResults = new ArrayList<>();
@@ -438,16 +424,11 @@ public class VisualGridRunner extends EyesRunner {
 
     public void close(IRenderingEyes eyes) {
         logger.verbose("adding eyes to close list: " + eyes);
-        synchronized (this.eyesToCloseList) {
-            if (!this.eyesToCloseList.contains(eyes)) {
-                this.eyesToCloseList.add(eyes);
-            }
-        }
         notifyAllServices();
     }
 
     public synchronized void check(ICheckSettings settings, IDebugResourceWriter debugResourceWriter, String script,
-                                   IEyesConnector connector, List<Task> taskList, List<Task> openTasks, ICheckSettings checkSettings, final RenderListener listener, List<VisualGridSelector[]> selectors) {
+                                   IEyesConnector connector, List<VisualGridTask> visualGridTaskList, List<VisualGridTask> openVisualGridTasks, ICheckSettings checkSettings, final RenderListener listener, List<VisualGridSelector[]> selectors, boolean forceFullPageScreenshot) {
 
         if (debugResourceWriter == null) {
             debugResourceWriter = this.debugResourceWriter;
@@ -456,19 +437,21 @@ public class VisualGridRunner extends EyesRunner {
             debugResourceWriter = new NullDebugResourceWriter();
         }
 
-        RenderingTask renderingTask = new RenderingTask(connector, script, settings, taskList, openTasks, this, debugResourceWriter, new RenderingTask.RenderTaskListener() {
+        RenderingTask renderingTask = new RenderingTask(connector, script, settings, visualGridTaskList,
+                openVisualGridTasks, this, debugResourceWriter, new RenderingTask.RenderTaskListener() {
             @Override
             public void onRenderSuccess() {
                 logger.verbose("enter");
                 listener.onRenderSuccess();
                 notifyAllServices();
+                logger.verbose("exit");
             }
 
             @Override
             public void onRenderFailed(Exception e) {
                 listener.onRenderFailed(e);
             }
-        }, selectors);
+        }, selectors, forceFullPageScreenshot);
         logger.verbose("locking renderingTaskList");
         synchronized (renderingTaskList) {
             this.renderingTaskList.add(renderingTask);
@@ -479,53 +462,53 @@ public class VisualGridRunner extends EyesRunner {
     }
 
     private void notifyAllServices() {
-//        logger.verbose("enter");
+        logger.verbose("enter");
         notifyOpenerService();
         notifyCloserService();
         notifyCheckerService();
         notifyRenderingService();
-//        logger.verbose("exit");
+        logger.verbose("exit");
     }
 
     private void notifyRenderingService() {
-//        logger.log("trying to notify rendering service");
+        logger.log("trying to notify rendering service");
         synchronized (renderingServiceLock) {
             renderingServiceLock.notify();
         }
-//        logger.verbose("renderingLockFree");
+        logger.verbose("renderingLockFree");
     }
 
     private void notifyCloserService() {
-//        logger.log("trying to notify closer service");
+        logger.log("trying to notify closer service");
         synchronized (closerServiceLock) {
             closerServiceLock.notifyAll();
         }
-//        logger.verbose("closerLockFree");
+        logger.verbose("closerLockFree");
     }
 
     private void notifyOpenerService() {
-//        logger.log("trying to notify opener service");
+        logger.log("trying to notify opener service");
         synchronized (openerServiceLock) {
             openerServiceLock.notifyAll();
-//            logger.verbose("openerLockFree");
+            logger.verbose("openerLockFree");
         }
     }
 
     private void notifyCheckerService() {
-//        logger.log("trying to notify checker service");
+        logger.log("trying to notify checker service");
         synchronized (checkerServiceLock) {
             checkerServiceLock.notifyAll();
-//            logger.verbose("checkerLockFree");
+            logger.verbose("checkerLockFree");
         }
     }
 
-    public List<CompletableTask> getAllTasksByType(Task.TaskType type) {
+    public List<CompletableTask> getAllTasksByType(VisualGridTask.TaskType type) {
         List<CompletableTask> allTasks = new ArrayList<>();
         for (IRenderingEyes eyes : allEyes) {
             for (RunningTest runningTest : eyes.getAllRunningTests()) {
-                for (Task task : runningTest.getTaskList()) {
-                    if (task.getType() == type) {
-                        allTasks.add(task);
+                for (VisualGridTask visualGridTask : runningTest.getVisualGridTaskList()) {
+                    if (visualGridTask.getType() == type) {
+                        allTasks.add(visualGridTask);
                     }
                 }
             }
@@ -547,5 +530,13 @@ public class VisualGridRunner extends EyesRunner {
 
     public RateLimiter getRateLimiter() {
         return rateLimiter;
+    }
+
+    public void setLogger(Logger logger){
+        eyesCheckerService.setLogger(logger);
+        eyesCloserService.setLogger(logger);
+        eyesOpenerService.setLogger(logger);
+        renderingGridService.setLogger(logger);
+        this.logger = logger;
     }
 }

@@ -9,8 +9,6 @@ public interface IConfigurationGetter {
 
     ImageMatchSettings getDefaultMatchSettings();
 
-    void setDefaultMatchSettings(ImageMatchSettings defaultMatchSettings);
-
     int getMatchTimeout();
 
     String getHostApp();

@@ -573,7 +573,7 @@ public class ServerConnector extends RestClient
             entity = Entity.entity(content, MediaType.APPLICATION_OCTET_STREAM_TYPE);
         }
         final Future<Response> future = request.async().put(entity);
-        logger.log("future created.");
+        logger.verbose("future created.");
         return new PutFuture(future, resource, runningRender, this, logger);
     }
 

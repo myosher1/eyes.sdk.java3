@@ -1,25 +1,25 @@
 package com.applitools.eyes.visualgridclient.model;
 
 import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 
 public class RenderBrowserInfo {
 
     private RectangleSize viewportSize;
-    private SeleniumConfiguration.BrowserType browserType;
+    private Configuration.BrowserType browserType;
     private final String platform = "linux";
     private EmulationBaseInfo emulationInfo;
     private final String sizeMode = "full-page";
     private String baselineEnvName;
 
 
-    public RenderBrowserInfo(RectangleSize viewportSize, SeleniumConfiguration.BrowserType browserType, String baselineEnvName) {
+    public RenderBrowserInfo(RectangleSize viewportSize, Configuration.BrowserType browserType, String baselineEnvName) {
         this.viewportSize = viewportSize;
         this.browserType = browserType;
         this.baselineEnvName = baselineEnvName;
     }
 
-    public RenderBrowserInfo(RectangleSize viewportSize, SeleniumConfiguration.BrowserType browserType) {
+    public RenderBrowserInfo(RectangleSize viewportSize, Configuration.BrowserType browserType) {
         this.viewportSize = viewportSize;
         this.browserType = browserType;
     }
@@ -33,11 +33,11 @@ public class RenderBrowserInfo {
         this.emulationInfo = emulationInfo;
     }
 
-    public RenderBrowserInfo(int width, int height, SeleniumConfiguration.BrowserType browserType, String baselineEnvName) {
+    public RenderBrowserInfo(int width, int height, Configuration.BrowserType browserType, String baselineEnvName) {
         this(new RectangleSize(width, height), browserType, baselineEnvName);
     }
 
-    public RenderBrowserInfo(int width, int height, SeleniumConfiguration.BrowserType browserType) {
+    public RenderBrowserInfo(int width, int height, Configuration.BrowserType browserType) {
         this(new RectangleSize(width, height), browserType, null);
     }
 
@@ -75,7 +75,7 @@ public class RenderBrowserInfo {
         return "chrome";
     }
 
-    public void setBrowserType(SeleniumConfiguration.BrowserType browserType) {
+    public void setBrowserType(Configuration.BrowserType browserType) {
         this.browserType = browserType;
     }
 

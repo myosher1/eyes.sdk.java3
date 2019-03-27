@@ -981,7 +981,7 @@ public abstract class EyesBase {
 
                 beforeOpen();
 
-                RectangleSize viewportSize = getConfigGetter().getViewportSize();
+                RectangleSize viewportSize = getViewportSizeForOpen();
                 viewportSizeHandler.set(viewportSize);
 
                 try {
@@ -1009,6 +1009,10 @@ public abstract class EyesBase {
         } while (MAX_ITERATION > retry);
 
         throw new EyesException("eyes.openBase() failed");
+    }
+
+    protected RectangleSize getViewportSizeForOpen() {
+        return getConfigGetter().getViewportSize();
     }
 
     protected void ensureRunningSession() {
@@ -1257,7 +1261,8 @@ public abstract class EyesBase {
         }
         ensureViewportSize();
 
-        BatchInfo testBatch = getConfigGetter().getBatch();
+        IConfigurationGetter configGetter = getConfigGetter();
+        BatchInfo testBatch = configGetter.getBatch();
         if (testBatch == null) {
             logger.verbose("No batch set");
             getConfigSetter().setBatch(new BatchInfo(null));
@@ -1271,15 +1276,19 @@ public abstract class EyesBase {
 
         logger.verbose("Application environment is " + appEnv);
 
-        sessionStartInfo = new SessionStartInfo(getConfigGetter(), getFullAgentId(), null,
-                appEnv, getConfigGetter().getDefaultMatchSettings(), properties);
+        String appName = configGetter.getAppName();
+        sessionStartInfo = new SessionStartInfo(getFullAgentId(), configGetter.getSessionType(), appName ,
+                null, configGetter.getTestName(), configGetter.getBatch(), getBaselineEnvName(),
+                configGetter.getEnvironmentName(), getAppEnvironment(), configGetter.getDefaultMatchSettings(),
+                configGetter.getBranchName(),
+                configGetter.getParentBranchName(), configGetter.getBaselineBranchName(), configGetter.getSaveDiffs(), properties);
 
         logger.verbose("Starting server session...");
         runningSession = serverConnector.startSession(sessionStartInfo);
 
         logger.verbose("Server session ID is " + runningSession.getId());
 
-        String testInfo = "'" + getConfigGetter().getTestName() + "' of '" + getConfigGetter().getAppName() + "' " + appEnv;
+        String testInfo = "'" + configGetter.getTestName() + "' of '" + appName + "' " + appEnv;
         if (runningSession.getIsNewSession()) {
             logger.log("--- New test started - " + testInfo);
             shouldMatchWindowRunOnceOnTimeout = true;
@@ -1287,6 +1296,10 @@ public abstract class EyesBase {
             logger.log("--- Test started - " + testInfo);
             shouldMatchWindowRunOnceOnTimeout = false;
         }
+    }
+
+    protected String getBaselineEnvName() {
+        return getConfigGetter().getBaselineEnvName();
     }
 
     public Object getAgentSetup() {

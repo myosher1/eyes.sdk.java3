@@ -2,7 +2,7 @@ package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.EyesBase;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -82,11 +82,11 @@ public class TestVGServerConfigs {
         if (isDisabled2 != null) {
             eyes.setIsDisabled(isDisabled2);
         }
-        SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration(3, true, "");
-        seleniumConfiguration.addBrowser(100, 100, SeleniumConfiguration.BrowserType.FIREFOX);
+        Configuration configuration = new Configuration(true, "");
+        configuration.addBrowser(100, 100, Configuration.BrowserType.FIREFOX);
         ChromeDriver webDriver = new ChromeDriver();
         try {
-            eyes.setConfiguration(seleniumConfiguration);
+            eyes.setConfiguration(configuration);
             eyes.open(webDriver);
             Assert.assertEquals(eyes.getServerUrl().toString(), this.expectedServer);
             Assert.assertEquals(eyes.getApiKey(), this.expectedKey);

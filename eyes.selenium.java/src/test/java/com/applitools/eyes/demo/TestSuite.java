@@ -4,7 +4,7 @@ import com.applitools.ICheckSettings;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.config.IConfigurationSetter;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
@@ -39,13 +39,13 @@ public class TestSuite {
 
         //VisualGridEyes.setProxy(new ProxySettings("http://127.0.0.1", 8888));
 
-        SeleniumConfiguration configuration = new SeleniumConfiguration();
+        Configuration configuration = new Configuration();
         initConfig(configuration);
         configuration.setTestName("Applitools Visual Grid Demo");
 
-        configuration.addBrowser(800, 600, SeleniumConfiguration.BrowserType.CHROME);
-        configuration.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.CHROME);
-        configuration.addBrowser(1920, 1000, SeleniumConfiguration.BrowserType.CHROME);
+        configuration.addBrowser(800, 600, Configuration.BrowserType.CHROME);
+        configuration.addBrowser(1200, 800, Configuration.BrowserType.CHROME);
+        configuration.addBrowser(1920, 1000, Configuration.BrowserType.CHROME);
 
         eyes.setConfiguration(configuration);
         eyes.open(webDriver);

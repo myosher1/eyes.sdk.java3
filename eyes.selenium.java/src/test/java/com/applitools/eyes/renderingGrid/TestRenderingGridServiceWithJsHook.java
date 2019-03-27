@@ -4,7 +4,7 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.config.SeleniumConfiguration;
+import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
@@ -50,13 +50,13 @@ public final class TestRenderingGridServiceWithJsHook {
         Eyes eyes = initEyes(webDriver, new BatchInfo("WebHookBatch") );
 
         try {
-            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
-            seleniumConfiguration.setTestName("Visual Grid With Web Hook");
-            seleniumConfiguration.setAppName("RenderingGridIntegration");
-            seleniumConfiguration.addBrowser(400, 300, SeleniumConfiguration.BrowserType.CHROME);
+            Configuration configuration = new Configuration();
+            configuration.setTestName("Visual Grid With Web Hook");
+            configuration.setAppName("RenderingGridIntegration");
+            configuration.addBrowser(400, 300, Configuration.BrowserType.CHROME);
             //VisualGridEyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             eyes.setServerUrl("https://eyes.applitools.com/");
-            eyes.setConfiguration(seleniumConfiguration);
+            eyes.setConfiguration(configuration);
             ((Eyes) eyes).open(webDriver);
             //CheckRGSettings setting = new CheckRGSettings(CheckRGSettings.SizeMode.FULL_PAGE, null, null, false);
             String jshook = "document.body.style='background-color: red'";
@@ -79,11 +79,11 @@ public final class TestRenderingGridServiceWithJsHook {
         Logger logger = eyes.getLogger();
 
         try {
-            SeleniumConfiguration seleniumConfiguration = new SeleniumConfiguration();
-            seleniumConfiguration.setTestName("Vans Gallery page");
-            seleniumConfiguration.setAppName("RenderingGridIntegration");
-            seleniumConfiguration.addBrowser(1200, 800, SeleniumConfiguration.BrowserType.CHROME, null);
-            eyes.setConfiguration(seleniumConfiguration);
+            Configuration configuration = new Configuration();
+            configuration.setTestName("Vans Gallery page");
+            configuration.setAppName("RenderingGridIntegration");
+            configuration.addBrowser(1200, 800, Configuration.BrowserType.CHROME, null);
+            eyes.setConfiguration(configuration);
             eyes.open(webDriver);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);

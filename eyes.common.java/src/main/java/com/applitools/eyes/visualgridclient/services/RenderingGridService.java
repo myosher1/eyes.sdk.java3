@@ -19,6 +19,10 @@ public class RenderingGridService extends Thread {
     protected Logger logger;
     private boolean isPaused;
 
+    public void setLogger(Logger logger) {
+
+    }
+
 
     public interface RGServiceListener {
         RenderingTask getNextTask();
@@ -35,23 +39,27 @@ public class RenderingGridService extends Thread {
 
     @Override
     public void run() {
-        while (isServiceOn) {
-            if (isPaused) {
-                synchronized (debugLock) {
-                    try {
-                        debugLock.wait();
-                        this.isPaused = false;
-                    } catch (InterruptedException e) {
-                        GeneralUtils.logExceptionStackTrace(logger, e);
+        try {
+            while (isServiceOn) {
+                if (isPaused) {
+                    synchronized (debugLock) {
+                        try {
+                            debugLock.wait();
+                            this.isPaused = false;
+                        } catch (InterruptedException e) {
+                            GeneralUtils.logExceptionStackTrace(logger, e);
+                        }
                     }
                 }
+                runNextTask();
             }
-            runNextTask();
+            if (this.executor != null) {
+                this.executor.shutdown();
+            }
+            logger.verbose("Service '" + this.getName() + "' is finished");
+        } catch (Throwable e) {
+            logger.verbose("Rendering Service Error : "+e);
         }
-        if (this.executor != null) {
-            this.executor.shutdown();
-        }
-        logger.log("Service '" + this.getName() + "' is finished");
     }
 
     private void runNextTask() {
@@ -73,7 +81,7 @@ public class RenderingGridService extends Thread {
             } catch (Exception e) {
                 logger.verbose("Exception in - this.executor.submit(task); ");
                 if(e.getMessage().contains("Read timed out")){
-                    logger.log("Read timed out");
+                    logger.verbose("Read timed out");
                 }
                 e.printStackTrace();
                 GeneralUtils.logExceptionStackTrace(logger, e);
