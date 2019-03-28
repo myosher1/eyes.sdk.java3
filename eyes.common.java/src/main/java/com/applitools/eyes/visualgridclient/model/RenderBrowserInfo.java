@@ -66,7 +66,9 @@ public class RenderBrowserInfo {
                     return "chrome";
                 case FIREFOX:
                     return "firefox";
-                case IE:
+                case IE_10:
+                    return "ie10";
+                case IE_11:
                     return "ie";
                 case EDGE:
                     return "edge";
@@ -85,7 +87,8 @@ public class RenderBrowserInfo {
                 case CHROME:
                 case FIREFOX:
                     return "linux";
-                case IE:
+                case IE_10:
+                case IE_11:
                 case EDGE:
                     return "windows";
             }

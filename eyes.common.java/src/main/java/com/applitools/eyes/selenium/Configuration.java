@@ -21,7 +21,7 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     private boolean isThrowExceptionOn = false;
     private Boolean isRenderingConfig = false;
 
-    public enum BrowserType {CHROME, FIREFOX, IE, EDGE}
+    public enum BrowserType {CHROME, FIREFOX, IE_11, EDGE, IE_10}
 
     private List<RenderBrowserInfo> browsersInfo = new ArrayList<>();
 
