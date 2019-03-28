@@ -841,7 +841,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 logger.verbose("Max iteration reached for url - " + this.dom.getUrl());
             }
 
-        } while (!ids.isEmpty() && isMaxIterationNotReached);
+        } while (!ids.isEmpty() && numOfIterations < MAX_ITERATIONS);
 
         if(!ids.isEmpty()){
             logger.verbose("Render ids that didn't complete in time : ");
