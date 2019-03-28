@@ -282,7 +282,7 @@ public class SeleniumEyes extends EyesBase {
 
     private void initDriver(WebDriver driver) {
         if (driver instanceof RemoteWebDriver) {
-            this.driver = (EyesWebDriver) driver;
+            this.driver = new EyesWebDriver(logger, this, (RemoteWebDriver) driver);
         } else if (driver instanceof EyesWebDriver) {
             this.driver = (EyesWebDriver) driver;
         } else {

@@ -4,6 +4,7 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.selenium.AppiumJsCommandExtractor;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.EyesSeleniumUtils;
+import com.applitools.eyes.selenium.SeleniumEyes;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.positioning.ImageRotation;
 import com.applitools.eyes.selenium.triggers.EyesKeyboard;
@@ -31,7 +32,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         SearchContext, TakesScreenshot, WebDriver, HasTouchScreen, IEyesJsExecutor {
 
     private final Logger logger;
-    private final Eyes eyes;
+    private final SeleniumEyes eyes;
     private final RemoteWebDriver driver;
     private final TouchScreen touch;
     private final Map<String, WebElement> elementsIds;
@@ -86,10 +87,9 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         return normalizedImage;
     }
 
-    public EyesWebDriver(Logger logger, Eyes eyes, RemoteWebDriver driver)
+    public EyesWebDriver(Logger logger, SeleniumEyes eyes, RemoteWebDriver driver)
             throws EyesException {
         ArgumentGuard.notNull(logger, "logger");
-        ArgumentGuard.notNull(eyes, "eyes");
         ArgumentGuard.notNull(driver, "driver");
 
         this.logger = logger;
@@ -117,7 +117,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
         logger.verbose("Driver session is " + getSessionId());
     }
 
-    public Eyes getEyes() {
+    public SeleniumEyes getEyes() {
         return eyes;
     }
 
@@ -230,7 +230,7 @@ public class EyesWebDriver implements HasCapabilities, HasInputDevices,
     }
 
     public TargetLocator switchTo() {
-        return new EyesTargetLocator(this, driver.switchTo());
+        return new EyesTargetLocator(this, logger,driver.switchTo());
     }
 
     public Navigation navigate() {

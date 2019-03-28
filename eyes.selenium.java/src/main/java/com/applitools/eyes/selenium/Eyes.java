@@ -73,9 +73,8 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return the web driver
      */
     public WebDriver open(WebDriver webDriver) {
-        this.driver = new EyesWebDriver(getLogger(), this, (RemoteWebDriver) webDriver);
         if (isVisualGridEyes) {
-            return visualGridEyes.open(driver);
+            return visualGridEyes.open(webDriver);
         } else {
             return seleniumEyes.open(webDriver);
         }
