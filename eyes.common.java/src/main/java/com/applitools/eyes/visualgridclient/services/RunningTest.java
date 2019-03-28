@@ -213,22 +213,15 @@ public class RunningTest {
         return eyes;
     }
 
-    private void setTestInExceptionMode(Error e) {
+    public void setTestInExceptionMode(Error e) {
         this.isTestInExceptionMode.set(true);
 
         logger.verbose("locking visualGridTaskList.");
         synchronized (visualGridTaskList) {
-            Iterator<VisualGridTask> iterator = this.visualGridTaskList.iterator();
-            while (iterator.hasNext()) {
-                VisualGridTask next = iterator.next();
-                VisualGridTask.TaskType type = next.getType();
-                if (type == VisualGridTask.TaskType.CHECK || type == VisualGridTask.TaskType.OPEN) {
-                    logger.verbose("removing element from visualGridTaskList.");
-                    iterator.remove();
-                } else if (type == VisualGridTask.TaskType.CLOSE) {
-                    next.setException(e);
-                }
-            }
+            this.visualGridTaskList.clear();
+            VisualGridTask abortTask = new VisualGridTask(new Configuration(configurationProvider.get()), null, eyes, VisualGridTask.TaskType.ABORT, taskListener, null, this, null);
+            abortTask.setException(e);
+            visualGridTaskList.add(abortTask);
         }
         logger.verbose("releasing visualGridTaskList.");
     }
