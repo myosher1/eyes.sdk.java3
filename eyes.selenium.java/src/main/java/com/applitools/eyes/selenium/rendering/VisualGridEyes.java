@@ -22,6 +22,7 @@ import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.io.IOException;
 import java.net.URI;
@@ -41,7 +42,7 @@ public class VisualGridEyes implements IRenderingEyes {
     private String serverUrl;
 
     private final VisualGridRunner renderingGridManager;
-    private List<RunningTest> testList = Collections.synchronizedList(new ArrayList<RunningTest>());
+    private List<RunningTest> testList = null;
     private final List<RunningTest> testsInCloseProcess = Collections.synchronizedList(new ArrayList<RunningTest>());
     private AtomicBoolean isVGEyesIssuedOpenTasks = new AtomicBoolean(false);
     private IRenderingEyes.EyesListener listener;
@@ -136,10 +137,11 @@ public class VisualGridEyes implements IRenderingEyes {
         }
     }
 
-    public WebDriver open(EyesWebDriver webDriver) {
+    public WebDriver open(WebDriver webDriver) {
         if (getIsDisabled()) return webDriver;
         logger.verbose("enter");
-        this.testList =  new ArrayList<>();
+
+        this.testList =  Collections.synchronizedList(new ArrayList<RunningTest>());
         ArgumentGuard.notNull(webDriver, "webDriver");
         initDriver(webDriver);
 
