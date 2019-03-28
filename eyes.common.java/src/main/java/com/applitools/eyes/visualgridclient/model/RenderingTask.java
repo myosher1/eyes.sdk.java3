@@ -33,6 +33,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     private static final int MAX_FETCH_FAILS = 62;
     private static final int MAX_ITERATIONS = 100;
+    public static final String CDT = "x-applitools-html/cdt";
 
     private final List<RenderTaskListener> listeners = new ArrayList<>();
     private IEyesConnector eyesConnector;
@@ -210,7 +211,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
                     logger.verbose("locking putResourceCache");
                     synchronized (putResourceCache) {
-                        putResourceCache.put(dom.getUrl(), future);
+                        if (!resource.getContentType().equalsIgnoreCase(CDT)) {
+                            putResourceCache.put(dom.getUrl(), future);
+                        }
                         allPuts.add(future);
                     }
                 }
@@ -277,10 +280,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
             logger.verbose("locking putResourceCache");
-            synchronized (putResourceCache) {
-                putResourceCache.put(dom.getUrl(), future);
                 allPuts.add(future);
-            }
             logger.verbose("releasing putResourceCache");
         }
 
@@ -331,7 +331,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
             logger.verbose("resource(" + resource.getUrl() + ") hash : " + resource.getSha256());
             PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
-            if (!putResourceCache.containsKey(url)) {
+            if (!putResourceCache.containsKey(url) && !resource.getContentType().equalsIgnoreCase(CDT)) {
                 synchronized (putResourceCache) {
                     putResourceCache.put(url, future);
                     allPuts.add(future);
@@ -572,7 +572,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
     private String getCss(byte[] contentBytes, String contentTypeStr) {
-        logger.verbose("enter");
+//        logger.verbose("enter");
         if (contentTypeStr == null) return null;
         if (contentBytes.length == 0) return null;
         String[] parts = contentTypeStr.split(";");
@@ -601,12 +601,12 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
-        logger.verbose("exit");
+//        logger.verbose("exit");
         return css;
     }
 
     private void parseCSS(String css, URL baseUrl, Set<URL> resourceUrls) {
-        logger.verbose("enter");
+//        logger.verbose("enter");
         CascadingStyleSheet cascadingStyleSheet = null;
         try {
             cascadingStyleSheet = CSSReader.readFromString(css, ECSSVersion.CSS30);
@@ -620,7 +620,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         collectAllImportUris(cascadingStyleSheet, resourceUrls, baseUrl);
         collectAllFontFaceUris(cascadingStyleSheet, resourceUrls, baseUrl);
         collectAllBackgroundImageUris(cascadingStyleSheet, resourceUrls, baseUrl);
-        logger.verbose("exit");
+//        logger.verbose("exit");
     }
 
     private void collectAllFontFaceUris(CascadingStyleSheet cascadingStyleSheet, Set<URL> allResourceUris, URL baseUrl) {
@@ -704,7 +704,12 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 if (!this.fetchedCacheMap.containsKey(url)) {
                     IResourceFuture resourceFuture = this.eyesConnector.createResourceFuture(blob);
                     logger.verbose("Cache write for url - " + url + " hash:(" + resourceFuture + ")");
-                    this.fetchedCacheMap.put(url, resourceFuture);
+                    if (!blob.getContentType().equalsIgnoreCase(CDT)) {
+                        this.fetchedCacheMap.put(url, resourceFuture);
+                    }
+                    else{
+                        logger.verbose("tried to store cdt");
+                    }
                     written++;
                 }
             }
