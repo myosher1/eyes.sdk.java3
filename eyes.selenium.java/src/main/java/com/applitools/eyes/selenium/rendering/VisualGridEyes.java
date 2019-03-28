@@ -268,7 +268,7 @@ public class VisualGridEyes implements IRenderingEyes {
         futureList = new ArrayList<>();
 
         try {
-//            synchronized (testList) {
+            synchronized (testList) {
                 for (RunningTest runningTest : testList) {
                     logger.verbose("running test name: " + getConfigGetter().getTestName());
                     logger.verbose("is current running test open: " + runningTest.isTestOpen());
@@ -278,16 +278,15 @@ public class VisualGridEyes implements IRenderingEyes {
                         logger.verbose("closing current running test");
                         FutureTask<TestResultContainer> closeFuture = runningTest.close();
                         futureList.add(closeFuture);
-                        closeFuture.get();
                         logger.verbose("adding closeFuture to futureList");
                     }
                 }
-//            }
+            }
             futures.addAll(futureList);
-//            for (Future<TestResultContainer> future : futureList) {
-//                future.get();
-//            }
             this.renderingGridManager.close(this);
+            for (Future<TestResultContainer> future : futureList) {
+                future.get();
+            }
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
@@ -373,6 +372,17 @@ public class VisualGridEyes implements IRenderingEyes {
         this.proxy = abstractProxySettings;
     }
 
+
+    public void check(ICheckSettings... checkSettings) {
+        if (getIsDisabled()) {
+            logger.log(String.format("check(ICheckSettings[%d]): Ignored", checkSettings.length));
+            return;
+        }
+        for (ICheckSettings checkSetting : checkSettings) {
+            this.check(checkSetting);
+        }
+    }
+
     public void check(String name, ICheckSettings checkSettings) {
         if (getIsDisabled()) return;
         ArgumentGuard.notNull(checkSettings, "checkSettings");
@@ -385,57 +395,65 @@ public class VisualGridEyes implements IRenderingEyes {
         if (getIsDisabled()) return;
         logger.verbose("enter");
 
-        ArgumentGuard.notOfType(checkSettings, ICheckSettings.class, "checkSettings");
+        try {
+            ArgumentGuard.notOfType(checkSettings, ICheckSettings.class, "checkSettings");
 
-        List<VisualGridTask> openVisualGridTasks = addOpenTaskToAllRunningTest();
+            List<VisualGridTask> openVisualGridTasks = addOpenTaskToAllRunningTest();
 
-        List<VisualGridTask> visualGridTaskList = new ArrayList<>();
+            List<VisualGridTask> visualGridTaskList = new ArrayList<>();
 
-        ICheckSettingsInternal settingsInternal = (ICheckSettingsInternal) checkSettings;
+            ICheckSettingsInternal settingsInternal = (ICheckSettingsInternal) checkSettings;
 
-        String sizeMode = settingsInternal.getSizeMode();
+            String sizeMode = settingsInternal.getSizeMode();
 
-        //First check config
-        if (sizeMode == null) {
-            if (this.getConfigGetter().getForceFullPageScreenshot()) {
-                settingsInternal.setSizeMode("full-page");
+            //First check config
+            if (sizeMode == null) {
+                if (this.getConfigGetter().getForceFullPageScreenshot()) {
+                    settingsInternal.setSizeMode("full-page");
+                }
             }
+
+            String domCaptureScript = "var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})";
+
+            logger.verbose("Dom extraction starting   (" + checkSettings.toString() + ")");
+            Object resultAsObject = this.webDriver.executeAsyncScript(domCaptureScript);
+            String scriptResult = (String) resultAsObject;
+
+            logger.verbose("Dom extracted  (" + checkSettings.toString() + ")");
+
+            List<VisualGridSelector[]> regionsXPaths = getRegionsXPaths(checkSettings);
+
+            logger.verbose("regionXPaths : " + regionsXPaths);
+
+            for (final RunningTest test : testList) {
+                VisualGridTask checkVisualGridTask = test.check(checkSettings, regionsXPaths);
+                visualGridTaskList.add(checkVisualGridTask);
+            }
+
+            logger.verbose("added check tasks  (" + checkSettings.toString() + ")");
+
+            this.renderingGridManager.check(checkSettings, debugResourceWriter, scriptResult,
+                    this.VGEyesConnector, visualGridTaskList, openVisualGridTasks, checkSettings,
+                    new VisualGridRunner.RenderListener() {
+                        @Override
+                        public void onRenderSuccess() {
+
+                        }
+
+                        @Override
+                        public void onRenderFailed(Exception e) {
+                            GeneralUtils.logExceptionStackTrace(logger, e);
+                        }
+                    }, regionsXPaths, this.configProvider.get().getForceFullPageScreenshot());
+
+            logger.verbose("created renderTask  (" + checkSettings.toString() + ")");
+        } catch (IllegalArgumentException e) {
+                Error error = new Error(e);
+            for (RunningTest runningTest : testList) {
+                runningTest.setTestInExceptionMode(error);
+            }
+            throw error;
         }
-
-        String domCaptureScript = "var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})";
-
-        logger.verbose("Dom extraction starting   (" + checkSettings.toString() + ")");
-        Object resultAsObject = this.webDriver.executeAsyncScript(domCaptureScript);
-        String scriptResult = (String) resultAsObject;
-
-        logger.verbose("Dom extracted  (" + checkSettings.toString() + ")");
-
-        List<VisualGridSelector[]> regionsXPaths = getRegionsXPaths(checkSettings);
-
-        logger.verbose("regionXPaths : " + regionsXPaths);
-
-        for (final RunningTest test : testList) {
-            VisualGridTask checkVisualGridTask = test.check(checkSettings, regionsXPaths);
-            visualGridTaskList.add(checkVisualGridTask);
-        }
-
-        logger.verbose("added check tasks  (" + checkSettings.toString() + ")");
-
-        this.renderingGridManager.check(checkSettings, debugResourceWriter, scriptResult,
-                this.VGEyesConnector, visualGridTaskList, openVisualGridTasks, checkSettings,
-                new VisualGridRunner.RenderListener() {
-                    @Override
-                    public void onRenderSuccess() {
-
-                    }
-
-                    @Override
-                    public void onRenderFailed(Exception e) {
-                        GeneralUtils.logExceptionStackTrace(logger, e);
-                    }
-                }, regionsXPaths, this.configProvider.get().getForceFullPageScreenshot());
-
-        logger.verbose("created renderTask  (" + checkSettings.toString() + ")");
     }
 
     private void trySetTargetSelector(SeleniumCheckSettings checkSettings) {
