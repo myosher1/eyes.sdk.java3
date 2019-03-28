@@ -192,10 +192,9 @@ public class VisualGridEyes implements IRenderingEyes {
         return VGEyesConnector;
     }
 
-    private void initDriver(EyesWebDriver webDriver) {
-        this.webDriver = webDriver;
-        if (webDriver != null) {
-            this.webDriver = webDriver;
+    private void initDriver(WebDriver webDriver) {
+        if(webDriver instanceof RemoteWebDriver){
+            this.webDriver = new EyesWebDriver(logger, null, (RemoteWebDriver) webDriver);
         }
         String currentUrl = webDriver.getCurrentUrl();
         this.url = currentUrl;
