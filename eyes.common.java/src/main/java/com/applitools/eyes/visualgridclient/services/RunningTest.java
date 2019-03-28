@@ -123,7 +123,8 @@ public class RunningTest {
 //        logger.verbose("enter");
         if (!visualGridTaskList.isEmpty() && isCloseTaskIssued.get()) {
             VisualGridTask visualGridTask = visualGridTaskList.get(0);
-            if(visualGridTask.getType() != VisualGridTask.TaskType.CLOSE) return null;
+            VisualGridTask.TaskType type = visualGridTask.getType();
+            if(type != VisualGridTask.TaskType.CLOSE && type != VisualGridTask.TaskType.ABORT) return null;
 //            logger.verbose("locking visualGridTaskList");
             synchronized (visualGridTaskList) {
 //                logger.verbose("removing visualGridTask " + visualGridTask.toString() + " and exiting");
