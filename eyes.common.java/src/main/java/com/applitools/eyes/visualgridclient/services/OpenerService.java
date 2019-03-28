@@ -24,6 +24,7 @@ public class OpenerService extends EyesService{
             if (task != null) {
                 this.concurrentSession.incrementAndGet();
                 pauseIfNeeded();
+                logger.verbose("open concurrent sessions: " + concurrentSession);
                 this.executor.submit(task);
             }
         }

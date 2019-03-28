@@ -93,6 +93,7 @@ public class EyesService extends Thread {
     }
 
     void stopService() {
+        logger.verbose(this.getName() + " service is Stopped");
         this.isServiceOn = false;
     }
 }
