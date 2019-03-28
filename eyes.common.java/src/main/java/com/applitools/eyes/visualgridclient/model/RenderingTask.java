@@ -334,9 +334,9 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             if (!putResourceCache.containsKey(url) && !resource.getContentType().equalsIgnoreCase(CDT)) {
                 synchronized (putResourceCache) {
                     putResourceCache.put(url, future);
-                    allPuts.add(future);
                 }
             }
+            allPuts.add(future);
 
         }
 
