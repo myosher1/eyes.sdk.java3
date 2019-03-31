@@ -72,7 +72,8 @@ public class TestTopSites {
             EmulationInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
             configuration.addBrowser(800, 600, Configuration.BrowserType.CHROME, environment);
             configuration.addBrowser(700, 500, Configuration.BrowserType.FIREFOX, environment);
-            configuration.addBrowser(700, 500, Configuration.BrowserType.IE, environment);
+            configuration.addBrowser(700, 500, Configuration.BrowserType.IE_10, environment);
+            configuration.addBrowser(700, 500, Configuration.BrowserType.IE_11, environment);
             configuration.addBrowser(1600, 1200, Configuration.BrowserType.CHROME, environment);
 //            configuration.addBrowser(1200, 800, Configuration.BrowserType.EDGE, environment);
             configuration.addDeviceEmulation(emulation);

@@ -97,7 +97,7 @@ public class VisualGridEyes implements IRenderingEyes {
     private RunningTest.RunningTestListener testListener = new RunningTest.RunningTestListener() {
         @Override
         public void onTaskComplete(VisualGridTask task, RunningTest test) {
-            switch (task.getType()){
+            switch (task.getType()) {
                 case CLOSE:
                     VisualGridEyes.this.isVGEyesIssuedOpenTasks.set(false);
             }
@@ -113,7 +113,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
         @Override
         public void onTaskStarting(VisualGridTask task, RunningTest test) {
-            if(task.getType() == VisualGridTask.TaskType.CLOSE){
+            if (task.getType() == VisualGridTask.TaskType.CLOSE) {
                 VisualGridEyes.this.testsInCloseProcess.add(test);
             }
         }
@@ -138,12 +138,17 @@ public class VisualGridEyes implements IRenderingEyes {
     }
 
     public WebDriver open(WebDriver webDriver) {
-        if (getIsDisabled()) return webDriver;
         logger.verbose("enter");
 
-        this.testList =  Collections.synchronizedList(new ArrayList<RunningTest>());
+        if (getIsDisabled()) return webDriver;
+
         ArgumentGuard.notNull(webDriver, "webDriver");
+
         initDriver(webDriver);
+
+        setViewportSize(this.webDriver);
+
+        this.testList = Collections.synchronizedList(new ArrayList<RunningTest>());
 
         logger.verbose("getting all browsers info...");
         List<RenderBrowserInfo> browserInfoList = getConfigGetter().getBrowsersInfo();
@@ -158,6 +163,27 @@ public class VisualGridEyes implements IRenderingEyes {
         this.renderingGridManager.open(this, renderingInfo);
         logger.verbose("done");
         return webDriver;
+    }
+
+    private void setViewportSize(EyesWebDriver webDriver) {
+        RectangleSize viewportSize = configProvider.get().getViewportSize();
+
+        RectangleSize rectangleSize = null;
+
+        if (viewportSize != null) {
+            rectangleSize = viewportSize;
+        } else {
+
+            List<RenderBrowserInfo> browserInfoList = getConfigGetter().getBrowsersInfo();
+            if (browserInfoList != null && !browserInfoList.isEmpty()) {
+                RenderBrowserInfo renderBrowserInfo = browserInfoList.get(0);
+                rectangleSize = new RectangleSize(renderBrowserInfo.getWidth(), renderBrowserInfo.getHeight());
+            }
+        }
+
+        if (rectangleSize != null) {
+            EyesSeleniumUtils.setViewportSize(logger, webDriver, rectangleSize);
+        }
     }
 
     private IEyesConnector createVGEyesConnector(RenderBrowserInfo browserInfo) {
@@ -195,7 +221,7 @@ public class VisualGridEyes implements IRenderingEyes {
     }
 
     private void initDriver(WebDriver webDriver) {
-        if(webDriver instanceof RemoteWebDriver){
+        if (webDriver instanceof RemoteWebDriver) {
             this.webDriver = new EyesWebDriver(logger, null, (RemoteWebDriver) webDriver);
         }
         String currentUrl = webDriver.getCurrentUrl();
@@ -392,11 +418,15 @@ public class VisualGridEyes implements IRenderingEyes {
     }
 
     public void check(ICheckSettings checkSettings) {
-        if (getIsDisabled()) return;
+
         logger.verbose("enter");
 
+        if (getIsDisabled()) return;
+
+
+        ArgumentGuard.notOfType(checkSettings, ICheckSettings.class, "checkSettings");
+
         try {
-            ArgumentGuard.notOfType(checkSettings, ICheckSettings.class, "checkSettings");
 
             List<VisualGridTask> openVisualGridTasks = addOpenTaskToAllRunningTest();
 
@@ -448,7 +478,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
             logger.verbose("created renderTask  (" + checkSettings.toString() + ")");
         } catch (IllegalArgumentException e) {
-                Error error = new Error(e);
+            Error error = new Error(e);
             for (RunningTest runningTest : testList) {
                 runningTest.setTestInExceptionMode(error);
             }
@@ -457,13 +487,12 @@ public class VisualGridEyes implements IRenderingEyes {
     }
 
     private void trySetTargetSelector(SeleniumCheckSettings checkSettings) {
-        ISeleniumCheckTarget seleniumCheckTarget = checkSettings;
-        WebElement element = seleniumCheckTarget.getTargetElement();
+        WebElement element = ((ISeleniumCheckTarget) checkSettings).getTargetElement();
         FrameChain frameChain = webDriver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) webDriver.switchTo();
         switchToFrame(checkSettings);
         if (element == null) {
-            By targetSelector = seleniumCheckTarget.getTargetSelector();
+            By targetSelector = ((ISeleniumCheckTarget) checkSettings).getTargetSelector();
             if (targetSelector != null) {
                 element = webDriver.findElement(targetSelector);
             }
