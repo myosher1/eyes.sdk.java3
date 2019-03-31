@@ -3,13 +3,10 @@ package com.applitools.eyes.selenium.rendering;
 import com.applitools.ICheckSettings;
 import com.applitools.ICheckSettingsInternal;
 import com.applitools.eyes.*;
-import com.applitools.eyes.selenium.IConfigurationGetter;
-import com.applitools.eyes.selenium.ISeleniumConfigurationProvider;
-import com.applitools.eyes.selenium.IConfigurationSetter;
+import com.applitools.eyes.selenium.*;
 import com.applitools.eyes.fluent.CheckSettings;
 import com.applitools.eyes.fluent.GetFloatingRegion;
 import com.applitools.eyes.fluent.GetRegion;
-import com.applitools.eyes.selenium.EyesSeleniumUtils;
 import com.applitools.eyes.selenium.fluent.*;
 import com.applitools.eyes.selenium.frames.Frame;
 import com.applitools.eyes.selenium.frames.FrameChain;
@@ -58,6 +55,7 @@ public class VisualGridEyes implements IRenderingEyes {
     private Boolean isDisabled;
     private IServerConnector serverConnector = null;
     private ISeleniumConfigurationProvider configProvider;
+    private RectangleSize viewportSize;
 
     private static final String GET_ELEMENT_XPATH_JS =
             "var el = arguments[0];" +
@@ -148,11 +146,15 @@ public class VisualGridEyes implements IRenderingEyes {
 
         setViewportSize(this.webDriver);
 
+        ensureBrowsers();
+
         this.testList = Collections.synchronizedList(new ArrayList<RunningTest>());
 
         logger.verbose("getting all browsers info...");
         List<RenderBrowserInfo> browserInfoList = getConfigGetter().getBrowsersInfo();
         logger.verbose("creating test descriptors for each browser info...");
+        IConfigurationSetter configurationSetter = configProvider.set();
+        configurationSetter.setViewportSize(viewportSize);
         for (RenderBrowserInfo browserInfo : browserInfoList) {
             logger.verbose("creating test descriptor");
             RunningTest test = new RunningTest(createVGEyesConnector(browserInfo), configProvider, browserInfo, logger, testListener);
@@ -165,28 +167,36 @@ public class VisualGridEyes implements IRenderingEyes {
         return webDriver;
     }
 
+    private void ensureBrowsers() {
+        if (this.configProvider.get().getBrowsersInfo().isEmpty()) {
+            this.configProvider.get().getBrowsersInfo().add(new RenderBrowserInfo(viewportSize, Configuration.BrowserType.CHROME));
+        }
+    }
+
     private void setViewportSize(EyesWebDriver webDriver) {
-        RectangleSize viewportSize = configProvider.get().getViewportSize();
+        viewportSize = configProvider.get().getViewportSize();
 
-        RectangleSize rectangleSize = null;
-
-        if (viewportSize != null) {
-            rectangleSize = viewportSize;
-        } else {
-
+        if (viewportSize == null) {
             List<RenderBrowserInfo> browserInfoList = getConfigGetter().getBrowsersInfo();
             if (browserInfoList != null && !browserInfoList.isEmpty()) {
-                RenderBrowserInfo renderBrowserInfo = browserInfoList.get(0);
-                rectangleSize = new RectangleSize(renderBrowserInfo.getWidth(), renderBrowserInfo.getHeight());
+                for (RenderBrowserInfo renderBrowserInfo : browserInfoList) {
+                    if (renderBrowserInfo.getEmulationInfo() != null) continue;
+                    viewportSize = new RectangleSize(renderBrowserInfo.getWidth(), renderBrowserInfo.getHeight());
+                }
             }
         }
 
-        if (rectangleSize != null) {
-            try {
-                EyesSeleniumUtils.setViewportSize(logger, webDriver, rectangleSize);
-            } catch (Exception e) {
-                GeneralUtils.logExceptionStackTrace(logger, e);
-            }
+        if (viewportSize == null) {
+            viewportSize = EyesSeleniumUtils.getViewportSize(webDriver);
+
+        }
+
+        try {
+
+            EyesSeleniumUtils.setViewportSize(logger, webDriver, viewportSize);
+
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
         }
     }
 

@@ -207,8 +207,11 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
             return browsersInfo;
         }
 
-        RenderBrowserInfo renderBrowserInfo = new RenderBrowserInfo(this.viewportSize.getWidth(), this.viewportSize.getHeight(), BrowserType.CHROME, baselineEnvName);
-        return Collections.singletonList(renderBrowserInfo);
+        if (this.viewportSize != null) {
+            RenderBrowserInfo renderBrowserInfo = new RenderBrowserInfo(this.viewportSize.getWidth(), this.viewportSize.getHeight(), BrowserType.CHROME, baselineEnvName);
+            return Collections.singletonList(renderBrowserInfo);
+        }
+        return browsersInfo;
     }
 
     @Override
