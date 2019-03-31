@@ -182,7 +182,11 @@ public class VisualGridEyes implements IRenderingEyes {
         }
 
         if (rectangleSize != null) {
-            EyesSeleniumUtils.setViewportSize(logger, webDriver, rectangleSize);
+            try {
+                EyesSeleniumUtils.setViewportSize(logger, webDriver, rectangleSize);
+            } catch (Exception e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
         }
     }
 
