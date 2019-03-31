@@ -2227,11 +2227,11 @@ public class Eyes implements ISeleniumConfigurationProvider {
 
 
     public Configuration getConfiguration() {
-        return configuration;
+        return new Configuration(configuration);
     }
 
     public void setConfiguration(Configuration configuration) {
-        this.configuration = configuration;
+        this.configuration = new Configuration(configuration);
     }
 
     public List<Future<TestResultContainer>> getCloseFutures() {
