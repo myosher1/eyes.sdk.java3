@@ -8,6 +8,7 @@ import com.applitools.eyes.events.ISessionEventHandler;
 import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.CheckSettings;
 import com.applitools.eyes.positioning.PositionProvider;
+import com.applitools.eyes.selenium.fluent.SeleniumCheckSettings;
 import com.applitools.eyes.selenium.fluent.Target;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.positioning.ImageRotation;
@@ -33,6 +34,8 @@ import java.util.concurrent.Future;
  * The type Eyes.
  */
 public class Eyes implements ISeleniumConfigurationProvider {
+
+    private static final int USE_DEFAULT_MATCH_TIMEOUT = -1;
 
     private boolean isVisualGridEyes = false;
     private VisualGridEyes visualGridEyes = null;
@@ -69,7 +72,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
     /**
      * Open web driver.
      *
-     * @param webDriver             the web driver
+     * @param webDriver the web driver
      * @return the web driver
      */
     public WebDriver open(WebDriver webDriver) {
@@ -126,11 +129,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param checkSettings the check settings
      */
     public void check(ICheckSettings checkSettings) {
-        if (isVisualGridEyes) {
-            visualGridEyes.check(checkSettings);
-        } else {
-            seleniumEyes.check(checkSettings);
-        }
+        check(null, checkSettings);
     }
 
     /**
@@ -707,9 +706,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param region the region the check               See {@link #checkRegion(Region, int, String)}.               {@code tag} defaults to {@code null}.               Default match timeout is used.
      */
     public void checkRegion(Region region) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(region);
-        }
+        checkRegion(region, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
     /**
@@ -721,9 +718,16 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @throws TestFailedException Thrown if a mismatch is detected and immediate failure reports are enabled.
      */
     public void checkRegion(final Region region, int matchTimeout, String tag) throws TestFailedException {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(region, matchTimeout, tag);
+        if (getIsDisabled()) {
+            getLogger().log(String.format("checkRegion([%s], %d, '%s'): Ignored", region, matchTimeout, tag));
+            return;
         }
+
+        ArgumentGuard.notNull(region, "region");
+
+        getLogger().verbose(String.format("checkRegion([%s], %d, '%s')", region, matchTimeout, tag));
+
+        check(Target.region(region).timeout(matchTimeout).withName(tag));
     }
 
     /**
@@ -733,9 +737,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param element The element which represents the region to check.
      */
     public void checkRegion(WebElement element) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(element);
-        }
+        checkRegion(element, USE_DEFAULT_MATCH_TIMEOUT, null, true);
     }
 
     /**
@@ -747,9 +749,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(WebElement element, boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(element, stitchContent);
-        }
+        checkRegion(element, USE_DEFAULT_MATCH_TIMEOUT, null, stitchContent);
     }
 
     /**
@@ -760,9 +760,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag     An optional tag to be associated with the snapshot.
      */
     public void checkRegion(WebElement element, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(element, tag);
-        }
+        checkRegion(element, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
     /**
@@ -775,9 +773,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(WebElement element, String tag, boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(element, tag, stitchContent);
-        }
+        checkRegion(element, USE_DEFAULT_MATCH_TIMEOUT, tag, stitchContent);
     }
 
     /**
@@ -790,9 +786,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @throws TestFailedException if a mismatch is detected and                             immediate failure reports are enabled
      */
     public void checkRegion(final WebElement element, int matchTimeout, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(element, matchTimeout, tag);
-        }
+        checkRegion(element, matchTimeout, tag, true);
     }
 
     /**
@@ -806,9 +800,16 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(WebElement element, int matchTimeout, String tag, boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(element, matchTimeout, tag, stitchContent);
+        if (getIsDisabled()) {
+            getLogger().log(String.format("checkRegion([%s], %d, '%s'): Ignored", element, matchTimeout, tag));
+            return;
         }
+
+        ArgumentGuard.notNull(element, "element");
+
+        getLogger().verbose(String.format("checkRegion([%s], %d, '%s')", element, matchTimeout, tag));
+
+        check(Target.region(element).timeout(matchTimeout).withName(tag).fully(stitchContent));
     }
 
     /**
@@ -818,9 +819,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param selector The selector by which to specify which region to check.
      */
     public void checkRegion(By selector) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(selector);
-        }
+        checkRegion(selector, USE_DEFAULT_MATCH_TIMEOUT, null, true);
     }
 
     /**
@@ -832,9 +831,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(By selector, boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(selector, stitchContent);
-        }
+        checkRegion(selector, USE_DEFAULT_MATCH_TIMEOUT, null, stitchContent);
     }
 
     /**
@@ -845,9 +842,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag      An optional tag to be associated with the screenshot.
      */
     public void checkRegion(By selector, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(selector, tag);
-        }
+        checkRegion(selector, USE_DEFAULT_MATCH_TIMEOUT, tag, true);
     }
 
     /**
@@ -860,9 +855,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
      */
     public void checkRegion(By selector, String tag, boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(selector, tag, stitchContent);
-        }
+        checkRegion(selector, USE_DEFAULT_MATCH_TIMEOUT, tag, stitchContent);
     }
 
     /**
@@ -875,9 +868,21 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @throws TestFailedException if a mismatch is detected and                             immediate failure reports are enabled
      */
     public void checkRegion(By selector, int matchTimeout, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegion(selector, matchTimeout, tag);
-        }
+        checkRegion(selector, matchTimeout, tag, true);
+    }
+
+    /**
+     * If {@code stitchContent} is {@code true} then behaves the same as
+     * {@link #checkRegion(By, int, String)}. Otherwise,
+     * behaves the same as {@link #checkElement(By, int, String)}.
+     *
+     * @param selector      The selector by which to specify which region to check.
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
+     * @param tag           An optional tag to be associated with the screenshot.
+     * @param stitchContent Whether to take a screenshot of the whole region and stitch if needed.
+     */
+    public void checkRegion(By selector, int matchTimeout, String tag, boolean stitchContent) {
+        check(tag, Target.region(selector).timeout(matchTimeout).fully(stitchContent));
     }
 
     /**
@@ -888,9 +893,44 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param selector   The selector by which to specify which region to check inside the frame.
      */
     public void checkRegionInFrame(int frameIndex, By selector) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameIndex, selector);
+        checkRegionInFrame(frameIndex, selector, null);
+    }
+
+    /**
+     * Switches into the given frame, takes a snapshot of the application under
+     * test and matches a region specified by the given selector.
+     *
+     * @param framePath     The path to the frame to check. This is a list of                      frame names/IDs (where each frame is nested in the previous frame).
+     * @param selector      A Selector specifying the region to check.
+     * @param matchTimeout  The amount of time to retry matching (milliseconds).
+     * @param tag           An optional tag to be associated with the snapshot.
+     * @param stitchContent Whether or not to stitch the internal content of the                      region (i.e., perform {@link #checkElement(By, int, String)} on the region.
+     */
+    public void checkRegionInFrame(String[] framePath, By selector,
+                                   int matchTimeout, String tag,
+                                   boolean stitchContent) {
+
+        SeleniumCheckSettings settings = Target.frame(framePath[0]);
+        for (int i = 1; i < framePath.length; i++) {
+            settings = settings.frame(framePath[i]);
         }
+        check(tag, settings.region(selector).timeout(matchTimeout).fully(stitchContent));
+    }
+
+    /**
+     * Switches into the given frame, takes a snapshot of the application under
+     * test and matches a region specified by the given selector.
+     *
+     * @param frameIndex    The index of the frame to switch to. (The same index                      as would be used in a call to                      driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check.
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
+     * @param tag           An optional tag to be associated with the snapshot.
+     * @param stitchContent If {@code true}, stitch the internal content of                      the region (i.e., perform                      {@link #checkElement(By, int, String)} on the                      region.
+     */
+    public void checkRegionInFrame(int frameIndex, By selector,
+                                   int matchTimeout, String tag,
+                                   boolean stitchContent) {
+        check(tag, Target.frame(frameIndex).region(selector).timeout(matchTimeout).fully(stitchContent));
     }
 
     /**
@@ -907,14 +947,12 @@ public class Eyes implements ISeleniumConfigurationProvider {
      *                      region.
      */
     public void checkRegionInFrame(int frameIndex, By selector, boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameIndex, selector, stitchContent);
-        }
+        checkRegionInFrame(frameIndex, selector, null, stitchContent);
     }
 
     /**
      * See {@link #checkRegionInFrame(int, By, String, boolean)}.
-     * {@code stitchContent} defaults to {@code false}.
+     * {@code stitchContent} defaults to {@code true}.
      *
      * @param frameIndex The index of the frame to switch to. (The same index
      *                   as would be used in a call to
@@ -923,9 +961,8 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag        An optional tag to be associated with the screenshot.
      */
     public void checkRegionInFrame(int frameIndex, By selector, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameIndex, selector, tag);
-        }
+        checkRegionInFrame(frameIndex, selector, USE_DEFAULT_MATCH_TIMEOUT, tag);
+
     }
 
     /**
@@ -943,14 +980,12 @@ public class Eyes implements ISeleniumConfigurationProvider {
      *                      region.
      */
     public void checkRegionInFrame(int frameIndex, By selector, String tag, boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameIndex, selector, tag, stitchContent);
-        }
+        checkRegionInFrame(frameIndex, selector, USE_DEFAULT_MATCH_TIMEOUT,tag, stitchContent);
     }
 
     /**
      * See {@link #checkRegionInFrame(int, By, int, String, boolean)}.
-     * {@code stitchContent} defaults to {@code false}.
+     * {@code stitchContent} defaults to {@code true}.
      *
      * @param frameIndex   The index of the frame to switch to. (The same index
      *                     as would be used in a call to
@@ -960,33 +995,9 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag          An optional tag to be associated with the screenshot.
      */
     public void checkRegionInFrame(int frameIndex, By selector, int matchTimeout, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameIndex, selector, matchTimeout, tag);
-        }
+        checkRegionInFrame(frameIndex, selector, matchTimeout, tag, true);
     }
 
-    /**
-     * Switches into the given frame, takes a snapshot of the application under
-     * test and matches a region specified by the given selector.
-     *
-     * @param frameIndex    The index of the frame to switch to. (The same index
-     *                      as would be used in a call to
-     *                      driver.switchTo().frame()).
-     * @param selector      A Selector specifying the region to check.
-     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
-     * @param tag           An optional tag to be associated with the snapshot.
-     * @param stitchContent If {@code true}, stitch the internal content of
-     *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the
-     *                      region.
-     */
-    public void checkRegionInFrame(int frameIndex, By selector,
-                                   int matchTimeout, String tag,
-                                   boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameIndex, selector, matchTimeout, tag, stitchContent);
-        }
-    }
 
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
@@ -997,9 +1008,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param selector      A Selector specifying the region to check.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector);
-        }
+        checkRegionInFrame(frameNameOrId, selector, true);
     }
 
     /**
@@ -1015,9 +1024,24 @@ public class Eyes implements ISeleniumConfigurationProvider {
      *                      region.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector, boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, stitchContent);
-        }
+        checkRegionInFrame(frameNameOrId, selector, USE_DEFAULT_MATCH_TIMEOUT, stitchContent);
+    }
+
+    /**
+     * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
+     * {@code tag} defaults to {@code null}.
+     *
+     * @param frameNameOrId The name or id of the frame to switch to. (as would
+     *                      be used in a call to driver.switchTo().frame()).
+     * @param selector      A Selector specifying the region to check.
+     * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
+     * @param stitchContent If {@code true}, stitch the internal content of
+     *                      the region (i.e., perform
+     *                      {@link #checkElement(By, int, String)} on the
+     *                      region.
+     */
+    public void checkRegionInFrame(String frameNameOrId, By selector, int matchTimeout, boolean stitchContent) {
+        checkRegionInFrame(frameNameOrId, selector, matchTimeout, null, stitchContent);
     }
 
     /**
@@ -1029,11 +1053,8 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param selector      A Selector specifying the region to check.
      * @param tag           An optional tag to be associated with the snapshot.
      */
-    public void checkRegionInFrame(String frameNameOrId, By selector,
-                                   String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, tag);
-        }
+    public void checkRegionInFrame(String frameNameOrId, By selector, String tag) {
+        checkRegionInFrame(frameNameOrId, selector, USE_DEFAULT_MATCH_TIMEOUT, tag, true);
     }
 
     /**
@@ -1049,16 +1070,13 @@ public class Eyes implements ISeleniumConfigurationProvider {
      *                      {@link #checkElement(By, int, String)} on the
      *                      region.
      */
-    public void checkRegionInFrame(String frameNameOrId, By selector,
-                                   String tag, boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, tag, stitchContent);
-        }
+    public void checkRegionInFrame(String frameNameOrId, By selector, String tag, boolean stitchContent) {
+        checkRegionInFrame(frameNameOrId, selector, USE_DEFAULT_MATCH_TIMEOUT, tag, stitchContent);
     }
 
     /**
      * See {@link #checkRegionInFrame(String, By, int, String, boolean)}.
-     * {@code stitchContent} defaults to {@code false}.
+     * {@code stitchContent} defaults to {@code true}.
      *
      * @param frameNameOrId The name or id of the frame to switch to. (as would                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check inside the frame.
@@ -1067,30 +1085,23 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    int matchTimeout, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, matchTimeout, tag);
-        }
+        checkRegionInFrame(frameNameOrId, selector, matchTimeout, tag, true);
     }
 
     /**
      * Switches into the given frame, takes a snapshot of the application under
      * test and matches a region specified by the given selector.
      *
-     * @param frameNameOrId The name or id of the frame to switch to. (as would
-     *                      be used in a call to driver.switchTo().frame()).
+     * @param frameNameOrId The name or id of the frame to switch to. (as would                      be used in a call to driver.switchTo().frame()).
      * @param selector      A Selector specifying the region to check inside the frame.
      * @param matchTimeout  The amount of time to retry matching. (Milliseconds)
      * @param tag           An optional tag to be associated with the snapshot.
-     * @param stitchContent If {@code true}, stitch the internal content of
-     *                      the region (i.e., perform
-     *                      {@link #checkElement(By, int, String)} on the region.
+     * @param stitchContent If {@code true}, stitch the internal content of                      the region (i.e., perform                      {@link #checkElement(By, int, String)} on the region.
      */
     public void checkRegionInFrame(String frameNameOrId, By selector,
                                    int matchTimeout, String tag,
                                    boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameNameOrId, selector, matchTimeout, tag, stitchContent);
-        }
+        check(tag, Target.frame(frameNameOrId).region(selector).timeout(matchTimeout).fully(stitchContent));
     }
 
     /**
@@ -1101,9 +1112,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param selector       A Selector specifying the region to check inside the frame.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameReference, selector);
-        }
+        checkRegionInFrame(frameReference, selector, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
     /**
@@ -1115,23 +1124,19 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param stitchContent  If {@code true}, stitch the internal content of                       the region (i.e., perform                       {@link #checkElement(By, int, String)} on the                       region.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector, boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameReference, selector, stitchContent);
-        }
+        checkRegionInFrame(frameReference, selector, USE_DEFAULT_MATCH_TIMEOUT, null, stitchContent);
     }
 
     /**
      * See {@link #checkRegionInFrame(WebElement, By, String, boolean)}.
-     * {@code stitchContent} defaults to {@code false}.
+     * {@code stitchContent} defaults to {@code true}.
      *
      * @param frameReference The element which is the frame to switch to. (as                       would be used in a call to                       driver.switchTo().frame()).
      * @param selector       A Selector specifying the region to check inside the frame.
      * @param tag            An optional tag to be associated with the snapshot.
      */
     public void checkRegionInFrame(WebElement frameReference, By selector, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameReference, selector, tag);
-        }
+        checkRegionInFrame(frameReference, selector, USE_DEFAULT_MATCH_TIMEOUT, tag, true);
     }
 
     /**
@@ -1145,14 +1150,12 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public void checkRegionInFrame(WebElement frameReference, By selector,
                                    String tag, boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameReference, selector, tag, stitchContent);
-        }
+        checkRegionInFrame(frameReference, selector, USE_DEFAULT_MATCH_TIMEOUT, tag, stitchContent);
     }
 
     /**
      * See {@link #checkRegionInFrame(WebElement, By, int, String, boolean)}.
-     * {@code stitchContent} defaults to {@code false}.
+     * {@code stitchContent} defaults to {@code true}.
      *
      * @param frameReference The element which is the frame to switch to. (as                       would be used in a call to                       driver.switchTo().frame()).
      * @param selector       A Selector specifying the region to check inside the frame.
@@ -1161,9 +1164,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public void checkRegionInFrame(WebElement frameReference, By selector,
                                    int matchTimeout, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameReference, selector, matchTimeout, tag);
-        }
+        checkRegionInFrame(frameReference, selector, matchTimeout, tag, true);
     }
 
     /**
@@ -1179,9 +1180,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
     public void checkRegionInFrame(WebElement frameReference, By selector,
                                    int matchTimeout, String tag,
                                    boolean stitchContent) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkRegionInFrame(frameReference, selector, matchTimeout, tag, stitchContent);
-        }
+        check(tag, Target.frame(frameReference).region(selector).timeout(matchTimeout).fully(stitchContent));
     }
 
     /**
@@ -1191,9 +1190,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param element the element
      */
     public void checkElement(WebElement element) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkElement(element);
-        }
+        checkElement(element, null);
     }
 
     /**
@@ -1203,9 +1200,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag     See {@link #checkElement(WebElement, int, String)}.                Default match timeout is used.
      */
     public void checkElement(WebElement element, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkElement(element, tag);
-        }
+        checkElement(element, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
     /**
@@ -1218,9 +1213,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @throws TestFailedException if a mismatch is detected and immediate failure reports are enabled
      */
     public void checkElement(WebElement element, int matchTimeout, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkElement(element, matchTimeout, tag);
-        }
+        check(tag, Target.region(element).timeout(matchTimeout).fully());
     }
 
     /**
@@ -1229,9 +1222,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param selector the selector                 See {@link #checkElement(By, String)}.                 {@code tag} defaults to {@code null}.
      */
     public void checkElement(By selector) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkElement(selector);
-        }
+        checkElement(selector, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
     /**
@@ -1241,9 +1232,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag      tg                 See {@link #checkElement(By, int, String)}.                 Default match timeout is used.
      */
     public void checkElement(By selector, String tag) {
-        if (!isVisualGridEyes) {
-            check(tag, Target.region(selector).fully());
-        }
+        checkElement(selector, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
     /**
@@ -1256,9 +1245,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @throws TestFailedException if a mismatch is detected and                             immediate failure reports are enabled
      */
     public void checkElement(By selector, int matchTimeout, String tag) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.checkElement(selector, matchTimeout, tag);
-        }
+        check(tag, Target.region(selector).timeout(matchTimeout).fully());
     }
 
     /**
@@ -1551,11 +1538,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * Default match timeout is used.
      */
     public void checkWindow() {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.checkWindow();
-        } else {
-            this.visualGridEyes.check(null, new CheckSettings(15000));
-        }
+        checkWindow(null);
     }
 
     /**
@@ -1565,11 +1548,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag An optional tag to be associated with the snapshot.
      */
     public void checkWindow(String tag) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.checkWindow(tag);
-        } else {
-            this.visualGridEyes.check(tag, new CheckSettings(15000));
-        }
+        check(tag, Target.window());
     }
 
     /**
@@ -1581,11 +1560,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @throws TestFailedException Thrown if a mismatch is detected and                             immediate failure reports are enabled.
      */
     public void checkWindow(int matchTimeout, String tag) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.checkWindow(matchTimeout, tag);
-        } else {
-            this.visualGridEyes.check(tag, new CheckSettings(15000));
-        }
+        check(tag, Target.window().timeout(matchTimeout));
     }
 
     /**
@@ -1609,11 +1584,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param frameNameOrId frame to check(name or id)                      See {@link #checkFrame(String, int, String)}.                      {@code tag} defaults to {@code null}. Default match timeout is used.
      */
     public void checkFrame(String frameNameOrId) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.checkFrame(frameNameOrId);
-        } else {
-            this.visualGridEyes.check(Target.frame(frameNameOrId));
-        }
+        checkFrame(frameNameOrId, null);
     }
 
     /**
@@ -1623,7 +1594,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag           See {@link #checkFrame(String, int, String)}.                      Default match timeout is used.
      */
     public void checkFrame(String frameNameOrId, String tag) {
-        check(tag, Target.frame(frameNameOrId).fully());
+        checkFrame(frameNameOrId, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
     /**
@@ -1635,11 +1606,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag           An optional tag to be associated with the match.
      */
     public void checkFrame(String frameNameOrId, int matchTimeout, String tag) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.checkFrame(frameNameOrId, matchTimeout, tag);
-        } else {
-            this.visualGridEyes.check(tag, Target.frame(frameNameOrId));
-        }
+        check(tag, Target.frame(frameNameOrId).fully().timeout(matchTimeout));
     }
 
     /**
@@ -1648,11 +1615,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param frameIndex index of frame                   See {@link #checkFrame(int, int, String)}.                   {@code tag} defaults to {@code null}. Default match timeout is used.
      */
     public void checkFrame(int frameIndex) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.checkFrame(frameIndex);
-        } else {
-            this.visualGridEyes.check(Target.frame(frameIndex));
-        }
+        checkFrame(frameIndex, null);
     }
 
     /**
@@ -1662,11 +1625,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag        See {@link #checkFrame(int, int, String)}.                   Default match timeout is used.
      */
     public void checkFrame(int frameIndex, String tag) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.checkFrame(frameIndex, tag);
-        } else {
-            this.visualGridEyes.check(tag, Target.frame(frameIndex));
-        }
+        checkFrame(frameIndex, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
     /**
@@ -1678,11 +1637,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag          An optional tag to be associated with the match.
      */
     public void checkFrame(int frameIndex, int matchTimeout, String tag) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.checkFrame(frameIndex, matchTimeout, tag);
-        } else {
-            this.visualGridEyes.check(tag, Target.frame(frameIndex));
-        }
+        check(tag, Target.frame(frameIndex).timeout(matchTimeout).fully());
     }
 
     /**
@@ -1691,11 +1646,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param frameReference web element to check                       See {@link #checkFrame(WebElement, int, String)}.                       {@code tag} defaults to {@code null}.                       Default match timeout is used.
      */
     public void checkFrame(WebElement frameReference) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.checkFrame(frameReference);
-        } else {
-            this.visualGridEyes.check(Target.frame(frameReference));
-        }
+        checkFrame(frameReference, USE_DEFAULT_MATCH_TIMEOUT, null);
     }
 
     /**
@@ -1705,11 +1656,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag            tag                       See {@link #checkFrame(WebElement, int, String)}.                       Default match timeout is used.
      */
     public void checkFrame(WebElement frameReference, String tag) {
-        if (!this.isVisualGridEyes) {
-            this.seleniumEyes.checkFrame(frameReference, tag);
-        } else {
-            this.visualGridEyes.check(tag, Target.frame(frameReference));
-        }
+        checkFrame(frameReference, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
     /**
@@ -1734,7 +1681,11 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public void checkFrame(String[] framePath, int matchTimeout, String tag) {
 
-        this.seleniumEyes.checkFrame(framePath, matchTimeout, tag);
+        SeleniumCheckSettings settings = Target.frame(framePath[0]);
+        for (int i = 1; i < framePath.length; i++) {
+            settings = settings.frame(framePath[i]);
+        }
+        check(tag, settings.timeout(matchTimeout));
     }
 
     /**
@@ -1745,7 +1696,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param tag        the tag
      */
     public void checkFrame(String[] framesPath, String tag) {
-        this.checkFrame(framesPath, tag);
+        this.checkFrame(framesPath, USE_DEFAULT_MATCH_TIMEOUT, tag);
     }
 
     /**
@@ -1756,7 +1707,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param framesPath the frames path
      */
     public void checkFrame(String[] framesPath) {
-        this.seleniumEyes.checkFrame(framesPath);
+        this.checkFrame(framesPath, null);
     }
 
     /**
