@@ -672,7 +672,7 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
      * Returns the stitching overlap in pixels.
      */
     public int getStitchOverlap() {
-        return config.getStitchingOverlap();
+        return config.getStitchOverlap();
     }
 
     /**
@@ -680,7 +680,7 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
      * @param pixels The width (in pixels) of the overlap.
      */
     public void setStitchOverlap(int pixels) {
-        this.config.setStitchingOverlap(pixels);
+        this.config.setStitchOverlap(pixels);
     }
 
     /**
@@ -697,21 +697,11 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
         }
     }
 
-    @Override
-    public void setStitchingOverlap(int stitchingOverlap) {
-
-    }
-
     /**
      * @return get the host OS running the AUT.
      */
     public String getHostOS() {
         return config.getHostOS();
-    }
-
-    @Override
-    public int getStitchingOverlap() {
-        return 0;
     }
 
     /**

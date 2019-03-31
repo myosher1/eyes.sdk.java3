@@ -2289,7 +2289,7 @@ public class SeleniumEyes extends EyesBase {
                 originProvider,
                 scaleProviderFactory,
                 cutProviderHandler.get(),
-                getConfigGetter().getStitchingOverlap(),
+                getConfigGetter().getStitchOverlap(),
                 imageProvider);
     }
 

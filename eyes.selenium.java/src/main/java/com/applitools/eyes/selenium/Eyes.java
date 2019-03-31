@@ -687,7 +687,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return Returns the stitching overlap in pixels.
      */
     public int getStitchOverlap() {
-        return this.configuration.getStitchingOverlap();
+        return this.configuration.getStitchOverlap();
     }
 
     /**
@@ -697,7 +697,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public void setStitchOverlap(int pixels) {
         if (!isVisualGridEyes) {
-            this.configuration.setStitchingOverlap(pixels);
+            this.configuration.setStitchOverlap(pixels);
         }
     }
 

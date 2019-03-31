@@ -23,7 +23,7 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     private String hostOS;
     // Used for automatic save of a test run.
     private boolean saveNewTests, saveFailedTests;
-    private int stitchingOverlap = 50;
+    private int stitchOverlap = 50;
     private boolean isSendDom = true;
     private FailureReports failureReports =  FailureReports.ON_CLOSE;
 
@@ -46,7 +46,7 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
         this.hostOS = other.getHostOS();
         this.saveNewTests = other.getSaveNewTests();
         this.saveFailedTests = other.getSaveFailedTests();
-        this.stitchingOverlap = other.getStitchingOverlap();
+        this.stitchOverlap = other.getStitchOverlap();
         this.isSendDom = other.isSendDom();
         this.failureReports = other.getFailureReports();
     }
@@ -120,14 +120,15 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public int getStitchingOverlap() {
-        return stitchingOverlap;
-    }
-    public void setStitchingOverlap(int stitchingOverlap) {
-        this.stitchingOverlap = stitchingOverlap;
+    public int getStitchOverlap() {
+        return stitchOverlap;
     }
 
 
+    @Override
+    public void setStitchOverlap(int stitchOverlap) {
+        this.stitchOverlap = stitchOverlap;
+    }
 
     @Override
     public void setBatch(BatchInfo batch) {

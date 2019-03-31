@@ -15,7 +15,7 @@ public interface IConfigurationGetter {
 
     String getHostOS();
 
-    int getStitchingOverlap();
+    int getStitchOverlap();
 
     BatchInfo getBatch();
 

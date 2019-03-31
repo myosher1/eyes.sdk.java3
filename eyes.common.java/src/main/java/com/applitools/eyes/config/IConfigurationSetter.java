@@ -16,7 +16,7 @@ public interface IConfigurationSetter {
 
     void setHostOS(String hostOS);
 
-    void setStitchingOverlap(int stitchingOverlap);
+    void setStitchOverlap(int stitchingOverlap);
 
     void setBatch(BatchInfo batch);
 
