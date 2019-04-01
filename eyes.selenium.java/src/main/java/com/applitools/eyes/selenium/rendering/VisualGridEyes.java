@@ -318,7 +318,12 @@ public class VisualGridEyes implements IRenderingEyes {
             futures.addAll(futureList);
             this.renderingGridManager.close(this);
             for (Future<TestResultContainer> future : futureList) {
-                future.get();
+                TestResultContainer testResultContainer = future.get();
+                Error exception = testResultContainer.getException();
+                if(throwException){
+                    throw exception;
+                }
+
             }
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
