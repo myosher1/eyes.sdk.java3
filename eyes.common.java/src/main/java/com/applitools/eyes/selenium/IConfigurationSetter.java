@@ -27,6 +27,10 @@ public interface IConfigurationSetter extends com.applitools.eyes.config.IConfig
 
     IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName);
 
+    IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName, String baselineEnvName);
+
+    IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName, ScreenOrientation orientation,  String baselineEnvName);
+
 //    IConfigurationSetter addDeviceEmulation(int width, int height);
 //
 //    IConfigurationSetter addDeviceEmulation(int width, int height, double scaleFactor);

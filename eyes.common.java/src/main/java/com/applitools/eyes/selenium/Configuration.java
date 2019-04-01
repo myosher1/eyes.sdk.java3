@@ -165,6 +165,23 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
         return this;
     }
 
+    @Override
+    public IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName, String baselineEnvName) {
+        EmulationBaseInfo emulationInfo = new ChromeEmulationInfo(deviceName, ScreenOrientation.PORTRAIT);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
+        addBrowserInfo(browserInfo);
+        return this;
+    }
+
+    @Override
+    public IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName, ScreenOrientation orientation, String baselineEnvName) {
+        EmulationBaseInfo emulationInfo = new ChromeEmulationInfo(deviceName, orientation);
+        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
+        addBrowserInfo(browserInfo);
+        return this;
+    }
+
+
 //    @Override
 //    public IConfigurationSetter addDeviceEmulation(int width, int height) {
 //        EmulationBaseInfo emulationInfo = new EmulationDevice(width, height, 1, null);
