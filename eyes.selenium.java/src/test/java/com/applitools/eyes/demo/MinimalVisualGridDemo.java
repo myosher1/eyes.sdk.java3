@@ -4,8 +4,7 @@ import com.applitools.eyes.TestResults;
 import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.model.EmulationDevice;
-import com.applitools.eyes.visualgridclient.model.EmulationInfo;
+import com.applitools.eyes.visualgridclient.model.ChromeEmulationInfo;
 import com.applitools.eyes.visualgridclient.model.ScreenOrientation;
 import com.applitools.eyes.visualgridclient.model.TestResultSummary;
 import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
@@ -50,12 +49,12 @@ public class MinimalVisualGridDemo {
         sconf.addBrowser(1600, 1200, Configuration.BrowserType.CHROME);
 
         // Add iPhone 4 device emulation
-        EmulationInfo iphone4 = new EmulationInfo(EmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
-        sconf.addDeviceEmulation(iphone4);
+        ChromeEmulationInfo iphone4 = new ChromeEmulationInfo(ChromeEmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
+        sconf.addDeviceEmulation(ChromeEmulationInfo.DeviceName.iPhone_X);
 
         // Add custom mobile device emulation
-        EmulationDevice customMobile = new EmulationDevice(1024, 768, 2, ScreenOrientation.LANDSCAPE);
-        sconf.addDeviceEmulation(customMobile);
+//        EmulationDevice customMobile = new EmulationDevice(1024, 768, 2, ScreenOrientation.LANDSCAPE);
+//        sconf.addDeviceEmulation(1024, 768, 2);
 
         // Set the configuration object to eyes
         eyes.setConfiguration(sconf);

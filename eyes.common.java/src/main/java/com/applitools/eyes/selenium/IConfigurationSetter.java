@@ -1,7 +1,6 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.eyes.visualgridclient.model.EmulationDevice;
-import com.applitools.eyes.visualgridclient.model.EmulationInfo;
+import com.applitools.eyes.visualgridclient.model.ChromeEmulationInfo;
 import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
 import com.applitools.eyes.visualgridclient.model.ScreenOrientation;
 
@@ -24,20 +23,13 @@ public interface IConfigurationSetter extends com.applitools.eyes.config.IConfig
 
     IConfigurationSetter addBrowser(int width, int height, Configuration.BrowserType browserType);
 
-    IConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice, String baselineEnvName);
+    IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName, ScreenOrientation orientation);
 
-    IConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice);
+    IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName);
 
-    IConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo, String baselineEnvName);
-
-    IConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo);
-
-    IConfigurationSetter addDeviceEmulation(EmulationInfo.DeviceName deviceName, ScreenOrientation orientation);
-
-    IConfigurationSetter addDeviceEmulation(EmulationInfo.DeviceName deviceName);
-
-    IConfigurationSetter addDeviceEmulation(int width, int height);
-
+//    IConfigurationSetter addDeviceEmulation(int width, int height);
+//
+//    IConfigurationSetter addDeviceEmulation(int width, int height, double scaleFactor);
 
     void setBrowsersInfo(List<RenderBrowserInfo> browsersInfo);
 

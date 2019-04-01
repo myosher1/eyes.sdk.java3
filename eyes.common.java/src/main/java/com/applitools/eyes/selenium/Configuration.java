@@ -141,62 +141,41 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
         return addBrowser(width, height, browserType, baselineEnvName);
     }
 
-    @Override
-    public IConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice, String baselineEnvName) {
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationDevice.getWidth(), emulationDevice.getWidth(),
-                BrowserType.CHROME, baselineEnvName);
-        addBrowserInfo(browserInfo);
-        return this;
-    }
-
-    @Override
-    public IConfigurationSetter addDeviceEmulation(EmulationDevice emulationDevice) {
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationDevice, baselineEnvName);
-        addBrowserInfo(browserInfo);
-        return this;
-    }
-
     private void addBrowserInfo(RenderBrowserInfo browserInfo) {
         this.browsersInfo.add(browserInfo);
     }
 
     @Override
-    public IConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo, String baselineEnvName) {
+    public IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName, ScreenOrientation orientation) {
+        EmulationBaseInfo emulationInfo = new ChromeEmulationInfo(deviceName, orientation);
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
         addBrowserInfo(browserInfo);
         return this;
     }
 
     @Override
-    public IConfigurationSetter addDeviceEmulation(EmulationInfo emulationInfo) {
+    public IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName) {
+        EmulationBaseInfo emulationInfo = new ChromeEmulationInfo(deviceName, ScreenOrientation.PORTRAIT);
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
         addBrowserInfo(browserInfo);
         return this;
     }
 
-    @Override
-    public IConfigurationSetter addDeviceEmulation(EmulationInfo.DeviceName deviceName, ScreenOrientation orientation) {
-        EmulationBaseInfo emulationInfo = new EmulationInfo(deviceName, orientation);
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
-        addBrowserInfo(browserInfo);
-        return this;
-    }
-
-    @Override
-    public IConfigurationSetter addDeviceEmulation(EmulationInfo.DeviceName deviceName) {
-        EmulationBaseInfo emulationInfo = new EmulationInfo(deviceName, ScreenOrientation.PORTRAIT);
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
-        addBrowserInfo(browserInfo);
-        return this;
-    }
-
-    @Override
-    public IConfigurationSetter addDeviceEmulation(int width, int height) {
-        EmulationBaseInfo emulationInfo = new EmulationDevice(width, height, 1, ScreenOrientation.PORTRAIT);
-        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
-        addBrowserInfo(browserInfo);
-        return this;
-    }
+//    @Override
+//    public IConfigurationSetter addDeviceEmulation(int width, int height) {
+//        EmulationBaseInfo emulationInfo = new EmulationDevice(width, height, 1, null);
+//        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
+//        addBrowserInfo(browserInfo);
+//        return this;
+//    }
+//
+//    @Override
+//    public IConfigurationSetter addDeviceEmulation(int width, int height, double scaleFactor) {
+//        EmulationDevice emulationInfo = new EmulationDevice(width, height, scaleFactor, null);
+//        RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
+//        addBrowserInfo(browserInfo);
+//        return this;
+//    }
 
     @Override
     public List<RenderBrowserInfo> getBrowsersInfo() {

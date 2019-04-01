@@ -4,9 +4,9 @@ public class EmulationDevice extends EmulationBaseInfo{
 
     private int width;
     private int height;
-    private float deviceScaleFactor;
+    private double deviceScaleFactor;
 
-    public EmulationDevice(int width, int height, float deviceScaleFactor, ScreenOrientation screenOrientation) {
+    public EmulationDevice(int width, int height, double deviceScaleFactor, ScreenOrientation screenOrientation) {
         super(screenOrientation);
         this.width = width;
         this.height = height;
@@ -29,7 +29,7 @@ public class EmulationDevice extends EmulationBaseInfo{
         this.height = height;
     }
 
-    public float getDeviceScaleFactor() {
+    public double getDeviceScaleFactor() {
         return deviceScaleFactor;
     }
 

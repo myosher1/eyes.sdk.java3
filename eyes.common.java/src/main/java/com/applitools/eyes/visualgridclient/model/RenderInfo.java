@@ -82,7 +82,7 @@ public class RenderInfo {
         return emulationInfo;
     }
 
-    public void setEmulationInfo(EmulationInfo emulationInfo) {
+    public void setEmulationInfo(ChromeEmulationInfo emulationInfo) {
         this.emulationInfo = emulationInfo;
     }
 
