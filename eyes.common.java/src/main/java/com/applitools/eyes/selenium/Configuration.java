@@ -79,12 +79,13 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public void setWaitBeforeScreenshots(int waitBeforeScreenshots) {
+    public IConfigurationSetter setWaitBeforeScreenshots(int waitBeforeScreenshots) {
         if (waitBeforeScreenshots <= 0) {
             this.waitBeforeScreenshots = DEFAULT_WAIT_BEFORE_SCREENSHOTS;
         } else {
             this.waitBeforeScreenshots = waitBeforeScreenshots;
         }
+        return this;
     }
 
     @Override
@@ -93,8 +94,9 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public void setStitchMode(StitchMode stitchMode) {
+    public IConfigurationSetter setStitchMode(StitchMode stitchMode) {
         this.stitchMode = stitchMode;
+        return this;
     }
 
     @Override
@@ -103,8 +105,9 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public void setHideScrollbars(boolean hideScrollbars) {
+    public IConfigurationSetter setHideScrollbars(boolean hideScrollbars) {
         this.hideScrollbars = hideScrollbars;
+        return this;
     }
 
     @Override
@@ -113,8 +116,9 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public void setHideCaret(boolean hideCaret) {
+    public IConfigurationSetter setHideCaret(boolean hideCaret) {
         this.hideCaret = hideCaret;
+        return this;
     }
 
     @Override
@@ -191,8 +195,9 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public void setBrowsersInfo(List<RenderBrowserInfo> browsersInfo) {
+    public IConfigurationSetter setBrowsersInfo(List<RenderBrowserInfo> browsersInfo) {
         this.browsersInfo = browsersInfo;
+        return this;
     }
 
     @Override
@@ -201,8 +206,9 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public void setTestName(String testName) {
+    public IConfigurationSetter setTestName(String testName) {
         this.testName = testName;
+        return this;
     }
 
     @Override
@@ -225,8 +231,9 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public void setForceFullPageScreenshot(boolean forceFullPageScreenshot) {
+    public IConfigurationSetter setForceFullPageScreenshot(boolean forceFullPageScreenshot) {
         this.forceFullPageScreenshot = forceFullPageScreenshot;
+        return this;
     }
 
     @Override
@@ -235,8 +242,9 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public void setRenderingConfig(boolean renderingConfig) {
+    public IConfigurationSetter setRenderingConfig(boolean renderingConfig) {
         isRenderingConfig = renderingConfig;
+        return this;
     }
 
     @Override

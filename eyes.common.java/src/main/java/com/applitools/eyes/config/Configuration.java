@@ -65,8 +65,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setSaveNewTests(boolean saveNewTests) {
+    public IConfigurationSetter setSaveNewTests(boolean saveNewTests) {
         this.saveNewTests = saveNewTests;
+        return this;
     }
 
     @Override
@@ -75,8 +76,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setSaveFailedTests(boolean saveFailedTests) {
+    public IConfigurationSetter setSaveFailedTests(boolean saveFailedTests) {
         this.saveFailedTests = saveFailedTests;
+        return this;
     }
 
 
@@ -86,8 +88,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setDefaultMatchSettings(ImageMatchSettings defaultMatchSettings) {
+    public IConfigurationSetter setDefaultMatchSettings(ImageMatchSettings defaultMatchSettings) {
         this.defaultMatchSettings = defaultMatchSettings;
+        return this;
     }
 
     @Override
@@ -96,8 +99,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setMatchTimeout(int matchTimeout) {
+    public IConfigurationSetter setMatchTimeout(int matchTimeout) {
         this.matchTimeout = matchTimeout;
+        return this;
     }
     @Override
     public String getHostApp() {
@@ -105,8 +109,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setHostApp(String hostApp) {
+    public IConfigurationSetter setHostApp(String hostApp) {
         this.hostApp = hostApp;
+        return this;
     }
 
     @Override
@@ -115,8 +120,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setHostOS(String hostOS) {
+    public IConfigurationSetter setHostOS(String hostOS) {
         this.hostOS = hostOS;
+        return this;
     }
 
     @Override
@@ -126,13 +132,15 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
 
 
     @Override
-    public void setStitchOverlap(int stitchOverlap) {
+    public IConfigurationSetter setStitchOverlap(int stitchOverlap) {
         this.stitchOverlap = stitchOverlap;
+        return this;
     }
 
     @Override
-    public void setBatch(BatchInfo batch) {
+    public IConfigurationSetter setBatch(BatchInfo batch) {
         this.batch = batch;
+        return this;
     }
 
     @Override
@@ -141,8 +149,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setBranchName(String branchName) {
+    public IConfigurationSetter setBranchName(String branchName) {
         this.branchName = branchName;
+        return this;
     }
 
     @Override
@@ -156,8 +165,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setAgentId(String agentId) {
+    public IConfigurationSetter setAgentId(String agentId) {
         this.agentId = agentId;
+        return this;
     }
 
     @Override
@@ -166,8 +176,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setParentBranchName(String parentBranchName) {
+    public IConfigurationSetter setParentBranchName(String parentBranchName) {
         this.parentBranchName = parentBranchName;
+        return this;
     }
 
     @Override
@@ -176,8 +187,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setBaselineBranchName(String baselineBranchName) {
+    public IConfigurationSetter setBaselineBranchName(String baselineBranchName) {
         this.baselineBranchName = baselineBranchName;
+        return this;
     }
 
     @Override
@@ -186,8 +198,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setBaselineEnvName(String baselineEnvName) {
+    public IConfigurationSetter setBaselineEnvName(String baselineEnvName) {
         this.baselineEnvName = baselineEnvName;
+        return this;
     }
 
     @Override
@@ -196,8 +209,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setEnvironmentName(String environmentName) {
+    public IConfigurationSetter setEnvironmentName(String environmentName) {
         this.environmentName = environmentName;
+        return this;
     }
 
     @Override
@@ -206,8 +220,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setSaveDiffs(Boolean saveDiffs) {
+    public IConfigurationSetter setSaveDiffs(Boolean saveDiffs) {
         this.saveDiffs = saveDiffs;
+        return this;
     }
 
     @Override
@@ -216,8 +231,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setAppName(String appName) {
+    public IConfigurationSetter setAppName(String appName) {
         this.appName = appName;
+        return this;
     }
 
     @Override
@@ -226,8 +242,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setTestName(String testName) {
+    public IConfigurationSetter setTestName(String testName) {
         this.testName = testName;
+        return this;
     }
 
     @Override
@@ -236,8 +253,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setViewportSize(RectangleSize viewportSize) {
+    public IConfigurationSetter setViewportSize(RectangleSize viewportSize) {
         this.viewportSize = viewportSize;
+        return this;
     }
 
     @Override
@@ -246,8 +264,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setSessionType(SessionType sessionType) {
+    public IConfigurationSetter setSessionType(SessionType sessionType) {
         this.sessionType = sessionType;
+        return this;
     }
 
     public Configuration cloneConfig() {
@@ -259,8 +278,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
      * @see FailureReports
      */
     @Override
-    public void setFailureReports(FailureReports failureReports) {
+    public IConfigurationSetter setFailureReports(FailureReports failureReports) {
         this.failureReports = failureReports;
+        return this;
     }
 
     /**
@@ -293,8 +313,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setSendDom(boolean sendDom) {
+    public IConfigurationSetter setSendDom(boolean sendDom) {
         isSendDom = sendDom;
+        return this;
     }
 
     /**

@@ -1077,7 +1077,7 @@ public abstract class EyesBase {
     /**
      * @param size The required viewport size.
      */
-    protected abstract void setViewportSize(RectangleSize size);
+    protected abstract IConfigurationSetter setViewportSize(RectangleSize size);
 
     /**
      * Define the viewport size as {@code size} without doing any actual action on the
@@ -1440,8 +1440,9 @@ public abstract class EyesBase {
         this.domCaptureListener = listener;
     }
 
-    public void setSendDom(boolean isSendDom) {
+    public IConfigurationSetter setSendDom(boolean isSendDom) {
         this.getConfigSetter().setSendDom(isSendDom);
+        return getConfigSetter();
     }
 
     public RenderingInfo getRenderingInfo() {
@@ -1457,15 +1458,16 @@ public abstract class EyesBase {
      * if tests are to run standalone.
      * @param batch The batch info to set.
      */
-    public void setBatch(BatchInfo batch) {
+    public IConfigurationSetter setBatch(BatchInfo batch) {
         if (isDisabled) {
             logger.verbose("Ignored");
-            return;
+            return getConfigSetter();
         }
 
         logger.verbose("setBatch(" + batch + ")");
 
         this.getConfigSetter().setBatch(batch);
+        return getConfigSetter();
     }
 
     protected abstract <T extends IConfigurationGetter> T getConfigGetter();

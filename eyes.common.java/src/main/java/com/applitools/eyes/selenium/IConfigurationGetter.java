@@ -21,6 +21,8 @@ public interface IConfigurationGetter extends com.applitools.eyes.config.IConfig
 
     String getTestName();
 
+    boolean isForceFullPageScreenshot();
+
     boolean isRenderingConfig();
 
     Configuration cloneConfig();

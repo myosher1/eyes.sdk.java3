@@ -1483,10 +1483,10 @@ public class SeleniumEyes extends EyesBase {
      * {@inheritDoc}
      */
     @Override
-    protected void setViewportSize(RectangleSize size) {
+    protected IConfigurationSetter setViewportSize(RectangleSize size) {
         if (viewportSizeHandler instanceof ReadOnlyPropertyHandler) {
             logger.verbose("Ignored (viewport size given explicitly)");
-            return;
+            return getConfigSetter();
         }
 
         if (!EyesSeleniumUtils.isMobileDevice(driver)) {
@@ -1506,6 +1506,7 @@ public class SeleniumEyes extends EyesBase {
         }
 
         viewportSizeHandler.set(new RectangleSize(size.getWidth(), size.getHeight()));
+        return getConfigSetter();
     }
 
     /**

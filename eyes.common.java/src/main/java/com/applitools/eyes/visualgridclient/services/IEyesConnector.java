@@ -2,6 +2,7 @@ package com.applitools.eyes.visualgridclient.services;
 
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.*;
+import com.applitools.eyes.config.IConfigurationSetter;
 import com.applitools.eyes.selenium.IConfigurationGetter;
 import com.applitools.eyes.visualgridclient.model.*;
 
@@ -43,7 +44,7 @@ public interface IEyesConnector {
 
     void setRenderInfo(RenderingInfo renderingInfo);
 
-    void setBatch(BatchInfo batchInfo);
+    IConfigurationSetter setBatch(BatchInfo batchInfo);
 
     void setUserAgent(String userAgent);
 

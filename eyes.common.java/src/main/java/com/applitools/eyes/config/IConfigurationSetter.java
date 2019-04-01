@@ -4,47 +4,47 @@ import com.applitools.eyes.*;
 
 public interface IConfigurationSetter {
 
-    void setSaveNewTests(boolean saveNewTests);
+    IConfigurationSetter setSaveNewTests(boolean saveNewTests);
 
-    void setSaveFailedTests(boolean saveFailedTests);
+    IConfigurationSetter setSaveFailedTests(boolean saveFailedTests);
 
-    void setDefaultMatchSettings(ImageMatchSettings defaultMatchSettings);
+    IConfigurationSetter setDefaultMatchSettings(ImageMatchSettings defaultMatchSettings);
 
-    void setMatchTimeout(int matchTimeout);
+    IConfigurationSetter setMatchTimeout(int matchTimeout);
 
-    void setHostApp(String hostApp);
+    IConfigurationSetter setHostApp(String hostApp);
 
-    void setHostOS(String hostOS);
+    IConfigurationSetter setHostOS(String hostOS);
 
-    void setStitchOverlap(int stitchingOverlap);
+    IConfigurationSetter setStitchOverlap(int stitchingOverlap);
 
-    void setBatch(BatchInfo batch);
+    IConfigurationSetter setBatch(BatchInfo batch);
 
-    void setBranchName(String branchName);
+    IConfigurationSetter setBranchName(String branchName);
 
-    void setAgentId(String agentId);
+    IConfigurationSetter setAgentId(String agentId);
 
-    void setParentBranchName(String parentBranchName);
+    IConfigurationSetter setParentBranchName(String parentBranchName);
 
-    void setBaselineBranchName(String baselineBranchName);
+    IConfigurationSetter setBaselineBranchName(String baselineBranchName);
 
-    void setBaselineEnvName(String baselineEnvName);
+    IConfigurationSetter setBaselineEnvName(String baselineEnvName);
 
-    void setEnvironmentName(String environmentName);
+    IConfigurationSetter setEnvironmentName(String environmentName);
 
-    void setSaveDiffs(Boolean saveDiffs);
+    IConfigurationSetter setSaveDiffs(Boolean saveDiffs);
 
-    void setAppName(String appName);
+    IConfigurationSetter setAppName(String appName);
 
-    void setTestName(String testName);
+    IConfigurationSetter setTestName(String testName);
 
-    void setViewportSize(RectangleSize viewportSize);
+    IConfigurationSetter setViewportSize(RectangleSize viewportSize);
 
-    void setSessionType(SessionType sessionType);
+    IConfigurationSetter setSessionType(SessionType sessionType);
 
-    void setFailureReports(FailureReports failureReports);
+    IConfigurationSetter setFailureReports(FailureReports failureReports);
 
-    void setSendDom(boolean sendDom);
+    IConfigurationSetter setSendDom(boolean sendDom);
 
     void setIgnoreCaret(boolean value);
 }

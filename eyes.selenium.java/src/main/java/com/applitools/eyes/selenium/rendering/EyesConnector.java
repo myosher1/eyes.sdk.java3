@@ -113,8 +113,9 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    protected void setViewportSize(RectangleSize size) {
+    protected IConfigurationSetter setViewportSize(RectangleSize size) {
         logger.log("WARNING setViewportSize() was called in Visual-Grid context");
+        return getConfigSetter();
     }
 
     @Override

@@ -7,13 +7,13 @@ import com.applitools.eyes.visualgridclient.model.ScreenOrientation;
 import java.util.List;
 
 public interface IConfigurationSetter extends com.applitools.eyes.config.IConfigurationSetter {
-    void setWaitBeforeScreenshots(int waitBeforeScreenshots);
+    IConfigurationSetter setWaitBeforeScreenshots(int waitBeforeScreenshots);
 
-    void setStitchMode(StitchMode stitchMode);
+    IConfigurationSetter setStitchMode(StitchMode stitchMode);
 
-    void setHideScrollbars(boolean hideScrollbars);
+    IConfigurationSetter setHideScrollbars(boolean hideScrollbars);
 
-    void setHideCaret(boolean hideCaret);
+    IConfigurationSetter setHideCaret(boolean hideCaret);
 
     IConfigurationSetter addBrowsers(RenderBrowserInfo... browsersInfo);
 
@@ -31,14 +31,12 @@ public interface IConfigurationSetter extends com.applitools.eyes.config.IConfig
 //
 //    IConfigurationSetter addDeviceEmulation(int width, int height, double scaleFactor);
 
-    void setBrowsersInfo(List<RenderBrowserInfo> browsersInfo);
+    IConfigurationSetter setBrowsersInfo(List<RenderBrowserInfo> browsersInfo);
 
-    void setTestName(String testName);
+    IConfigurationSetter setTestName(String testName);
 
-    boolean isForceFullPageScreenshot();
+    IConfigurationSetter setForceFullPageScreenshot(boolean forceFullPageScreenshot);
 
-    void setForceFullPageScreenshot(boolean forceFullPageScreenshot);
-
-    void setRenderingConfig(boolean renderingConfig);
+    IConfigurationSetter setRenderingConfig(boolean renderingConfig);
 
 }
