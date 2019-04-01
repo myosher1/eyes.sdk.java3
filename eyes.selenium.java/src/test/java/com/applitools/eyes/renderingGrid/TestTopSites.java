@@ -69,19 +69,19 @@ public class TestTopSites {
             configuration.setBranchName("TTS - config branch");
             configuration.setBaselineEnvName("My Other Env Name");
             String environment = "My env name";
-            EmulationInfo emulation = new EmulationInfo(EmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
-            configuration.addBrowser(800, 600, Configuration.BrowserType.CHROME, environment);
-            configuration.addBrowser(700, 500, Configuration.BrowserType.FIREFOX, environment);
-            configuration.addBrowser(700, 500, Configuration.BrowserType.IE_10, environment);
-            configuration.addBrowser(700, 500, Configuration.BrowserType.IE_11, environment);
-            configuration.addBrowser(1600, 1200, Configuration.BrowserType.CHROME, environment);
+//            ChromeEmulationInfo emulation = new ChromeEmulationInfo(ChromeEmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
+//            configuration.addBrowser(800, 600, Configuration.BrowserType.CHROME, environment);
+//            configuration.addBrowser(700, 500, Configuration.BrowserType.FIREFOX, environment);
+//            configuration.addBrowser(700, 500, Configuration.BrowserType.IE_10, environment);
+//            configuration.addBrowser(700, 500, Configuration.BrowserType.IE_11, environment);
+//            configuration.addBrowser(1600, 1200, Configuration.BrowserType.CHROME, environment);
 //            configuration.addBrowser(1200, 800, Configuration.BrowserType.EDGE, environment);
-            configuration.addDeviceEmulation(emulation);
+//            configuration.addDeviceEmulation(emulation);
             logger.log("created configurations for url " + testedUrl);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             //VisualGridEyes.setServerUrl("https://eyes.applitools.com/");
             eyes.setConfiguration(configuration);
-            eyes.open(webDriver);
+            eyes.open(webDriver, "Michael's App", "First Test", new RectangleSize(600, 600));
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
