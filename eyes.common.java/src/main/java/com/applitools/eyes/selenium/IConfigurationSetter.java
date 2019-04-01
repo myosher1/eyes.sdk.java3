@@ -41,8 +41,6 @@ public interface IConfigurationSetter extends com.applitools.eyes.config.IConfig
 
     void setBrowsersInfo(List<RenderBrowserInfo> browsersInfo);
 
-    void setThrowExceptionOn(boolean throwExceptionOn);
-
     void setTestName(String testName);
 
     boolean isForceFullPageScreenshot();

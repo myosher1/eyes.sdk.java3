@@ -18,7 +18,6 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     private boolean hideCaret = true;
 
     //Rendering Configuration
-    private boolean isThrowExceptionOn = false;
     private Boolean isRenderingConfig = false;
 
     public enum BrowserType {CHROME, FIREFOX, IE_11, EDGE, IE_10}
@@ -33,7 +32,6 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
         this.stitchMode = other.getStitchMode();
         this.hideScrollbars = other.getHideScrollbars();
         this.hideCaret = other.getHideCaret();
-        this.isThrowExceptionOn = other.isThrowExceptionOn();
         this.isRenderingConfig = other.isRenderingConfig();
         if (other.getBrowsersInfo() == null) {
             ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
@@ -55,8 +53,7 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
         this.browsersInfo = browsersInfo;
     }
 
-    public Configuration(boolean isThrowExceptionOn, String testName) {
-        this.isThrowExceptionOn = isThrowExceptionOn;
+    public Configuration(String testName) {
         this.testName = testName;
     }
 

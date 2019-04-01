@@ -19,8 +19,6 @@ public interface IConfigurationGetter extends com.applitools.eyes.config.IConfig
 
     List<RenderBrowserInfo> getBrowsersInfo();
 
-    boolean isThrowExceptionOn();
-
     String getTestName();
 
     boolean isRenderingConfig();
