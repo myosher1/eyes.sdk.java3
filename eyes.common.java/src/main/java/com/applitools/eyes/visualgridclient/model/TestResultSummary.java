@@ -18,7 +18,7 @@ public class TestResultSummary {
     public TestResultSummary(List<TestResultContainer> allResults) {
         this.allResults = allResults;
         for (TestResultContainer resultContainer : allResults) {
-            if (resultContainer.getException() != null){
+            if (resultContainer != null && resultContainer.getException() != null){
                 this.exceptions++;
             }
             TestResults result = resultContainer.getTestResults();
