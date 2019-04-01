@@ -17,6 +17,7 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
     private final Logger logger;
 
     private boolean isSent;
+    private boolean isThrowException;
 
     public enum TaskType {OPEN, CHECK, CLOSE, ABORT}
 
@@ -42,12 +43,12 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
 
         void onTaskFailed(Error e, VisualGridTask visualGridTask);
 
-        void onRenderComplete();
+        void onRenderComplete(RenderingTask renderTask, Error e);
 
     }
 
     public VisualGridTask(IConfigurationGetter seleniumConfigurationProvider, TestResults testResults, IEyesConnector eyesConnector, TaskType type, TaskListener runningTestListener,
-                          ICheckSettings checkSettings, RunningTest runningTest, List<VisualGridSelector[]> regionSelectors) {
+                          ICheckSettings checkSettings, RunningTest runningTest, List<VisualGridSelector[]> regionSelectors, boolean throwException) {
         this.configurationGetter = seleniumConfigurationProvider;
         this.testResults = testResults;
         this.eyesConnector = eyesConnector;
@@ -57,6 +58,7 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
         this.logger = runningTest.getLogger();
         this.checkSettings = checkSettings;
         this.runningTest = runningTest;
+        this.isThrowException = throwException;
     }
 
     public RenderBrowserInfo getBrowserInfo() {
@@ -114,7 +116,7 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
 
                 case CLOSE:
                     logger.verbose("VisualGridTask.run close task");
-                    testResults = eyesConnector.close(configurationGetter.isThrowExceptionOn());
+                    testResults = eyesConnector.close(this.isThrowException);
                     logger.verbose("Eyes Close Done.");
                     break;
 
@@ -153,7 +155,7 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
 
     private void notifyRenderCompleteAllListeners() {
         for (TaskListener listener : listeners) {
-            listener.onRenderComplete();
+            listener.onRenderComplete(this.renderingTask, exception);
         }
     }
 

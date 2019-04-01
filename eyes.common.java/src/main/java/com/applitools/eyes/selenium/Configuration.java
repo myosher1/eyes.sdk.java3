@@ -196,16 +196,6 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public boolean isThrowExceptionOn() {
-        return isThrowExceptionOn;
-    }
-
-    @Override
-    public void setThrowExceptionOn(boolean throwExceptionOn) {
-        isThrowExceptionOn = throwExceptionOn;
-    }
-
-    @Override
     public String getTestName() {
         return testName;
     }

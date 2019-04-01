@@ -109,13 +109,6 @@ public class VisualGridEyes implements IRenderingEyes {
             VisualGridEyes.this.listener.onRenderComplete();
         }
 
-        @Override
-        public void onTaskStarting(VisualGridTask task, RunningTest test) {
-            if (task.getType() == VisualGridTask.TaskType.CLOSE) {
-                VisualGridEyes.this.testsInCloseProcess.add(test);
-            }
-        }
-
     };
 
 
@@ -258,12 +251,12 @@ public class VisualGridEyes implements IRenderingEyes {
 
     public List<Future<TestResultContainer>> close() {
         if (getIsDisabled()) return null;
-        return closeAndReturnResults();
+        return closeAndReturnResults(false);
     }
 
     public List<Future<TestResultContainer>> close(boolean throwException) {
         if (getIsDisabled()) return null;
-        return closeAndReturnResults();
+        return closeAndReturnResults(throwException);
     }
 
     public void abortIfNotClosed() {
@@ -298,7 +291,7 @@ public class VisualGridEyes implements IRenderingEyes {
         return str == null ? null : URI.create(str);
     }
 
-    private List<Future<TestResultContainer>> closeAndReturnResults() {
+    private List<Future<TestResultContainer>> closeAndReturnResults(boolean throwException) {
         if (getIsDisabled()) return new ArrayList<>();
         if (this.futures == null) {
             futures = new ArrayList<>();
@@ -316,7 +309,7 @@ public class VisualGridEyes implements IRenderingEyes {
                     logger.verbose("is current running test closed: " + runningTest.isTestClose());
                     if (!runningTest.isTestClose()) {
                         logger.verbose("closing current running test");
-                        FutureTask<TestResultContainer> closeFuture = runningTest.close();
+                        FutureTask<TestResultContainer> closeFuture = runningTest.close(throwException);
                         futureList.add(closeFuture);
                         logger.verbose("adding closeFuture to futureList");
                     }
