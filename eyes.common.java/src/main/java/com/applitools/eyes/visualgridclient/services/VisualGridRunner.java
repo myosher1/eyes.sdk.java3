@@ -44,33 +44,6 @@ public class VisualGridRunner extends EyesRunner {
     private String apiKey = DEFAULT_API_KEY;
     private boolean isDisabled;
 
-    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
-    private FutureTask<TestResultContainer> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker,
-                                                             String serviceName) {
-        FutureTask<TestResultContainer> nextTestToOpen = tasker.getNextTask();
-        if (nextTestToOpen == null) {
-            try {
-//                logger.verbose("locking " + serviceName);
-                synchronized (lock) {
-                    lock.wait(500);
-                }
-//                logger.verbose("releasing " + serviceName);
-                nextTestToOpen = tasker.getNextTask();
-//                logger.verbose(serviceName + " tasker returned " + nextTestToOpen);
-            } catch (Exception e) {
-                GeneralUtils.logExceptionStackTrace(logger, e);
-            }
-        }
-        return nextTestToOpen;
-    }
-
-    public void pauseAllService() {
-        eyesOpenerService.debugPauseService();
-        eyesCloserService.debugPauseService();
-        eyesCheckerService.debugPauseService();
-        renderingGridService.debugPauseService();
-    }
-
     public void setServerUrl(String serverUrl) {
         this.serverUrl = serverUrl;
     }
@@ -103,6 +76,33 @@ public class VisualGridRunner extends EyesRunner {
 
     }
 
+    @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
+    private FutureTask<TestResultContainer> getOrWaitForTask(Object lock, @SuppressWarnings("SpellCheckingInspection") EyesService.Tasker tasker,
+                                                             String serviceName) {
+        FutureTask<TestResultContainer> nextTestToOpen = tasker.getNextTask();
+        if (nextTestToOpen == null) {
+            try {
+//                logger.verbose("locking " + serviceName);
+                synchronized (lock) {
+                    lock.wait(500);
+                }
+//                logger.verbose("releasing " + serviceName);
+                nextTestToOpen = tasker.getNextTask();
+//                logger.verbose(serviceName + " tasker returned " + nextTestToOpen);
+            } catch (Exception e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
+        }
+        return nextTestToOpen;
+    }
+
+    public void pauseAllService() {
+        eyesOpenerService.debugPauseService();
+        eyesCloserService.debugPauseService();
+        eyesCheckerService.debugPauseService();
+        renderingGridService.debugPauseService();
+    }
+
     private IRenderingEyes.EyesListener eyesListener = new IRenderingEyes.EyesListener() {
         @Override
         public void onTaskComplete(VisualGridTask visualGridTask, IRenderingEyes eyes) {
@@ -128,7 +128,7 @@ public class VisualGridRunner extends EyesRunner {
                         logger.verbose("releasing openerServiceConcurrencyLock");
                         break;
                     case ABORT:
-                        logger.verbose("VisualGridTask Close.");
+                        logger.verbose("VisualGridTask Abort.");
                         eyesOpenerService.decrementConcurrency();
                         synchronized (openerServiceConcurrencyLock) {
                             openerServiceConcurrencyLock.notify();

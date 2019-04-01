@@ -26,6 +26,8 @@ public class RunningTest {
     private HashMap<VisualGridTask, FutureTask<TestResultContainer>> taskToFutureMapping = new HashMap<>();
     private Logger logger;
     private AtomicBoolean isCloseTaskIssued = new AtomicBoolean(false);
+    private VisualGridTask closeTask;
+    private Error error;
 
     public boolean isCloseTaskIssued() {
         return isCloseTaskIssued.get();
@@ -161,6 +163,7 @@ public class RunningTest {
         if (!this.visualGridTaskList.isEmpty()) {
             lastVisualGridTask = this.visualGridTaskList.get(visualGridTaskList.size() - 1);
             if (lastVisualGridTask.getType() == VisualGridTask.TaskType.CLOSE) {
+                closeTask = lastVisualGridTask;
                 return taskToFutureMapping.get(lastVisualGridTask);
             }
         }
@@ -168,6 +171,7 @@ public class RunningTest {
         logger.verbose("adding close visualGridTask...");
         VisualGridTask visualGridTask = new VisualGridTask(new Configuration(configurationProvider.get()), null, eyes, VisualGridTask.TaskType.CLOSE, taskListener, null, this, null, throwException);
         FutureTask<TestResultContainer> futureTask = new FutureTask<>(visualGridTask);
+        closeTask = visualGridTask;
         isCloseTaskIssued.set(true);
         this.taskToFutureMapping.put(visualGridTask, futureTask);
         logger.verbose("locking visualGridTaskList");
@@ -222,9 +226,9 @@ public class RunningTest {
         logger.verbose("locking visualGridTaskList.");
         synchronized (visualGridTaskList) {
             this.visualGridTaskList.clear();
-            VisualGridTask abortTask = new VisualGridTask(new Configuration(configurationProvider.get()), null, eyes, VisualGridTask.TaskType.ABORT, taskListener, null, this, null, false);
-            abortTask.setException(e);
-            visualGridTaskList.add(abortTask);
+            this.visualGridTaskList.add(closeTask);
+            closeTask.setException(e);
+            this.error = e;
             this.isCloseTaskIssued.set(true);
         }
         logger.verbose("releasing visualGridTaskList.");
