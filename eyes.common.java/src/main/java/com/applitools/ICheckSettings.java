@@ -164,4 +164,6 @@ public interface ICheckSettings {
     boolean isEnablePatterns();
 
     ICheckSettings setEnablePatterns(boolean enablePatterns);
+
+    ICheckSettings scriptHook(String scriptHook);
 }

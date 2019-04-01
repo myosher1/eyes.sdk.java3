@@ -22,11 +22,8 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     private WebElement scrollRootElement;
     private By scrollRootSelector;
 
-    // For Rendering Grid
-    private static final String BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot";
     private VisualGridSelector selector;
     private Region region;
-    private Map<String, String> scriptHooks = new HashMap<>();
     private boolean isSendDom;
 
     public SeleniumCheckSettings() {
@@ -425,10 +422,6 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         this.isSendDom = isSendDom;
     }
 
-    private void setScirptHook(String script) {
-        this.scriptHooks.put(BEFORE_CAPTURE_SCREENSHOT, script);
-    }
-
     @JsonProperty("sizeMode")
     public String getSizeMode() {
 
@@ -472,10 +465,9 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         return clone;
     }
 
-    public SeleniumCheckSettings webHook(String hook) {
-        SeleniumCheckSettings clone = new SeleniumCheckSettings();
-        populateClone(clone);
-        clone.setScirptHook(hook);
+    public SeleniumCheckSettings scriptHook(String hook) {
+        SeleniumCheckSettings clone = this.clone();
+        clone.scriptHooks.put(BEFORE_CAPTURE_SCREENSHOT, hook);
         return clone;
     }
 

@@ -6,6 +6,7 @@ import com.applitools.eyes.Region;
 import com.applitools.eyes.visualgridclient.model.VisualGridSelector;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +14,8 @@ import java.util.Map;
  * The Match settings object to use in the various Eyes.Check methods.
  */
 public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
+    // For Rendering Grid
+    protected static final String BEFORE_CAPTURE_SCREENSHOT = "beforeCaptureScreenshot";
 
     private Region targetRegion;
     private MatchLevel matchLevel = null;
@@ -27,6 +30,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     protected String name;
     private boolean useDom;
     protected boolean enablePatterns;
+    protected Map<String, String> scriptHooks = new HashMap<>();
 
     protected CheckSettings() { }
 
@@ -422,6 +426,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
         clone.layoutRegions.addAll(this.layoutRegions);
         clone.strictRegions.addAll(this.strictRegions);
         clone.floatingRegions.addAll(this.floatingRegions);
+        clone.scriptHooks.putAll(this.scriptHooks);
     }
 
     public void setStitchContent(boolean stitchContent) {
@@ -454,6 +459,12 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     public ICheckSettings setEnablePatterns(boolean enablePatterns) {
         CheckSettings clone = this.clone();
         clone.enablePatterns = enablePatterns;
+        return clone;
+    }
+
+    public ICheckSettings scriptHook(String hook) {
+        ICheckSettings clone = this.clone();
+        ((CheckSettings) clone).scriptHooks.put(BEFORE_CAPTURE_SCREENSHOT, hook);
         return clone;
     }
 }

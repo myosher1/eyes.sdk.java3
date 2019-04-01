@@ -1,8 +1,10 @@
 package com.applitools.eyes.fluent;
 
+import com.applitools.ICheckSettings;
 import com.applitools.eyes.visualgridclient.model.VisualGridSelector;
 
 public interface ICheckSettingsInternal extends com.applitools.ICheckSettingsInternal {
+
     boolean getStitchContent();
 
     GetRegion[] getIgnoreRegions();
@@ -20,5 +22,7 @@ public interface ICheckSettingsInternal extends com.applitools.ICheckSettingsInt
     boolean isEnablePatterns();
 
     VisualGridSelector GetTargetSelector();
+
+    ICheckSettings scriptHook(String hook);
 
 }
