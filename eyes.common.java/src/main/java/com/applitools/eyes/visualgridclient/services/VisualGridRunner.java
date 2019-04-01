@@ -128,9 +128,12 @@ public class VisualGridRunner extends EyesRunner {
                         logger.verbose("releasing openerServiceConcurrencyLock");
                         break;
                     case ABORT:
+                        logger.verbose("VisualGridTask Close.");
+                        eyesOpenerService.decrementConcurrency();
                         synchronized (openerServiceConcurrencyLock) {
                             openerServiceConcurrencyLock.notify();
                         }
+                        logger.verbose("releasing openerServiceConcurrencyLock");
                         break;
                     case CHECK:
                         logger.verbose("Check complete.");
@@ -449,6 +452,7 @@ public class VisualGridRunner extends EyesRunner {
 
             @Override
             public void onRenderFailed(Exception e) {
+                notifyAllServices();
                 listener.onRenderFailed(e);
             }
         }, selectors, forceFullPageScreenshot);

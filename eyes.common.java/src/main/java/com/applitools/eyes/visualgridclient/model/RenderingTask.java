@@ -167,12 +167,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             Map<RunningRender, RenderRequest> mapping = mapRequestToRunningRender(runningRenders, requests);
 
             logger.verbose("step 5");
-            try {
-                pollRenderingStatus(mapping);
-            } catch (Exception e) {
-                this.isTaskInException = true;
-                GeneralUtils.logExceptionStackTrace(logger, e);
-            }
+            pollRenderingStatus(mapping);
 
             isTaskCompleted = true;
         } catch (IOException | ExecutionException | InterruptedException e) {
@@ -280,7 +275,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
             logger.verbose("locking putResourceCache");
-                allPuts.add(future);
+            allPuts.add(future);
             logger.verbose("releasing putResourceCache");
         }
 
@@ -528,7 +523,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
             String sizeMode = checkSettingsInternal.getSizeMode();
 
-            if(sizeMode.equalsIgnoreCase("viewport") && forceFullPageScreenshot){
+            if (sizeMode.equalsIgnoreCase("viewport") && forceFullPageScreenshot) {
                 sizeMode = "fullpage";
             }
 
@@ -706,8 +701,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     logger.verbose("Cache write for url - " + url + " hash:(" + resourceFuture + ")");
                     if (!blob.getContentType().equalsIgnoreCase(CDT)) {
                         this.fetchedCacheMap.put(url, resourceFuture);
-                    }
-                    else{
+                    } else {
                         logger.verbose("tried to store cdt");
                     }
                     written++;
@@ -843,7 +837,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
         } while (!ids.isEmpty() && numOfIterations < MAX_ITERATIONS);
 
-        if(!ids.isEmpty()){
+        if (!ids.isEmpty()) {
             logger.verbose("Render ids that didn't complete in time : ");
             logger.verbose(ids.toString());
         }
