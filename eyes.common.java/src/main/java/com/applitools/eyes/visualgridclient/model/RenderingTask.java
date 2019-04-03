@@ -34,6 +34,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private static final int MAX_FETCH_FAILS = 62;
     private static final int MAX_ITERATIONS = 100;
     public static final String CDT = "x-applitools-html/cdt";
+    public static final String FULLPAGE = "full-page";
+    public static final String VIEWPORT = "viewport";
 
     private final List<RenderTaskListener> listeners = new ArrayList<>();
     private IEyesConnector eyesConnector;
@@ -523,8 +525,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
             String sizeMode = checkSettingsInternal.getSizeMode();
 
-            if (sizeMode.equalsIgnoreCase("viewport") && forceFullPageScreenshot) {
-                sizeMode = "fullpage";
+            if (sizeMode.equalsIgnoreCase(VIEWPORT) && forceFullPageScreenshot) {
+                sizeMode = FULLPAGE;
             }
 
             RenderInfo renderInfo = new RenderInfo(browserInfo.getWidth(), browserInfo.getHeight(),

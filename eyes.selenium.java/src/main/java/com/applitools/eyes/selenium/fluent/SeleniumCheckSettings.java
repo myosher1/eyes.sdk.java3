@@ -16,6 +16,10 @@ import java.util.Map;
 
 public class SeleniumCheckSettings extends CheckSettings implements ISeleniumCheckTarget, Cloneable {
 
+    public static final String FULL_PAGE = "full-page";
+    public static final String VIEWPORT = "viewport";
+    public static final String REGION = "region";
+    public static final String SELECTOR = "selector";
     private By targetSelector;
     private WebElement targetElement;
     private List<FrameLocator> frameChain = new ArrayList<>();
@@ -433,15 +437,15 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
         }
         if (region == null && GetTargetSelector() == null)
         {
-            return stitchContent ? "full-page" : "viewport";
+            return stitchContent ? FULL_PAGE : VIEWPORT;
         }
         else if (region != null)
         {
-            return "region";
+            return REGION;
         }
         else /* if (selector != null) */
         {
-            return "selector";
+            return SELECTOR;
         }
     }
 
