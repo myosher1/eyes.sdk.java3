@@ -1998,7 +1998,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @param hostOS the hosting host
      */
     public void setHostOS(String hostOS) {
-        this.configuration.setHostApp(hostOS);
+        this.configuration.setHostOS(hostOS);
     }
 
     /**
