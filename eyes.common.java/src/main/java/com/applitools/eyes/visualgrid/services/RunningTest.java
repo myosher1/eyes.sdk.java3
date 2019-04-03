@@ -162,7 +162,8 @@ public class RunningTest {
         VisualGridTask lastVisualGridTask;
         if (!this.visualGridTaskList.isEmpty()) {
             lastVisualGridTask = this.visualGridTaskList.get(visualGridTaskList.size() - 1);
-            if (lastVisualGridTask.getType() == VisualGridTask.TaskType.CLOSE) {
+            VisualGridTask.TaskType type = lastVisualGridTask.getType();
+            if (type == VisualGridTask.TaskType.CLOSE || type == VisualGridTask.TaskType.ABORT) {
                 closeTask = lastVisualGridTask;
                 return taskToFutureMapping.get(lastVisualGridTask);
             }

@@ -97,6 +97,7 @@ public class VisualGridEyes implements IRenderingEyes {
         public void onTaskComplete(VisualGridTask task, RunningTest test) {
             switch (task.getType()) {
                 case CLOSE:
+                case ABORT:
                     VisualGridEyes.this.isVGEyesIssuedOpenTasks.set(false);
             }
             if (VisualGridEyes.this.listener != null) {
