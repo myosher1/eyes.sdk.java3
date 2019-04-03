@@ -12,8 +12,8 @@ import com.applitools.eyes.selenium.frames.Frame;
 import com.applitools.eyes.selenium.frames.FrameChain;
 import com.applitools.eyes.selenium.wrappers.EyesTargetLocator;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
-import com.applitools.eyes.visualgridclient.model.*;
-import com.applitools.eyes.visualgridclient.services.*;
+import com.applitools.eyes.visualgrid.model.*;
+import com.applitools.eyes.visualgrid.services.*;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.By;
@@ -162,7 +162,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
     private void ensureBrowsers() {
         if (this.configProvider.get().getBrowsersInfo().isEmpty()) {
-            this.configProvider.get().getBrowsersInfo().add(new RenderBrowserInfo(viewportSize, Configuration.BrowserType.CHROME));
+            this.configProvider.get().getBrowsersInfo().add(new RenderBrowserInfo(viewportSize, BrowserType.CHROME));
         }
     }
 

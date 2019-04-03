@@ -8,13 +8,12 @@ import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.fluent.GetFloatingRegion;
 import com.applitools.eyes.fluent.GetRegion;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
-import com.applitools.eyes.visualgridclient.model.IGetFloatingRegionOffsets;
-import com.applitools.eyes.visualgridclient.model.MutableRegion;
-import com.applitools.eyes.visualgridclient.model.VisualGridSelector;
+import com.applitools.eyes.visualgrid.model.IGetFloatingRegionOffsets;
+import com.applitools.eyes.visualgrid.model.MutableRegion;
+import com.applitools.eyes.visualgrid.model.VisualGridSelector;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.GeneralUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.awt.image.BufferedImage;

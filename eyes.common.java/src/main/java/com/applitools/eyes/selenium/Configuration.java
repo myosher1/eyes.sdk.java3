@@ -1,7 +1,7 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.RectangleSize;
-import com.applitools.eyes.visualgridclient.model.*;
+import com.applitools.eyes.visualgrid.model.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,8 +19,6 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
 
     //Rendering Configuration
     private Boolean isRenderingConfig = false;
-
-    public enum BrowserType {CHROME, FIREFOX, IE_11, EDGE, IE_10}
 
     private List<RenderBrowserInfo> browsersInfo = new ArrayList<>();
 
@@ -150,7 +148,7 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName, ScreenOrientation orientation) {
+    public IConfigurationSetter addDeviceEmulation(DeviceName deviceName, ScreenOrientation orientation) {
         EmulationBaseInfo emulationInfo = new ChromeEmulationInfo(deviceName, orientation);
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
         addBrowserInfo(browserInfo);
@@ -158,7 +156,7 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName) {
+    public IConfigurationSetter addDeviceEmulation(DeviceName deviceName) {
         EmulationBaseInfo emulationInfo = new ChromeEmulationInfo(deviceName, ScreenOrientation.PORTRAIT);
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
         addBrowserInfo(browserInfo);
@@ -166,7 +164,7 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName, String baselineEnvName) {
+    public IConfigurationSetter addDeviceEmulation(DeviceName deviceName, String baselineEnvName) {
         EmulationBaseInfo emulationInfo = new ChromeEmulationInfo(deviceName, ScreenOrientation.PORTRAIT);
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
         addBrowserInfo(browserInfo);
@@ -174,7 +172,7 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
     }
 
     @Override
-    public IConfigurationSetter addDeviceEmulation(ChromeEmulationInfo.DeviceName deviceName, ScreenOrientation orientation, String baselineEnvName) {
+    public IConfigurationSetter addDeviceEmulation(DeviceName deviceName, ScreenOrientation orientation, String baselineEnvName) {
         EmulationBaseInfo emulationInfo = new ChromeEmulationInfo(deviceName, orientation);
         RenderBrowserInfo browserInfo = new RenderBrowserInfo(emulationInfo, baselineEnvName);
         addBrowserInfo(browserInfo);

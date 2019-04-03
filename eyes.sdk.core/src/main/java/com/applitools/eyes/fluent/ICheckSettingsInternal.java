@@ -1,7 +1,7 @@
 package com.applitools.eyes.fluent;
 
 import com.applitools.ICheckSettings;
-import com.applitools.eyes.visualgridclient.model.VisualGridSelector;
+import com.applitools.eyes.visualgrid.model.VisualGridSelector;
 
 public interface ICheckSettingsInternal extends com.applitools.ICheckSettingsInternal {
 

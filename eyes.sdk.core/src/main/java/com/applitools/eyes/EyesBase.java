@@ -4,7 +4,7 @@ import com.applitools.ICheckSettings;
 import com.applitools.IDomCaptureListener;
 import com.applitools.eyes.config.IConfigurationGetter;
 import com.applitools.eyes.config.IConfigurationSetter;
-import com.applitools.eyes.visualgridclient.model.RenderingInfo;
+import com.applitools.eyes.visualgrid.model.RenderingInfo;
 import com.applitools.eyes.capture.AppOutputProvider;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.debug.DebugScreenshotsProvider;

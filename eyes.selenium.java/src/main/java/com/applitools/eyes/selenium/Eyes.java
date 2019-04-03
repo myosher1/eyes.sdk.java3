@@ -6,7 +6,6 @@ import com.applitools.eyes.*;
 import com.applitools.eyes.debug.DebugScreenshotsProvider;
 import com.applitools.eyes.events.ISessionEventHandler;
 import com.applitools.eyes.exceptions.TestFailedException;
-import com.applitools.eyes.fluent.CheckSettings;
 import com.applitools.eyes.positioning.PositionProvider;
 import com.applitools.eyes.selenium.fluent.SeleniumCheckSettings;
 import com.applitools.eyes.selenium.fluent.Target;
@@ -15,20 +14,21 @@ import com.applitools.eyes.selenium.positioning.ImageRotation;
 import com.applitools.eyes.selenium.rendering.VisualGridEyes;
 import com.applitools.eyes.selenium.wrappers.EyesWebDriver;
 import com.applitools.eyes.triggers.MouseAction;
-import com.applitools.eyes.visualgridclient.model.RenderingInfo;
-import com.applitools.eyes.visualgridclient.model.TestResultContainer;
-import com.applitools.eyes.visualgridclient.services.EyesRunner;
-import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
+import com.applitools.eyes.visualgrid.model.RenderingInfo;
+import com.applitools.eyes.visualgrid.model.TestResultContainer;
+import com.applitools.eyes.visualgrid.services.EyesRunner;
+import com.applitools.eyes.visualgrid.services.VisualGridRunner;
 import com.applitools.utils.ArgumentGuard;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * The type Eyes.
@@ -2176,9 +2176,5 @@ public class Eyes implements ISeleniumConfigurationProvider {
         }
         this.configuration = new Configuration(configuration);
 
-    }
-
-    public List<Future<TestResultContainer>> getCloseFutures() {
-        return this.visualGridEyes.getAllCloseFutures();
     }
 }

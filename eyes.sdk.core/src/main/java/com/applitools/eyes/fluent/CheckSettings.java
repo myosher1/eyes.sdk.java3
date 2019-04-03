@@ -3,7 +3,7 @@ package com.applitools.eyes.fluent;
 import com.applitools.ICheckSettings;
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;
-import com.applitools.eyes.visualgridclient.model.VisualGridSelector;
+import com.applitools.eyes.visualgrid.model.VisualGridSelector;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -3,14 +3,13 @@ package com.applitools.eyes.selenium.fluent;
 import com.applitools.eyes.*;
 import com.applitools.eyes.fluent.GetFloatingRegion;
 import com.applitools.eyes.selenium.rendering.IGetSeleniumRegion;
-import com.applitools.eyes.visualgridclient.model.IGetFloatingRegionOffsets;
+import com.applitools.eyes.visualgrid.model.IGetFloatingRegionOffsets;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.Point;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 

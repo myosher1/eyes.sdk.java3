@@ -1,7 +1,7 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.config.Configuration;
-import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
+import com.applitools.eyes.visualgrid.model.RenderBrowserInfo;
 
 import java.util.List;
 

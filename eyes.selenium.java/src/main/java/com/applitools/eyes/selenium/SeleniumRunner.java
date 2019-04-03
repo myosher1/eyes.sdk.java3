@@ -1,9 +1,9 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.TestResults;
-import com.applitools.eyes.visualgridclient.model.TestResultContainer;
-import com.applitools.eyes.visualgridclient.model.TestResultSummary;
-import com.applitools.eyes.visualgridclient.services.EyesRunner;
+import com.applitools.eyes.visualgrid.model.TestResultContainer;
+import com.applitools.eyes.visualgrid.model.TestResultSummary;
+import com.applitools.eyes.visualgrid.services.EyesRunner;
 
 import java.util.ArrayList;
 import java.util.List;

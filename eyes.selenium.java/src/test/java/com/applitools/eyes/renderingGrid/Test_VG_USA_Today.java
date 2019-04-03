@@ -4,11 +4,12 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.selenium.BrowserType;
 import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.model.TestResultSummary;
-import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
+import com.applitools.eyes.visualgrid.model.TestResultSummary;
+import com.applitools.eyes.visualgrid.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -80,7 +81,7 @@ public class Test_VG_USA_Today {
             configuration.setTestName("USAToday - RCA demo");
             configuration.setAppName("USA Today website");
 
-            configuration.addBrowser(1200, 800, Configuration.BrowserType.CHROME);
+            configuration.addBrowser(1200, 800, BrowserType.CHROME);
 
             eyes.getLogger().log("created configurations for url " + testedUrl);
 

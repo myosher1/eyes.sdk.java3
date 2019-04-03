@@ -4,13 +4,14 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
+import com.applitools.eyes.selenium.BrowserType;
 import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.model.CompletableTask;
-import com.applitools.eyes.visualgridclient.model.RenderBrowserInfo;
-import com.applitools.eyes.visualgridclient.services.VisualGridTask;
-import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
+import com.applitools.eyes.visualgrid.model.CompletableTask;
+import com.applitools.eyes.visualgrid.model.RenderBrowserInfo;
+import com.applitools.eyes.visualgrid.services.VisualGridTask;
+import com.applitools.eyes.visualgrid.services.VisualGridRunner;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
@@ -55,9 +56,9 @@ public final class TestMultiThreadWithServiceLockService {
             public void run() {
                 String baselineEnvName = "";
                 TestThreadMethod("VG-MultiThreadBatchC11", threadALock,
-                        new RenderBrowserInfo(800, 600, Configuration.BrowserType.CHROME, baselineEnvName),
-                        new RenderBrowserInfo(700, 500, Configuration.BrowserType.CHROME, baselineEnvName),
-                        new RenderBrowserInfo(400, 300, Configuration.BrowserType.CHROME, baselineEnvName));
+                        new RenderBrowserInfo(800, 600, BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(700, 500, BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(400, 300, BrowserType.CHROME, baselineEnvName));
             }
         }, "ThreadA");
 
@@ -66,8 +67,8 @@ public final class TestMultiThreadWithServiceLockService {
             public void run() {
                 String baselineEnvName = "";
                 TestThreadMethod("VG-MultiThreadBatchC22", threadBLock,
-                        new RenderBrowserInfo(840, 680, Configuration.BrowserType.CHROME, baselineEnvName),
-                        new RenderBrowserInfo(750, 530, Configuration.BrowserType.CHROME, baselineEnvName));
+                        new RenderBrowserInfo(840, 680, BrowserType.CHROME, baselineEnvName),
+                        new RenderBrowserInfo(750, 530, BrowserType.CHROME, baselineEnvName));
             }
         }, "ThreadB");
 

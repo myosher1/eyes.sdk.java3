@@ -1,7 +1,7 @@
 package com.applitools.eyes;
 
-import com.applitools.eyes.visualgridclient.services.IResourceFuture;
-import com.applitools.eyes.visualgridclient.model.RGridResource;
+import com.applitools.eyes.visualgrid.services.IResourceFuture;
+import com.applitools.eyes.visualgrid.model.RGridResource;
 import com.applitools.utils.GeneralUtils;
 
 import javax.ws.rs.core.Response;

@@ -4,10 +4,11 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.TestResults;
+import com.applitools.eyes.selenium.BrowserType;
 import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
+import com.applitools.eyes.visualgrid.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -53,7 +54,7 @@ public final class TestRenderingGridServiceWithJsHook {
             Configuration configuration = new Configuration();
             configuration.setTestName("Visual Grid With Web Hook");
             configuration.setAppName("RenderingGridIntegration");
-            configuration.addBrowser(400, 300, Configuration.BrowserType.CHROME);
+            configuration.addBrowser(400, 300, BrowserType.CHROME);
             //VisualGridEyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             eyes.setServerUrl("https://eyes.applitools.com/");
             eyes.setConfiguration(configuration);
@@ -82,7 +83,7 @@ public final class TestRenderingGridServiceWithJsHook {
             Configuration configuration = new Configuration();
             configuration.setTestName("Vans Gallery page");
             configuration.setAppName("RenderingGridIntegration");
-            configuration.addBrowser(1200, 800, Configuration.BrowserType.CHROME, null);
+            configuration.addBrowser(1200, 800, BrowserType.CHROME, null);
             eyes.setConfiguration(configuration);
             eyes.open(webDriver);
         } catch (Exception e) {

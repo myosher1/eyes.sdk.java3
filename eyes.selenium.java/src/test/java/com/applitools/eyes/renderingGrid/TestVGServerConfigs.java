@@ -2,9 +2,10 @@ package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.EyesBase;
 import com.applitools.eyes.StdoutLogHandler;
+import com.applitools.eyes.selenium.BrowserType;
 import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
-import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
+import com.applitools.eyes.visualgrid.services.VisualGridRunner;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
@@ -83,7 +84,7 @@ public class TestVGServerConfigs {
             eyes.setIsDisabled(isDisabled2);
         }
         Configuration configuration = new Configuration("");
-        configuration.addBrowser(100, 100, Configuration.BrowserType.FIREFOX);
+        configuration.addBrowser(100, 100, BrowserType.FIREFOX);
         ChromeDriver webDriver = new ChromeDriver();
         try {
             eyes.setConfiguration(configuration);

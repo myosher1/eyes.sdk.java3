@@ -4,10 +4,11 @@ import com.applitools.ICheckSettings;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.eyes.config.IConfigurationSetter;
+import com.applitools.eyes.selenium.BrowserType;
 import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
+import com.applitools.eyes.visualgrid.services.VisualGridRunner;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.annotations.AfterClass;
@@ -43,9 +44,9 @@ public class TestSuite {
         initConfig(configuration);
         configuration.setTestName("Applitools Visual Grid Demo");
 
-        configuration.addBrowser(800, 600, Configuration.BrowserType.CHROME);
-        configuration.addBrowser(1200, 800, Configuration.BrowserType.CHROME);
-        configuration.addBrowser(1920, 1000, Configuration.BrowserType.CHROME);
+        configuration.addBrowser(800, 600, BrowserType.CHROME);
+        configuration.addBrowser(1200, 800, BrowserType.CHROME);
+        configuration.addBrowser(1920, 1000, BrowserType.CHROME);
 
         eyes.setConfiguration(configuration);
         eyes.open(webDriver);

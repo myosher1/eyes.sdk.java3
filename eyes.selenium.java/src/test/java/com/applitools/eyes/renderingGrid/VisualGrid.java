@@ -3,11 +3,12 @@ package com.applitools.eyes.renderingGrid;
 import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.RectangleSize;
+import com.applitools.eyes.selenium.BrowserType;
 import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.model.TestResultSummary;
-import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
+import com.applitools.eyes.visualgrid.model.TestResultSummary;
+import com.applitools.eyes.visualgrid.services.VisualGridRunner;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -36,7 +37,7 @@ public class VisualGrid {
     public void setUp(){
         driver = new ChromeDriver();
         Configuration configuration = eyes.getConfiguration();
-        configuration.addBrowser(800, 600, Configuration.BrowserType.CHROME);
+        configuration.addBrowser(800, 600, BrowserType.CHROME);
 //        configuration.addBrowser(700, 500, Configuration.BrowserType.CHROME);
 //        configuration.addBrowser(1200, 800, Configuration.BrowserType.CHROME);
 //        configuration.addBrowser(1600, 1200, Configuration.BrowserType.CHROME);

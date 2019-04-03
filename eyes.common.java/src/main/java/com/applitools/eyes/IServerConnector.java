@@ -1,8 +1,8 @@
 package com.applitools.eyes;
 
 import com.applitools.IResourceUploadListener;
-import com.applitools.eyes.visualgridclient.services.IResourceFuture;
-import com.applitools.eyes.visualgridclient.model.*;
+import com.applitools.eyes.visualgrid.services.IResourceFuture;
+import com.applitools.eyes.visualgrid.model.*;
 
 import java.net.URI;
 import java.net.URL;

@@ -4,14 +4,15 @@ import com.applitools.eyes.BatchInfo;
 import com.applitools.eyes.FileLogger;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.TestResults;
+import com.applitools.eyes.selenium.BrowserType;
 import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
-import com.applitools.eyes.visualgridclient.model.ChromeEmulationInfo;
-import com.applitools.eyes.visualgridclient.model.ScreenOrientation;
-import com.applitools.eyes.visualgridclient.model.TestResultSummary;
-import com.applitools.eyes.visualgridclient.services.EyesRunner;
-import com.applitools.eyes.visualgridclient.services.VisualGridRunner;
+import com.applitools.eyes.visualgrid.model.DeviceName;
+import com.applitools.eyes.visualgrid.model.ScreenOrientation;
+import com.applitools.eyes.visualgrid.model.TestResultSummary;
+import com.applitools.eyes.visualgrid.services.EyesRunner;
+import com.applitools.eyes.visualgrid.services.VisualGridRunner;
 import com.applitools.utils.GeneralUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -23,9 +24,9 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class TestVG_EmulationDevices {
-    private static final Configuration.BrowserType CHROME = Configuration.BrowserType.CHROME;
-    private static final Configuration.BrowserType FIREFOX = Configuration.BrowserType.FIREFOX;
-    private static final ChromeEmulationInfo.DeviceName IPHONE4 = ChromeEmulationInfo.DeviceName.iPhone_4;
+    private static final BrowserType CHROME = BrowserType.CHROME;
+    private static final BrowserType FIREFOX = BrowserType.FIREFOX;
+    private static final DeviceName IPHONE4 = DeviceName.iPhone_4;
     private static final ScreenOrientation PORTRAIT = ScreenOrientation.PORTRAIT;
     private EyesRunner visualGridRunner;
 
@@ -79,9 +80,9 @@ public class TestVG_EmulationDevices {
             configuration.setBaselineEnvName("michael");
 //            configuration.addDeviceEmulation(300, 400, 1f);
             configuration.addDeviceEmulation(IPHONE4, PORTRAIT);
-            configuration.addDeviceEmulation(ChromeEmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
-            configuration.addDeviceEmulation(ChromeEmulationInfo.DeviceName.iPhone_X, ScreenOrientation.PORTRAIT);
-            configuration.addDeviceEmulation(ChromeEmulationInfo.DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE);
+            configuration.addDeviceEmulation(DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
+            configuration.addDeviceEmulation(DeviceName.iPhone_X, ScreenOrientation.PORTRAIT);
+            configuration.addDeviceEmulation(DeviceName.Nexus_10, ScreenOrientation.LANDSCAPE);
             logger.log("created configurations for url " + testedUrl);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
             eyes.setConfiguration(configuration);

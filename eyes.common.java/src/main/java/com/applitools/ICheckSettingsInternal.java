@@ -2,7 +2,7 @@ package com.applitools;
 
 import com.applitools.eyes.MatchLevel;
 import com.applitools.eyes.Region;
-import com.applitools.eyes.visualgridclient.model.VisualGridSelector;
+import com.applitools.eyes.visualgrid.model.VisualGridSelector;
 
 import java.util.Map;
 
