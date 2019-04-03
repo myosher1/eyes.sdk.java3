@@ -492,9 +492,13 @@ public class Eyes implements ISeleniumConfigurationProvider {
             List<Future<TestResultContainer>> close = visualGridEyes.close();
             if (close != null && !close.isEmpty()) {
                 TestResultContainer errorResult = null;
+                TestResultContainer firstResult = null;
                 try {
                     for (Future<TestResultContainer> closeFuture : close) {
                         TestResultContainer testResultContainer = closeFuture.get();
+                        if (firstResult == null) {
+                            firstResult = testResultContainer;
+                        }
                         Error error = testResultContainer.getException();
                         if (error != null && errorResult == null) {
                             errorResult = testResultContainer;
@@ -506,13 +510,18 @@ public class Eyes implements ISeleniumConfigurationProvider {
                     e.printStackTrace();
                 }
 
-                if (errorResult != null)
+                if (errorResult != null) {
                     if (shouldThrowException) {
                         throw errorResult.getException();
                     } else {
                         return errorResult.getTestResults();
                     }
-
+                }
+                else{ // returning the first result
+                    if (firstResult != null) {
+                        return firstResult.getTestResults();
+                    }
+                }
 
             }
         } else {
@@ -2181,9 +2190,9 @@ public class Eyes implements ISeleniumConfigurationProvider {
         if (apiKey != null) {
             this.setApiKey(apiKey);
         }
-        String serverUrl = configuration.getServerUrl();
+        URI serverUrl = configuration.getServerUrl();
         if (serverUrl != null) {
-            this.setServerUrl(serverUrl);
+            this.setServerUrl(serverUrl.toString());
         }
         this.configuration = new Configuration(configuration);
 
