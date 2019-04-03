@@ -139,24 +139,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return The test results.
      */
     public TestResults close() {
-        if (isVisualGridEyes) {
-            List<Future<TestResultContainer>> futures = visualGridEyes.close();
-            if (futures != null && !futures.isEmpty()) {
-                try {
-                    return futures.get(0).get().getTestResults();
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
-            }
-        } else {
-            TestResults close = seleniumEyes.close();
-            if (runner != null) {
-                SeleniumRunner seleniumRunner = (SeleniumRunner) runner;
-                return seleniumRunner.setTestResults(close);
-            }
-            return close;
-        }
-        return null;
+        return this.close(false);
     }
 
     /**
@@ -506,13 +489,13 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public TestResults close(boolean shouldThrowException) {
         if (isVisualGridEyes) {
-            List<Future<TestResultContainer>> close = visualGridEyes.close(shouldThrowException);
+            List<Future<TestResultContainer>> close = visualGridEyes.close();
             if (close != null && !close.isEmpty()) {
                 try {
                     Future<TestResultContainer> testResultContainerFuture = close.get(0);
                     TestResultContainer testResultContainer = testResultContainerFuture.get();
                     Error exception = testResultContainer.getException();
-                    if (exception != null) {
+                    if (exception != null && shouldThrowException) {
                         throw exception;
                     }
                     return testResultContainer.getTestResults();

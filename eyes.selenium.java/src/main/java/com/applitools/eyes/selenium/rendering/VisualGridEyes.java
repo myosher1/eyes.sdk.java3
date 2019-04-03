@@ -254,11 +254,6 @@ public class VisualGridEyes implements IRenderingEyes {
         return closeAndReturnResults(false);
     }
 
-    public List<Future<TestResultContainer>> close(boolean throwException) {
-        if (getIsDisabled()) return null;
-        return closeAndReturnResults(false);
-    }
-
     public void abortIfNotClosed() {
     }
 
