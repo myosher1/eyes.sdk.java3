@@ -18,7 +18,7 @@ public interface IEyesConnector {
 
     void setLogHandler(LogHandler logHandler);
 
-    void setServerUrl(String serverUrl) throws URISyntaxException;
+    IConfigurationSetter setServerUrl(String serverUrl) throws URISyntaxException;
 
     URI getServerUrl();
 
@@ -50,7 +50,7 @@ public interface IEyesConnector {
 
     String getApiKey();
 
-    void setApiKey(String apiKey);
+    IConfigurationSetter setApiKey(String apiKey);
 
     void setBranchName(String branchName);
 

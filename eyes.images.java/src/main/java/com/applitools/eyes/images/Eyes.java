@@ -19,6 +19,7 @@ import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.ImageUtils;
 
 import java.awt.image.BufferedImage;
+import java.net.URI;
 
 public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurationSetter {
 
@@ -680,8 +681,9 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
      * Sets the ignore blinking caret value.
      * @param value The ignore value.
      */
-    public void setIgnoreCaret(boolean value) {
+    public IConfigurationSetter setIgnoreCaret(boolean value) {
         config.getDefaultMatchSettings().setIgnoreCaret(value);
+        return config;
     }
 
     /**
@@ -841,4 +843,8 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
         setHostApp(hostApp);
     }
 
+    @Override
+    public String getApiKey() {
+        return super.getApiKey();
+    }
 }

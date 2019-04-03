@@ -158,13 +158,13 @@ public abstract class EyesBase {
      * Sets the API key of your applitools Eyes account.
      * @param apiKey The api key to set.
      */
-    @SuppressWarnings("UnusedDeclaration")
-    public void setApiKey(String apiKey) {
+    public IConfigurationSetter setApiKey(String apiKey) {
         ArgumentGuard.notNull(apiKey, "apiKey");
         if (serverConnector == null) {
             throw new EyesException("server connector not set.");
         }
         serverConnector.setApiKey(apiKey);
+        return this.getConfigSetter();
     }
 
     /**
@@ -183,8 +183,9 @@ public abstract class EyesBase {
      * @param serverUrl The URI of the rest server, or {@code null} to use
      *                  the default server.
      */
-    public void setServerUrl(String serverUrl) {
+    public IConfigurationSetter setServerUrl(String serverUrl) {
         setServerUrl(URI.create(serverUrl));
+        return this.getConfigSetter();
     }
 
     /**
@@ -192,7 +193,7 @@ public abstract class EyesBase {
      * @param serverUrl The URI of the rest server, or {@code null} to use
      *                  the default server.
      */
-    public void setServerUrl(URI serverUrl) {
+    public IConfigurationSetter setServerUrl(URI serverUrl) {
         if (serverConnector == null) {
             throw new EyesException("server connector not set.");
         }
@@ -201,6 +202,7 @@ public abstract class EyesBase {
         } else {
             serverConnector.setServerUrl(serverUrl);
         }
+        return this.getConfigSetter();
     }
 
     /**

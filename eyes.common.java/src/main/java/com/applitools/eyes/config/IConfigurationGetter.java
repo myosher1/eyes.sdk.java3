@@ -2,6 +2,8 @@ package com.applitools.eyes.config;
 
 import com.applitools.eyes.*;
 
+import java.net.URI;
+
 public interface IConfigurationGetter {
     boolean getSaveNewTests();
 
@@ -49,5 +51,5 @@ public interface IConfigurationGetter {
 
     String getApiKey();
 
-    String getServerUrl();
+    URI getServerUrl();
 }

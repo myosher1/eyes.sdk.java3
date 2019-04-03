@@ -46,9 +46,9 @@ public interface IConfigurationSetter {
 
     IConfigurationSetter setSendDom(boolean sendDom);
 
-    void setIgnoreCaret(boolean value);
+    IConfigurationSetter setIgnoreCaret(boolean value);
 
-    void setApiKey(String apiKey);
+    IConfigurationSetter setApiKey(String apiKey);
 
-    void setServerUrl(String serverUrl);
+    IConfigurationSetter setServerUrl(String serverUrl);
 }

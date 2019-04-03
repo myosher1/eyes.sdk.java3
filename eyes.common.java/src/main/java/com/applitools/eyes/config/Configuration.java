@@ -2,6 +2,8 @@ package com.applitools.eyes.config;
 
 import com.applitools.eyes.*;
 
+import java.net.URI;
+
 public class Configuration implements IConfigurationSetter, IConfigurationGetter {
     private static final int DEFAULT_MATCH_TIMEOUT = 2000; // Milliseconds;
 
@@ -51,7 +53,10 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
         this.stitchOverlap = other.getStitchOverlap();
         this.isSendDom = other.isSendDom();
         this.apiKey = other.getApiKey();
-        this.serverUrl = other.getServerUrl();
+        URI serverUrl = other.getServerUrl();
+        if (serverUrl != null) {
+            this.serverUrl = serverUrl.toString();
+        }
         this.failureReports = other.getFailureReports();
     }
 
@@ -335,8 +340,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
      * @param value The ignore value.
      */
     @Override
-    public void setIgnoreCaret(boolean value) {
+    public IConfigurationSetter setIgnoreCaret(boolean value) {
         defaultMatchSettings.setIgnoreCaret(value);
+        return this;
     }
 
 
@@ -346,17 +352,22 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     }
 
     @Override
-    public void setApiKey(String apiKey) {
+    public IConfigurationSetter setApiKey(String apiKey) {
         this.apiKey = apiKey;
+        return this;
     }
 
     @Override
-    public String getServerUrl() {
-        return serverUrl;
+    public URI getServerUrl() {
+        if (this.serverUrl != null) {
+            return URI.create(serverUrl);
+        }
+        return null;
     }
 
     @Override
-    public void setServerUrl(String serverUrl) {
+    public IConfigurationSetter setServerUrl(String serverUrl) {
         this.serverUrl = serverUrl;
+        return this;
     }
 }

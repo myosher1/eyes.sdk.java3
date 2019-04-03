@@ -169,13 +169,13 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public void setApiKey(String apiKey) {
-        super.setApiKey(apiKey);
+    public IConfigurationSetter setApiKey(String apiKey) {
+        return super.setApiKey(apiKey);
     }
 
     @Override
-    public void setServerUrl(URI serverUrl) {
-        super.setServerUrl(serverUrl);
+    public IConfigurationSetter setServerUrl(URI serverUrl) {
+       return  super.setServerUrl(serverUrl);
     }
 
     @Override
