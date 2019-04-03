@@ -83,7 +83,7 @@ public class TestVGServerConfigs {
         if (isDisabled2 != null) {
             eyes.setIsDisabled(isDisabled2);
         }
-        Configuration configuration = new Configuration("");
+        Configuration configuration = new Configuration("app","test",null);
         configuration.addBrowser(100, 100, BrowserType.FIREFOX);
         ChromeDriver webDriver = new ChromeDriver();
         try {

@@ -59,7 +59,9 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
                          RectangleSize viewportSize) {
         super();
         ArrayList<RenderBrowserInfo> browsersInfo = new ArrayList<>();
-        browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, null));
+        if (viewportSize != null) {
+            browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, null));
+        }
         this.browsersInfo = browsersInfo;
         this.testName = testName;
         this.viewportSize = viewportSize;

@@ -1,6 +1,7 @@
 package com.applitools.eyes.renderingGrid;
 
 import com.applitools.eyes.*;
+import com.applitools.eyes.selenium.BrowserType;
 import com.applitools.eyes.selenium.Configuration;
 import com.applitools.eyes.selenium.Eyes;
 import com.applitools.eyes.selenium.fluent.Target;
@@ -69,13 +70,13 @@ public class TestTopSites {
             configuration.setBranchName("TTS - config branch");
             configuration.setBaselineEnvName("My Other Env Name");
             String environment = "My env name";
-//            ChromeEmulationInfo emulation = new ChromeEmulationInfo(ChromeEmulationInfo.DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
-//            configuration.addBrowser(800, 600, Configuration.BrowserType.CHROME, environment);
-//            configuration.addBrowser(700, 500, Configuration.BrowserType.FIREFOX, environment);
-//            configuration.addBrowser(700, 500, Configuration.BrowserType.IE_10, environment);
-//            configuration.addBrowser(700, 500, Configuration.BrowserType.IE_11, environment);
-//            configuration.addBrowser(1600, 1200, Configuration.BrowserType.CHROME, environment);
-//            configuration.addBrowser(1200, 800, Configuration.BrowserType.EDGE, environment);
+            ChromeEmulationInfo emulation = new ChromeEmulationInfo(DeviceName.iPhone_4, ScreenOrientation.PORTRAIT);
+            configuration.addBrowser(800, 600, BrowserType.CHROME, environment);
+            configuration.addBrowser(700, 500, BrowserType.FIREFOX, environment);
+            configuration.addBrowser(700, 500, BrowserType.IE_10, environment);
+            configuration.addBrowser(700, 500, BrowserType.IE_11, environment);
+            configuration.addBrowser(1600, 1200, BrowserType.CHROME, environment);
+            configuration.addBrowser(1200, 800, BrowserType.EDGE, environment);
 //            configuration.addDeviceEmulation(emulation);
             logger.log("created configurations for url " + testedUrl);
 //            eyes.setProxy(new ProxySettings("http://127.0.0.1", 8888, null, null));
