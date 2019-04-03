@@ -2182,7 +2182,17 @@ public class Eyes implements ISeleniumConfigurationProvider {
     }
 
     public void setConfiguration(Configuration configuration) {
+        ArgumentGuard.notNull(configuration, "configuration");
+        String apiKey = configuration.getApiKey();
+        if (apiKey != null) {
+            this.setApiKey(apiKey);
+        }
+        String serverUrl = configuration.getServerUrl();
+        if (serverUrl != null) {
+            this.setServerUrl(serverUrl);
+        }
         this.configuration = new Configuration(configuration);
+
     }
 
     public List<Future<TestResultContainer>> getCloseFutures() {

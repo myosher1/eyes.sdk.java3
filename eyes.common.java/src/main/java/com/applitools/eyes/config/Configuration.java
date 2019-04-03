@@ -25,6 +25,8 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     private boolean saveNewTests, saveFailedTests;
     private int stitchOverlap = 50;
     private boolean isSendDom = true;
+    private String apiKey = null;
+    private String serverUrl = null;
     private FailureReports failureReports =  FailureReports.ON_CLOSE;
 
     public Configuration(IConfigurationGetter other) {
@@ -48,6 +50,8 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
         this.saveFailedTests = other.getSaveFailedTests();
         this.stitchOverlap = other.getStitchOverlap();
         this.isSendDom = other.isSendDom();
+        this.apiKey = other.getApiKey();
+        this.serverUrl = other.getServerUrl();
         this.failureReports = other.getFailureReports();
     }
 
@@ -333,5 +337,26 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     @Override
     public void setIgnoreCaret(boolean value) {
         defaultMatchSettings.setIgnoreCaret(value);
+    }
+
+
+    @Override
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    @Override
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    @Override
+    public String getServerUrl() {
+        return serverUrl;
+    }
+
+    @Override
+    public void setServerUrl(String serverUrl) {
+        this.serverUrl = serverUrl;
     }
 }

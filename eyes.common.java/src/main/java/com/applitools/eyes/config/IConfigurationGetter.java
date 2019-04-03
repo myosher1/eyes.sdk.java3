@@ -46,4 +46,8 @@ public interface IConfigurationGetter {
     boolean isSendDom();
 
     boolean getIgnoreCaret();
+
+    String getApiKey();
+
+    String getServerUrl();
 }
