@@ -491,17 +491,28 @@ public class Eyes implements ISeleniumConfigurationProvider {
         if (isVisualGridEyes) {
             List<Future<TestResultContainer>> close = visualGridEyes.close();
             if (close != null && !close.isEmpty()) {
+                TestResultContainer errorResult = null;
                 try {
-                    Future<TestResultContainer> testResultContainerFuture = close.get(0);
-                    TestResultContainer testResultContainer = testResultContainerFuture.get();
-                    Error exception = testResultContainer.getException();
-                    if (exception != null && shouldThrowException) {
-                        throw exception;
+                    for (Future<TestResultContainer> closeFuture : close) {
+                        TestResultContainer testResultContainer = closeFuture.get();
+                        Error error = testResultContainer.getException();
+                        if (error != null && errorResult == null) {
+                            errorResult = testResultContainer;
+                        }
+
                     }
-                    return testResultContainer.getTestResults();
+//                    return firstCloseFuture.get().getTestResults();
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
+
+                if (errorResult != null)
+                    if (shouldThrowException) {
+                        throw errorResult.getException();
+                    } else {
+                        return errorResult.getTestResults();
+                    }
+
 
             }
         } else {
