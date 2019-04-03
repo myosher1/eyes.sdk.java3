@@ -134,6 +134,8 @@ public class VisualGridEyes implements IRenderingEyes {
         if (getIsDisabled()) return webDriver;
 
         ArgumentGuard.notNull(webDriver, "webDriver");
+        ArgumentGuard.notNull(getConfigGetter().getTestName(), "testName");
+        ArgumentGuard.notNull(getConfigGetter().getAppName(), "appName");
 
         initDriver(webDriver);
 
