@@ -1,5 +1,6 @@
 package com.applitools.eyes.visualgrid.services;
 
+import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualgrid.model.TestResultContainer;
 
 import java.util.List;
@@ -18,6 +19,8 @@ public interface IRenderingEyes {
     ScoreTask getBestScoreTaskForOpen();
 
     List<Future<TestResultContainer>> close();
+
+    Logger getLogger();
 
     interface EyesListener{
 

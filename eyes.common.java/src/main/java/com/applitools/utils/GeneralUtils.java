@@ -317,6 +317,7 @@ public class GeneralUtils {
      * @return the sha 256 hash
      */
     public static String getSha256hash(byte[] content) {
+        if(content == null) return null;
         byte[] buffer = new byte[8192];
         int count;
         MessageDigest digest;

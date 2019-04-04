@@ -342,6 +342,7 @@ public class VisualGridRunner extends EyesRunner {
     }
     public void open(IRenderingEyes eyes, RenderingInfo renderingInfo) {
         logger.verbose("enter");
+
         if (this.renderingInfo == null) {
             this.renderingInfo = renderingInfo;
         }
@@ -351,6 +352,10 @@ public class VisualGridRunner extends EyesRunner {
         }
 //        logger.verbose("releasing eyesToOpenList");
 //        logger.verbose("locking allEyes");
+
+        if(allEyes.isEmpty()){
+            this.setLogger(eyes.getLogger());
+        }
         synchronized (allEyes) {
             allEyes.add(eyes);
         }

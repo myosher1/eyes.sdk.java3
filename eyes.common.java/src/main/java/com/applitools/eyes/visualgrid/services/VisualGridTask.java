@@ -32,7 +32,7 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
     private ICheckSettings checkSettings;
 
     private RunningTest runningTest;
-    private Error exception;
+    private Throwable exception;
     private RenderingTask renderingTask = null;
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
     private final List<VisualGridSelector[]> regionSelectors;
@@ -41,9 +41,9 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
 
         void onTaskComplete(VisualGridTask visualGridTask);
 
-        void onTaskFailed(Error e, VisualGridTask visualGridTask);
+        void onTaskFailed(Throwable e, VisualGridTask visualGridTask);
 
-        void onRenderComplete(RenderingTask renderTask, Error e);
+        void onRenderComplete(RenderingTask renderTask, Throwable e);
 
     }
 
@@ -195,11 +195,11 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
         logger.verbose("exit - renderId: " + renderId);
     }
 
-    public Error getException() {
+    public Throwable getException() {
         return exception;
     }
 
-    public void setException(Error exception) {
+    public void setException(Throwable exception) {
         logger.verbose("aborting task with exception");
         this.exception = exception;
         this.type = TaskType.ABORT;

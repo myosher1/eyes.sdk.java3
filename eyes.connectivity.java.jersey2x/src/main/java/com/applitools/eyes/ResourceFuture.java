@@ -87,29 +87,42 @@ public class ResourceFuture implements IResourceFuture {
                 }
             }
         }
+
+        logger.verbose("exit");
         return rgResource;
     }
 
     @Override
-    public RGridResource get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+    public RGridResource get(long timeout, TimeUnit unit) {
         if (this.rgResource == null) {
-            Response response = future.get(timeout, unit);
-            ByteArrayOutputStream outputStream = downloadFile(response);
-            byte[] content = outputStream.toByteArray();
-            String contentType = Utils.getResponseContentType(response);
-            if (content.length > 0) {
-                String contentEncoding = Utils.getResponseContentEncoding(response);
-                if (contentEncoding != null && contentEncoding.contains("gzip")) {
-                    try {
-                        content = GeneralUtils.getUnGzipByteArrayOutputStream(content);
-                    } catch (IOException e) {
-                        GeneralUtils.logExceptionStackTrace(logger, e);
+            try {
+                Response response = future.get(timeout, unit);
+                int status = response.getStatus();
+                if (status == 200 || status == 201) {
+                    ByteArrayOutputStream outputStream = downloadFile(response);
+                    byte[] content = outputStream.toByteArray();
+                    String contentType = Utils.getResponseContentType(response);
+                    if (content.length > 0) {
+                        String contentEncoding = Utils.getResponseContentEncoding(response);
+                        if (contentEncoding != null && contentEncoding.contains("gzip")) {
+                            try {
+                                content = GeneralUtils.getUnGzipByteArrayOutputStream(content);
+                            } catch (IOException e) {
+                                GeneralUtils.logExceptionStackTrace(logger, e);
+                            }
+                        }
+                    } else {
+                        logger.log("content is empty");
                     }
+                    rgResource = new RGridResource(url, contentType, content, logger, "ResourceFuture");
                 }
-            } else {
-                logger.log("content is empty");
+                else{
+                    rgResource = new RGridResource(url, null, null, logger, "ResourceFuture");
+                }
+            } catch (Exception e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+                rgResource = new RGridResource(url, null, null, logger, "ResourceFuture");
             }
-            rgResource = new RGridResource(url, contentType, content, logger, "ResourceFuture");
         }
         return rgResource;
     }

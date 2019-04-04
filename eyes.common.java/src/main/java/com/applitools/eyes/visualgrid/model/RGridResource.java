@@ -61,5 +61,10 @@ public class RGridResource {
     public String getSha256() {
         return sha256;
     }
+
+    @Override
+    public String toString() {
+        return "RGridResource{" + "url='" + url + '\'' + '}';
+    }
 }
 

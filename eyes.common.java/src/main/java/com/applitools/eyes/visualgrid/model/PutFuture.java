@@ -56,9 +56,9 @@ public class PutFuture implements Future {
         if (!this.isSentAlready) {
             while (retryCount != 0) {
                 try {
-                    this.putFuture.get();
+                    this.putFuture.get(20, TimeUnit.SECONDS);
                     break;
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     logger.verbose(e.getMessage() + " on hash: " + resource.getSha256());
                     retryCount--;
                     logger.verbose("Entering retry");

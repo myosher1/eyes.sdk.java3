@@ -172,8 +172,11 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             pollRenderingStatus(mapping);
 
             isTaskCompleted = true;
-        } catch (IOException | ExecutionException | InterruptedException e) {
+        } catch (Throwable e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
+            for (VisualGridTask visualGridTask : this.visualGridTaskList) {
+                visualGridTask.setException(e);
+            }
         }
         logger.verbose("Finished rendering task - exit");
 
@@ -208,7 +211,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
                     logger.verbose("locking putResourceCache");
                     synchronized (putResourceCache) {
-                        if (!resource.getContentType().equalsIgnoreCase(CDT)) {
+                        String contentType = resource.getContentType();
+                        if (contentType != null && !contentType.equalsIgnoreCase(CDT)) {
                             putResourceCache.put(dom.getUrl(), future);
                         }
                         allPuts.add(future);
@@ -328,7 +332,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
             logger.verbose("resource(" + resource.getUrl() + ") hash : " + resource.getSha256());
             PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
-            if (!putResourceCache.containsKey(url) && !resource.getContentType().equalsIgnoreCase(CDT)) {
+            String contentType = resource.getContentType();
+            if (!putResourceCache.containsKey(url) && (contentType != null && !contentType.equalsIgnoreCase(CDT))) {
                 synchronized (putResourceCache) {
                     putResourceCache.put(url, future);
                 }
@@ -365,7 +370,16 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         //Parse allBlobs to mapping
         Map<String, RGridResource> resourceMapping = new HashMap<>();
         for (String url : allBlobs.keySet()) {
-            resourceMapping.put(url, this.fetchedCacheMap.get(url).get());
+            try {
+                logger.verbose("trying to fetch - "+url);
+                IResourceFuture iResourceFuture = this.fetchedCacheMap.get(url);
+                if (iResourceFuture != null) {
+                    RGridResource value = iResourceFuture.get(10, TimeUnit.SECONDS);
+                    if(value.getContent() != null) resourceMapping.put(url, value);
+                }
+            } catch (Exception e) {
+                logger.verbose("Couldn't download url = "+url);
+            }
         }
 
         buildAllRGDoms(resourceMapping, result);
@@ -701,7 +715,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 if (!this.fetchedCacheMap.containsKey(url)) {
                     IResourceFuture resourceFuture = this.eyesConnector.createResourceFuture(blob);
                     logger.verbose("Cache write for url - " + url + " hash:(" + resourceFuture + ")");
-                    if (!blob.getContentType().equalsIgnoreCase(CDT)) {
+                    String contentType = blob.getContentType();
+                    if (contentType != null && !contentType.equalsIgnoreCase(CDT)) {
                         this.fetchedCacheMap.put(url, resourceFuture);
                     } else {
                         logger.verbose("tried to store cdt");
@@ -745,7 +760,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
         }
 
-        logger.verbose("parsing " + allFetches.size() + " fetched resources");
+        logger.verbose("starting to fetch( " + allFetches.size() + ") fetched resources");
         for (IResourceFuture future : allFetches) {
             RGridResource resource;
             try {
@@ -781,6 +796,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             }
 
         }
+        logger.verbose("finished fetching("+allFetches.size()+")");
         logger.verbose("exit");
     }
 

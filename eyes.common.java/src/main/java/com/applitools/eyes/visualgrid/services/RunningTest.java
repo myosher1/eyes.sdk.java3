@@ -27,7 +27,7 @@ public class RunningTest {
     private Logger logger;
     private AtomicBoolean isCloseTaskIssued = new AtomicBoolean(false);
     private VisualGridTask closeTask;
-    private Error error;
+    private Throwable error;
 
     public boolean isCloseTaskIssued() {
         return isCloseTaskIssued.get();
@@ -65,13 +65,13 @@ public class RunningTest {
         }
 
         @Override
-        public void onTaskFailed(Error e, VisualGridTask visualGridTask) {
+        public void onTaskFailed(Throwable e, VisualGridTask visualGridTask) {
             setTestInExceptionMode(e);
             listener.onTaskComplete(visualGridTask, RunningTest.this);
         }
 
         @Override
-        public void onRenderComplete(RenderingTask renderingTask, Error error) {
+        public void onRenderComplete(RenderingTask renderingTask, Throwable error) {
             logger.verbose("enter");
             listener.onRenderComplete();
             logger.verbose("exit");
@@ -221,7 +221,7 @@ public class RunningTest {
         return eyes;
     }
 
-    public void setTestInExceptionMode(Error e) {
+    public void setTestInExceptionMode(Throwable e) {
         this.isTestInExceptionMode.set(true);
 
         logger.verbose("locking visualGridTaskList.");

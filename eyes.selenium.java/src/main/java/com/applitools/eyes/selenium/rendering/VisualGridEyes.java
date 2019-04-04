@@ -38,7 +38,7 @@ public class VisualGridEyes implements IRenderingEyes {
     private String apiKey;
     private String serverUrl;
 
-    private final VisualGridRunner renderingGridManager;
+    private final VisualGridRunner renderingGridRunner;
     private List<RunningTest> testList = null;
     private final List<RunningTest> testsInCloseProcess = Collections.synchronizedList(new ArrayList<RunningTest>());
     private AtomicBoolean isVGEyesIssuedOpenTasks = new AtomicBoolean(false);
@@ -87,8 +87,8 @@ public class VisualGridEyes implements IRenderingEyes {
 
     public VisualGridEyes(VisualGridRunner renderingGridManager, ISeleniumConfigurationProvider configProvider) {
         this.configProvider = configProvider;
-        ArgumentGuard.notNull(renderingGridManager, "renderingGridManager");
-        this.renderingGridManager = renderingGridManager;
+        ArgumentGuard.notNull(renderingGridManager, "renderingGridRunner");
+        this.renderingGridRunner = renderingGridManager;
         this.logger = renderingGridManager.getLogger();
     }
 
@@ -158,7 +158,7 @@ public class VisualGridEyes implements IRenderingEyes {
         }
 
         logger.verbose(String.format("opening %d tests...", testList.size()));
-        this.renderingGridManager.open(this, renderingInfo);
+        this.renderingGridRunner.open(this, renderingInfo);
         logger.verbose("done");
         return webDriver;
     }
@@ -198,7 +198,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
     private IEyesConnector createVGEyesConnector(RenderBrowserInfo browserInfo) {
         logger.verbose("creating VisualGridEyes server connector");
-        EyesConnector VGEyesConnector = new EyesConnector(browserInfo, renderingGridManager.getRateLimiter());
+        EyesConnector VGEyesConnector = new EyesConnector(browserInfo, renderingGridRunner.getRateLimiter());
         if (browserInfo.getEmulationInfo() != null) {
             VGEyesConnector.setDevice(browserInfo.getEmulationInfo().getDeviceName());
         }
@@ -265,7 +265,7 @@ public class VisualGridEyes implements IRenderingEyes {
     }
 
     public String getApiKey() {
-        return this.apiKey == null ? this.renderingGridManager.getApiKey() : this.apiKey;
+        return this.apiKey == null ? this.renderingGridRunner.getApiKey() : this.apiKey;
     }
 
     public void setApiKey(String apiKey) {
@@ -277,7 +277,7 @@ public class VisualGridEyes implements IRenderingEyes {
     }
 
     public boolean getIsDisabled() {
-        return this.isDisabled == null ? this.renderingGridManager.getIsDisabled() : this.isDisabled;
+        return this.isDisabled == null ? this.renderingGridRunner.getIsDisabled() : this.isDisabled;
     }
 
     public URI getServerUrl() {
@@ -285,7 +285,7 @@ public class VisualGridEyes implements IRenderingEyes {
             URI uri = this.VGEyesConnector.getServerUrl();
             if (uri != null) return uri;
         }
-        String str = this.serverUrl == null ? this.renderingGridManager.getServerUrl() : this.serverUrl;
+        String str = this.serverUrl == null ? this.renderingGridRunner.getServerUrl() : this.serverUrl;
         return str == null ? null : URI.create(str);
     }
 
@@ -314,12 +314,12 @@ public class VisualGridEyes implements IRenderingEyes {
                 }
             }
             futures.addAll(futureList);
-            this.renderingGridManager.close(this);
+            this.renderingGridRunner.close(this);
             for (Future<TestResultContainer> future : futureList) {
                 TestResultContainer testResultContainer = future.get();
-                Error exception = testResultContainer.getException();
+                Throwable exception = testResultContainer.getException();
                 if(throwException){
-                    throw exception;
+                    throw new Error(exception);
                 }
 
             }
@@ -472,7 +472,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
             logger.verbose("added check tasks  (" + checkSettings.toString() + ")");
 
-            this.renderingGridManager.check(checkSettings, debugResourceWriter, scriptResult,
+            this.renderingGridRunner.check(checkSettings, debugResourceWriter, scriptResult,
                     this.VGEyesConnector, visualGridTaskList, openVisualGridTasks, checkSettings,
                     new VisualGridRunner.RenderListener() {
                         @Override

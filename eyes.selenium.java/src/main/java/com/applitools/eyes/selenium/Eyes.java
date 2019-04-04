@@ -499,7 +499,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
                         if (firstResult == null) {
                             firstResult = testResultContainer;
                         }
-                        Error error = testResultContainer.getException();
+                        Throwable error = testResultContainer.getException();
                         if (error != null && errorResult == null) {
                             errorResult = testResultContainer;
                         }
@@ -512,7 +512,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
 
                 if (errorResult != null) {
                     if (shouldThrowException) {
-                        throw errorResult.getException();
+                        throw new Error(errorResult.getException());
                     } else {
                         return errorResult.getTestResults();
                     }
