@@ -152,7 +152,7 @@ public interface IServerConnector {
      * @param listener The callback wrapper for the upload result.
      * @return true if resource was uploaded
      */
-    PutFuture renderPutResource(RunningRender runningRender, RGridResource resource, IResourceUploadListener listener);
+    IPutFuture renderPutResource(RunningRender runningRender, RGridResource resource, IResourceUploadListener listener);
 
     /**
      * Get the rendering status for current render

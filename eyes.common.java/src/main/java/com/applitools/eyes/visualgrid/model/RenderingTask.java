@@ -2,6 +2,7 @@ package com.applitools.eyes.visualgrid.model;
 
 import com.applitools.ICheckSettings;
 import com.applitools.ICheckSettingsInternal;
+import com.applitools.eyes.IPutFuture;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualgrid.services.IEyesConnector;
 import com.applitools.eyes.visualgrid.services.IResourceFuture;
@@ -17,7 +18,6 @@ import com.helger.css.decl.*;
 import com.helger.css.reader.CSSReader;
 import org.apache.commons.codec.binary.Base64;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -45,7 +45,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private List<VisualGridTask> openVisualGridTaskList;
     private RenderingInfo renderingInfo;
     private final Map<String, IResourceFuture> fetchedCacheMap;
-    private final Map<String, PutFuture> putResourceCache;
+    private final Map<String, IPutFuture> putResourceCache;
     private Logger logger;
     private AtomicBoolean isTaskComplete = new AtomicBoolean(false);
     private AtomicBoolean isForcePutNeeded;
@@ -54,7 +54,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private HashMap<String, Object> result = null;
     private AtomicInteger framesLevel = new AtomicInteger();
     private RGridDom dom = null;
-    private final boolean forceFullPageScreenshot;
+    private boolean forceFullPageScreenshot;
 
     private boolean isTaskStarted = false;
     private boolean isTaskCompleted = false;
@@ -128,6 +128,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                             logger.verbose("Second request already happened");
                         }
                         isSecondRequestAlreadyHappened = true;
+//                        this.isForcePutNeeded.set(true);
                     }
                     logger.verbose("ERROR " + e.getMessage());
                     fetchFails++;
@@ -193,7 +194,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     private void forcePutAllResources(Map<String, RGridResource> resources, RunningRender runningRender) {
         RGridResource resource;
-        List<PutFuture> allPuts = new ArrayList<>();
+        List<IPutFuture> allPuts = new ArrayList<>();
         for (String url : resources.keySet()) {
             try {
                 logger.verbose("trying to get url from map - " + url);
@@ -208,7 +209,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     }
                 } else {
                     resource = resourceFuture.get();
-                    PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
+                    IPutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
                     logger.verbose("locking putResourceCache");
                     synchronized (putResourceCache) {
                         String contentType = resource.getContentType();
@@ -222,8 +223,12 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 GeneralUtils.logExceptionStackTrace(logger, e);
             }
         }
-        for (PutFuture put : allPuts) {
-            put.get();
+        for (IPutFuture put : allPuts) {
+            try {
+                put.get();
+            } catch (InterruptedException | ExecutionException e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            }
         }
 
     }
@@ -271,10 +276,10 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 
     private void sendMissingResources(List<RunningRender> runningRenders, RGridDom dom, Map<String, RGridResource> resources, boolean isNeedMoreDom) {
         logger.verbose("enter");
-        List<PutFuture> allPuts = new ArrayList<>();
+        List<IPutFuture> allPuts = new ArrayList<>();
         if (isNeedMoreDom) {
             RunningRender runningRender = runningRenders.get(0);
-            PutFuture future = null;
+            IPutFuture future = null;
             try {
                 future = this.eyesConnector.renderPutResource(runningRender, dom.asResource());
             } catch (JsonProcessingException e) {
@@ -292,7 +297,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         }
 
         logger.verbose("calling future.get on " + allPuts.size() + " PutFutures");
-        for (PutFuture future : allPuts) {
+        for (IPutFuture future : allPuts) {
             logger.verbose("calling future.get on " + future.toString());
             try {
                 future.get(20, TimeUnit.SECONDS);
@@ -303,12 +308,12 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("exit");
     }
 
-    private void createPutFutures(List<PutFuture> allPuts, RunningRender runningRender, Map<String, RGridResource> resources) {
+    private void createPutFutures(List<IPutFuture> allPuts, RunningRender runningRender, Map<String, RGridResource> resources) {
         List<String> needMoreResources = runningRender.getNeedMoreResources();
         RGridResource resource;
         for (String url : needMoreResources) {
             if (putResourceCache.containsKey(url)) {
-                PutFuture putFuture = putResourceCache.get(url);
+                IPutFuture putFuture = putResourceCache.get(url);
                 if (!allPuts.contains(putFuture)) {
                     allPuts.add(putFuture);
                 }
@@ -331,7 +336,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
 //
             }
             logger.verbose("resource(" + resource.getUrl() + ") hash : " + resource.getSha256());
-            PutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
+            IPutFuture future = this.eyesConnector.renderPutResource(runningRender, resource);
             String contentType = resource.getContentType();
             if (!putResourceCache.containsKey(url) && (contentType != null && !contentType.equalsIgnoreCase(CDT))) {
                 synchronized (putResourceCache) {

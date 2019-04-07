@@ -546,7 +546,7 @@ public class ServerConnector extends RestClient
     }
 
     @Override
-    public PutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final IResourceUploadListener listener) {
+    public IPutFuture renderPutResource(final RunningRender runningRender, final RGridResource resource, final IResourceUploadListener listener) {
         ArgumentGuard.notNull(runningRender, "runningRender");
         ArgumentGuard.notNull(resource, "resource");
         byte[] content = resource.getContent();
@@ -573,7 +573,8 @@ public class ServerConnector extends RestClient
         }
         final Future<Response> future = request.async().put(entity);
         logger.verbose("future created.");
-        return new PutFuture(future, resource, runningRender, this, logger);
+        PutFuture putFuture = new PutFuture(future, resource, runningRender, this, logger);
+        return putFuture;
     }
 
 

@@ -1,15 +1,16 @@
-package com.applitools.eyes.visualgrid.model;
+package com.applitools.eyes;
 
-import com.applitools.eyes.IServerConnector;
-import com.applitools.eyes.Logger;
+import com.applitools.eyes.visualgrid.model.RGridResource;
+import com.applitools.eyes.visualgrid.model.RunningRender;
 import com.applitools.utils.GeneralUtils;
 
+import javax.ws.rs.core.Response;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class PutFuture implements Future {
+public class PutFuture implements IPutFuture {
 
     private Future putFuture;
     private RGridResource resource;
@@ -49,9 +50,9 @@ public class PutFuture implements Future {
 
     @Override
     public Boolean get() {
-        if (this.putFuture == null){
-            PutFuture newFuture = serverConnector.renderPutResource(runningRender, resource, null);
-            this.putFuture = newFuture.putFuture;
+        if (this.putFuture == null) {
+            IPutFuture newFuture = serverConnector.renderPutResource(runningRender, resource, null);
+            this.putFuture = newFuture.getPutFuture();
         }
         if (!this.isSentAlready) {
             while (retryCount != 0) {
@@ -67,9 +68,9 @@ public class PutFuture implements Future {
                     } catch (InterruptedException e1) {
                         GeneralUtils.logExceptionStackTrace(logger, e1);
                     }
-                    PutFuture newFuture = serverConnector.renderPutResource(runningRender, resource, null);
+                    IPutFuture newFuture = serverConnector.renderPutResource(runningRender, resource, null);
                     logger.log("fired retry");
-                    this.putFuture = newFuture.putFuture;
+                    this.putFuture = newFuture.getPutFuture();
                 }
             }
         }
@@ -81,9 +82,10 @@ public class PutFuture implements Future {
     public Boolean get(long timeout, TimeUnit unit) throws
             InterruptedException, ExecutionException, TimeoutException {
         if (!this.isSentAlready) {
-            this.putFuture.get(timeout, unit);
+            Object responseAsObject = this.putFuture.get(timeout, unit);
+            if(responseAsObject instanceof Response)
+            this.isSentAlready = true;
         }
-        this.isSentAlready = true;
         return true;
     }
 
@@ -94,5 +96,10 @@ public class PutFuture implements Future {
     @Override
     public String toString() {
         return this.resource.getUrl();
+    }
+
+    @Override
+    public Future getPutFuture() {
+        return putFuture;
     }
 }

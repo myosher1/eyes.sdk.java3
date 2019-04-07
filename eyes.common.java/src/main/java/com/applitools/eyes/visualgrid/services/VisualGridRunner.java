@@ -1,6 +1,7 @@
 package com.applitools.eyes.visualgrid.services;
 
 import com.applitools.ICheckSettings;
+import com.applitools.eyes.IPutFuture;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualgrid.model.*;
 import com.applitools.utils.GeneralUtils;
@@ -26,7 +27,7 @@ public class VisualGridRunner extends EyesRunner {
     private final List<IRenderingEyes> eyesToOpenList = Collections.synchronizedList(new ArrayList<IRenderingEyes>(200));
     private final List<IRenderingEyes> allEyes = Collections.synchronizedList(new ArrayList<IRenderingEyes>(200));
     private Map<String, IResourceFuture> cachedResources = Collections.synchronizedMap(new HashMap<String, IResourceFuture>());
-    private Map<String, PutFuture> putResourceCache = Collections.synchronizedMap(new HashMap<String, PutFuture>());
+    private Map<String, IPutFuture> putResourceCache = Collections.synchronizedMap(new HashMap<String, IPutFuture>());
 
     private final Object openerServiceConcurrencyLock = new Object();
     private final Object openerServiceLock = new Object();
@@ -178,7 +179,7 @@ public class VisualGridRunner extends EyesRunner {
         return cachedResources;
     }
 
-    public Map<String, PutFuture> getPutResourceCache() {
+    public Map<String, IPutFuture> getPutResourceCache() {
         return putResourceCache;
     }
 

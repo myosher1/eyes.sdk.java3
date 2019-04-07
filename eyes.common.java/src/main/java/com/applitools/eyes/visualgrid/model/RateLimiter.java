@@ -1,19 +1,21 @@
 package com.applitools.eyes.visualgrid.model;
 
+import com.applitools.eyes.IPutFuture;
 import com.applitools.eyes.Logger;
 import com.applitools.utils.GeneralUtils;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class RateLimiter {
     private final Logger logger;
-    private List<PutFuture> awaitingTasks = Collections.synchronizedList(new ArrayList<PutFuture>());
-    private List<PutFuture> runningTasks = Collections.synchronizedList(new ArrayList<PutFuture>());
+    private List<IPutFuture> awaitingTasks = Collections.synchronizedList(new ArrayList<IPutFuture>());
+    private List<IPutFuture> runningTasks = Collections.synchronizedList(new ArrayList<IPutFuture>());
 
     private int maxConcurrentTasks;
     private final Object lock = new Object();
 
-    public void handle(PutFuture putFuture) {
+    public void handle(IPutFuture putFuture) {
         synchronized (lock) {
             awaitingTasks.add(putFuture);
             if (!pollingThread.isAlive()) {
@@ -47,22 +49,26 @@ public class RateLimiter {
         private void executeTask() {
             logger.verbose("enter");
             if (awaitingTasks.isEmpty()) return;
-            PutFuture putFuture;
+            IPutFuture putFuture;
             synchronized (lock) {
                 putFuture = awaitingTasks.get(0);
                 logger.verbose("executing task " + putFuture);
                 runningTasks.add(putFuture);
                 awaitingTasks.remove(putFuture);
             }
-            putFuture.get();
+            try {
+                putFuture.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
             logger.verbose("exit");
         }
 
         private void removeCompletedTasks() {
             logger.verbose("enter");
-            Iterator<PutFuture> iterator = runningTasks.iterator();
+            Iterator<IPutFuture> iterator = runningTasks.iterator();
             while (iterator.hasNext()) {
-                PutFuture future = iterator.next();
+                IPutFuture future = iterator.next();
                 if (future.isDone()) {
                     logger.verbose("removing done task " + future);
                     iterator.remove();
