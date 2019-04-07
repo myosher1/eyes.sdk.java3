@@ -565,7 +565,9 @@ public class SeleniumEyes extends EyesBase {
         }
 
         ArgumentGuard.notNull(checkSettings, "checkSettings");
-        checkSettings = checkSettings.withName(name);
+        if (name != null) {
+            checkSettings = checkSettings.withName(name);
+        }
         this.check(checkSettings);
     }
 

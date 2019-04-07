@@ -180,6 +180,10 @@ public class FullPageCaptureAlgorithm {
 
             // Scroll to the part's top/left
             Location originPosition = positionProvider.setPosition(partRegion.getLocation());
+
+            // Giving it time to stabilize.
+            GeneralUtils.sleep(waitBeforeScreenshots);
+
             Location targetPosition = originPosition.offset(-fullArea.getLeft(), -fullArea.getTop());
             logger.verbose(String.format("Origin Position is set to %s", originPosition));
             logger.verbose(String.format("Target Position is %s", targetPosition));
