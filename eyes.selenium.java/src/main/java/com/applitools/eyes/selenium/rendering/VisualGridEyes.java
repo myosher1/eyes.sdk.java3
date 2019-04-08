@@ -197,7 +197,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
     private IEyesConnector createVGEyesConnector(RenderBrowserInfo browserInfo) {
         logger.verbose("creating VisualGridEyes server connector");
-        EyesConnector VGEyesConnector = new EyesConnector(browserInfo, renderingGridRunner.getRateLimiter());
+        EyesConnector VGEyesConnector = new EyesConnector(configProvider, browserInfo, renderingGridRunner.getRateLimiter());
         if (browserInfo.getEmulationInfo() != null) {
             VGEyesConnector.setDevice(browserInfo.getEmulationInfo().getDeviceName());
         }

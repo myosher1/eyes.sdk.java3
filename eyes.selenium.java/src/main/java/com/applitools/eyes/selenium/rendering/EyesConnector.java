@@ -6,6 +6,7 @@ import com.applitools.eyes.capture.AppOutputWithScreenshot;
 import com.applitools.eyes.config.*;
 import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.selenium.IConfigurationGetter;
+import com.applitools.eyes.selenium.ISeleniumConfigurationProvider;
 import com.applitools.eyes.visualgrid.services.IEyesConnector;
 import com.applitools.eyes.visualgrid.services.IResourceFuture;
 import com.applitools.eyes.visualgrid.model.*;
@@ -16,13 +17,16 @@ import java.util.List;
 
 class EyesConnector extends EyesBase implements IEyesConnector {
 
+    private final ISeleniumConfigurationProvider configProvider;
     private RenderBrowserInfo browserInfo;
     private String userAgent;
     private String device;
     private RectangleSize deviceSize;
     private IConfigurationGetter configurationGetter;
 
-    public EyesConnector(RenderBrowserInfo browserInfo, RateLimiter rateLimiter) {
+    public EyesConnector(ISeleniumConfigurationProvider configProvider, RenderBrowserInfo browserInfo, RateLimiter rateLimiter) {
+        this.configProvider = configProvider;
+        configurationGetter = configProvider.get();
         this.browserInfo = browserInfo;
         //this.setServerConnector(new ThrottlingServerConnector(this.serverConnector, rateLimiter));
     }
