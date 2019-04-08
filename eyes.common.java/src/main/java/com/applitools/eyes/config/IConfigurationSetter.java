@@ -51,4 +51,6 @@ public interface IConfigurationSetter {
     IConfigurationSetter setApiKey(String apiKey);
 
     IConfigurationSetter setServerUrl(String serverUrl);
+
+    IConfigurationSetter setProxy(AbstractProxySettings proxy);
 }

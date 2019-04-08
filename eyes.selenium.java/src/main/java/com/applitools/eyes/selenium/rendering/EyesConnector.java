@@ -92,11 +92,6 @@ class EyesConnector extends EyesBase implements IEyesConnector {
         openBase(appName, testName, dimensions, null);
     }
 
-
-    public void setProxy(AbstractProxySettings proxy) {
-        super.setProxy(proxy);
-    }
-
     @Override
     protected String getBaseAgentId() {
         return "eyes.selenium.visualgrid.java/3.151.0";

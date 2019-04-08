@@ -52,4 +52,6 @@ public interface IConfigurationGetter {
     String getApiKey();
 
     URI getServerUrl();
+
+    AbstractProxySettings getProxy();
 }

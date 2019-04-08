@@ -43,7 +43,6 @@ public class VisualGridEyes implements IRenderingEyes {
     private final List<RunningTest> testsInCloseProcess = Collections.synchronizedList(new ArrayList<RunningTest>());
     private AtomicBoolean isVGEyesIssuedOpenTasks = new AtomicBoolean(false);
     private IRenderingEyes.EyesListener listener;
-    private AbstractProxySettings proxy;
 
     private String PROCESS_RESOURCES;
     private EyesWebDriver webDriver;
@@ -203,7 +202,7 @@ public class VisualGridEyes implements IRenderingEyes {
             VGEyesConnector.setDevice(browserInfo.getEmulationInfo().getDeviceName());
         }
         VGEyesConnector.setLogHandler(this.logger.getLogHandler());
-        VGEyesConnector.setProxy(this.proxy);
+        VGEyesConnector.setProxy(this.getConfigGetter().getProxy());
         if (serverConnector != null) {
             VGEyesConnector.setServerConnector(serverConnector);
         }
@@ -398,15 +397,6 @@ public class VisualGridEyes implements IRenderingEyes {
         this.listener = listener;
     }
 
-    /**
-     * Sets the proxy settings to be used by the rest client.
-     *
-     * @param abstractProxySettings The proxy settings to be used by the rest client.
-     *                              If {@code null} then no proxy is set.
-     */
-    public void setProxy(AbstractProxySettings abstractProxySettings) {
-        this.proxy = abstractProxySettings;
-    }
 
 
     public void check(ICheckSettings... checkSettings) {
@@ -622,10 +612,6 @@ public class VisualGridEyes implements IRenderingEyes {
         this.serverConnector = serverConnector;
     }
 
-
-    public AbstractProxySettings getProxy() {
-        return this.proxy;
-    }
 
     /**
      * @return The full agent id composed of both the base agent id and the

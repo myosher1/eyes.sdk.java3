@@ -14,7 +14,7 @@ import java.util.List;
 public interface IEyesConnector {
     void log(String massage);
 
-    void setProxy(AbstractProxySettings proxy);
+    IConfigurationSetter setProxy(AbstractProxySettings proxy);
 
     void setLogHandler(LogHandler logHandler);
 

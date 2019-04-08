@@ -29,6 +29,7 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     private boolean isSendDom = true;
     private String apiKey = null;
     private String serverUrl = null;
+    private AbstractProxySettings proxy = null;
     private FailureReports failureReports =  FailureReports.ON_CLOSE;
 
     public Configuration(IConfigurationGetter other) {
@@ -368,6 +369,17 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     @Override
     public IConfigurationSetter setServerUrl(String serverUrl) {
         this.serverUrl = serverUrl;
+        return this;
+    }
+
+    @Override
+    public AbstractProxySettings getProxy() {
+        return proxy;
+    }
+
+    @Override
+    public IConfigurationSetter setProxy(AbstractProxySettings proxy) {
+        this.proxy = proxy;
         return this;
     }
 }

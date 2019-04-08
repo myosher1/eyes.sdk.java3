@@ -220,11 +220,13 @@ public abstract class EyesBase {
      * @param abstractProxySettings The proxy settings to be used by the rest client.
      *                              If {@code null} then no proxy is set.
      */
-    public void setProxy(AbstractProxySettings abstractProxySettings) {
+    public IConfigurationSetter setProxy(AbstractProxySettings abstractProxySettings) {
         if (serverConnector == null) {
             throw new EyesException("server connector not set.");
         }
+        getConfigSetter().setProxy(abstractProxySettings);
         serverConnector.setProxy(abstractProxySettings);
+        return getConfigSetter();
     }
 
     /**
