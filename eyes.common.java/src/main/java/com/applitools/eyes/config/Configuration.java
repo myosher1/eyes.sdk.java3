@@ -30,7 +30,7 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     private String apiKey = null;
     private String serverUrl = null;
     private AbstractProxySettings proxy = null;
-    private FailureReports failureReports =  FailureReports.ON_CLOSE;
+    private FailureReports failureReports = FailureReports.ON_CLOSE;
 
     public Configuration(IConfigurationGetter other) {
         this.branchName = other.getBranchName();
@@ -59,6 +59,7 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
             this.serverUrl = serverUrl.toString();
         }
         this.failureReports = other.getFailureReports();
+        this.proxy = other.getProxy();
     }
 
     public Configuration() {
@@ -113,6 +114,7 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
         this.matchTimeout = matchTimeout;
         return this;
     }
+
     @Override
     public String getHostApp() {
         return hostApp;
@@ -336,8 +338,10 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
         Boolean ignoreCaret = getDefaultMatchSettings().getIgnoreCaret();
         return ignoreCaret == null ? true : ignoreCaret;
     }
+
     /**
      * Sets the ignore blinking caret value.
+     *
      * @param value The ignore value.
      */
     @Override
