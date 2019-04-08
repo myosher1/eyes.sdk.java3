@@ -648,7 +648,7 @@ public class VisualGridEyes implements IRenderingEyes {
     }
 
     public String getBaseAgentId() {
-        return "eyes.selenium.java/3.149.4-beta";
+        return "eyes.selenium.java/3.151.0";
     }
 
     /**
