@@ -413,7 +413,9 @@ public class VisualGridEyes implements IRenderingEyes {
         if (getIsDisabled()) return;
         ArgumentGuard.notNull(checkSettings, "checkSettings");
         trySetTargetSelector((SeleniumCheckSettings) checkSettings);
-        checkSettings = checkSettings.withName(name);
+        if (name != null) {
+            checkSettings = checkSettings.withName(name);
+        }
         this.check(checkSettings);
     }
 

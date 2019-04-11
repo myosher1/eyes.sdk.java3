@@ -201,6 +201,8 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     protected AppEnvironment getAppEnvironment() {
         AppEnvironment appEnv = super.getAppEnvironment();
         appEnv.setDeviceInfo(device);
+        appEnv.setOs(null);
+        appEnv.setHostingApp(null);
         logger.log("Done!");
         return appEnv;
     }

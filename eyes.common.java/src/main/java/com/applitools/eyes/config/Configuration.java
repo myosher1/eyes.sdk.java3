@@ -60,6 +60,9 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
         }
         this.failureReports = other.getFailureReports();
         this.proxy = other.getProxy();
+        if (other.getMatchLevel() != null) {
+            this.defaultMatchSettings.setMatchLevel(other.getMatchLevel());
+        }
     }
 
     public Configuration() {
@@ -384,6 +387,17 @@ public class Configuration implements IConfigurationSetter, IConfigurationGetter
     @Override
     public IConfigurationSetter setProxy(AbstractProxySettings proxy) {
         this.proxy = proxy;
+        return this;
+    }
+
+    @Override
+    public MatchLevel getMatchLevel() {
+        return this.defaultMatchSettings.getMatchLevel();
+    }
+
+    @Override
+    public IConfigurationSetter setMatchLevel(MatchLevel matchLevel) {
+        this.defaultMatchSettings.setMatchLevel(matchLevel);
         return this;
     }
 }

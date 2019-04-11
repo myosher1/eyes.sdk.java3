@@ -654,10 +654,12 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
      * The test-wide match level to use when checking application screenshot
      * with the expected output.
      * @param matchLevel The match level setting.
+     * @return The match settings used for the session.
      * @see com.applitools.eyes.MatchLevel
      */
-    public void setMatchLevel(MatchLevel matchLevel) {
+    public IConfigurationSetter setMatchLevel(MatchLevel matchLevel) {
         config.getDefaultMatchSettings().setMatchLevel(matchLevel);
+        return config;
     }
 
     /**

@@ -54,4 +54,6 @@ public interface IConfigurationGetter {
     URI getServerUrl();
 
     AbstractProxySettings getProxy();
+
+    MatchLevel getMatchLevel();
 }

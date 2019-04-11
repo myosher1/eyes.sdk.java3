@@ -53,4 +53,6 @@ public interface IConfigurationSetter {
     IConfigurationSetter setServerUrl(String serverUrl);
 
     IConfigurationSetter setProxy(AbstractProxySettings proxy);
+
+    IConfigurationSetter setMatchLevel(MatchLevel matchLevel);
 }
