@@ -39,7 +39,7 @@ public class VisualGridEyes implements IRenderingEyes {
     private String serverUrl;
 
     private final VisualGridRunner renderingGridRunner;
-    private List<RunningTest> testList = null;
+    private List<RunningTest> testList = Collections.synchronizedList(new ArrayList<RunningTest>());
     private final List<RunningTest> testsInCloseProcess = Collections.synchronizedList(new ArrayList<RunningTest>());
     private AtomicBoolean isVGEyesIssuedOpenTasks = new AtomicBoolean(false);
     private IRenderingEyes.EyesListener listener;
@@ -142,8 +142,6 @@ public class VisualGridEyes implements IRenderingEyes {
         setViewportSize(this.webDriver);
 
         ensureBrowsers();
-
-        this.testList = Collections.synchronizedList(new ArrayList<RunningTest>());
 
         logger.verbose("getting all browsers info...");
         List<RenderBrowserInfo> browserInfoList = getConfigGetter().getBrowsersInfo();
@@ -387,9 +385,6 @@ public class VisualGridEyes implements IRenderingEyes {
     @Override
     public boolean isEyesClosed() {
         boolean isVGEyesClosed = true;
-        if (testList == null) {
-            return true;
-        }
         for (RunningTest runningTest : testList) {
             isVGEyesClosed = isVGEyesClosed && runningTest.isTestClose();
         }
