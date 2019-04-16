@@ -387,6 +387,9 @@ public class VisualGridEyes implements IRenderingEyes {
     @Override
     public boolean isEyesClosed() {
         boolean isVGEyesClosed = true;
+        if (testList == null) {
+            return true;
+        }
         for (RunningTest runningTest : testList) {
             isVGEyesClosed = isVGEyesClosed && runningTest.isTestClose();
         }
