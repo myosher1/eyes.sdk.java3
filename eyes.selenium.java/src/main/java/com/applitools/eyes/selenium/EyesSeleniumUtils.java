@@ -142,7 +142,8 @@ public class EyesSeleniumUtils {
      */
     public static boolean isMobileDevice(WebDriver driver) {
         driver = getUnderlyingDriver(driver);
-        return driver instanceof AppiumDriver;
+        return driver instanceof AppiumDriver &&
+                !((AppiumDriver) driver).isBrowser();
     }
 
     /**
