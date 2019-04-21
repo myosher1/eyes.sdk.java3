@@ -38,7 +38,6 @@ public class GeneralUtils {
 
     /**
      * Read to end string.
-     *
      * @param inputStream The stream which content we would like to read.
      * @return The entire contents of the input stream as a string.
      * @throws IOException the io exception
@@ -61,7 +60,6 @@ public class GeneralUtils {
     /**
      * Formats date and time as represented by a calendar instance to an ISO
      * 8601 string.
-     *
      * @param calendar The date and time which we would like to format.
      * @return An ISO8601 formatted string representing the input date and time.
      */
@@ -82,7 +80,6 @@ public class GeneralUtils {
     /**
      * Formats date and time as represented by a calendar instance to an TFC
      * 1123 string.
-     *
      * @param calendar The date and time which we would like to format.
      * @return An RFC 1123 formatted string representing the input date and time.
      */
@@ -102,7 +99,6 @@ public class GeneralUtils {
     /**
      * Creates {@link java.util.Calendar} instance from an ISO 8601 formatted
      * string.
-     *
      * @param dateTime An ISO 8601 formatted string.
      * @return A {@link java.util.Calendar} instance representing the given date and time.
      * @throws ParseException the parse exception
@@ -131,7 +127,6 @@ public class GeneralUtils {
 
     /**
      * Sleeps the input amount of milliseconds.
-     *
      * @param milliseconds The number of milliseconds to sleep.
      */
     public static void sleep(long milliseconds) {
@@ -144,7 +139,6 @@ public class GeneralUtils {
 
     /**
      * Gets date.
-     *
      * @param format The date format parser.
      * @param date   The date string in a format matching {@code format}.
      * @return The {@link java.util.Date} represented by the input string.
@@ -160,7 +154,6 @@ public class GeneralUtils {
 
     /**
      * Gets full seconds elapsed time millis.
-     *
      * @param start The start time. (Milliseconds)
      * @param end   The end time. (Milliseconds).
      * @return The elapsed time between the start and end times, rounded up to a full second, in milliseconds.
@@ -171,7 +164,6 @@ public class GeneralUtils {
 
     /**
      * Creates a {@link String} from a file specified by {@code resource}.
-     *
      * @param resource The resource path.
      * @return The resource's text.
      * @throws EyesException If there was a problem reading the resource.
@@ -209,7 +201,6 @@ public class GeneralUtils {
 
     /**
      * Log exception stack trace.
-     *
      * @param logger the logger
      * @param ex     the ex
      */
@@ -229,7 +220,6 @@ public class GeneralUtils {
 
     /**
      * Gets default server url.
-     *
      * @return the default server url
      */
     public static URI getDefaultServerUrl() {
@@ -242,7 +232,6 @@ public class GeneralUtils {
 
     /**
      * Get gzip byte array output stream byte [ ].
-     *
      * @param domJson JSON as string to be gzipped
      * @return byte[] of the gzipped string
      */
@@ -261,7 +250,6 @@ public class GeneralUtils {
 
     /**
      * Get un gzip byte array output stream byte [ ].
-     *
      * @param gZippedString byte array gzipped encoded
      * @return byte[] of the ungzipped byte array
      * @throws IOException the io exception
@@ -285,23 +273,24 @@ public class GeneralUtils {
 
     /**
      * Parse json to object t.
-     *
      * @param <T>                the type parameter
      * @param executeScripString the execute scrip string
      * @return the t
      * @throws IOException the io exception
      */
-    public static <T> T parseJsonToObject(String executeScripString) throws IOException {
-        T executeScriptMap;
+    public static <T> T parseJsonToObject(String executeScripString, Class<T> tClass) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        executeScriptMap = mapper.readValue(executeScripString, new TypeReference<T>() {
-        });
+        T executeScriptMap;
+        if (tClass != null) {
+            executeScriptMap = mapper.readValue(executeScripString, tClass);
+        } else{
+            executeScriptMap = mapper.readValue(executeScripString, new TypeReference<T>(){});
+        }
         return executeScriptMap;
     }
 
     /**
      * Gets sha 256 hash.
-     *
      * @param content the content
      * @return the sha 256 hash
      */
@@ -312,12 +301,11 @@ public class GeneralUtils {
 
     /**
      * Gets sha 256 hash.
-     *
      * @param content the content
      * @return the sha 256 hash
      */
     public static String getSha256hash(byte[] content) {
-        if(content == null) return null;
+        if (content == null) return null;
         byte[] buffer = new byte[8192];
         int count;
         MessageDigest digest;

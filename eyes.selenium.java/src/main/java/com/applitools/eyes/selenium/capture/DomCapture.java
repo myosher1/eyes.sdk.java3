@@ -33,12 +33,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class DomCapture {
-    private final String SEPARATOR = "separator";
-    private final String CSS_START_TOKEN = "cssStartToken";
-    private final String CSS_END_TOKEN = "cssEndToken";
-    private final String IFRAME_START_TOKEN = "iframeStartToken";
-    private final String IFRAME_END_TOKEN = "iframeEndToken";
-
     private static String CAPTURE_FRAME_SCRIPT;
 
     private final Phaser cssPhaser = new Phaser(); // Phaser for syncing all callbacks on a single Frame
@@ -59,9 +53,6 @@ public class DomCapture {
     private String cssStartToken;
     private String cssEndToken;
     private Map<String, String> cssData = Collections.synchronizedMap(new HashMap<String, String>());
-    private String separator;
-    private String frameEndToken;
-    private String frameStartToken;
     private boolean shouldWaitForPhaser = false;
 
     public DomCapture(SeleniumEyes eyes) {
@@ -114,13 +105,15 @@ public class DomCapture {
 
         String scripts = "var callback = arguments[arguments.length - 1]; return (" + CAPTURE_FRAME_SCRIPT + ")().then(callback, function(err) {callback('__ERROR__:' + (err.stack || err.toString()))})";
 
-        String executeScripString = (String) ((JavascriptExecutor) driver).executeAsyncScript(scripts);
+        String executeScripString = (String) driver.executeAsyncScript(scripts);
 
         List<String> missingCssList = new ArrayList<>();
         List<String> missingFramesList = new ArrayList<>();
         List<String> data = new ArrayList<>();
 
-        parseScriptResult(executeScripString, missingCssList, missingFramesList, data);
+        Separators separators = parseScriptResult(executeScripString, missingCssList, missingFramesList, data);
+        cssStartToken = separators.cssStartToken;
+        cssEndToken = separators.cssEndToken;
 
         fetchCssFiles(missingCssList);
 
@@ -130,8 +123,10 @@ public class DomCapture {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        String inlaidString = EfficientStringReplace.efficientStringReplace(frameStartToken, frameEndToken, data.get(0), framesData);
 
+        //noinspection UnnecessaryLocalVariable
+        String inlaidString = EfficientStringReplace.efficientStringReplace(
+                separators.iframeStartToken, separators.iframeEndToken, data.get(0), framesData);
         return inlaidString;
     }
 
@@ -142,7 +137,7 @@ public class DomCapture {
         FrameChain fc = driver.getFrameChain().clone();
         for (String missingFrameLine : missingFramesList) {
             logger.verbose("Switching to frame line :" + missingFrameLine);
-            String originLocation  = (String) driver.executeScript("return document.location.href");
+            String originLocation = (String) driver.executeScript("return document.location.href");
             try {
                 String[] missingFrameXpaths = missingFrameLine.split(",");
                 for (String missingFrameXpath : missingFrameXpaths) {
@@ -151,8 +146,8 @@ public class DomCapture {
                     logger.verbose("Switched to frame(" + missingFrameXpath + ") with src(" + frame.getAttribute("src") + ")");
                     switchTo.frame(frame);
                 }
-                String locationAfterSwitch  = (String) driver.executeScript("return document.location.href");
-                if(locationAfterSwitch.equals(originLocation)){
+                String locationAfterSwitch = (String) driver.executeScript("return document.location.href");
+                if (locationAfterSwitch.equals(originLocation)) {
                     logger.verbose("Switching to frame failed");
                     framesData.put(missingFrameLine, "");
                     continue;
@@ -202,60 +197,46 @@ public class DomCapture {
         }
     }
 
-    private void parseScriptResult(String executeScripString, final List<String> missingCssList, final List<String> missingFramesList, final List<String> data) {
-
-        List<List<String>> blocks = new ArrayList<>();
-        blocks.add(missingCssList);
-        blocks.add(missingFramesList);
-        blocks.add(data);
-
-        int index = 0;
-        final Map<String, Object> separatorsMap;
-        String[] splited = new String[0];
+    private Separators parseScriptResult(String scriptResult, List<String> missingCssList, List<String> missingFramesList, List<String> data) {
+        String[] lines = scriptResult.split("\\r?\\n");
+        Separators separators = null;
         try {
+            separators = GeneralUtils.parseJsonToObject(lines[0], Separators.class);
 
-            //Get first line (first line is a JSON)
-            separatorsMap = GeneralUtils.parseJsonToObject(splitLines(executeScripString)[0]);
-
-            cssStartToken = (String) separatorsMap.get(CSS_START_TOKEN);
-            cssEndToken = (String) separatorsMap.get(CSS_END_TOKEN);
-            frameEndToken = (String) separatorsMap.get(IFRAME_END_TOKEN);
-            frameStartToken = (String) separatorsMap.get(IFRAME_START_TOKEN);
-            separator = (String) separatorsMap.get(SEPARATOR);
-
-            //Remove first line(first line is the JSON)
-            executeScripString = executeScripString.substring(executeScripString.indexOf('\n') + 1);
-            splited = executeScripString.split(separator);
-
+            ArrayList<List<String>> blocks = new ArrayList<List<String>>();
+            blocks.add(missingCssList);
+            blocks.add(missingFramesList);
+            blocks.add(data);
+            int blockIndex = 0;
+            int lineIndex = 1;
+            do {
+                String str = lines[lineIndex++];
+                if (separators.separator.equals(str)) {
+                    blockIndex++;
+                } else {
+                    blocks.get(blockIndex).add(str);
+                }
+            } while (lineIndex < lines.length);
+            logger.verbose("missing css count: " + missingCssList.size());
+            logger.verbose("missing frames count: " + missingFramesList.size());
         } catch (IOException e) {
-            GeneralUtils.logExceptionStackTrace(logger, e);
-
+            e.printStackTrace();
         }
-
-        removeFirstCharBR(splited);
-
-        for (int i = 0; i < splited.length; i++) {
-            String block = splited[i];
-            List<String> linesList = Arrays.asList(splitLines(block));
-            for (String str : linesList) {
-                if (!str.isEmpty()) blocks.get(i).add(str);
-            }
-        }
-
         shouldWaitForPhaser |= !missingCssList.isEmpty();
+        return separators;
     }
 
-    private void removeFirstCharBR(String[] splited) {
-        for (int i = 0; i < splited.length; i++) {
-            String s = splited[i];
+    private void removeFirstCharBR(String[] split) {
+        for (int i = 0; i < split.length; i++) {
+            String s = split[i];
             if (s.startsWith("\n")) {
-                splited[i] = s.replaceFirst("\n", "");
+                split[i] = s.replaceFirst("\n", "");
             }
         }
     }
 
     private String[] splitLines(String block) {
-        return block.split(System.getProperty("line.separator"));
+        return block.split("\\r?\\n");
     }
 
     class CssTreeNode {

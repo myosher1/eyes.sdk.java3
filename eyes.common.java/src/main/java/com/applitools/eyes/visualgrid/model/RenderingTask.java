@@ -103,7 +103,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
             logger.verbose("step 1");
 
             //Parse to Map
-            result = GeneralUtils.parseJsonToObject(scriptResult);
+            result = GeneralUtils.parseJsonToObject(scriptResult, null);
             logger.verbose("step 2");
             //Build RenderRequests
             RenderRequest[] requests = prepareDataForRG(result);
