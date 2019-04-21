@@ -437,7 +437,9 @@ public class VisualGridRunner extends EyesRunner {
     }
 
     public synchronized void check(ICheckSettings settings, IDebugResourceWriter debugResourceWriter, String script,
-                                   IEyesConnector connector, List<VisualGridTask> visualGridTaskList, List<VisualGridTask> openVisualGridTasks, ICheckSettings checkSettings, final RenderListener listener, List<VisualGridSelector[]> selectors, boolean forceFullPageScreenshot) {
+                                   IEyesConnector connector, List<VisualGridTask> visualGridTaskList,
+                                   List<VisualGridTask> openVisualGridTasks, final RenderListener listener,
+                                   List<VisualGridSelector[]> selectors, boolean forceFullPageScreenshot) {
 
         if (debugResourceWriter == null) {
             debugResourceWriter = this.debugResourceWriter;

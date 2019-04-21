@@ -533,9 +533,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         List<VisualGridSelector> regionSelectorsList = new ArrayList<>();
 
         for (VisualGridSelector[] regionSelector : this.regionSelectors) {
-            for (VisualGridSelector visualGridSelector : regionSelector) {
-                regionSelectorsList.add(visualGridSelector);
-            }
+            regionSelectorsList.addAll(Arrays.asList(regionSelector));
         }
 
         for (VisualGridTask visualGridTask : this.visualGridTaskList) {
@@ -552,7 +550,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                     sizeMode, rcInternal.getRegion(), rcInternal.GetTargetSelector(), browserInfo.getEmulationInfo());
 
             RenderRequest request = new RenderRequest(this.renderingInfo.getResultsUrl(), url, dom,
-                    resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(), rcInternal.getScriptHooks(), regionSelectorsList, rcInternal.isSendDom(), visualGridTask);
+                    resourceMapping, renderInfo, browserInfo.getPlatform(), browserInfo.getBrowserType(),
+                    rcInternal.getScriptHooks(), regionSelectorsList, rcInternal.isSendDom(), visualGridTask);
 
             allRequestsForRG.add(request);
         }

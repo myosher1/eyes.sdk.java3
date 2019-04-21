@@ -1958,11 +1958,16 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return isSendDom flag
      */
     public boolean isSendDom() {
-        if (!isVisualGridEyes) {
-            return this.seleniumEyes.isSendDom();
-        }
+        return this.configuration.isSendDom();
+    }
 
-        return true;
+    /**
+     * Sets send dom.
+     *
+     * @param isSendDom should send dom flag
+     */
+    public void setSendDom(boolean isSendDom) {
+        this.configuration.setSendDom(isSendDom);
     }
 
     /**
@@ -1973,17 +1978,6 @@ public class Eyes implements ISeleniumConfigurationProvider {
     public void setOnDomCapture(IDomCaptureListener listener) {
         if (!isVisualGridEyes) {
             this.seleniumEyes.setOnDomCapture(listener);
-        }
-    }
-
-    /**
-     * Sets send dom.
-     *
-     * @param isSendDom should send dom flag
-     */
-    public void setSendDom(boolean isSendDom) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.setSendDom(isSendDom);
         }
     }
 

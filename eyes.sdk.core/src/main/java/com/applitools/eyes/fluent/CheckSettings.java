@@ -400,13 +400,8 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     }
 
     @Override
-    public boolean isSendDom() {
+    public Boolean isSendDom() {
         return false;
-    }
-
-    @Override
-    public void setSizeMode(String sizeMode) {
-
     }
 
     protected void updateTargetRegion(Region region) {

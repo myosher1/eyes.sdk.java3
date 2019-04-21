@@ -27,7 +27,7 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
 
     private VisualGridSelector selector;
     private Region region;
-    private boolean isSendDom;
+    private Boolean isSendDom;
 
     public SeleniumCheckSettings() {
     }
@@ -458,11 +458,11 @@ public class SeleniumCheckSettings extends CheckSettings implements ISeleniumChe
     }
 
     @Override
-    public boolean isSendDom() {
+    public Boolean isSendDom() {
         return isSendDom;
     }
 
-    public SeleniumCheckSettings sendDom(boolean sendDom) {
+    public SeleniumCheckSettings sendDom(Boolean sendDom) {
         SeleniumCheckSettings clone = this.clone();
         clone.isSendDom = sendDom;
         return clone;

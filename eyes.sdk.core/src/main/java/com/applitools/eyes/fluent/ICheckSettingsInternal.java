@@ -24,5 +24,4 @@ public interface ICheckSettingsInternal extends com.applitools.ICheckSettingsInt
     VisualGridSelector GetTargetSelector();
 
     ICheckSettings scriptHook(String hook);
-
 }

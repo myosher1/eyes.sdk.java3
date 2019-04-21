@@ -3,10 +3,10 @@ package com.applitools.eyes.selenium.rendering;
 import com.applitools.ICheckSettings;
 import com.applitools.ICheckSettingsInternal;
 import com.applitools.eyes.*;
-import com.applitools.eyes.selenium.*;
 import com.applitools.eyes.fluent.CheckSettings;
 import com.applitools.eyes.fluent.GetFloatingRegion;
 import com.applitools.eyes.fluent.GetRegion;
+import com.applitools.eyes.selenium.*;
 import com.applitools.eyes.selenium.fluent.*;
 import com.applitools.eyes.selenium.frames.Frame;
 import com.applitools.eyes.selenium.frames.FrameChain;
@@ -39,7 +39,7 @@ public class VisualGridEyes implements IRenderingEyes {
     private String serverUrl;
 
     private final VisualGridRunner renderingGridRunner;
-    private List<RunningTest> testList = Collections.synchronizedList(new ArrayList<RunningTest>());
+    private final List<RunningTest> testList = Collections.synchronizedList(new ArrayList<RunningTest>());
     private final List<RunningTest> testsInCloseProcess = Collections.synchronizedList(new ArrayList<RunningTest>());
     private AtomicBoolean isVGEyesIssuedOpenTasks = new AtomicBoolean(false);
     private IRenderingEyes.EyesListener listener;
@@ -231,7 +231,7 @@ public class VisualGridEyes implements IRenderingEyes {
         if (webDriver instanceof RemoteWebDriver) {
             this.webDriver = new EyesWebDriver(logger, null, (RemoteWebDriver) webDriver);
         }
-        String currentUrl = webDriver.getCurrentUrl();
+        @SuppressWarnings("UnnecessaryLocalVariable") String currentUrl = webDriver.getCurrentUrl();
         this.url = currentUrl;
     }
 
@@ -337,6 +337,7 @@ public class VisualGridEyes implements IRenderingEyes {
             List<VisualGridTask> visualGridTaskList = runningTest.getVisualGridTaskList();
 
             VisualGridTask visualGridTask;
+            //noinspection SynchronizationOnLocalVariableOrMethodParameter
             synchronized (visualGridTaskList) {
                 if (visualGridTaskList.isEmpty()) continue;
 
@@ -432,38 +433,29 @@ public class VisualGridEyes implements IRenderingEyes {
 
             List<VisualGridTask> visualGridTaskList = new ArrayList<>();
 
-            ICheckSettingsInternal settingsInternal = (ICheckSettingsInternal) checkSettings;
-
-            String sizeMode = settingsInternal.getSizeMode();
-
-            //First check config
-            if (sizeMode == null) {
-                if (this.getConfigGetter().getForceFullPageScreenshot()) {
-                    settingsInternal.setSizeMode("full-page");
-                }
-            }
+            ICheckSettingsInternal checkSettingsInternal = updateCheckSettings(checkSettings);
 
             String domCaptureScript = "var callback = arguments[arguments.length - 1]; return (" + PROCESS_RESOURCES + ")().then(JSON.stringify).then(callback, function(err) {callback(err.stack || err.toString())})";
 
-            logger.verbose("Dom extraction starting   (" + checkSettings.toString() + ")");
+            logger.verbose("Dom extraction starting   (" + checkSettingsInternal.toString() + ")");
             Object resultAsObject = this.webDriver.executeAsyncScript(domCaptureScript);
             String scriptResult = (String) resultAsObject;
 
-            logger.verbose("Dom extracted  (" + checkSettings.toString() + ")");
+            logger.verbose("Dom extracted  (" + checkSettingsInternal.toString() + ")");
 
-            List<VisualGridSelector[]> regionsXPaths = getRegionsXPaths(checkSettings);
+            List<VisualGridSelector[]> regionsXPaths = getRegionsXPaths(checkSettingsInternal);
 
             logger.verbose("regionXPaths : " + regionsXPaths);
 
             for (final RunningTest test : testList) {
-                VisualGridTask checkVisualGridTask = test.check(checkSettings, regionsXPaths);
+                VisualGridTask checkVisualGridTask = test.check((ICheckSettings) checkSettingsInternal, regionsXPaths);
                 visualGridTaskList.add(checkVisualGridTask);
             }
 
-            logger.verbose("added check tasks  (" + checkSettings.toString() + ")");
+            logger.verbose("added check tasks  (" + checkSettingsInternal.toString() + ")");
 
-            this.renderingGridRunner.check(checkSettings, debugResourceWriter, scriptResult,
-                    this.VGEyesConnector, visualGridTaskList, openVisualGridTasks, checkSettings,
+            this.renderingGridRunner.check((ICheckSettings) checkSettingsInternal, debugResourceWriter, scriptResult,
+                    this.VGEyesConnector, visualGridTaskList, openVisualGridTasks,
                     new VisualGridRunner.RenderListener() {
                         @Override
                         public void onRenderSuccess() {
@@ -486,13 +478,22 @@ public class VisualGridEyes implements IRenderingEyes {
         }
     }
 
+    private ICheckSettingsInternal updateCheckSettings(ICheckSettings checkSettings) {
+        SeleniumCheckSettings settingsInternal = ((SeleniumCheckSettings)checkSettings).clone();
+
+        if (settingsInternal.isSendDom() == null){
+            settingsInternal = settingsInternal.sendDom(this.getConfigGetter().isSendDom());
+        }
+        return settingsInternal;
+    }
+
     private void trySetTargetSelector(SeleniumCheckSettings checkSettings) {
-        WebElement element = ((ISeleniumCheckTarget) checkSettings).getTargetElement();
+        WebElement element = checkSettings.getTargetElement();
         FrameChain frameChain = webDriver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) webDriver.switchTo();
         switchToFrame(checkSettings);
         if (element == null) {
-            By targetSelector = ((ISeleniumCheckTarget) checkSettings).getTargetSelector();
+            By targetSelector = checkSettings.getTargetSelector();
             if (targetSelector != null) {
                 element = webDriver.findElement(targetSelector);
             }
@@ -505,6 +506,7 @@ public class VisualGridEyes implements IRenderingEyes {
         switchTo.frames(frameChain);
     }
 
+    @SuppressWarnings("UnusedReturnValue")
     private int switchToFrame(ISeleniumCheckTarget checkTarget) {
         if (checkTarget == null) {
             return 0;
@@ -605,7 +607,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
     @Override
     public String toString() {
-        return "SelenuimVGEyes - url: " + url;
+        return "SeleniumVGEyes - url: " + url;
     }
 
     public void setServerConnector(IServerConnector serverConnector) {
@@ -633,7 +635,9 @@ public class VisualGridEyes implements IRenderingEyes {
         return this.configProvider.set();
     }
 
+    @SuppressWarnings("WeakerAccess")
     public String getBaseAgentId() {
+        //noinspection SpellCheckingInspection
         return "eyes.selenium.visualgrid.java/3.151.1";
     }
 
@@ -654,14 +658,14 @@ public class VisualGridEyes implements IRenderingEyes {
         this.getConfigSetter().setBatch(batch);
     }
 
-    private List<VisualGridSelector[]> getRegionsXPaths(ICheckSettings checkSettings) {
+    private List<VisualGridSelector[]> getRegionsXPaths(ICheckSettingsInternal csInternal) {
         List<VisualGridSelector[]> result = new ArrayList<>();
-        ICheckSettingsInternal csInternal = (ICheckSettingsInternal) checkSettings;
         FrameChain frameChain = webDriver.getFrameChain().clone();
         EyesTargetLocator switchTo = (EyesTargetLocator) webDriver.switchTo();
         switchToFrame((ISeleniumCheckTarget) csInternal);
         List<WebElementRegion>[] elementLists = collectSeleniumRegions(csInternal);
         for (List<WebElementRegion> elementList : elementLists) {
+            //noinspection SpellCheckingInspection
             List<VisualGridSelector> xpaths = new ArrayList<>();
             for (WebElementRegion webElementRegion : elementList) {
                 if (webElementRegion.getElement() == null) continue;
@@ -702,6 +706,7 @@ public class VisualGridEyes implements IRenderingEyes {
         WebElementRegion target = new WebElementRegion(targetElement, "target");
         List<WebElementRegion> targetElementList = new ArrayList<>();
         targetElementList.add(target);
+        //noinspection UnnecessaryLocalVariable,unchecked
         List<WebElementRegion>[] lists = new List[]{ignoreElements, layoutElements, strictElements, contentElements, floatingElements, targetElementList};
         return lists;
     }

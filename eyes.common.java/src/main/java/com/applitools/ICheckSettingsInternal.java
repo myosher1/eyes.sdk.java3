@@ -21,9 +21,9 @@ public interface ICheckSettingsInternal {
 
     Region getRegion();
 
-    boolean isSendDom();
-
-    void setSizeMode(String sizeMode);
+    Boolean isSendDom();
 
     VisualGridSelector GetTargetSelector();
+
+    ICheckSettingsInternal clone();
 }
