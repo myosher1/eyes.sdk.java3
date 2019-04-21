@@ -138,7 +138,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      * @return The test results.
      */
     public TestResults close() {
-        return this.close(false);
+        return this.close(true);
     }
 
     /**
