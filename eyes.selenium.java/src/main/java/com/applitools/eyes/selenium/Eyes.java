@@ -97,6 +97,19 @@ public class Eyes implements ISeleniumConfigurationProvider {
     }
 
     /**
+     * Sets server url.
+     *
+     * @param serverUri the server URI
+     */
+    public void setServerUrl(URI serverUri) {
+        if (isVisualGridEyes) {
+            visualGridEyes.setServerUrl(serverUri.toString());
+        } else {
+            seleniumEyes.setServerUrl(serverUri.toString());
+        }
+    }
+
+    /**
      * Sets the proxy settings to be used by the rest client.
      *
      * @param proxySettings The proxy settings to be used by the rest client.
