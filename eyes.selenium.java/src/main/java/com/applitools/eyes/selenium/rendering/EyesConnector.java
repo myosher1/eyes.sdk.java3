@@ -24,10 +24,13 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     private RectangleSize deviceSize;
     private IConfigurationGetter configurationGetter;
 
-    public EyesConnector(ISeleniumConfigurationProvider configProvider, RenderBrowserInfo browserInfo, RateLimiter rateLimiter) {
+    public EyesConnector(ISeleniumConfigurationProvider configProvider, List<PropertyData> properties, RenderBrowserInfo browserInfo) {
         this.configProvider = configProvider;
         configurationGetter = configProvider.get();
         this.browserInfo = browserInfo;
+        for (PropertyData property : properties) {
+            this.addProperty(property);
+        }
         //this.setServerConnector(new ThrottlingServerConnector(this.serverConnector, rateLimiter));
     }
 

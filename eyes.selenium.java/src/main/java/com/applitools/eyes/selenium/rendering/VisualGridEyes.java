@@ -55,6 +55,7 @@ public class VisualGridEyes implements IRenderingEyes {
     private IServerConnector serverConnector = null;
     private ISeleniumConfigurationProvider configProvider;
     private RectangleSize viewportSize;
+    private final List<PropertyData> properties = new ArrayList<>();
 
     private static final String GET_ELEMENT_XPATH_JS =
             "var el = arguments[0];" +
@@ -195,7 +196,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
     private IEyesConnector createVGEyesConnector(RenderBrowserInfo browserInfo) {
         logger.verbose("creating VisualGridEyes server connector");
-        EyesConnector VGEyesConnector = new EyesConnector(configProvider, browserInfo, renderingGridRunner.getRateLimiter());
+        EyesConnector VGEyesConnector = new EyesConnector(this.configProvider, this.properties, browserInfo);
         if (browserInfo.getEmulationInfo() != null) {
             VGEyesConnector.setDevice(browserInfo.getEmulationInfo().getDeviceName());
         }
@@ -728,5 +729,22 @@ public class VisualGridEyes implements IRenderingEyes {
 
     public List<Future<TestResultContainer>> getAllCloseFutures() {
         return futures;
+    }
+
+    /**
+     * Adds a property to be sent to the server.
+     * @param name  The property name.
+     * @param value The property value.
+     */
+    public void addProperty(String name, String value) {
+        PropertyData pd = new PropertyData(name, value);
+        properties.add(pd);
+    }
+
+    /**
+     * Clears the list of custom properties.
+     */
+    public void clearProperties() {
+        properties.clear();
     }
 }

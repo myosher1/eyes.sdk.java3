@@ -582,6 +582,9 @@ public class Eyes implements ISeleniumConfigurationProvider {
         if (!isVisualGridEyes) {
             this.seleniumEyes.addProperty(name, value);
         }
+        else{
+            this.visualGridEyes.addProperty(name, value);
+        }
     }
 
     /**
@@ -590,6 +593,9 @@ public class Eyes implements ISeleniumConfigurationProvider {
     public void clearProperties() {
         if (!isVisualGridEyes) {
             this.seleniumEyes.clearProperties();
+        }
+        else{
+            this.visualGridEyes.clearProperties();
         }
     }
 

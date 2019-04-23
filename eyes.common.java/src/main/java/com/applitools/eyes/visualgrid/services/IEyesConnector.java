@@ -63,4 +63,8 @@ public interface IEyesConnector {
     void setDeviceSize(RectangleSize deviceSize);
 
     RunningSession getSession();
+
+    void addProperty(String name, String value);
+
+    void clearProperties();
 }

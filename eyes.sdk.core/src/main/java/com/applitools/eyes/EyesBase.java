@@ -381,6 +381,10 @@ public abstract class EyesBase {
         properties.add(pd);
     }
 
+    protected void addProperty(PropertyData propery) {
+        properties.add(propery);
+    }
+
     /**
      * Clears the list of custom properties.
      */
