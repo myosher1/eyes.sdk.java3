@@ -32,10 +32,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RenderingTask implements Callable<RenderStatusResults>, CompletableTask {
 
     private static final int MAX_FETCH_FAILS = 62;
-    private static final int MAX_ITERATIONS = 100;
     public static final String CDT = "x-applitools-html/cdt";
     public static final String FULLPAGE = "full-page";
     public static final String VIEWPORT = "viewport";
+    public static final int HOUR = 60 * 60 * 1000;
 
     private final List<RenderTaskListener> listeners = new ArrayList<>();
     private IEyesConnector eyesConnector;
@@ -55,6 +55,8 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     private AtomicInteger framesLevel = new AtomicInteger();
     private RGridDom dom = null;
     private boolean forceFullPageScreenshot;
+    private Timer timer = new Timer("VG_StopWatch", true);
+    private AtomicBoolean isTimeElapsed = new AtomicBoolean(false);
 
     private boolean isTaskStarted = false;
     private boolean isTaskCompleted = false;
@@ -83,7 +85,6 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         this.regionSelectors = regionSelectors;
         this.forceFullPageScreenshot = forceFullPageScreenshot;
         this.listeners.add(listener);
-
         String renderingGridForcePut = System.getenv("APPLITOOLS_RENDERING_GRID_FORCE_PUT");
         this.isForcePutNeeded = new AtomicBoolean(renderingGridForcePut != null && renderingGridForcePut.equalsIgnoreCase("true"));
     }
@@ -818,15 +819,13 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
         logger.verbose("enter");
         List<String> ids = getRenderIds(runningRenders.keySet());
         logger.verbose("render ids : " + ids);
-        int numOfIterations = 0;
         List<RenderStatusResults> renderStatusResultsList = null;
-        boolean isMaxIterationNotReached = true;
+        timer.schedule(new TimeoutTask(), HOUR);
         do {
             try {
                 renderStatusResultsList = this.eyesConnector.renderStatusById(ids.toArray(new String[0]));
             } catch (Exception e) {
                 GeneralUtils.logExceptionStackTrace(logger, e);
-                numOfIterations++;
                 continue;
             }
             if (renderStatusResultsList == null || renderStatusResultsList.isEmpty() || renderStatusResultsList.get(0) == null) {
@@ -835,7 +834,6 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 } catch (InterruptedException e) {
                     GeneralUtils.logExceptionStackTrace(logger, e);
                 }
-                numOfIterations++;
                 continue;
             }
 
@@ -849,15 +847,7 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
                 }
             }
 
-            numOfIterations++;
-
-            isMaxIterationNotReached = numOfIterations < MAX_ITERATIONS;
-
-            if (!isMaxIterationNotReached) {
-                logger.verbose("Max iteration reached for url - " + this.dom.getUrl());
-            }
-
-        } while (!ids.isEmpty() && numOfIterations < MAX_ITERATIONS);
+        } while (!ids.isEmpty() && !isTimeElapsed.get());
 
         if (!ids.isEmpty()) {
             logger.verbose("Render ids that didn't complete in time : ");
@@ -944,5 +934,12 @@ public class RenderingTask implements Callable<RenderStatusResults>, Completable
     }
 
 
+    private class TimeoutTask extends TimerTask {
+        @Override
+        public void run() {
+            logger.verbose("VG is Timed out!");
+            isTimeElapsed.set(true);
+        }
+    }
 }
 
