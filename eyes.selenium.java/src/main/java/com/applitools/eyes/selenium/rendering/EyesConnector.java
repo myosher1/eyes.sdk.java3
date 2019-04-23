@@ -28,8 +28,10 @@ class EyesConnector extends EyesBase implements IEyesConnector {
         this.configProvider = configProvider;
         configurationGetter = configProvider.get();
         this.browserInfo = browserInfo;
-        for (PropertyData property : properties) {
-            this.addProperty(property);
+        if (properties != null) {
+            for (PropertyData property : properties) {
+                this.addProperty(property);
+            }
         }
         //this.setServerConnector(new ThrottlingServerConnector(this.serverConnector, rateLimiter));
     }
