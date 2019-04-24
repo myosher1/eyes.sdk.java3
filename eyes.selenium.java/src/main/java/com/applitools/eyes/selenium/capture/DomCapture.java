@@ -226,19 +226,6 @@ public class DomCapture {
         return separators;
     }
 
-    private void removeFirstCharBR(String[] split) {
-        for (int i = 0; i < split.length; i++) {
-            String s = split[i];
-            if (s.startsWith("\n")) {
-                split[i] = s.replaceFirst("\n", "");
-            }
-        }
-    }
-
-    private String[] splitLines(String block) {
-        return block.split("\\r?\\n");
-    }
-
     class CssTreeNode {
         URL url;
         String css = "";
@@ -250,10 +237,6 @@ public class DomCapture {
 
         public CssTreeNode(URL url) {
             this.url = url;
-        }
-
-        public void setDecedents(List<CssTreeNode> decedents) {
-            this.decedents = decedents;
         }
 
         String calcCss() {
