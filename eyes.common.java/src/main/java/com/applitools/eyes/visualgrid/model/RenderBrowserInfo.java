@@ -77,10 +77,6 @@ public class RenderBrowserInfo {
         return "chrome";
     }
 
-    public void setBrowserType(BrowserType browserType) {
-        this.browserType = browserType;
-    }
-
     public String getPlatform() {
         if (browserType != null) {
             switch (this.browserType) {

@@ -37,7 +37,7 @@ public class Configuration extends com.applitools.eyes.config.Configuration impl
             browsersInfo.add(new RenderBrowserInfo(viewportSize.getWidth(), viewportSize.getHeight(), BrowserType.CHROME, other.getBaselineEnvName()));
             this.browsersInfo = browsersInfo;
         } else {
-            this.browsersInfo = other.getBrowsersInfo();
+            this.browsersInfo.addAll(other.getBrowsersInfo());
         }
     }
 
