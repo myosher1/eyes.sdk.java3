@@ -116,7 +116,7 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
 
                 case CLOSE:
                     logger.verbose("VisualGridTask.run close task");
-                    testResults = eyesConnector.close(this.isThrowException);
+                    testResults = eyesConnector.close(false);
                     logger.verbose("Eyes Close Done.");
                     break;
 
