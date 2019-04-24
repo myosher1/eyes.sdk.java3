@@ -24,7 +24,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -501,7 +504,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public TestResults close(boolean shouldThrowException) {
         if (isVisualGridEyes) {
-            List<Future<TestResultContainer>> close = visualGridEyes.close();
+            Collection<Future<TestResultContainer>> close = visualGridEyes.close();
             if (close != null && !close.isEmpty()) {
                 TestResultContainer errorResult = null;
                 TestResultContainer firstResult = null;
@@ -2204,5 +2207,12 @@ public class Eyes implements ISeleniumConfigurationProvider {
         }
         this.configuration = new Configuration(configuration);
 
+    }
+
+    public Collection<Future<TestResultContainer>> closeAsync(boolean throwException) {
+        if(isVisualGridEyes){
+            return visualGridEyes.closeAsync(throwException);
+        }
+        return new ArrayList<>();
     }
 }

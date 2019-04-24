@@ -391,10 +391,10 @@ public class VisualGridRunner extends EyesRunner {
 
     public TestResultSummary getAllTestResults(boolean shouldThrowException) {
         logger.verbose("enter");
-        Map<IRenderingEyes, List<Future<TestResultContainer>>> allFutures = new HashMap<>();
+        Map<IRenderingEyes, Collection<Future<TestResultContainer>>> allFutures = new HashMap<>();
         for (IRenderingEyes eyes : allEyes) {
-            List<Future<TestResultContainer>> futureList = eyes.close();
-            List<Future<TestResultContainer>> futures = allFutures.get(eyes);
+            Collection<Future<TestResultContainer>> futureList = eyes.close();
+            Collection<Future<TestResultContainer>> futures = allFutures.get(eyes);
             if (futures != null && !futures.isEmpty()) {
                 futureList.addAll(futures);
             }
@@ -404,9 +404,9 @@ public class VisualGridRunner extends EyesRunner {
         notifyAllServices();
         List<TestResultContainer> allResults = new ArrayList<>();
         logger.verbose("trying to call future.get on " + allFutures.size() + " future lists.");
-        for (Map.Entry<IRenderingEyes, List<Future<TestResultContainer>>> entry : allFutures.entrySet()) {
+        for (Map.Entry<IRenderingEyes, Collection<Future<TestResultContainer>>> entry : allFutures.entrySet()) {
 
-            List<Future<TestResultContainer>> value = entry.getValue();
+            Collection<Future<TestResultContainer>> value = entry.getValue();
             IRenderingEyes key = entry.getKey();
             logger.verbose("trying to call future.get on " + value.size() + " futures of " + key);
             for (Future<TestResultContainer> future : value) {

@@ -182,7 +182,8 @@ public class RunningTest {
             logger.verbose("tasks in visualGridTaskList: " + visualGridTaskList.size());
         }
         logger.verbose("releasing visualGridTaskList");
-        return this.taskToFutureMapping.get(visualGridTask);
+        FutureTask<TestResultContainer> testResultContainerFutureTask = this.taskToFutureMapping.get(visualGridTask);
+        return testResultContainerFutureTask;
     }
 
     public VisualGridTask check(ICheckSettings checkSettings, List<VisualGridSelector[]> regionSelectors) {

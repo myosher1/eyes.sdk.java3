@@ -3,6 +3,7 @@ package com.applitools.eyes.visualgrid.services;
 import com.applitools.eyes.Logger;
 import com.applitools.eyes.visualgrid.model.TestResultContainer;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -18,7 +19,7 @@ public interface IRenderingEyes {
 
     ScoreTask getBestScoreTaskForOpen();
 
-    List<Future<TestResultContainer>> close();
+    Collection<Future<TestResultContainer>> close();
 
     Logger getLogger();
 

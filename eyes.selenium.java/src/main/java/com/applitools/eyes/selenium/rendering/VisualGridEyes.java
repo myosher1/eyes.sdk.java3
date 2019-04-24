@@ -23,10 +23,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -50,7 +47,7 @@ public class VisualGridEyes implements IRenderingEyes {
     private IEyesConnector VGEyesConnector;
     private IDebugResourceWriter debugResourceWriter;
     private String url;
-    private List<Future<TestResultContainer>> futures = null;
+    private Set<Future<TestResultContainer>> closeFuturesSet = new HashSet<>();
     private Boolean isDisabled;
     private IServerConnector serverConnector = null;
     private ISeleniumConfigurationProvider configProvider;
@@ -250,7 +247,7 @@ public class VisualGridEyes implements IRenderingEyes {
         return null;
     }
 
-    public List<Future<TestResultContainer>> close() {
+    public Collection<Future<TestResultContainer>> close() {
         if (getIsDisabled()) return null;
         return closeAndReturnResults(false);
     }
@@ -287,44 +284,52 @@ public class VisualGridEyes implements IRenderingEyes {
         return str == null ? null : URI.create(str);
     }
 
-    private List<Future<TestResultContainer>> closeAndReturnResults(boolean throwException) {
-        if (getIsDisabled()) return new ArrayList<>();
-        if (this.futures == null) {
-            futures = new ArrayList<>();
+    private Collection<Future<TestResultContainer>> closeAndReturnResults(boolean throwException) {
+        if (getIsDisabled()) return new HashSet<>();
+        if (this.closeFuturesSet == null) {
+            closeFuturesSet = new HashSet<>();
         }
-        List<Future<TestResultContainer>> futureList;
         logger.verbose("enter " + getConfigGetter().getBatch());
-        futureList = new ArrayList<>();
-
         try {
-            synchronized (testList) {
-                for (RunningTest runningTest : testList) {
-                    logger.verbose("running test name: " + getConfigGetter().getTestName());
-                    logger.verbose("is current running test open: " + runningTest.isTestOpen());
-                    logger.verbose("is current running test ready to close: " + runningTest.isTestReadyToClose());
-                    logger.verbose("is current running test closed: " + runningTest.isTestClose());
-                    if (!runningTest.isTestClose()) {
-                        logger.verbose("closing current running test");
-                        FutureTask<TestResultContainer> closeFuture = runningTest.close(throwException);
-                        futureList.add(closeFuture);
-                        logger.verbose("adding closeFuture to futureList");
-                    }
-                }
-            }
-            futures.addAll(futureList);
+            Collection<Future<TestResultContainer>> futureList = closeAsync(throwException);
             this.renderingGridRunner.close(this);
             for (Future<TestResultContainer> future : futureList) {
                 TestResultContainer testResultContainer = future.get();
-                Throwable exception = testResultContainer.getException();
-                if(throwException){
-                    throw new Error(exception);
+                if (testResultContainer != null) {
+                    Throwable exception = testResultContainer.getException();
+                    if (throwException) {
+                        throw new Error(exception);
+                    }
                 }
 
             }
         } catch (Exception e) {
+              GeneralUtils.logExceptionStackTrace(logger, e);
+        }
+        return closeFuturesSet;
+    }
+
+    public Collection<Future<TestResultContainer>> closeAsync(boolean throwException) {
+        List<Future<TestResultContainer>> futureList = null;
+        try {
+            futureList = new ArrayList<>();
+            for (RunningTest runningTest : testList) {
+                logger.verbose("running test name: " + getConfigGetter().getTestName());
+                logger.verbose("is current running test open: " + runningTest.isTestOpen());
+                logger.verbose("is current running test ready to close: " + runningTest.isTestReadyToClose());
+                logger.verbose("is current running test closed: " + runningTest.isTestClose());
+                if (!runningTest.isTestClose()) {
+                    logger.verbose("closing current running test");
+                    FutureTask<TestResultContainer> closeFuture = runningTest.close(throwException);
+                    futureList.addAll(Collections.singleton(closeFuture));
+                    logger.verbose("adding closeFuture to futureList");
+                }
+            }
+            closeFuturesSet.addAll(futureList);
+        } catch (Throwable e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
         }
-        return futures;
+        return futureList;
     }
 
     @Override
@@ -396,7 +401,6 @@ public class VisualGridEyes implements IRenderingEyes {
     public void setListener(EyesListener listener) {
         this.listener = listener;
     }
-
 
 
     public void check(ICheckSettings... checkSettings) {
@@ -480,9 +484,9 @@ public class VisualGridEyes implements IRenderingEyes {
     }
 
     private ICheckSettingsInternal updateCheckSettings(ICheckSettings checkSettings) {
-        SeleniumCheckSettings settingsInternal = ((SeleniumCheckSettings)checkSettings).clone();
+        SeleniumCheckSettings settingsInternal = ((SeleniumCheckSettings) checkSettings).clone();
 
-        if (settingsInternal.isSendDom() == null){
+        if (settingsInternal.isSendDom() == null) {
             settingsInternal = settingsInternal.sendDom(this.getConfigGetter().isSendDom());
         }
         return settingsInternal;
@@ -727,12 +731,9 @@ public class VisualGridEyes implements IRenderingEyes {
         return elements;
     }
 
-    public List<Future<TestResultContainer>> getAllCloseFutures() {
-        return futures;
-    }
-
     /**
      * Adds a property to be sent to the server.
+     *
      * @param name  The property name.
      * @param value The property value.
      */
