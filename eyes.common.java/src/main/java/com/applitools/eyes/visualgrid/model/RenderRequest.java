@@ -16,6 +16,9 @@ public class  RenderRequest {
     @JsonIgnore
     private final VisualGridTask visualGridTask;
 
+    @JsonInclude
+    private String agentId = "java 3.149.2";
+
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String webhook;
 
@@ -148,6 +151,10 @@ public class  RenderRequest {
 
     public String getWebhook() {
         return webhook;
+    }
+
+    public String getAgentId() {
+        return agentId;
     }
 
     public String getRenderId() {
