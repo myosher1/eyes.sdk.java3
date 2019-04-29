@@ -2209,10 +2209,9 @@ public class Eyes implements ISeleniumConfigurationProvider {
 
     }
 
-    public Collection<Future<TestResultContainer>> closeAsync(boolean throwException) {
+    public void closeAsync() {
         if(isVisualGridEyes){
-            return visualGridEyes.closeAsync(throwException);
+            visualGridEyes.closeAsync();
         }
-        return new ArrayList<>();
     }
 }

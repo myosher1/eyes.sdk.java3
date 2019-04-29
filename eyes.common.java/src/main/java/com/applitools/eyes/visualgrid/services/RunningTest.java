@@ -145,7 +145,7 @@ public class RunningTest {
 
     public VisualGridTask open() {
         logger.verbose("adding Open visualGridTask...");
-        VisualGridTask visualGridTask = new VisualGridTask(new Configuration(configurationProvider.get()), null, eyes, VisualGridTask.TaskType.OPEN, taskListener, null, this, null, false);
+        VisualGridTask visualGridTask = new VisualGridTask(new Configuration(configurationProvider.get()), null, eyes, VisualGridTask.TaskType.OPEN, taskListener, null, this, null);
         FutureTask<TestResultContainer> futureTask = new FutureTask<>(visualGridTask);
         this.taskToFutureMapping.put(visualGridTask, futureTask);
         logger.verbose("locking visualGridTaskList");
@@ -158,7 +158,7 @@ public class RunningTest {
         return visualGridTask;
     }
 
-    public FutureTask<TestResultContainer> close(boolean throwException) {
+    public FutureTask<TestResultContainer> close() {
         VisualGridTask lastVisualGridTask;
         if (!this.visualGridTaskList.isEmpty()) {
             lastVisualGridTask = this.visualGridTaskList.get(visualGridTaskList.size() - 1);
@@ -170,7 +170,7 @@ public class RunningTest {
         }
 
         logger.verbose("adding close visualGridTask...");
-        VisualGridTask visualGridTask = new VisualGridTask(new Configuration(configurationProvider.get()), null, eyes, VisualGridTask.TaskType.CLOSE, taskListener, null, this, null, throwException);
+        VisualGridTask visualGridTask = new VisualGridTask(new Configuration(configurationProvider.get()), null, eyes, VisualGridTask.TaskType.CLOSE, taskListener, null, this, null);
         FutureTask<TestResultContainer> futureTask = new FutureTask<>(visualGridTask);
         closeTask = visualGridTask;
         isCloseTaskIssued.set(true);
@@ -188,7 +188,7 @@ public class RunningTest {
 
     public VisualGridTask check(ICheckSettings checkSettings, List<VisualGridSelector[]> regionSelectors) {
         logger.verbose("adding check visualGridTask...");
-        VisualGridTask visualGridTask = new VisualGridTask(new Configuration(configurationProvider.get()), null, eyes, VisualGridTask.TaskType.CHECK, taskListener, checkSettings, this, regionSelectors, false);
+        VisualGridTask visualGridTask = new VisualGridTask(new Configuration(configurationProvider.get()), null, eyes, VisualGridTask.TaskType.CHECK, taskListener, checkSettings, this, regionSelectors);
         logger.verbose("locking visualGridTaskList");
         synchronized (visualGridTaskList) {
             this.visualGridTaskList.add(visualGridTask);

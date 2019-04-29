@@ -17,7 +17,6 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
     private final Logger logger;
 
     private boolean isSent;
-    private boolean isThrowException;
 
     public enum TaskType {OPEN, CHECK, CLOSE, ABORT}
 
@@ -48,7 +47,7 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
     }
 
     public VisualGridTask(IConfigurationGetter seleniumConfigurationProvider, TestResults testResults, IEyesConnector eyesConnector, TaskType type, TaskListener runningTestListener,
-                          ICheckSettings checkSettings, RunningTest runningTest, List<VisualGridSelector[]> regionSelectors, boolean throwException) {
+                          ICheckSettings checkSettings, RunningTest runningTest, List<VisualGridSelector[]> regionSelectors) {
         this.configurationGetter = seleniumConfigurationProvider;
         this.testResults = testResults;
         this.eyesConnector = eyesConnector;
@@ -58,7 +57,6 @@ public class VisualGridTask implements Callable<TestResultContainer>, Completabl
         this.logger = runningTest.getLogger();
         this.checkSettings = checkSettings;
         this.runningTest = runningTest;
-        this.isThrowException = throwException;
     }
 
     public RenderBrowserInfo getBrowserInfo() {

@@ -249,7 +249,7 @@ public class VisualGridEyes implements IRenderingEyes {
 
     public Collection<Future<TestResultContainer>> close() {
         if (getIsDisabled()) return null;
-        return closeAndReturnResults(false);
+        return closeAndReturnResults(true);
     }
 
     public void abortIfNotClosed() {
@@ -291,7 +291,7 @@ public class VisualGridEyes implements IRenderingEyes {
         }
         logger.verbose("enter " + getConfigGetter().getBatch());
         try {
-            Collection<Future<TestResultContainer>> futureList = closeAsync(throwException);
+            Collection<Future<TestResultContainer>> futureList = closeAsync();
             this.renderingGridRunner.close(this);
             for (Future<TestResultContainer> future : futureList) {
                 TestResultContainer testResultContainer = future.get();
@@ -309,7 +309,7 @@ public class VisualGridEyes implements IRenderingEyes {
         return closeFuturesSet;
     }
 
-    public Collection<Future<TestResultContainer>> closeAsync(boolean throwException) {
+    public Collection<Future<TestResultContainer>> closeAsync() {
         List<Future<TestResultContainer>> futureList = null;
         try {
             futureList = new ArrayList<>();
@@ -320,7 +320,7 @@ public class VisualGridEyes implements IRenderingEyes {
                 logger.verbose("is current running test closed: " + runningTest.isTestClose());
                 if (!runningTest.isTestClose()) {
                     logger.verbose("closing current running test");
-                    FutureTask<TestResultContainer> closeFuture = runningTest.close(throwException);
+                    FutureTask<TestResultContainer> closeFuture = runningTest.close();
                     futureList.addAll(Collections.singleton(closeFuture));
                     logger.verbose("adding closeFuture to futureList");
                 }
