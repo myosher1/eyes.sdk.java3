@@ -247,6 +247,11 @@ public class VisualGridEyes implements IRenderingEyes {
         return null;
     }
 
+    public Collection<Future<TestResultContainer>> close(boolean throwException) {
+        if (getIsDisabled()) return null;
+        return closeAndReturnResults(throwException);
+    }
+
     public Collection<Future<TestResultContainer>> close() {
         if (getIsDisabled()) return null;
         return closeAndReturnResults(true);
@@ -297,7 +302,7 @@ public class VisualGridEyes implements IRenderingEyes {
                 TestResultContainer testResultContainer = future.get();
                 if (testResultContainer != null) {
                     Throwable exception = testResultContainer.getException();
-                    if (throwException) {
+                    if (throwException && exception != null) {
                         throw new Error(exception);
                     }
                 }

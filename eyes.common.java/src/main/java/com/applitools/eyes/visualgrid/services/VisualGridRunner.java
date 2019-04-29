@@ -389,11 +389,11 @@ public class VisualGridRunner extends EyesRunner {
         return getAllTestResults(false);
     }
 
-    public TestResultSummary getAllTestResults(boolean shouldThrowException) {
+    public TestResultSummary getAllTestResults(boolean throwException) {
         logger.verbose("enter");
         Map<IRenderingEyes, Collection<Future<TestResultContainer>>> allFutures = new HashMap<>();
         for (IRenderingEyes eyes : allEyes) {
-            Collection<Future<TestResultContainer>> futureList = eyes.close();
+            Collection<Future<TestResultContainer>> futureList = eyes.close(throwException);
             Collection<Future<TestResultContainer>> futures = allFutures.get(eyes);
             if (futures != null && !futures.isEmpty()) {
                 futureList.addAll(futures);
@@ -416,7 +416,7 @@ public class VisualGridRunner extends EyesRunner {
                     obj = future.get(10, TimeUnit.MINUTES);
                 } catch (InterruptedException | ExecutionException | TimeoutException e) {
                     GeneralUtils.logExceptionStackTrace(logger, e);
-                    if (shouldThrowException) {
+                    if (throwException) {
                         throw new Error(e);
                     }
                 }

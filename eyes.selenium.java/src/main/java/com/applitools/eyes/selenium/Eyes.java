@@ -504,7 +504,7 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public TestResults close(boolean shouldThrowException) {
         if (isVisualGridEyes) {
-            Collection<Future<TestResultContainer>> close = visualGridEyes.close();
+            Collection<Future<TestResultContainer>> close = visualGridEyes.close(shouldThrowException);
             if (close != null && !close.isEmpty()) {
                 TestResultContainer errorResult = null;
                 TestResultContainer firstResult = null;
