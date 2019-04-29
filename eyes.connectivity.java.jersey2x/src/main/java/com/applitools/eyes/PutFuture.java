@@ -79,19 +79,32 @@ public class PutFuture implements IPutFuture {
     }
 
     @Override
-    public Boolean get(long timeout, TimeUnit unit) throws
-            InterruptedException, ExecutionException, TimeoutException {
+    public Boolean get(long timeout, TimeUnit unit) {
+        if (this.putFuture == null) {
+            IPutFuture newFuture = serverConnector.renderPutResource(runningRender, resource, null);
+            this.putFuture = newFuture.getPutFuture();
+        }
         if (!this.isSentAlready) {
-            Object responseAsObject = this.putFuture.get(timeout, unit);
-            if(responseAsObject instanceof Response){
-                Response response = (Response) responseAsObject;
-                int status = response.getStatus();
-                if(status > 299 || status < 200){
-                    throw new ExecutionException(new Throwable("PUT future failed with status - "+status + " reason - "+response.getStatusInfo()));
+            while (retryCount != 0) {
+                try {
+                    this.putFuture.get(timeout, unit);
+                    break;
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    logger.verbose(e.getMessage() + " on hash: " + resource.getSha256());
+                    retryCount--;
+                    logger.verbose("Entering retry");
+                    try {
+                        Thread.sleep(300);
+                    } catch (InterruptedException e1) {
+                        GeneralUtils.logExceptionStackTrace(logger, e1);
+                    }
+                    IPutFuture newFuture = serverConnector.renderPutResource(runningRender, resource, null);
+                    logger.log("fired retry");
+                    this.putFuture = newFuture.getPutFuture();
                 }
-                this.isSentAlready = true;
             }
         }
+        this.isSentAlready = true;
         return true;
     }
 
