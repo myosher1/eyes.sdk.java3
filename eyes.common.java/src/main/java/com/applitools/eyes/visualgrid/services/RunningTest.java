@@ -168,6 +168,11 @@ public class RunningTest {
                 return taskToFutureMapping.get(lastVisualGridTask);
             }
         }
+        else{
+            if(closeTask != null){
+                return taskToFutureMapping.get(closeTask);
+            }
+        }
 
         logger.verbose("adding close visualGridTask...");
         VisualGridTask visualGridTask = new VisualGridTask(new Configuration(configurationProvider.get()), null, eyes, VisualGridTask.TaskType.CLOSE, taskListener, null, this, null);

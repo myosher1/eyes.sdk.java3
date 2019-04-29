@@ -386,7 +386,7 @@ public class VisualGridRunner extends EyesRunner {
 
 
     public TestResultSummary getAllTestResults() {
-        return getAllTestResults(false);
+        return getAllTestResults(true);
     }
 
     public TestResultSummary getAllTestResults(boolean throwException) {

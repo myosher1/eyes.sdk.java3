@@ -323,12 +323,10 @@ public class VisualGridEyes implements IRenderingEyes {
                 logger.verbose("is current running test open: " + runningTest.isTestOpen());
                 logger.verbose("is current running test ready to close: " + runningTest.isTestReadyToClose());
                 logger.verbose("is current running test closed: " + runningTest.isTestClose());
-                if (!runningTest.isTestClose()) {
-                    logger.verbose("closing current running test");
-                    FutureTask<TestResultContainer> closeFuture = runningTest.close();
-                    futureList.addAll(Collections.singleton(closeFuture));
-                    logger.verbose("adding closeFuture to futureList");
-                }
+                logger.verbose("closing current running test");
+                FutureTask<TestResultContainer> closeFuture = runningTest.close();
+                futureList.addAll(Collections.singleton(closeFuture));
+                logger.verbose("adding closeFuture to futureList");
             }
             closeFuturesSet.addAll(futureList);
         } catch (Throwable e) {
