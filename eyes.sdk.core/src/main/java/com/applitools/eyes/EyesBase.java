@@ -1,7 +1,6 @@
 package com.applitools.eyes;
 
 import com.applitools.ICheckSettings;
-import com.applitools.IDomCaptureListener;
 import com.applitools.eyes.config.IConfigurationGetter;
 import com.applitools.eyes.config.IConfigurationSetter;
 import com.applitools.eyes.visualgrid.model.RenderingInfo;
@@ -73,7 +72,6 @@ public abstract class EyesBase {
     private int validationId;
     private final SessionEventHandlers sessionEventHandlers = new SessionEventHandlers();
     protected DebugScreenshotsProvider debugScreenshotsProvider;
-    protected IDomCaptureListener domCaptureListener;
 
     public EyesBase() {
 
@@ -761,15 +759,26 @@ public abstract class EyesBase {
         return result;
     }
 
-    protected abstract String tryCaptureDom(ICheckSettingsInternal checkSettingsInternal);
+    protected abstract String tryCaptureDom();
 
     protected String tryCaptureAndPostDom(ICheckSettingsInternal checkSettingsInternal){
+        String domUrl = null;
         Boolean sendDom = checkSettingsInternal.isSendDom();
-        if((sendDom != null && sendDom) || getConfigGetter().isSendDom()) {
-            String dom = tryCaptureDom(checkSettingsInternal);
-            return tryPostDomSnapshot(dom);
+        if (sendDom != null || getConfigGetter().isSendDom())
+        {
+            try
+            {
+                String domJson = tryCaptureDom();
+                domUrl = tryPostDomSnapshot(domJson);
+                logger.verbose("domUrl: " +  domUrl);
+            }
+            catch (Exception ex)
+            {
+                logger.log("Error: " + ex);
+            }
         }
-        return null;
+
+        return domUrl;
     }
 
     protected ValidationInfo fireValidationWillStartEvent(String tag) {
@@ -1436,10 +1445,6 @@ public abstract class EyesBase {
 
     public boolean isSendDom() {
         return getConfigGetter().isSendDom();
-    }
-
-    public void setOnDomCapture(IDomCaptureListener listener) {
-        this.domCaptureListener = listener;
     }
 
     public IConfigurationSetter setSendDom(boolean isSendDom) {

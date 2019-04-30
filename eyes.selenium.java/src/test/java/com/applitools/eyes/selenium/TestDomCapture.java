@@ -1,7 +1,7 @@
 package com.applitools.eyes.selenium;
 
-import com.applitools.IDomCaptureListener;
 import com.applitools.eyes.BatchInfo;
+import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.StdoutLogHandler;
 import com.applitools.utils.GeneralUtils;
@@ -40,37 +40,18 @@ public final class TestDomCapture {
 
         // Navigate the browser to the "hello world!" web-site.
 //        driver.get("https://www.usatoday.com");
-        driver.get("https://cashproonline.bankofamerica.com/AuthenticationFrameworkWeb/cpo/login/public/loginMain.faces");
+        driver.get("http://applitools.com");
 //        driver.get("https://nikita-andreev.github.io/applitools/dom_capture.html?aaa");
 //        Thread.sleep(5000);
-
-        final CountDownLatch latch = new CountDownLatch(1);
-        eyes.setOnDomCapture(new IDomCaptureListener() {
-            @Override
-            public void onDomCaptureComplete(String dom) {
-                domJson = dom;
-                latch.countDown();
-            }
-        });
 
 //        WebElement element = driver.findElement(By.className("video-container"));
 //        eyes.checkElement(element, "Test DOM diffs");
 
         eyes.checkWindow();
 
-        latch.await();
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode targetJsonObj = mapper.readTree(domJson);
-
-        String sourceJsonAsString = GeneralUtils.readToEnd(TestDomCapture.class.getResourceAsStream("/dom_fullpage.json"));
-        JsonNode sourceJsonObj = mapper.readTree(sourceJsonAsString);
-
         driver.quit();
-        eyes.close(false);
+        eyes.close(true);
 
-        if(!sourceJsonObj.equals(targetJsonObj)){
-            throw new Exception("Dom capture json was not equal to target json");
-        }
 
     }
 }

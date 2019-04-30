@@ -38,7 +38,7 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
     }
 
     @Override
-    public String tryCaptureDom(ICheckSettingsInternal checkSettingsInternal) {
+    public String tryCaptureDom() {
         return null;
     }
 

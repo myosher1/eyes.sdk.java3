@@ -577,32 +577,26 @@ public class SeleniumEyes extends EyesBase {
     }
 
     @Override
-    public String tryCaptureDom(ICheckSettingsInternal checkSettingsInternal) {
+    public String tryCaptureDom() {
         String fullWindowDom = "";
         FrameChain fc = driver.getFrameChain().clone();
-        Boolean sendDom = checkSettingsInternal.isSendDom();
-        if((sendDom != null && sendDom) || getConfigGetter().isSendDom()) {
-            try {
-                Frame frame = fc.peek();
-                WebElement scrollRootElement = null;
-                if (frame != null) {
-                    scrollRootElement = frame.getScrollRootElement();
-                }
-                if (scrollRootElement == null) {
-                    scrollRootElement = driver.findElement(By.tagName("html"));
-                }
-                PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
-
-                DomCapture domCapture = new DomCapture(this);
-                fullWindowDom = domCapture.getFullWindowDom(positionProvider);
-                if (this.domCaptureListener != null) {
-                    this.domCaptureListener.onDomCaptureComplete(fullWindowDom);
-                }
-            } catch (Exception e) {
-                GeneralUtils.logExceptionStackTrace(logger, e);
-            } finally {
-                ((EyesTargetLocator) driver.switchTo()).frames(fc);
+        try {
+            Frame frame = fc.peek();
+            WebElement scrollRootElement = null;
+            if (frame != null) {
+                scrollRootElement = frame.getScrollRootElement();
             }
+            if (scrollRootElement == null) {
+                scrollRootElement = driver.findElement(By.tagName("html"));
+            }
+            PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
+
+            DomCapture domCapture = new DomCapture(this);
+            fullWindowDom = domCapture.getFullWindowDom(positionProvider);
+        } catch (Exception e) {
+            GeneralUtils.logExceptionStackTrace(logger, e);
+        } finally {
+            ((EyesTargetLocator) driver.switchTo()).frames(fc);
         }
         return fullWindowDom;
     }

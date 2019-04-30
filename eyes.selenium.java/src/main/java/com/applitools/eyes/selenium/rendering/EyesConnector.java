@@ -168,7 +168,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public String tryCaptureDom(ICheckSettingsInternal checkSettingsInternal) {
+    public String tryCaptureDom() {
         return null;
     }
 

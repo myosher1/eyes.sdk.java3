@@ -1,7 +1,6 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.ICheckSettings;
-import com.applitools.IDomCaptureListener;
 import com.applitools.eyes.*;
 import com.applitools.eyes.debug.DebugScreenshotsProvider;
 import com.applitools.eyes.events.ISessionEventHandler;
@@ -1990,17 +1989,6 @@ public class Eyes implements ISeleniumConfigurationProvider {
      */
     public void setSendDom(boolean isSendDom) {
         this.configuration.setSendDom(isSendDom);
-    }
-
-    /**
-     * for internal usage
-     *
-     * @param listener the listener
-     */
-    public void setOnDomCapture(IDomCaptureListener listener) {
-        if (!isVisualGridEyes) {
-            this.seleniumEyes.setOnDomCapture(listener);
-        }
     }
 
     /**

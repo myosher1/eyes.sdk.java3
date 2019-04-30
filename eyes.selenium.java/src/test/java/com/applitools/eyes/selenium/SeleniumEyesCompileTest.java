@@ -466,11 +466,6 @@ public class SeleniumEyesCompileTest {
     }
 
     @Test
-    public void testSetOnDomCapture() {
-        eyes.setOnDomCapture(null);
-    }
-
-    @Test
     public void testSetSendDom() {
         eyes.setSendDom(true);
     }
