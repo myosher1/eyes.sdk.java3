@@ -429,7 +429,7 @@ public class CheckSettings implements ICheckSettings, ICheckSettingsInternal {
     }
 
     @Override
-    public boolean isUseDom() {
+    public Boolean isUseDom() {
         return useDom;
     }
 

@@ -3,6 +3,7 @@ package com.applitools.eyes.diagnostics;
 import com.applitools.eyes.*;
 import com.applitools.eyes.capture.AppOutputProvider;
 import com.applitools.eyes.capture.AppOutputWithScreenshot;
+import com.applitools.eyes.fluent.CheckSettings;
 import com.applitools.eyes.positioning.RegionProvider;
 import com.applitools.utils.ArgumentGuard;
 import com.applitools.utils.BlockingInstanceContainer;
@@ -73,7 +74,7 @@ public class ResponseTimeAlgorithm {
                 null);
 
         return new MatchWindowDataWithScreenshot(updatedMwd,
-                currentMwdws.getScreenshot());
+                currentMwdws.getScreenshot((null)));
     }
 
     /**
@@ -279,7 +280,7 @@ public class ResponseTimeAlgorithm {
             );
             currentWindowDataWithScreenshot =
                     new MatchWindowDataWithScreenshot(currentWindowData,
-                            appOutputWithScreenshot.getScreenshot());
+                            appOutputWithScreenshot.getScreenshot(null));
 
             // Add the screenshot to the collection and pass it to the
             // matcher thread.

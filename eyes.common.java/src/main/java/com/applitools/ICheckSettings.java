@@ -157,7 +157,7 @@ public interface ICheckSettings {
      */
     ICheckSettings withName(String name);
 
-    boolean isUseDom();
+    Boolean isUseDom();
 
     ICheckSettings setUseDom(boolean useDom);
 

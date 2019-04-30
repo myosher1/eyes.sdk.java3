@@ -107,11 +107,6 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    public String tryCaptureDom() {
-        return null;
-    }
-
-    @Override
     protected RectangleSize getViewportSize() {
         return null;
     }
@@ -128,7 +123,7 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     }
 
     @Override
-    protected EyesScreenshot getScreenshot() {
+    protected EyesScreenshot getScreenshot(ICheckSettingsInternal checkSettingsInternal) {
         return null;
     }
 
@@ -170,6 +165,11 @@ class EyesConnector extends EyesBase implements IEyesConnector {
     @Override
     protected void closeLogger(){
         // do nothing.
+    }
+
+    @Override
+    public String tryCaptureDom(ICheckSettingsInternal checkSettingsInternal) {
+        return null;
     }
 
     @Override

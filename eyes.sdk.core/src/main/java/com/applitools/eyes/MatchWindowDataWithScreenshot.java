@@ -1,5 +1,7 @@
 package com.applitools.eyes;
 
+import com.applitools.eyes.fluent.ICheckSettingsInternal;
+
 /**
  * A container for a MatchWindowData along with the screenshot used for
  * creating it. (We specifically avoid inheritance so we don't have to deal
@@ -19,7 +21,7 @@ public class MatchWindowDataWithScreenshot {
         return matchWindowData;
     }
 
-    public EyesScreenshot getScreenshot() {
+    public EyesScreenshot getScreenshot(ICheckSettingsInternal checkSettingsInternal) {
         return screenshot;
     }
 }

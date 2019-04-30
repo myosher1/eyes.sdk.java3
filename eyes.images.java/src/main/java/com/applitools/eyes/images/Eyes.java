@@ -12,6 +12,7 @@ import com.applitools.eyes.events.ValidationInfo;
 import com.applitools.eyes.events.ValidationResult;
 import com.applitools.eyes.exceptions.TestFailedException;
 import com.applitools.eyes.fluent.CheckSettings;
+import com.applitools.eyes.fluent.ICheckSettingsInternal;
 import com.applitools.eyes.positioning.NullRegionProvider;
 import com.applitools.eyes.positioning.RegionProvider;
 import com.applitools.eyes.triggers.MouseAction;
@@ -37,7 +38,7 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
     }
 
     @Override
-    public String tryCaptureDom() {
+    public String tryCaptureDom(ICheckSettingsInternal checkSettingsInternal) {
         return null;
     }
 
@@ -346,7 +347,7 @@ public class Eyes extends EyesBase implements IConfigurationGetter, IConfigurati
      * @return The screenshot.
      */
     @Override
-    public EyesScreenshot getScreenshot() {
+    public EyesScreenshot getScreenshot(ICheckSettingsInternal checkSettingsInternal) {
         return screenshot;
     }
 

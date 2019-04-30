@@ -53,7 +53,7 @@ public class ResponseTimeMatchFinderTask implements Runnable {
             // No more model to handle
             return;
         }
-        lastScreenshot = currentMatchData.getScreenshot();
+        lastScreenshot = currentMatchData.getScreenshot(null);
         lastMatchAttemptTime = System.currentTimeMillis();
         matchResult = serverConnector.matchWindow(runningSession,
                 currentMatchData.getMatchWindowData());
@@ -83,7 +83,7 @@ public class ResponseTimeMatchFinderTask implements Runnable {
                 }
             }
 
-            lastScreenshot = currentMatchData.getScreenshot();
+            lastScreenshot = currentMatchData.getScreenshot(null);
             lastMatchAttemptTime = System.currentTimeMillis();
             matchResult = serverConnector.matchWindow(runningSession,
                     currentMatchData.getMatchWindowData());

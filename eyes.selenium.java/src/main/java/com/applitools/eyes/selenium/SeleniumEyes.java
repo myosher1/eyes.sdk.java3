@@ -479,7 +479,7 @@ public class SeleniumEyes extends EyesBase {
             Location location = subScreenshot.getLocationInScreenshot(Location.ZERO, CoordinatesType.SCREENSHOT_AS_IS);
             AppOutput appOutput = new AppOutput(name, ImageUtils.base64FromImage(subScreenshot.getImage()), null, null);
             AppOutputWithScreenshot appOutputWithScreenshot = new AppOutputWithScreenshot(appOutput, subScreenshot, location);
-            MatchResult matchResult = mwt.performMatch(new ArrayList<Trigger>(), appOutputWithScreenshot, name, false, checkSettingsInternal,ims, this);
+            MatchResult matchResult = mwt.performMatch(new ArrayList<Trigger>(), appOutputWithScreenshot, name, false, checkSettingsInternal, ims, this);
 
             logger.verbose("matchResult.asExcepted: " + matchResult.getAsExpected());
         }
@@ -577,29 +577,32 @@ public class SeleniumEyes extends EyesBase {
     }
 
     @Override
-    public String tryCaptureDom() {
-        FrameChain fc = driver.getFrameChain().clone();
+    public String tryCaptureDom(ICheckSettingsInternal checkSettingsInternal) {
         String fullWindowDom = "";
-        try {
-            Frame frame = fc.peek();
-            WebElement scrollRootElement = null;
-            if (frame != null) {
-                scrollRootElement = frame.getScrollRootElement();
-            }
-            if (scrollRootElement == null) {
-                scrollRootElement = driver.findElement(By.tagName("html"));
-            }
-            PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
+        FrameChain fc = driver.getFrameChain().clone();
+        Boolean sendDom = checkSettingsInternal.isSendDom();
+        if((sendDom != null && sendDom) || getConfigGetter().isSendDom()) {
+            try {
+                Frame frame = fc.peek();
+                WebElement scrollRootElement = null;
+                if (frame != null) {
+                    scrollRootElement = frame.getScrollRootElement();
+                }
+                if (scrollRootElement == null) {
+                    scrollRootElement = driver.findElement(By.tagName("html"));
+                }
+                PositionProvider positionProvider = new ScrollPositionProvider(logger, jsExecutor, scrollRootElement);
 
-            DomCapture domCapture = new DomCapture(this);
-            fullWindowDom = domCapture.getFullWindowDom(positionProvider);
-            if (this.domCaptureListener != null) {
-                this.domCaptureListener.onDomCaptureComplete(fullWindowDom);
+                DomCapture domCapture = new DomCapture(this);
+                fullWindowDom = domCapture.getFullWindowDom(positionProvider);
+                if (this.domCaptureListener != null) {
+                    this.domCaptureListener.onDomCaptureComplete(fullWindowDom);
+                }
+            } catch (Exception e) {
+                GeneralUtils.logExceptionStackTrace(logger, e);
+            } finally {
+                ((EyesTargetLocator) driver.switchTo()).frames(fc);
             }
-        } catch (Exception e) {
-            GeneralUtils.logExceptionStackTrace(logger, e);
-        } finally {
-            ((EyesTargetLocator) driver.switchTo()).frames(fc);
         }
         return fullWindowDom;
     }
@@ -1215,7 +1218,6 @@ public class SeleniumEyes extends EyesBase {
     }
 
 
-
     private MatchResult checkElement(String name, ICheckSettings checkSettings) {
         return this.checkElement(this.targetElement, name, checkSettings);
     }
@@ -1620,7 +1622,7 @@ public class SeleniumEyes extends EyesBase {
     }
 
     @Override
-    protected EyesScreenshot getScreenshot() {
+    protected EyesScreenshot getScreenshot(ICheckSettingsInternal checkSettingsInternal) {
 
         logger.verbose("enter()");
         ScaleProviderFactory scaleProviderFactory = updateScalingParams();
@@ -1747,7 +1749,7 @@ public class SeleniumEyes extends EyesBase {
             logger.verbose("Done!");
             return result;
         }
-
+        result.setDomUrl(tryCaptureAndPostDom(checkSettingsInternal));
         switchTo.frames(this.originalFC);
         if (positionProvider != null) {
             positionProvider.restoreState(originalPosition);

@@ -306,7 +306,7 @@ public class EyesWebDriverScreenshot extends EyesScreenshot {
 
         EyesWebDriverScreenshot result = new EyesWebDriverScreenshot(logger, driver, subScreenshotImage,
                 new Region(region.getLeft(), region.getTop(), subScreenshotImage.getWidth(), subScreenshotImage.getHeight()));
-
+        result.setDomUrl(this.domUrl);
         logger.verbose("Done!");
         return result;
     }
