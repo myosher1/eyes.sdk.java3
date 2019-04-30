@@ -1,21 +1,12 @@
 package com.applitools.eyes.selenium;
 
 import com.applitools.eyes.BatchInfo;
-import com.applitools.eyes.ProxySettings;
 import com.applitools.eyes.RectangleSize;
 import com.applitools.eyes.StdoutLogHandler;
-import com.applitools.utils.GeneralUtils;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
-import java.util.concurrent.CountDownLatch;
-
 public final class TestDomCapture {
-    private static String domJson;
     public static void main(String[] args) throws Exception {
 
         // Open a Chrome browser.
