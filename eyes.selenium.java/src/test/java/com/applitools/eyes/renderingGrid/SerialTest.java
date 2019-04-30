@@ -52,8 +52,7 @@ public class SerialTest {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            Collection<Future<TestResultContainer>> close = eyes.closeAsync(true);
-            Assert.assertNotNull(close);
+            eyes.closeAsync();
             logger.log("end of `try` block for url " + testedUrl);
         } catch (Exception e) {
             GeneralUtils.logExceptionStackTrace(logger, e);
