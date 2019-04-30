@@ -6,6 +6,7 @@ package com.applitools.eyes.capture;
 import com.applitools.eyes.AppOutput;
 import com.applitools.eyes.EyesScreenshot;
 import com.applitools.eyes.Location;
+import com.applitools.eyes.fluent.ICheckSettingsInternal;
 
 /**
  * A container for a AppOutput along with the screenshot used for creating it.
@@ -26,7 +27,7 @@ public class AppOutputWithScreenshot {
         return appOutput;
     }
 
-    public EyesScreenshot getScreenshot() {
+    public EyesScreenshot getScreenshot(ICheckSettingsInternal checkSettingsInternal) {
         return screenshot;
     }
 }

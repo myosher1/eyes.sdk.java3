@@ -7,6 +7,7 @@ import com.applitools.eyes.visualgrid.model.VisualGridSelector;
 import java.util.Map;
 
 public interface ICheckSettingsInternal {
+
     Region getTargetRegion();
 
     int getTimeout();
@@ -22,6 +23,8 @@ public interface ICheckSettingsInternal {
     Region getRegion();
 
     Boolean isSendDom();
+
+    Boolean isUseDom();
 
     VisualGridSelector GetTargetSelector();
 

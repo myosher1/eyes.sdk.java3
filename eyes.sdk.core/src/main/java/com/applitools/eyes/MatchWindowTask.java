@@ -100,7 +100,7 @@ public class MatchWindowTask {
                                     ImageMatchSettings imageMatchSettings,
                                     EyesBase eyes)
     {
-        EyesScreenshot screenshot = appOutput.getScreenshot();
+        EyesScreenshot screenshot = appOutput.getScreenshot(checkSettingsInternal);
 
         collectSimpleRegions(checkSettingsInternal, imageMatchSettings, eyes, screenshot);
         collectFloatingRegions(checkSettingsInternal, imageMatchSettings, eyes, screenshot);
@@ -136,7 +136,7 @@ public class MatchWindowTask {
                                     List<VisualGridSelector[]> regionSelectors,
                                     EyesBase eyes)
     {
-        EyesScreenshot screenshot = appOutput.getScreenshot();
+        EyesScreenshot screenshot = appOutput.getScreenshot(checkSettingsInternal);
         String agentSetupStr = (String) eyes.getAgentSetup();
 
         collectRegions(imageMatchSettings, regions, regionSelectors);
@@ -383,7 +383,7 @@ public class MatchWindowTask {
         if (checkSettingsInternal != null)
         {
             MatchLevel matchLevel = checkSettingsInternal.getMatchLevel() != null ? checkSettingsInternal.getMatchLevel() : eyes.getConfigGetter().getDefaultMatchSettings().getMatchLevel();
-            imageMatchSettings = new ImageMatchSettings(matchLevel, null, checkSettingsInternal.isSendDom());
+            imageMatchSettings = new ImageMatchSettings(matchLevel, null, checkSettingsInternal.isUseDom());
             imageMatchSettings.setIgnoreCaret(checkSettingsInternal.getIgnoreCaret()!= null ? checkSettingsInternal.getIgnoreCaret() : eyes.getConfigGetter().getIgnoreCaret());
             imageMatchSettings.setUseDom(checkSettingsInternal.isSendDom());
             imageMatchSettings.setEnablePatterns(checkSettingsInternal.isEnablePatterns());
@@ -451,7 +451,7 @@ public class MatchWindowTask {
     private EyesScreenshot tryTakeScreenshot(Trigger[] userInputs, Region region, String tag,
                                              boolean ignoreMismatch, ICheckSettingsInternal checkSettingsInternal) {
         AppOutputWithScreenshot appOutput = appOutputProvider.getAppOutput(region, lastScreenshot, checkSettingsInternal);
-        EyesScreenshot screenshot = appOutput.getScreenshot();
+        EyesScreenshot screenshot = appOutput.getScreenshot(checkSettingsInternal);
         ImageMatchSettings matchSettings = createImageMatchSettings(checkSettingsInternal, screenshot, eyes);
         matchResult = performMatch(Arrays.asList(userInputs), appOutput, tag, ignoreMismatch, checkSettingsInternal, matchSettings, eyes);
         return screenshot;

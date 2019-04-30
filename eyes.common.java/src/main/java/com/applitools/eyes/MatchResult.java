@@ -3,6 +3,8 @@
  */
 package com.applitools.eyes;
 
+import com.applitools.ICheckSettings;
+import com.applitools.ICheckSettingsInternal;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
@@ -25,7 +27,7 @@ public class MatchResult {
         this.asExpected = asExpected;
     }
 
-    public EyesScreenshot getScreenshot() {
+    public EyesScreenshot getScreenshot(ICheckSettings checkSettings ) {
         return screenshot;
     }
 

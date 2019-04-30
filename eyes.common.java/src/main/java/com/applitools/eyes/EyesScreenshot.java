@@ -14,6 +14,8 @@ public abstract class EyesScreenshot {
     protected final BufferedImage image;
     protected final Logger logger;
 
+    protected String domUrl;
+
     public EyesScreenshot(Logger logger, BufferedImage image) {
         ArgumentGuard.notNull(logger, "logger");
         ArgumentGuard.notNull(image, "image");
@@ -26,6 +28,24 @@ public abstract class EyesScreenshot {
      */
     public BufferedImage getImage() {
         return image;
+    }
+
+    /**
+     * Gets dom url.
+     *
+     * @return the dom url
+     */
+    public String getDomUrl() {
+        return domUrl;
+    }
+
+    /**
+     * Sets dom url.
+     *
+     * @param domUrl the dom url
+     */
+    public void setDomUrl(String domUrl) {
+        this.domUrl = domUrl;
     }
 
     /**

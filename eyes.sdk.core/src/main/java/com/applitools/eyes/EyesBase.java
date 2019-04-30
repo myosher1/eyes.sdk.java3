@@ -752,7 +752,7 @@ public abstract class EyesBase {
 
         if (!ignoreMismatch) {
             clearUserInputs();
-            lastScreenshot = result.getScreenshot();
+            lastScreenshot = result.getScreenshot(checkSettings);
         }
 
         validateResult(tag, result);
@@ -761,7 +761,16 @@ public abstract class EyesBase {
         return result;
     }
 
-    public abstract String tryCaptureDom();
+    protected abstract String tryCaptureDom(ICheckSettingsInternal checkSettingsInternal);
+
+    protected String tryCaptureAndPostDom(ICheckSettingsInternal checkSettingsInternal){
+        Boolean sendDom = checkSettingsInternal.isSendDom();
+        if((sendDom != null && sendDom) || getConfigGetter().isSendDom()) {
+            String dom = tryCaptureDom(checkSettingsInternal);
+            return tryPostDomSnapshot(dom);
+        }
+        return null;
+    }
 
     protected ValidationInfo fireValidationWillStartEvent(String tag) {
         String autSessionId = getAUTSessionId();
@@ -1120,7 +1129,7 @@ public abstract class EyesBase {
     /**
      * @return An updated screenshot.
      */
-    protected abstract EyesScreenshot getScreenshot();
+    protected abstract EyesScreenshot getScreenshot(ICheckSettingsInternal checkSettingsInternal);
 
     /**
      * @return The current title of of the AUT.
@@ -1352,7 +1361,7 @@ public abstract class EyesBase {
 
         logger.verbose("getting screenshot...");
         // Getting the screenshot (abstract function implemented by each SDK).
-        EyesScreenshot screenshot = getScreenshot();
+        EyesScreenshot screenshot = getScreenshot(checkSettingsInternal);
         logger.verbose("Done getting screenshot!");
 
         // Cropping by region if necessary
@@ -1369,22 +1378,7 @@ public abstract class EyesBase {
         String title = getTitle();
         logger.verbose("Done!");
 
-        //DOM SNAPSHOT
-        String domJsonUrl = null;
-        try {
-            if (isSendDom()) {
-                String domJson = tryCaptureDom();
-
-                if (domJson != null) {
-                    long start = System.currentTimeMillis();
-                    domJsonUrl = tryPostDomSnapshot(domJson);
-                    logger.verbose("Send JSON to SERVER in " + (System.currentTimeMillis() - start) / 1000);
-                }
-            }
-        } catch (Exception e) {
-            GeneralUtils.logExceptionStackTrace(logger, e);
-        }
-        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, domJsonUrl, null), screenshot, location);
+        AppOutputWithScreenshot result = new AppOutputWithScreenshot(new AppOutput(title, compressResult, screenshot.domUrl, null), screenshot, location);
         logger.verbose("Done!");
         return result;
     }
