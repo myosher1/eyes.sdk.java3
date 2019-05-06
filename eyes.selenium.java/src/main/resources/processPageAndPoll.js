@@ -1,4 +1,4 @@
-// @applitools/dom-snapshot@1.1.9
+// @applitools/dom-snapshot@1.1.10
 function __processPageAndPoll() {
   var processPageAndPoll = (function () {
   'use strict';
@@ -142,8 +142,14 @@ function __processPageAndPoll() {
 
               if (/^blob:/.test(value)) {
                 value = value.replace(/^blob:/, '');
+              } else if (
+                elementNode.nodeName === 'IFRAME' &&
+                name === 'src' &&
+                !elementNode.contentDocument &&
+                !value.match(/^\s*data:/)
+              ) {
+                value = '';
               }
-
               return {
                 name,
                 value,
