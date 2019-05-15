@@ -1,4 +1,4 @@
-// @applitools/dom-snapshot@1.1.10
+// @applitools/dom-snapshot@1.2.1
 function __processPageAndPoll() {
   var processPageAndPoll = (function () {
   'use strict';
@@ -69,6 +69,10 @@ function __processPageAndPoll() {
       srcEl.getAttribute('src'),
     );
 
+    const hrefUrls = [...doc.querySelectorAll('image')]
+      .map(hrefEl => hrefEl.getAttribute('href') || hrefEl.getAttribute('xlink:href'))
+      .filter(Boolean);
+
     const cssUrls = [...doc.querySelectorAll('link[rel="stylesheet"]')].map(link =>
       link.getAttribute('href'),
     );
@@ -77,7 +81,7 @@ function __processPageAndPoll() {
       videoEl.getAttribute('poster'),
     );
 
-    return [...srcsetUrls, ...srcUrls, ...cssUrls, ...videoPosterUrls];
+    return [...srcsetUrls, ...srcUrls, ...hrefUrls, ...cssUrls, ...videoPosterUrls];
   }
 
   var extractLinks_1 = extractLinks;
