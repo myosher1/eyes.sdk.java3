@@ -1,4 +1,4 @@
-// @applitools/dom-snapshot@1.2.1
+// @applitools/dom-snapshot@1.2.4
 function __processPageAndPoll() {
   var processPageAndPoll = (function () {
   'use strict';
@@ -120,21 +120,20 @@ function __processPageAndPoll() {
     }
 
     function elementNodeFactory(domNodes, elementNode) {
-      let node;
+      let node, manualChildNodeIndexes;
       const {nodeType} = elementNode;
       if ([NODE_TYPES.ELEMENT, NODE_TYPES.DOCUMENT_FRAGMENT_NODE].includes(nodeType)) {
         if (elementNode.nodeName !== 'SCRIPT') {
           if (
             elementNode.nodeName === 'STYLE' &&
-            !elementNode.textContent &&
             elementNode.sheet &&
             elementNode.sheet.cssRules.length
           ) {
-            elementNode.appendChild(
-              docNode.createTextNode(
-                [...elementNode.sheet.cssRules].map(rule => rule.cssText).join(''),
-              ),
-            );
+            domNodes.push({
+              nodeType: NODE_TYPES.TEXT,
+              nodeValue: [...elementNode.sheet.cssRules].map(rule => rule.cssText).join(''),
+            });
+            manualChildNodeIndexes = [domNodes.length - 1];
           }
 
           node = {
@@ -159,9 +158,11 @@ function __processPageAndPoll() {
                 value,
               };
             }),
-            childNodeIndexes: elementNode.childNodes.length
-              ? childrenFactory(domNodes, elementNode.childNodes)
-              : [],
+            childNodeIndexes:
+              manualChildNodeIndexes ||
+              (elementNode.childNodes.length
+                ? childrenFactory(domNodes, elementNode.childNodes)
+                : []),
           };
 
           if (elementNode.shadowRoot) {
