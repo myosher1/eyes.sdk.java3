@@ -14,8 +14,12 @@ function extractLinks(doc = document) {
     srcEl.getAttribute('src'),
   );
 
-  const hrefUrls = [...doc.querySelectorAll('image')]
+  const imageUrls = [...doc.querySelectorAll('image,use')]
     .map(hrefEl => hrefEl.getAttribute('href') || hrefEl.getAttribute('xlink:href'))
+    .filter(u => u && u[0] !== '#');
+
+  const objectUrls = [...doc.querySelectorAll('object')]
+    .map(el => el.getAttribute('data'))
     .filter(Boolean);
 
   const cssUrls = [...doc.querySelectorAll('link[rel="stylesheet"]')].map(link =>
@@ -26,7 +30,7 @@ function extractLinks(doc = document) {
     videoEl.getAttribute('poster'),
   );
 
-  return [...srcsetUrls, ...srcUrls, ...hrefUrls, ...cssUrls, ...videoPosterUrls];
+  return [...srcsetUrls, ...srcUrls, ...imageUrls, ...cssUrls, ...videoPosterUrls, ...objectUrls];
 }
 
 var extractLinks_1 = extractLinks;
@@ -239,6 +243,7 @@ function makeProcessResource({
   fetchUrl,
   findStyleSheetByUrl,
   extractResourcesFromStyleSheet,
+  extractResourcesFromSvg,
   isSameOrigin,
   cache = {},
 }) {
@@ -258,24 +263,30 @@ function makeProcessResource({
           if (probablyCORS) {
             return {resourceUrls: [url]};
           }
-          const result = {blobsObj: {[url]: {type, value}}};
+
+          let resourceUrls;
+          let result = {blobsObj: {[url]: {type, value}}};
           if (/text\/css/.test(type)) {
             const styleSheet = findStyleSheetByUrl(url, doc);
-            if (!styleSheet) {
-              return result;
+            if (styleSheet) {
+              resourceUrls = extractResourcesFromStyleSheet(styleSheet, doc.defaultView);
             }
-            const resourceUrls = extractResourcesFromStyleSheet(styleSheet, doc.defaultView)
+          } else if (/image\/svg/.test(type)) {
+            resourceUrls = extractResourcesFromSvg(value);
+          }
+
+          if (resourceUrls) {
+            resourceUrls = resourceUrls
               .map(resourceUrl => absolutizeUrl_1(resourceUrl, url.replace(/^blob:/, '')))
               .filter(filterInlineUrl_1);
-            return getResourceUrlsAndBlobs(baseUrl, resourceUrls).then(
+            result = getResourceUrlsAndBlobs(baseUrl, resourceUrls).then(
               ({resourceUrls, blobsObj}) => ({
                 resourceUrls,
                 blobsObj: Object.assign(blobsObj, {[url]: {type, value}}),
               }),
             );
-          } else {
-            return result;
           }
+          return result;
         })
         .catch(err => {
           console.log('[dom-snapshot] error while fetching', url, err);
@@ -292,6 +303,32 @@ function makeProcessResource({
 }
 
 var processResource = makeProcessResource;
+
+function makeExtractResourcesFromSvg({parser, decoder}) {
+  return function(svgArrayBuffer) {
+    let svgStr;
+    let urls = [];
+    try {
+      const decooder = decoder || new TextDecoder('utf-8');
+      svgStr = decooder.decode(svgArrayBuffer);
+      const domparser = parser || new DOMParser();
+      const doc = domparser.parseFromString(svgStr, 'image/svg+xml');
+
+      const fromImages = Array.from(doc.getElementsByTagName('image'))
+        .concat(Array.from(doc.getElementsByTagName('use')))
+        .map(e => e.getAttribute('href') || e.getAttribute('xlink:href'));
+      const fromObjects = Array.from(doc.getElementsByTagName('object')).map(e =>
+        e.getAttribute('data'),
+      );
+      urls = [...fromImages, ...fromObjects].filter(u => u[0] !== '#');
+    } catch (e) {
+      console.log('could not parse svg content', e);
+    }
+    return urls;
+  };
+}
+
+var makeExtractResourcesFromSvg_1 = makeExtractResourcesFromSvg;
 
 /* global window */
 
@@ -327,7 +364,6 @@ function getUrlFromCssText(cssText) {
 
 var getUrlFromCssText_1 = getUrlFromCssText;
 
-// NOTE this code is very similar to the node part of visual-grid-client, but there is a different related to the browser's cssom with import rules
 function makeExtractResourcesFromStyleSheet({styleSheetCache}) {
   return function extractResourcesFromStyleSheet(styleSheet, win = window) {
     return uniq_1(
@@ -397,11 +433,13 @@ var isSameOrigin_1 = isSameOrigin;
 function processPage(doc = document) {
   const styleSheetCache = {};
   const extractResourcesFromStyleSheet$$1 = extractResourcesFromStyleSheet({styleSheetCache});
+  const extractResourcesFromSvg = makeExtractResourcesFromSvg_1({});
   const findStyleSheetByUrl$$1 = findStyleSheetByUrl({styleSheetCache});
   const processResource$$1 = processResource({
     fetchUrl: fetchUrl_1,
     findStyleSheetByUrl: findStyleSheetByUrl$$1,
     extractResourcesFromStyleSheet: extractResourcesFromStyleSheet$$1,
+    extractResourcesFromSvg,
     absolutizeUrl: absolutizeUrl_1,
     isSameOrigin: isSameOrigin_1,
   });
