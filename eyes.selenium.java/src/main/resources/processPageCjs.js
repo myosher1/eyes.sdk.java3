@@ -90,7 +90,7 @@ function domNodesToCdt(docNode) {
           nodeName: elementNode.nodeName,
           attributes: nodeAttributes(elementNode).map(key => {
             let value = elementNode.attributes[key].value;
-            const name = elementNode.attributes[key].localName;
+            const name = elementNode.attributes[key].name;
 
             if (/^blob:/.test(value)) {
               value = value.replace(/^blob:/, '');
@@ -134,7 +134,7 @@ function domNodesToCdt(docNode) {
           nodeName: 'SCRIPT',
           attributes: nodeAttributes(elementNode)
             .map(key => ({
-              name: elementNode.attributes[key].localName,
+              name: elementNode.attributes[key].name,
               value: elementNode.attributes[key].value,
             }))
             .filter(attr => attr.name !== 'src'),
@@ -162,7 +162,7 @@ function domNodesToCdt(docNode) {
     }
 
     function nodeAttributes({attributes = {}}) {
-      return Object.keys(attributes).filter(k => attributes[k].localName);
+      return Object.keys(attributes).filter(k => attributes[k].name);
     }
   }
 }
@@ -233,6 +233,13 @@ function filterInlineUrl(absoluteUrl) {
 
 var filterInlineUrl_1 = filterInlineUrl;
 
+function toUnAnchoredUri(url) {
+  const m = url && url.match(/(^[^#]*)/);
+  return (m && m[1]) || url;
+}
+
+var toUnAnchoredUri_1 = toUnAnchoredUri;
+
 function absolutizeUrl(url, absoluteUrl) {
   return new URL(url, absoluteUrl).href;
 }
@@ -277,6 +284,7 @@ function makeProcessResource({
 
           if (resourceUrls) {
             resourceUrls = resourceUrls
+              .map(toUnAnchoredUri_1)
               .map(resourceUrl => absolutizeUrl_1(resourceUrl, url.replace(/^blob:/, '')))
               .filter(filterInlineUrl_1);
             result = getResourceUrlsAndBlobs(baseUrl, resourceUrls).then(
@@ -420,6 +428,19 @@ function makeExtractResourceUrlsFromStyleTags(extractResourcesFromStyleSheet) {
 
 var extractResourceUrlsFromStyleTags = makeExtractResourceUrlsFromStyleTags;
 
+function toUriEncoding(url) {
+  const result =
+    (url &&
+      url.replace(/(\\[0-9a-fA-F]{1,6}\s?)/g, s => {
+        const int = parseInt(s.substr(1).trim(), 16);
+        return String.fromCodePoint(int);
+      })) ||
+    url;
+  return result;
+}
+
+var toUriEncoding_1 = toUriEncoding;
+
 function isSameOrigin(url, baseUrl) {
   const blobOrData = /^(blob|data):/;
   if (blobOrData.test(url)) return true;
@@ -468,6 +489,8 @@ function processPage(doc = document) {
         .concat(extractResourceUrlsFromStyleAttrs_1(cdt))
         .concat(extractResourceUrlsFromStyleTags$$1(doc)),
     )
+      .map(toUnAnchoredUri_1)
+      .map(toUriEncoding_1)
       .map(absolutizeThisUrl)
       .filter(filterInlineUrlsIfExisting);
 
