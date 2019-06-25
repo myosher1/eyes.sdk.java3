@@ -220,7 +220,7 @@ var aggregateResourceUrlsAndBlobs_1 = aggregateResourceUrlsAndBlobs;
 function makeGetResourceUrlsAndBlobs({processResource, aggregateResourceUrlsAndBlobs}) {
   return function getResourceUrlsAndBlobs(doc, baseUrl, urls) {
     return Promise.all(
-      urls.map(url => processResource(url, doc, baseUrl, getResourceUrlsAndBlobs.bind(null, doc))),
+      urls.map(url => processResource(url, doc, baseUrl, getResourceUrlsAndBlobs)),
     ).then(resourceUrlsAndBlobsArr => aggregateResourceUrlsAndBlobs(resourceUrlsAndBlobsArr));
   };
 }
@@ -235,7 +235,7 @@ var filterInlineUrl_1 = filterInlineUrl;
 
 function toUnAnchoredUri(url) {
   const m = url && url.match(/(^[^#]*)/);
-  return (m && m[1]) || url;
+  return ((m && m[1]) || url).replace(/\?\s*$/, '');
 }
 
 var toUnAnchoredUri_1 = toUnAnchoredUri;
@@ -287,7 +287,7 @@ function makeProcessResource({
               .map(toUnAnchoredUri_1)
               .map(resourceUrl => absolutizeUrl_1(resourceUrl, url.replace(/^blob:/, '')))
               .filter(filterInlineUrl_1);
-            result = getResourceUrlsAndBlobs(baseUrl, resourceUrls).then(
+            result = getResourceUrlsAndBlobs(doc, baseUrl, resourceUrls).then(
               ({resourceUrls, blobsObj}) => ({
                 resourceUrls,
                 blobsObj: Object.assign(blobsObj, {[url]: {type, value}}),
