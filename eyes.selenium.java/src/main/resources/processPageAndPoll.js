@@ -1,4 +1,4 @@
-// @applitools/dom-snapshot@1.2.22
+// @applitools/dom-snapshot@1.2.24
 function __processPageAndPoll() {
   var processPageAndPoll = (function () {
   'use strict';
@@ -101,20 +101,21 @@ function __processPageAndPoll() {
       DOCUMENT_FRAGMENT_NODE: 11,
     };
 
-    const domNodes = [
+    const cdt = [
       {
         nodeType: NODE_TYPES.DOCUMENT,
       },
     ];
-    domNodes[0].childNodeIndexes = childrenFactory(domNodes, docNode.childNodes);
-    return domNodes;
+    const documents = [docNode];
+    cdt[0].childNodeIndexes = childrenFactory(cdt, documents, docNode.childNodes);
+    return {cdt, documents};
 
-    function childrenFactory(domNodes, elementNodes) {
+    function childrenFactory(domNodes, documents, elementNodes) {
       if (!elementNodes || elementNodes.length === 0) return null;
 
       const childIndexes = [];
       elementNodes.forEach(elementNode => {
-        const index = elementNodeFactory(domNodes, elementNode);
+        const index = elementNodeFactory(domNodes, documents, elementNode);
         if (index !== null) {
           childIndexes.push(index);
         }
@@ -123,7 +124,7 @@ function __processPageAndPoll() {
       return childIndexes;
     }
 
-    function elementNodeFactory(domNodes, elementNode) {
+    function elementNodeFactory(domNodes, documents, elementNode) {
       let node, manualChildNodeIndexes;
       const {nodeType} = elementNode;
       if ([NODE_TYPES.ELEMENT, NODE_TYPES.DOCUMENT_FRAGMENT_NODE].includes(nodeType)) {
@@ -165,12 +166,13 @@ function __processPageAndPoll() {
             childNodeIndexes:
               manualChildNodeIndexes ||
               (elementNode.childNodes.length
-                ? childrenFactory(domNodes, elementNode.childNodes)
+                ? childrenFactory(domNodes, documents, elementNode.childNodes)
                 : []),
           };
 
           if (elementNode.shadowRoot) {
-            node.shadowRootIndex = elementNodeFactory(domNodes, elementNode.shadowRoot);
+            node.shadowRootIndex = elementNodeFactory(domNodes, documents, elementNode.shadowRoot);
+            documents.push(elementNode.shadowRoot);
           }
 
           if (elementNode.checked && !elementNode.attributes.checked) {
@@ -231,8 +233,15 @@ function __processPageAndPoll() {
   };
   domNodesToCdt_1.NODE_TYPES = NODE_TYPES;
 
-  function extractFrames(doc = document) {
-    return [...doc.querySelectorAll('iframe[src]:not([src=""])')]
+  function flat(arr) {
+    return [].concat(...arr);
+  }
+
+  var flat_1 = flat;
+
+  function extractFrames(documents = [document]) {
+    const iframes = flat_1(documents.map(d => [...d.querySelectorAll('iframe[src]:not([src=""])')]));
+    return iframes
       .map(srcEl => {
         try {
           const contentDoc = srcEl.contentDocument;
@@ -273,9 +282,9 @@ function __processPageAndPoll() {
   var aggregateResourceUrlsAndBlobs_1 = aggregateResourceUrlsAndBlobs;
 
   function makeGetResourceUrlsAndBlobs({processResource, aggregateResourceUrlsAndBlobs}) {
-    return function getResourceUrlsAndBlobs(doc, baseUrl, urls) {
+    return function getResourceUrlsAndBlobs(documents, baseUrl, urls) {
       return Promise.all(
-        urls.map(url => processResource(url, doc, baseUrl, getResourceUrlsAndBlobs)),
+        urls.map(url => processResource(url, documents, baseUrl, getResourceUrlsAndBlobs)),
       ).then(resourceUrlsAndBlobsArr => aggregateResourceUrlsAndBlobs(resourceUrlsAndBlobsArr));
     };
   }
@@ -290,7 +299,8 @@ function __processPageAndPoll() {
 
   function toUnAnchoredUri(url) {
     const m = url && url.match(/(^[^#]*)/);
-    return ((m && m[1]) || url).replace(/\?\s*$/, '');
+    const res = (m && m[1]) || url;
+    return (res && res.replace(/\?\s*$/, '')) || url;
   }
 
   var toUnAnchoredUri_1 = toUnAnchoredUri;
@@ -309,7 +319,7 @@ function __processPageAndPoll() {
     isSameOrigin,
     cache = {},
   }) {
-    return function processResource(absoluteUrl, doc, baseUrl, getResourceUrlsAndBlobs) {
+    return function processResource(absoluteUrl, documents, baseUrl, getResourceUrlsAndBlobs) {
       return cache[absoluteUrl] || (cache[absoluteUrl] = doProcessResource(absoluteUrl));
 
       function doProcessResource(url) {
@@ -329,9 +339,9 @@ function __processPageAndPoll() {
             let resourceUrls;
             let result = {blobsObj: {[url]: {type, value}}};
             if (/text\/css/.test(type)) {
-              const styleSheet = findStyleSheetByUrl(url, doc);
+              const styleSheet = findStyleSheetByUrl(url, documents);
               if (styleSheet) {
-                resourceUrls = extractResourcesFromStyleSheet(styleSheet, doc.defaultView);
+                resourceUrls = extractResourcesFromStyleSheet(styleSheet, documents[0]);
               }
             } else if (/image\/svg/.test(type)) {
               resourceUrls = extractResourcesFromSvg(value);
@@ -342,7 +352,7 @@ function __processPageAndPoll() {
                 .map(toUnAnchoredUri_1)
                 .map(resourceUrl => absolutizeUrl_1(resourceUrl, url.replace(/^blob:/, '')))
                 .filter(filterInlineUrl_1);
-              result = getResourceUrlsAndBlobs(doc, baseUrl, resourceUrls).then(
+              result = getResourceUrlsAndBlobs(documents, baseUrl, resourceUrls).then(
                 ({resourceUrls, blobsObj}) => ({
                   resourceUrls,
                   blobsObj: Object.assign(blobsObj, {[url]: {type, value}}),
@@ -410,8 +420,12 @@ function __processPageAndPoll() {
   var fetchUrl_1 = fetchUrl;
 
   function makeFindStyleSheetByUrl({styleSheetCache}) {
-    return function findStyleSheetByUrl(url, doc) {
-      return styleSheetCache[url] || [...doc.styleSheets].find(styleSheet => styleSheet.href === url);
+    return function findStyleSheetByUrl(url, documents) {
+      const allStylesheets = flat_1(documents.map(d => [...d.styleSheets]));
+      return (
+        styleSheetCache[url] ||
+        allStylesheets.find(styleSheet => styleSheet.href && toUnAnchoredUri_1(styleSheet.href) === url)
+      );
     };
   }
 
@@ -430,7 +444,8 @@ function __processPageAndPoll() {
   var getUrlFromCssText_1 = getUrlFromCssText;
 
   function makeExtractResourcesFromStyleSheet({styleSheetCache}) {
-    return function extractResourcesFromStyleSheet(styleSheet, win = window) {
+    return function extractResourcesFromStyleSheet(styleSheet, doc = document) {
+      const win = doc.defaultView || doc.ownerDocument.defaultView;
       return uniq_1(
         [...(styleSheet.cssRules || [])].reduce((acc, rule) => {
           if (rule instanceof win.CSSImportRule) {
@@ -471,11 +486,13 @@ function __processPageAndPoll() {
   function makeExtractResourceUrlsFromStyleTags(extractResourcesFromStyleSheet) {
     return function extractResourceUrlsFromStyleTags(doc) {
       return uniq_1(
-        [...doc.getElementsByTagName('style')].reduce((resourceUrls, styleEl) => {
+        [...doc.querySelectorAll('style')].reduce((resourceUrls, styleEl) => {
           const styleSheet = [...doc.styleSheets].find(
             styleSheet => styleSheet.ownerNode === styleEl,
           );
-          return resourceUrls.concat(extractResourcesFromStyleSheet(styleSheet, doc.defaultView));
+          return styleSheet
+            ? resourceUrls.concat(extractResourcesFromStyleSheet(styleSheet, doc))
+            : resourceUrls;
         }, []),
       );
     };
@@ -537,21 +554,19 @@ function __processPageAndPoll() {
       const frameElement = doc.defaultView && doc.defaultView.frameElement;
       const url = frameElement ? frameElement.src : doc.location.href;
 
-      const cdt = domNodesToCdt_1(doc);
+      const {cdt, documents} = domNodesToCdt_1(doc);
 
-      const links = uniq_1(
-        extractLinks_1(doc)
-          .concat(extractResourceUrlsFromStyleAttrs_1(cdt))
-          .concat(extractResourceUrlsFromStyleTags$$1(doc)),
-      )
+      const linkUrls = flat_1(documents.map(extractLinks_1));
+      const styleTagUrls = flat_1(documents.map(extractResourceUrlsFromStyleTags$$1));
+      const links = uniq_1([...linkUrls, ...styleTagUrls, ...extractResourceUrlsFromStyleAttrs_1(cdt)])
         .map(toUnAnchoredUri_1)
         .map(toUriEncoding_1)
         .map(absolutizeThisUrl)
         .filter(filterInlineUrlsIfExisting);
 
-      const resourceUrlsAndBlobsPromise = getResourceUrlsAndBlobs$$1(doc, url, links);
+      const resourceUrlsAndBlobsPromise = getResourceUrlsAndBlobs$$1(documents, url, links);
 
-      const frameDocs = extractFrames_1(doc);
+      const frameDocs = extractFrames_1(documents);
       const processFramesPromise = frameDocs.map(doProcessPage);
 
       return Promise.all([resourceUrlsAndBlobsPromise, ...processFramesPromise]).then(
