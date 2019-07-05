@@ -1,7 +1,8 @@
+/* @applitools/dom-snapshot@1.3.5 */
 'use strict';
 
 function extractLinks(doc = document) {
-  const srcsetUrls = [...doc.querySelectorAll('img[srcset],source[srcset]')]
+  const srcsetUrls = Array.from(doc.querySelectorAll('img[srcset],source[srcset]'))
     .map(srcsetEl =>
       srcsetEl
         .getAttribute('srcset')
@@ -10,27 +11,32 @@ function extractLinks(doc = document) {
     )
     .reduce((acc, urls) => acc.concat(urls), []);
 
-  const srcUrls = [...doc.querySelectorAll('img[src],source[src]')].map(srcEl =>
+  const srcUrls = Array.from(doc.querySelectorAll('img[src],source[src]')).map(srcEl =>
     srcEl.getAttribute('src'),
   );
 
-  const imageUrls = [...doc.querySelectorAll('image,use')]
+  const imageUrls = Array.from(doc.querySelectorAll('image,use'))
     .map(hrefEl => hrefEl.getAttribute('href') || hrefEl.getAttribute('xlink:href'))
     .filter(u => u && u[0] !== '#');
 
-  const objectUrls = [...doc.querySelectorAll('object')]
+  const objectUrls = Array.from(doc.querySelectorAll('object'))
     .map(el => el.getAttribute('data'))
     .filter(Boolean);
 
-  const cssUrls = [...doc.querySelectorAll('link[rel="stylesheet"]')].map(link =>
+  const cssUrls = Array.from(doc.querySelectorAll('link[rel="stylesheet"]')).map(link =>
     link.getAttribute('href'),
   );
 
-  const videoPosterUrls = [...doc.querySelectorAll('video[poster]')].map(videoEl =>
+  const videoPosterUrls = Array.from(doc.querySelectorAll('video[poster]')).map(videoEl =>
     videoEl.getAttribute('poster'),
   );
 
-  return [...srcsetUrls, ...srcUrls, ...imageUrls, ...cssUrls, ...videoPosterUrls, ...objectUrls];
+  return Array.from(srcsetUrls)
+    .concat(Array.from(srcUrls))
+    .concat(Array.from(imageUrls))
+    .concat(Array.from(cssUrls))
+    .concat(Array.from(videoPosterUrls))
+    .concat(Array.from(objectUrls));
 }
 
 var extractLinks_1 = extractLinks;
@@ -38,17 +44,9 @@ var extractLinks_1 = extractLinks;
 /* eslint-disable no-use-before-define */
 
 function domNodesToCdt(docNode) {
-  const NODE_TYPES = {
-    ELEMENT: 1,
-    TEXT: 3,
-    DOCUMENT: 9,
-    DOCUMENT_TYPE: 10,
-    DOCUMENT_FRAGMENT_NODE: 11,
-  };
-
   const cdt = [
     {
-      nodeType: NODE_TYPES.DOCUMENT,
+      nodeType: Node.DOCUMENT_NODE,
     },
   ];
   const documents = [docNode];
@@ -59,7 +57,7 @@ function domNodesToCdt(docNode) {
     if (!elementNodes || elementNodes.length === 0) return null;
 
     const childIndexes = [];
-    elementNodes.forEach(elementNode => {
+    Array.prototype.forEach.call(elementNodes, elementNode => {
       const index = elementNodeFactory(domNodes, documents, elementNode);
       if (index !== null) {
         childIndexes.push(index);
@@ -72,7 +70,7 @@ function domNodesToCdt(docNode) {
   function elementNodeFactory(domNodes, documents, elementNode) {
     let node, manualChildNodeIndexes;
     const {nodeType} = elementNode;
-    if ([NODE_TYPES.ELEMENT, NODE_TYPES.DOCUMENT_FRAGMENT_NODE].includes(nodeType)) {
+    if ([Node.ELEMENT_NODE, Node.DOCUMENT_FRAGMENT_NODE].includes(nodeType)) {
       if (elementNode.nodeName !== 'SCRIPT') {
         if (
           elementNode.nodeName === 'STYLE' &&
@@ -80,8 +78,10 @@ function domNodesToCdt(docNode) {
           elementNode.sheet.cssRules.length
         ) {
           domNodes.push({
-            nodeType: NODE_TYPES.TEXT,
-            nodeValue: [...elementNode.sheet.cssRules].map(rule => rule.cssText).join(''),
+            nodeType: Node.TEXT_NODE,
+            nodeValue: Array.from(elementNode.sheet.cssRules)
+              .map(rule => rule.cssText)
+              .join(''),
           });
           manualChildNodeIndexes = [domNodes.length - 1];
         }
@@ -132,7 +132,7 @@ function domNodesToCdt(docNode) {
         }
       } else {
         node = {
-          nodeType: NODE_TYPES.ELEMENT,
+          nodeType: Node.ELEMENT_NODE,
           nodeName: 'SCRIPT',
           attributes: nodeAttributes(elementNode)
             .map(key => ({
@@ -143,14 +143,14 @@ function domNodesToCdt(docNode) {
           childNodeIndexes: [],
         };
       }
-    } else if (nodeType === NODE_TYPES.TEXT) {
+    } else if (nodeType === Node.TEXT_NODE) {
       node = {
-        nodeType: NODE_TYPES.TEXT,
+        nodeType: Node.TEXT_NODE,
         nodeValue: elementNode.nodeValue,
       };
-    } else if (nodeType === NODE_TYPES.DOCUMENT_TYPE) {
+    } else if (nodeType === Node.DOCUMENT_TYPE_NODE) {
       node = {
-        nodeType: NODE_TYPES.DOCUMENT_TYPE,
+        nodeType: Node.DOCUMENT_TYPE_NODE,
         nodeName: elementNode.nodeName,
       };
     }
@@ -164,19 +164,12 @@ function domNodesToCdt(docNode) {
     }
 
     function nodeAttributes({attributes = {}}) {
-      return Object.keys(attributes).filter(k => attributes[k].name);
+      return Object.keys(attributes).filter(k => attributes[k] && attributes[k].name);
     }
   }
 }
 
 var domNodesToCdt_1 = domNodesToCdt;
-var NODE_TYPES = {
-  ELEMENT: 1,
-  TEXT: 3,
-  DOCUMENT: 9,
-  DOCUMENT_TYPE: 10,
-};
-domNodesToCdt_1.NODE_TYPES = NODE_TYPES;
 
 function flat(arr) {
   return [].concat(...arr);
@@ -185,7 +178,9 @@ function flat(arr) {
 var flat_1 = flat;
 
 function extractFrames(documents = [document]) {
-  const iframes = flat_1(documents.map(d => [...d.querySelectorAll('iframe[src]:not([src=""])')]));
+  const iframes = flat_1(
+    documents.map(d => Array.from(d.querySelectorAll('iframe[src]:not([src=""])'))),
+  );
   return iframes
     .map(srcEl => {
       try {
@@ -256,6 +251,51 @@ function absolutizeUrl(url, absoluteUrl) {
 
 var absolutizeUrl_1 = absolutizeUrl;
 
+function createTempStylsheet(cssContent) {
+  if (!cssContent) {
+    console.log('[dom-snapshot] error createTempStylsheet called without cssContent');
+    return;
+  }
+  const head = document.head || document.querySelectorAll('head')[0];
+  const style = document.createElement('style');
+  style.type = 'text/css';
+  style.setAttribute('data-desc', 'Applitools tmp variable created by DOM SNAPSHOT');
+  head.appendChild(style);
+
+  // This is required for IE8 and below.
+  if (style.styleSheet) {
+    style.styleSheet.cssText = cssContent;
+  } else {
+    style.appendChild(document.createTextNode(cssContent));
+  }
+  return style.sheet;
+}
+
+var createTempStyleSheet = createTempStylsheet;
+
+function makeExtractResourcesFromStyle({extractResourcesFromStyleSheet}) {
+  return function extractResourcesFromStyle(styleSheet, cssContent, doc = document) {
+    let corsFreeStyleSheet;
+    try {
+      styleSheet.cssRules;
+      corsFreeStyleSheet = styleSheet;
+    } catch (e) {
+      console.log(
+        `[dom-snapshot] could not access cssRules for ${styleSheet.href} ${e}\ncreating temp style for access.`,
+      );
+      corsFreeStyleSheet = createTempStyleSheet(cssContent);
+    }
+
+    const result = extractResourcesFromStyleSheet(corsFreeStyleSheet, doc);
+    if (corsFreeStyleSheet !== styleSheet) {
+      corsFreeStyleSheet.ownerNode.parentNode.removeChild(corsFreeStyleSheet.ownerNode);
+    }
+    return result;
+  };
+}
+
+var extractResourcesFromStyle = makeExtractResourcesFromStyle;
+
 function makeProcessResource({
   fetchUrl,
   findStyleSheetByUrl,
@@ -264,6 +304,7 @@ function makeProcessResource({
   isSameOrigin,
   cache = {},
 }) {
+  const extractResourcesFromStyle$$1 = extractResourcesFromStyle({extractResourcesFromStyleSheet});
   return function processResource(absoluteUrl, documents, baseUrl, getResourceUrlsAndBlobs) {
     return cache[absoluteUrl] || (cache[absoluteUrl] = doProcessResource(absoluteUrl));
 
@@ -286,7 +327,7 @@ function makeProcessResource({
           if (/text\/css/.test(type)) {
             const styleSheet = findStyleSheetByUrl(url, documents);
             if (styleSheet) {
-              resourceUrls = extractResourcesFromStyleSheet(styleSheet, documents[0]);
+              resourceUrls = extractResourcesFromStyle$$1(styleSheet, value, documents[0]);
             }
           } else if (/image\/svg/.test(type)) {
             resourceUrls = extractResourcesFromSvg(value);
@@ -313,7 +354,9 @@ function makeProcessResource({
     }
 
     function probablyCORS(err, url) {
-      const msgCORS = err.message && err.message.includes('Failed to fetch');
+      const msgCORS =
+        err.message &&
+        (err.message.includes('Failed to fetch') || err.message.includes('Network request failed'));
       const nameCORS = err.name && err.name.includes('TypeError');
       return msgCORS && nameCORS && !isSameOrigin(url, baseUrl);
     }
@@ -338,7 +381,7 @@ function makeExtractResourcesFromSvg({parser, decoder}) {
       const fromObjects = Array.from(doc.getElementsByTagName('object')).map(e =>
         e.getAttribute('data'),
       );
-      urls = [...fromImages, ...fromObjects].filter(u => u[0] !== '#');
+      urls = fromImages.concat(fromObjects).filter(u => u[0] !== '#');
     } catch (e) {
       console.log('could not parse svg content', e);
     }
@@ -366,7 +409,7 @@ var fetchUrl_1 = fetchUrl;
 
 function makeFindStyleSheetByUrl({styleSheetCache}) {
   return function findStyleSheetByUrl(url, documents) {
-    const allStylesheets = flat_1(documents.map(d => [...d.styleSheets]));
+    const allStylesheets = flat_1(documents.map(d => Array.from(d.styleSheets)));
     return (
       styleSheetCache[url] ||
       allStylesheets.find(styleSheet => styleSheet.href && toUnAnchoredUri_1(styleSheet.href) === url)
@@ -392,13 +435,16 @@ function makeExtractResourcesFromStyleSheet({styleSheetCache}) {
   return function extractResourcesFromStyleSheet(styleSheet, doc = document) {
     const win = doc.defaultView || doc.ownerDocument.defaultView;
     return uniq_1(
-      [...(styleSheet.cssRules || [])].reduce((acc, rule) => {
+      Array.from(styleSheet.cssRules || []).reduce((acc, rule) => {
         if (rule instanceof win.CSSImportRule) {
           styleSheetCache[rule.styleSheet.href] = rule.styleSheet;
           return acc.concat(rule.href);
         } else if (rule instanceof win.CSSFontFaceRule) {
-          return acc.concat(getUrlFromCssText_1(rule.style.getPropertyValue('src')));
-        } else if (rule instanceof win.CSSSupportsRule || rule instanceof win.CSSMediaRule) {
+          return acc.concat(getUrlFromCssText_1(rule.cssText));
+        } else if (
+          (win.CSSSupportsRule && rule instanceof win.CSSSupportsRule) ||
+          rule instanceof win.CSSMediaRule
+        ) {
           return acc.concat(extractResourcesFromStyleSheet(rule));
         } else if (rule instanceof win.CSSStyleRule) {
           for (let i = 0, ii = rule.style.length; i < ii; i++) {
@@ -431,8 +477,8 @@ var extractResourceUrlsFromStyleAttrs_1 = extractResourceUrlsFromStyleAttrs;
 function makeExtractResourceUrlsFromStyleTags(extractResourcesFromStyleSheet) {
   return function extractResourceUrlsFromStyleTags(doc) {
     return uniq_1(
-      [...doc.querySelectorAll('style')].reduce((resourceUrls, styleEl) => {
-        const styleSheet = [...doc.styleSheets].find(
+      Array.from(doc.querySelectorAll('style')).reduce((resourceUrls, styleEl) => {
+        const styleSheet = Array.from(doc.styleSheets).find(
           styleSheet => styleSheet.ownerNode === styleEl,
         );
         return styleSheet
@@ -503,7 +549,11 @@ function processPage(doc = document) {
 
     const linkUrls = flat_1(documents.map(extractLinks_1));
     const styleTagUrls = flat_1(documents.map(extractResourceUrlsFromStyleTags$$1));
-    const links = uniq_1([...linkUrls, ...styleTagUrls, ...extractResourceUrlsFromStyleAttrs_1(cdt)])
+    const links = uniq_1(
+      Array.from(linkUrls)
+        .concat(Array.from(styleTagUrls))
+        .concat(extractResourceUrlsFromStyleAttrs_1(cdt)),
+    )
       .map(toUnAnchoredUri_1)
       .map(toUriEncoding_1)
       .map(absolutizeThisUrl)
