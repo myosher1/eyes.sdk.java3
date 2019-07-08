@@ -1,4 +1,5 @@
-// @applitools/dom-capture@7.0.11
+/* @applitools/dom-capture@7.0.12 */
+
 function __captureDomAndPoll() {
   var captureDomAndPoll = (function () {
   'use strict';
@@ -389,18 +390,29 @@ function __captureDomAndPoll() {
 
       async function iframeToJSON(el) {
         const obj = await elementToJSON(el);
+        let doc;
         try {
-          if (el.contentDocument) {
+          doc = el.contentDocument;
+        } catch (ex) {
+          markFrameAsCors();
+          return obj;
+        }
+        try {
+          if (doc) {
             obj.childNodes = [await doCaptureFrame(el.contentDocument)];
           } else {
-            const xpath = genXpath_1(el);
-            iframeCors.push(xpath);
-            obj.childNodes = [`${iframeToken}${xpath}${iframeToken}`];
+            markFrameAsCors();
           }
         } catch (ex) {
           console.log('error in iframeToJSON', ex);
         }
         return obj;
+
+        function markFrameAsCors() {
+          const xpath = genXpath_1(el);
+          iframeCors.push(xpath);
+          obj.childNodes = [`${iframeToken}${xpath}${iframeToken}`];
+        }
       }
     }
   }
