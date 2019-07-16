@@ -1,4 +1,4 @@
-/* @applitools/dom-capture@7.0.12 */
+/* @applitools/dom-capture@7.0.14 */
 
 function __captureDomAndPoll() {
   var captureDomAndPoll = (function () {
@@ -170,7 +170,7 @@ function __captureDomAndPoll() {
   function makeFetchCss(fetch) {
     return async function fetchCss(url) {
       try {
-        const response = await fetch(url);
+        const response = await fetch(url, {cache: 'force-cache'});
         if (response.ok) {
           return await response.text();
         }

@@ -1,4 +1,4 @@
-/* @applitools/dom-capture@7.0.12 */
+/* @applitools/dom-capture@7.0.14 */
 'use strict';
 
 const styleProps = [
@@ -167,7 +167,7 @@ var parseCss_1 = parseCss;
 function makeFetchCss(fetch) {
   return async function fetchCss(url) {
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {cache: 'force-cache'});
       if (response.ok) {
         return await response.text();
       }

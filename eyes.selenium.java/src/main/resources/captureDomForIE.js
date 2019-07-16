@@ -1,4 +1,4 @@
-/* @applitools/dom-capture@7.0.12 */
+/* @applitools/dom-capture@7.0.14 */
 
 function __captureDomForIE() {
   var captureDomForIE = (function () {
@@ -468,14 +468,14 @@ function __captureDomForIE() {
   };
 
   // all object keys, includes non-enumerable and symbols
-  var ownKeys = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
+  var ownKeys$1 = getBuiltIn('Reflect', 'ownKeys') || function ownKeys(it) {
     var keys = objectGetOwnPropertyNames.f(anObject(it));
     var getOwnPropertySymbols = objectGetOwnPropertySymbols.f;
     return getOwnPropertySymbols ? keys.concat(getOwnPropertySymbols(it)) : keys;
   };
 
   var copyConstructorProperties = function (target, source) {
-    var keys = ownKeys(source);
+    var keys = ownKeys$1(source);
     var defineProperty = objectDefineProperty.f;
     var getOwnPropertyDescriptor = objectGetOwnPropertyDescriptor.f;
     for (var i = 0; i < keys.length; i++) {
@@ -1474,7 +1474,7 @@ function __captureDomForIE() {
     getOwnPropertyDescriptors: function getOwnPropertyDescriptors(object) {
       var O = toIndexedObject(object);
       var getOwnPropertyDescriptor = objectGetOwnPropertyDescriptor.f;
-      var keys = ownKeys(O);
+      var keys = ownKeys$1(O);
       var result = {};
       var index = 0;
       var key, descriptor;
@@ -6893,7 +6893,7 @@ function __captureDomForIE() {
   // `Reflect.ownKeys` method
   // https://tc39.github.io/ecma262/#sec-reflect.ownkeys
   _export({ target: 'Reflect', stat: true }, {
-    ownKeys: ownKeys
+    ownKeys: ownKeys$1
   });
 
   // `Reflect.preventExtensions` method
@@ -10569,7 +10569,9 @@ function __captureDomForIE() {
                 case 0:
                   _context.prev = 0;
                   _context.next = 3;
-                  return fetch(url);
+                  return fetch(url, {
+                    cache: 'force-cache'
+                  });
 
                 case 3:
                   response = _context.sent;
