@@ -1,4 +1,4 @@
-/* @applitools/dom-snapshot@1.4.2 */
+/* @applitools/dom-snapshot@1.4.3 */
 
 function __processPageAndSerializeForIE() {
   var processPageAndSerializeForIE = (function () {
@@ -9688,17 +9688,25 @@ function __processPageAndSerializeForIE() {
 
             var uuid_1 = uuid;
 
+            function isInlineFrame(frame) {
+              return frame && frame.contentDocument && !/^https?:$/.test(frame.contentDocument.location.protocol);
+            }
+
+            var isInlineFrame_1 = isInlineFrame;
+
             function domNodesToCdt(docNode, url) {
               var cdt = [{
                 nodeType: Node.DOCUMENT_NODE
               }];
               var documents = [docNode];
               var canvasElements = [];
+              var inlineFrames = [];
               cdt[0].childNodeIndexes = childrenFactory(cdt, docNode.childNodes);
               return {
                 cdt: cdt,
                 documents: documents,
-                canvasElements: canvasElements
+                canvasElements: canvasElements,
+                inlineFrames: inlineFrames
               };
 
               function childrenFactory(cdt, elementNodes) {
@@ -9717,7 +9725,7 @@ function __processPageAndSerializeForIE() {
               function elementNodeFactory(cdt, elementNode) {
                 var node, manualChildNodeIndexes;
                 var nodeType = elementNode.nodeType;
-                var canvasUrl;
+                var dummyUrl, frameBase;
 
                 if ([Node.ELEMENT_NODE, Node.DOCUMENT_FRAGMENT_NODE].includes(nodeType)) {
                   if (elementNode.nodeName !== 'SCRIPT') {
@@ -9735,28 +9743,27 @@ function __processPageAndSerializeForIE() {
                     }
 
                     if (elementNode.nodeName === 'CANVAS') {
-                      canvasUrl = absolutizeUrl_1("canvas-".concat(uuid_1(), ".png"), url);
+                      dummyUrl = absolutizeUrl_1("applitools-canvas-".concat(uuid_1(), ".png"), url);
                       node.attributes.push({
                         name: 'data-applitools-src',
-                        value: canvasUrl
+                        value: dummyUrl
                       });
                       canvasElements.push({
                         element: elementNode,
-                        url: canvasUrl
+                        url: dummyUrl
                       });
                     }
 
-                    if (elementNode.checked && !elementNode.attributes.checked) {
+                    if (elementNode.nodeName === 'IFRAME' && isInlineFrame_1(elementNode)) {
+                      frameBase = getFrameBaseUrl(elementNode);
+                      dummyUrl = absolutizeUrl_1("?applitools-iframe=".concat(uuid_1()), frameBase || url);
                       node.attributes.push({
-                        name: 'checked',
-                        value: 'checked'
+                        name: 'data-applitools-src',
+                        value: dummyUrl
                       });
-                    }
-
-                    if (elementNode.value !== undefined && elementNode.attributes.value === undefined && elementNode.tagName === 'INPUT') {
-                      node.attributes.push({
-                        name: 'value',
-                        value: elementNode.value
+                      inlineFrames.push({
+                        element: elementNode,
+                        url: dummyUrl
                       });
                     }
                   } else {
@@ -9794,7 +9801,7 @@ function __processPageAndSerializeForIE() {
               }
 
               function getBasicNode(elementNode) {
-                return {
+                var node = {
                   nodeType: elementNode.nodeType,
                   nodeName: elementNode.nodeName,
                   attributes: nodeAttributes(elementNode).map(function (key) {
@@ -9803,8 +9810,6 @@ function __processPageAndSerializeForIE() {
 
                     if (/^blob:/.test(value)) {
                       value = value.replace(/^blob:/, '');
-                    } else if (elementNode.nodeName === 'IFRAME' && name === 'src' && !elementNode.contentDocument && !value.match(/^\s*data:/)) {
-                      value = '';
                     }
 
                     return {
@@ -9813,6 +9818,22 @@ function __processPageAndSerializeForIE() {
                     };
                   })
                 };
+
+                if (elementNode.checked && !elementNode.attributes.checked) {
+                  node.attributes.push({
+                    name: 'checked',
+                    value: 'checked'
+                  });
+                }
+
+                if (elementNode.value !== undefined && elementNode.attributes.value === undefined && elementNode.tagName === 'INPUT') {
+                  node.attributes.push({
+                    name: 'value',
+                    value: elementNode.value
+                  });
+                }
+
+                return node;
               }
 
               function getScriptNode(elementNode) {
@@ -9844,35 +9865,17 @@ function __processPageAndSerializeForIE() {
                   nodeName: elementNode.nodeName
                 };
               }
+
+              function getFrameBaseUrl(frameElement) {
+                var href = frameElement.contentDocument.querySelectorAll('base') && frameElement.contentDocument.querySelectorAll('base')[0] && frameElement.contentDocument.querySelectorAll('base')[0].href;
+
+                if (href && !href.includes('about:blank')) {
+                  return href;
+                }
+              }
             }
 
             var domNodesToCdt_1 = domNodesToCdt;
-
-            function flat(arr) {
-              var _ref;
-
-              return (_ref = []).concat.apply(_ref, _toConsumableArray(arr));
-            }
-
-            var flat_1 = flat;
-
-            function extractFrames() {
-              var documents = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [document];
-              var iframes = flat_1(documents.map(function (d) {
-                return Array.from(d.querySelectorAll('iframe[src]:not([src=""])'));
-              }));
-              return iframes.map(function (srcEl) {
-                try {
-                  var contentDoc = srcEl.contentDocument;
-                  return contentDoc && /^https?:$/.test(contentDoc.location.protocol) && contentDoc.defaultView && contentDoc.defaultView.frameElement && contentDoc;
-                } catch (err) {//for CORS frames
-                }
-              }).filter(function (x) {
-                return !!x;
-              });
-            }
-
-            var extractFrames_1 = extractFrames;
 
             function uniq(arr) {
               var result = [];
@@ -10117,6 +10120,14 @@ function __processPageAndSerializeForIE() {
 
             var fetchUrl_1 = fetchUrl;
 
+            function flat(arr) {
+              var _ref;
+
+              return (_ref = []).concat.apply(_ref, _toConsumableArray(arr));
+            }
+
+            var flat_1 = flat;
+
             function makeFindStyleSheetByUrl(_ref) {
               var styleSheetCache = _ref.styleSheetCache;
               return function findStyleSheetByUrl(url, documents) {
@@ -10230,6 +10241,46 @@ function __processPageAndSerializeForIE() {
 
             var buildCanvasBlobs_1 = buildCanvasBlobs;
 
+            function extractFrames() {
+              var documents = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [document];
+              var iframes = flat_1(documents.map(function (d) {
+                return Array.from(d.querySelectorAll('iframe[src]:not([src=""])'));
+              }));
+              return iframes.filter(function (f) {
+                return isAccessibleFrame(f) && !isInlineFrame_1(f);
+              }).map(function (f) {
+                return f.contentDocument;
+              });
+            }
+
+            function isAccessibleFrame(frame) {
+              try {
+                var doc = frame.contentDocument;
+                return !!(doc && doc.defaultView && doc.defaultView.frameElement);
+              } catch (err) {// for CORS frames
+              }
+            }
+
+            var extractFrames_1 = extractFrames;
+
+            var getBaesUrl = function getBaesUrl(doc) {
+              var baseUrl = doc.querySelectorAll('base')[0] && doc.querySelectorAll('base')[0].href;
+
+              if (baseUrl) {
+                return baseUrl;
+              }
+
+              var frameElement = doc.defaultView && doc.defaultView.frameElement;
+
+              if (frameElement) {
+                return frameElement.src || getBaesUrl(frameElement.ownerDocument);
+              }
+
+              return doc.location.href;
+            };
+
+            var getBaseUrl = getBaesUrl;
+
             function toUriEncoding(url) {
               var result = url && url.replace(/(\\[0-9a-fA-F]{1,6}\s?)/g, function (s) {
                 var int = parseInt(s.substr(1).trim(), 16);
@@ -10265,28 +10316,37 @@ function __processPageAndSerializeForIE() {
               return doProcessPage(doc);
 
               function doProcessPage(doc) {
-                var baseUrl = doc.querySelectorAll('base')[0] && doc.querySelectorAll('base')[0].href;
-                var frameElement = doc.defaultView && doc.defaultView.frameElement;
-                var url = baseUrl || (frameElement ? frameElement.src : doc.location.href);
+                var baesUrl = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+                var url = baesUrl || getBaseUrl(doc);
 
                 var _domNodesToCdt = domNodesToCdt_1(doc, url),
                     cdt = _domNodesToCdt.cdt,
                     documents = _domNodesToCdt.documents,
-                    canvasElements = _domNodesToCdt.canvasElements;
+                    canvasElements = _domNodesToCdt.canvasElements,
+                    inlineFrames = _domNodesToCdt.inlineFrames;
 
                 var linkUrls = flat_1(documents.map(extractLinks_1));
                 var styleTagUrls = flat_1(documents.map(extractResourceUrlsFromStyleTags$$1));
+                var absolutizeThisUrl = getAbsolutizeByUrl(url);
                 var links = uniq_1(Array.from(linkUrls).concat(Array.from(styleTagUrls)).concat(extractResourceUrlsFromStyleAttrs_1(cdt))).map(toUnAnchoredUri_1).map(toUriEncoding_1).map(absolutizeThisUrl).filter(filterInlineUrlsIfExisting);
                 var resourceUrlsAndBlobsPromise = getResourceUrlsAndBlobs$$1(documents, url, links);
-                var frameDocs = extractFrames_1(documents);
-                var processFramesPromise = frameDocs.map(doProcessPage);
                 var canvasBlobs = buildCanvasBlobs_1(canvasElements);
-                return Promise.all([resourceUrlsAndBlobsPromise].concat(_toConsumableArray(processFramesPromise))).then(function (_ref) {
-                  var _ref2 = _toArray(_ref),
-                      _ref2$ = _ref2[0],
-                      resourceUrls = _ref2$.resourceUrls,
-                      blobsObj = _ref2$.blobsObj,
-                      framesResults = _ref2.slice(1);
+                var frameDocs = extractFrames_1(documents);
+                var processFramesPromise = frameDocs.map(function (f) {
+                  return doProcessPage(f, null);
+                });
+                var processInlineFramesPromise = inlineFrames.map(function (_ref) {
+                  var element = _ref.element,
+                      url = _ref.url;
+                  return doProcessPage(element.contentDocument, url);
+                });
+                var frameElement = doc.defaultView && doc.defaultView.frameElement;
+                return Promise.all([resourceUrlsAndBlobsPromise].concat(_toConsumableArray(processFramesPromise), _toConsumableArray(processInlineFramesPromise))).then(function (_ref2) {
+                  var _ref3 = _toArray(_ref2),
+                      _ref3$ = _ref3[0],
+                      resourceUrls = _ref3$.resourceUrls,
+                      blobsObj = _ref3$.blobsObj,
+                      framesResults = _ref3.slice(1);
 
                   return {
                     cdt: cdt,
@@ -10297,14 +10357,16 @@ function __processPageAndSerializeForIE() {
                     srcAttr: frameElement ? frameElement.getAttribute('src') : undefined
                   };
                 });
-
-                function absolutizeThisUrl(someUrl) {
-                  try {
-                    return absolutizeUrl_1(someUrl, url);
-                  } catch (err) {// can't do anything with a non-absolute url
-                  }
-                }
               }
+            }
+
+            function getAbsolutizeByUrl(url) {
+              return function (someUrl) {
+                try {
+                  return absolutizeUrl_1(someUrl, url);
+                } catch (err) {// can't do anything with a non-absolute url
+                }
+              };
             }
 
             function blobsObjToArray(blobsObj) {

@@ -1,4 +1,4 @@
-/* @applitools/dom-snapshot@1.4.2 */
+/* @applitools/dom-snapshot@1.4.3 */
 
 function __processPageAndPoll() {
   var processPageAndPoll = (function () {
@@ -108,16 +108,22 @@ function __processPageAndPoll() {
 
   var uuid_1 = uuid;
 
+  function isInlineFrame(frame) {
+    return (
+      frame && frame.contentDocument && !/^https?:$/.test(frame.contentDocument.location.protocol)
+    );
+  }
+
+  var isInlineFrame_1 = isInlineFrame;
+
   function domNodesToCdt(docNode, url) {
-    const cdt = [
-      {
-        nodeType: Node.DOCUMENT_NODE,
-      },
-    ];
+    const cdt = [{nodeType: Node.DOCUMENT_NODE}];
     const documents = [docNode];
     const canvasElements = [];
+    const inlineFrames = [];
+
     cdt[0].childNodeIndexes = childrenFactory(cdt, docNode.childNodes);
-    return {cdt, documents, canvasElements};
+    return {cdt, documents, canvasElements, inlineFrames};
 
     function childrenFactory(cdt, elementNodes) {
       if (!elementNodes || elementNodes.length === 0) return null;
@@ -135,7 +141,7 @@ function __processPageAndPoll() {
     function elementNodeFactory(cdt, elementNode) {
       let node, manualChildNodeIndexes;
       const {nodeType} = elementNode;
-      let canvasUrl;
+      let dummyUrl, frameBase;
 
       if ([Node.ELEMENT_NODE, Node.DOCUMENT_FRAGMENT_NODE].includes(nodeType)) {
         if (elementNode.nodeName !== 'SCRIPT') {
@@ -159,21 +165,16 @@ function __processPageAndPoll() {
           }
 
           if (elementNode.nodeName === 'CANVAS') {
-            canvasUrl = absolutizeUrl_1(`canvas-${uuid_1()}.png`, url);
-            node.attributes.push({name: 'data-applitools-src', value: canvasUrl});
-            canvasElements.push({element: elementNode, url: canvasUrl});
+            dummyUrl = absolutizeUrl_1(`applitools-canvas-${uuid_1()}.png`, url);
+            node.attributes.push({name: 'data-applitools-src', value: dummyUrl});
+            canvasElements.push({element: elementNode, url: dummyUrl});
           }
 
-          if (elementNode.checked && !elementNode.attributes.checked) {
-            node.attributes.push({name: 'checked', value: 'checked'});
-          }
-
-          if (
-            elementNode.value !== undefined &&
-            elementNode.attributes.value === undefined &&
-            elementNode.tagName === 'INPUT'
-          ) {
-            node.attributes.push({name: 'value', value: elementNode.value});
+          if (elementNode.nodeName === 'IFRAME' && isInlineFrame_1(elementNode)) {
+            frameBase = getFrameBaseUrl(elementNode);
+            dummyUrl = absolutizeUrl_1(`?applitools-iframe=${uuid_1()}`, frameBase || url);
+            node.attributes.push({name: 'data-applitools-src', value: dummyUrl});
+            inlineFrames.push({element: elementNode, url: dummyUrl});
           }
         } else {
           node = getScriptNode(elementNode);
@@ -206,22 +207,14 @@ function __processPageAndPoll() {
     }
 
     function getBasicNode(elementNode) {
-      return {
+      const node = {
         nodeType: elementNode.nodeType,
         nodeName: elementNode.nodeName,
         attributes: nodeAttributes(elementNode).map(key => {
           let value = elementNode.attributes[key].value;
           const name = elementNode.attributes[key].name;
-
           if (/^blob:/.test(value)) {
             value = value.replace(/^blob:/, '');
-          } else if (
-            elementNode.nodeName === 'IFRAME' &&
-            name === 'src' &&
-            !elementNode.contentDocument &&
-            !value.match(/^\s*data:/)
-          ) {
-            value = '';
           }
           return {
             name,
@@ -229,6 +222,18 @@ function __processPageAndPoll() {
           };
         }),
       };
+
+      if (elementNode.checked && !elementNode.attributes.checked) {
+        node.attributes.push({name: 'checked', value: 'checked'});
+      }
+      if (
+        elementNode.value !== undefined &&
+        elementNode.attributes.value === undefined &&
+        elementNode.tagName === 'INPUT'
+      ) {
+        node.attributes.push({name: 'value', value: elementNode.value});
+      }
+      return node;
     }
 
     function getScriptNode(elementNode) {
@@ -258,39 +263,19 @@ function __processPageAndPoll() {
         nodeName: elementNode.nodeName,
       };
     }
+
+    function getFrameBaseUrl(frameElement) {
+      const href =
+        frameElement.contentDocument.querySelectorAll('base') &&
+        frameElement.contentDocument.querySelectorAll('base')[0] &&
+        frameElement.contentDocument.querySelectorAll('base')[0].href;
+      if (href && !href.includes('about:blank')) {
+        return href;
+      }
+    }
   }
 
   var domNodesToCdt_1 = domNodesToCdt;
-
-  function flat(arr) {
-    return [].concat(...arr);
-  }
-
-  var flat_1 = flat;
-
-  function extractFrames(documents = [document]) {
-    const iframes = flat_1(
-      documents.map(d => Array.from(d.querySelectorAll('iframe[src]:not([src=""])'))),
-    );
-    return iframes
-      .map(srcEl => {
-        try {
-          const contentDoc = srcEl.contentDocument;
-          return (
-            contentDoc &&
-            /^https?:$/.test(contentDoc.location.protocol) &&
-            contentDoc.defaultView &&
-            contentDoc.defaultView.frameElement &&
-            contentDoc
-          );
-        } catch (err) {
-          //for CORS frames
-        }
-      })
-      .filter(x => !!x);
-  }
-
-  var extractFrames_1 = extractFrames;
 
   function uniq(arr) {
     const result = [];
@@ -491,6 +476,12 @@ function __processPageAndPoll() {
 
   var fetchUrl_1 = fetchUrl;
 
+  function flat(arr) {
+    return [].concat(...arr);
+  }
+
+  var flat_1 = flat;
+
   function makeFindStyleSheetByUrl({styleSheetCache}) {
     return function findStyleSheetByUrl(url, documents) {
       const allStylesheets = flat_1(documents.map(d => Array.from(d.styleSheets)));
@@ -597,6 +588,40 @@ function __processPageAndPoll() {
 
   var buildCanvasBlobs_1 = buildCanvasBlobs;
 
+  function extractFrames(documents = [document]) {
+    const iframes = flat_1(
+      documents.map(d => Array.from(d.querySelectorAll('iframe[src]:not([src=""])'))),
+    );
+    return iframes
+      .filter(f => isAccessibleFrame(f) && !isInlineFrame_1(f))
+      .map(f => f.contentDocument);
+  }
+
+  function isAccessibleFrame(frame) {
+    try {
+      const doc = frame.contentDocument;
+      return !!(doc && doc.defaultView && doc.defaultView.frameElement);
+    } catch (err) {
+      // for CORS frames
+    }
+  }
+
+  var extractFrames_1 = extractFrames;
+
+  const getBaesUrl = function(doc) {
+    const baseUrl = doc.querySelectorAll('base')[0] && doc.querySelectorAll('base')[0].href;
+    if (baseUrl) {
+      return baseUrl;
+    }
+    const frameElement = doc.defaultView && doc.defaultView.frameElement;
+    if (frameElement) {
+      return frameElement.src || getBaesUrl(frameElement.ownerDocument);
+    }
+    return doc.location.href;
+  };
+
+  var getBaseUrl = getBaesUrl;
+
   function toUriEncoding(url) {
     const result =
       (url &&
@@ -634,15 +659,13 @@ function __processPageAndPoll() {
 
     return doProcessPage(doc);
 
-    function doProcessPage(doc) {
-      const baseUrl = doc.querySelectorAll('base')[0] && doc.querySelectorAll('base')[0].href;
-      const frameElement = doc.defaultView && doc.defaultView.frameElement;
-      const url = baseUrl || (frameElement ? frameElement.src : doc.location.href);
-
-      const {cdt, documents, canvasElements} = domNodesToCdt_1(doc, url);
+    function doProcessPage(doc, baesUrl = null) {
+      const url = baesUrl || getBaseUrl(doc);
+      const {cdt, documents, canvasElements, inlineFrames} = domNodesToCdt_1(doc, url);
 
       const linkUrls = flat_1(documents.map(extractLinks_1));
       const styleTagUrls = flat_1(documents.map(extractResourceUrlsFromStyleTags$$1));
+      const absolutizeThisUrl = getAbsolutizeByUrl(url);
       const links = uniq_1(
         Array.from(linkUrls)
           .concat(Array.from(styleTagUrls))
@@ -654,30 +677,38 @@ function __processPageAndPoll() {
         .filter(filterInlineUrlsIfExisting);
 
       const resourceUrlsAndBlobsPromise = getResourceUrlsAndBlobs$$1(documents, url, links);
-
-      const frameDocs = extractFrames_1(documents);
-      const processFramesPromise = frameDocs.map(doProcessPage);
       const canvasBlobs = buildCanvasBlobs_1(canvasElements);
 
-      return Promise.all([resourceUrlsAndBlobsPromise, ...processFramesPromise]).then(
-        ([{resourceUrls, blobsObj}, ...framesResults]) => ({
-          cdt,
-          url,
-          resourceUrls,
-          blobs: [...blobsObjToArray(blobsObj), ...canvasBlobs],
-          frames: framesResults,
-          srcAttr: frameElement ? frameElement.getAttribute('src') : undefined,
-        }),
+      const frameDocs = extractFrames_1(documents);
+      const processFramesPromise = frameDocs.map(f => doProcessPage(f, null));
+      const processInlineFramesPromise = inlineFrames.map(({element, url}) =>
+        doProcessPage(element.contentDocument, url),
       );
 
-      function absolutizeThisUrl(someUrl) {
-        try {
-          return absolutizeUrl_1(someUrl, url);
-        } catch (err) {
-          // can't do anything with a non-absolute url
-        }
-      }
+      const frameElement = doc.defaultView && doc.defaultView.frameElement;
+      return Promise.all([
+        resourceUrlsAndBlobsPromise,
+        ...processFramesPromise,
+        ...processInlineFramesPromise,
+      ]).then(([{resourceUrls, blobsObj}, ...framesResults]) => ({
+        cdt,
+        url,
+        resourceUrls,
+        blobs: [...blobsObjToArray(blobsObj), ...canvasBlobs],
+        frames: framesResults,
+        srcAttr: frameElement ? frameElement.getAttribute('src') : undefined,
+      }));
     }
+  }
+
+  function getAbsolutizeByUrl(url) {
+    return function(someUrl) {
+      try {
+        return absolutizeUrl_1(someUrl, url);
+      } catch (err) {
+        // can't do anything with a non-absolute url
+      }
+    };
   }
 
   function blobsObjToArray(blobsObj) {
