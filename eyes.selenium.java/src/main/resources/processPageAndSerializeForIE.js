@@ -1,4 +1,4 @@
-/* @applitools/dom-snapshot@1.4.3 */
+/* @applitools/dom-snapshot@1.4.8 */
 
 function __processPageAndSerializeForIE() {
   var processPageAndSerializeForIE = (function () {
@@ -9819,18 +9819,34 @@ function __processPageAndSerializeForIE() {
                   })
                 };
 
-                if (elementNode.checked && !elementNode.attributes.checked) {
-                  node.attributes.push({
-                    name: 'checked',
-                    value: 'checked'
-                  });
+                if (elementNode.tagName === 'INPUT' && ['checkbox', 'radio'].includes(elementNode.type)) {
+                  if (elementNode.attributes.checked && !elementNode.checked) {
+                    var idx = node.attributes.findIndex(function (a) {
+                      return a.name === 'checked';
+                    });
+                    node.attributes.splice(idx, 1);
+                  }
+
+                  if (!elementNode.attributes.checked && elementNode.checked) {
+                    node.attributes.push({
+                      name: 'checked'
+                    });
+                  }
                 }
 
-                if (elementNode.value !== undefined && elementNode.attributes.value === undefined && elementNode.tagName === 'INPUT') {
-                  node.attributes.push({
-                    name: 'value',
-                    value: elementNode.value
+                if (elementNode.tagName === 'INPUT' && elementNode.type === 'text' && (elementNode.attributes.value && elementNode.attributes.value.value) !== elementNode.value) {
+                  var nodeAttr = node.attributes.find(function (a) {
+                    return a.name === 'value';
                   });
+
+                  if (nodeAttr) {
+                    nodeAttr.value = elementNode.value;
+                  } else {
+                    node.attributes.push({
+                      name: 'value',
+                      value: elementNode.value
+                    });
+                  }
                 }
 
                 return node;
