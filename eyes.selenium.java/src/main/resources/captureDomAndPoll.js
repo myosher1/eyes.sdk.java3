@@ -1,4 +1,4 @@
-/* @applitools/dom-capture@7.0.14 */
+/* @applitools/dom-capture@7.0.15 */
 
 function __captureDomAndPoll() {
   var captureDomAndPoll = (function () {

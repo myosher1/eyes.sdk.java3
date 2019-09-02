@@ -1,7 +1,7 @@
-/* @applitools/dom-snapshot@2.2.2 */
+/* @applitools/dom-capture@7.0.15 */
 
-function __processPageAndSerializeForIE() {
-  var processPageAndSerializeForIE = (function () {
+function __captureDomAndPollForIE() {
+  var captureDomAndPollForIE = (function () {
             'use strict';
 
             var global$1 = (typeof global !== "undefined" ? global :
@@ -10,6 +10,10 @@ function __processPageAndSerializeForIE() {
 
             function createCommonjsModule(fn, module) {
             	return module = { exports: {} }, fn(module, module.exports), module.exports;
+            }
+
+            function getCjsExportFromNamespace (n) {
+            	return n && n['default'] || n;
             }
 
             var O = 'object';
@@ -203,7 +207,7 @@ function __processPageAndSerializeForIE() {
             (module.exports = function (key, value) {
               return store[key] || (store[key] = value !== undefined ? value : {});
             })('versions', []).push({
-              version: '3.2.1',
+              version: '3.1.3',
               mode: 'global',
               copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
             });
@@ -4229,17 +4233,12 @@ function __processPageAndSerializeForIE() {
             // https://tc39.github.io/ecma262/#sec-math.fround
             _export({ target: 'Math', stat: true }, { fround: mathFround });
 
-            var $hypot = Math.hypot;
             var abs$4 = Math.abs;
             var sqrt$2 = Math.sqrt;
 
-            // Chrome 77 bug
-            // https://bugs.chromium.org/p/v8/issues/detail?id=9546
-            var BUGGY = !!$hypot && $hypot(Infinity, NaN) !== Infinity;
-
             // `Math.hypot` method
             // https://tc39.github.io/ecma262/#sec-math.hypot
-            _export({ target: 'Math', stat: true, forced: BUGGY }, {
+            _export({ target: 'Math', stat: true }, {
               hypot: function hypot(value1, value2) { // eslint-disable-line no-unused-vars
                 var sum = 0;
                 var i = 0;
@@ -4451,8 +4450,6 @@ function __processPageAndSerializeForIE() {
             // https://tc39.github.io/ecma262/#sec-json-@@tostringtag
             setToStringTag(global_1.JSON, 'JSON', true);
 
-            var nativePromiseConstructor = global_1.Promise;
-
             var redefineAll = function (target, src, options) {
               for (var key in src) redefine(target, key, src[key], options);
               return target;
@@ -4570,7 +4567,7 @@ function __processPageAndSerializeForIE() {
             var queueMicrotaskDescriptor = getOwnPropertyDescriptor$5(global_1, 'queueMicrotask');
             var queueMicrotask = queueMicrotaskDescriptor && queueMicrotaskDescriptor.value;
 
-            var flush, head, last, notify, toggle, node, promise, then;
+            var flush, head, last, notify, toggle, node, promise;
 
             // modern engines have queueMicrotask method
             if (!queueMicrotask) {
@@ -4608,9 +4605,8 @@ function __processPageAndSerializeForIE() {
               } else if (Promise$1 && Promise$1.resolve) {
                 // Promise.resolve without an argument throws an error in LG WebOS 2
                 promise = Promise$1.resolve(undefined);
-                then = promise.then;
                 notify = function () {
-                  then.call(promise, flush);
+                  promise.then(flush);
                 };
               // for other environments - macrotask based on:
               // - setImmediate
@@ -4695,7 +4691,7 @@ function __processPageAndSerializeForIE() {
             var getInternalState$4 = internalState.get;
             var setInternalState$4 = internalState.set;
             var getInternalPromiseState = internalState.getterFor(PROMISE);
-            var PromiseConstructor = nativePromiseConstructor;
+            var PromiseConstructor = global_1[PROMISE];
             var TypeError$1 = global_1.TypeError;
             var document$2 = global_1.document;
             var process$2 = global_1.process;
@@ -4713,7 +4709,7 @@ function __processPageAndSerializeForIE() {
             var REJECTED = 2;
             var HANDLED = 1;
             var UNHANDLED = 2;
-            var Internal, OwnPromiseCapability, PromiseWrapper, nativeThen;
+            var Internal, OwnPromiseCapability, PromiseWrapper;
 
             var FORCED$e = isForced_1(PROMISE, function () {
               // correct subclassing with @@species support
@@ -4938,25 +4934,13 @@ function __processPageAndSerializeForIE() {
                   : newGenericPromiseCapability(C);
               };
 
-              if (typeof nativePromiseConstructor == 'function') {
-                nativeThen = nativePromiseConstructor.prototype.then;
-
-                // wrap native Promise#then for native async functions
-                redefine(nativePromiseConstructor.prototype, 'then', function then(onFulfilled, onRejected) {
-                  var that = this;
-                  return new PromiseConstructor(function (resolve, reject) {
-                    nativeThen.call(that, resolve, reject);
-                  }).then(onFulfilled, onRejected);
-                });
-
-                // wrap fetch result
-                if (typeof $fetch == 'function') _export({ global: true, enumerable: true, forced: true }, {
-                  // eslint-disable-next-line no-unused-vars
-                  fetch: function fetch(input) {
-                    return promiseResolve(PromiseConstructor, $fetch.apply(global_1, arguments));
-                  }
-                });
-              }
+              // wrap fetch result
+              if (typeof $fetch == 'function') _export({ global: true, enumerable: true, forced: true }, {
+                // eslint-disable-next-line no-unused-vars
+                fetch: function fetch(input) {
+                  return promiseResolve(PromiseConstructor, $fetch.apply(global_1, arguments));
+                }
+              });
             }
 
             _export({ global: true, wrap: true, forced: FORCED$e }, {
@@ -5034,43 +5018,6 @@ function __processPageAndSerializeForIE() {
               }
             });
 
-            // `Promise.allSettled` method
-            // https://github.com/tc39/proposal-promise-allSettled
-            _export({ target: 'Promise', stat: true }, {
-              allSettled: function allSettled(iterable) {
-                var C = this;
-                var capability = newPromiseCapability.f(C);
-                var resolve = capability.resolve;
-                var reject = capability.reject;
-                var result = perform(function () {
-                  var promiseResolve = aFunction$1(C.resolve);
-                  var values = [];
-                  var counter = 0;
-                  var remaining = 1;
-                  iterate_1(iterable, function (promise) {
-                    var index = counter++;
-                    var alreadyCalled = false;
-                    values.push(undefined);
-                    remaining++;
-                    promiseResolve.call(C, promise).then(function (value) {
-                      if (alreadyCalled) return;
-                      alreadyCalled = true;
-                      values[index] = { status: 'fulfilled', value: value };
-                      --remaining || resolve(values);
-                    }, function (e) {
-                      if (alreadyCalled) return;
-                      alreadyCalled = true;
-                      values[index] = { status: 'rejected', reason: e };
-                      --remaining || resolve(values);
-                    });
-                  });
-                  --remaining || resolve(values);
-                });
-                if (result.error) reject(result.value);
-                return capability.promise;
-              }
-            });
-
             // `Promise.prototype.finally` method
             // https://tc39.github.io/ecma262/#sec-promise.prototype.finally
             _export({ target: 'Promise', proto: true, real: true }, {
@@ -5088,11 +5035,6 @@ function __processPageAndSerializeForIE() {
               }
             });
 
-            // patch native Promise.prototype for native async functions
-            if (typeof nativePromiseConstructor == 'function' && !nativePromiseConstructor.prototype['finally']) {
-              redefine(nativePromiseConstructor.prototype, 'finally', getBuiltIn('Promise').prototype['finally']);
-            }
-
             var collection = function (CONSTRUCTOR_NAME, wrapper, common, IS_MAP, IS_WEAK) {
               var NativeConstructor = global_1[CONSTRUCTOR_NAME];
               var NativePrototype = NativeConstructor && NativeConstructor.prototype;
@@ -5103,17 +5045,17 @@ function __processPageAndSerializeForIE() {
               var fixMethod = function (KEY) {
                 var nativeMethod = NativePrototype[KEY];
                 redefine(NativePrototype, KEY,
-                  KEY == 'add' ? function add(value) {
-                    nativeMethod.call(this, value === 0 ? 0 : value);
+                  KEY == 'add' ? function add(a) {
+                    nativeMethod.call(this, a === 0 ? 0 : a);
                     return this;
-                  } : KEY == 'delete' ? function (key) {
-                    return IS_WEAK && !isObject(key) ? false : nativeMethod.call(this, key === 0 ? 0 : key);
-                  } : KEY == 'get' ? function get(key) {
-                    return IS_WEAK && !isObject(key) ? undefined : nativeMethod.call(this, key === 0 ? 0 : key);
-                  } : KEY == 'has' ? function has(key) {
-                    return IS_WEAK && !isObject(key) ? false : nativeMethod.call(this, key === 0 ? 0 : key);
-                  } : function set(key, value) {
-                    nativeMethod.call(this, key === 0 ? 0 : key, value);
+                  } : KEY == 'delete' ? function (a) {
+                    return IS_WEAK && !isObject(a) ? false : nativeMethod.call(this, a === 0 ? 0 : a);
+                  } : KEY == 'get' ? function get(a) {
+                    return IS_WEAK && !isObject(a) ? undefined : nativeMethod.call(this, a === 0 ? 0 : a);
+                  } : KEY == 'has' ? function has(a) {
+                    return IS_WEAK && !isObject(a) ? false : nativeMethod.call(this, a === 0 ? 0 : a);
+                  } : function set(a, b) {
+                    nativeMethod.call(this, a === 0 ? 0 : a, b);
                     return this;
                   }
                 );
@@ -5130,7 +5072,7 @@ function __processPageAndSerializeForIE() {
                 var instance = new Constructor();
                 // early implementations not supports chaining
                 var HASNT_CHAINING = instance[ADDER](IS_WEAK ? {} : -0, 1) != instance;
-                // V8 ~ Chromium 40- weak-collections throws on primitives, but should return false
+                // V8 ~  Chromium 40- weak-collections throws on primitives, but should return false
                 var THROWS_ON_PRIMITIVES = fails(function () { instance.has(1); });
                 // most early implementations doesn't supports iterables, most modern - not close it correctly
                 // eslint-disable-next-line no-new
@@ -5590,8 +5532,7 @@ function __processPageAndSerializeForIE() {
             var TO_STRING_TAG$3 = wellKnownSymbol('toStringTag');
             var TYPED_ARRAY_TAG = uid('TYPED_ARRAY_TAG');
             var NATIVE_ARRAY_BUFFER = !!(global_1.ArrayBuffer && DataView$1);
-            // Fixing native typed arrays in Opera Presto crashes the browser, see #595
-            var NATIVE_ARRAY_BUFFER_VIEWS = NATIVE_ARRAY_BUFFER && !!objectSetPrototypeOf && classof(global_1.opera) !== 'Opera';
+            var NATIVE_ARRAY_BUFFER_VIEWS = NATIVE_ARRAY_BUFFER && !!objectSetPrototypeOf;
             var TYPED_ARRAY_TAG_REQIRED = false;
             var NAME$1;
 
@@ -8625,6 +8566,734 @@ function __processPageAndSerializeForIE() {
               }
             });
 
+            var runtime_1 = createCommonjsModule(function (module) {
+            /**
+             * Copyright (c) 2014-present, Facebook, Inc.
+             *
+             * This source code is licensed under the MIT license found in the
+             * LICENSE file in the root directory of this source tree.
+             */
+
+            var runtime = (function (exports) {
+
+              var Op = Object.prototype;
+              var hasOwn = Op.hasOwnProperty;
+              var undefined; // More compressible than void 0.
+              var $Symbol = typeof Symbol === "function" ? Symbol : {};
+              var iteratorSymbol = $Symbol.iterator || "@@iterator";
+              var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
+              var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
+
+              function wrap(innerFn, outerFn, self, tryLocsList) {
+                // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
+                var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator;
+                var generator = Object.create(protoGenerator.prototype);
+                var context = new Context(tryLocsList || []);
+
+                // The ._invoke method unifies the implementations of the .next,
+                // .throw, and .return methods.
+                generator._invoke = makeInvokeMethod(innerFn, self, context);
+
+                return generator;
+              }
+              exports.wrap = wrap;
+
+              // Try/catch helper to minimize deoptimizations. Returns a completion
+              // record like context.tryEntries[i].completion. This interface could
+              // have been (and was previously) designed to take a closure to be
+              // invoked without arguments, but in all the cases we care about we
+              // already have an existing method we want to call, so there's no need
+              // to create a new function object. We can even get away with assuming
+              // the method takes exactly one argument, since that happens to be true
+              // in every case, so we don't have to touch the arguments object. The
+              // only additional allocation required is the completion record, which
+              // has a stable shape and so hopefully should be cheap to allocate.
+              function tryCatch(fn, obj, arg) {
+                try {
+                  return { type: "normal", arg: fn.call(obj, arg) };
+                } catch (err) {
+                  return { type: "throw", arg: err };
+                }
+              }
+
+              var GenStateSuspendedStart = "suspendedStart";
+              var GenStateSuspendedYield = "suspendedYield";
+              var GenStateExecuting = "executing";
+              var GenStateCompleted = "completed";
+
+              // Returning this object from the innerFn has the same effect as
+              // breaking out of the dispatch switch statement.
+              var ContinueSentinel = {};
+
+              // Dummy constructor functions that we use as the .constructor and
+              // .constructor.prototype properties for functions that return Generator
+              // objects. For full spec compliance, you may wish to configure your
+              // minifier not to mangle the names of these two functions.
+              function Generator() {}
+              function GeneratorFunction() {}
+              function GeneratorFunctionPrototype() {}
+
+              // This is a polyfill for %IteratorPrototype% for environments that
+              // don't natively support it.
+              var IteratorPrototype = {};
+              IteratorPrototype[iteratorSymbol] = function () {
+                return this;
+              };
+
+              var getProto = Object.getPrototypeOf;
+              var NativeIteratorPrototype = getProto && getProto(getProto(values([])));
+              if (NativeIteratorPrototype &&
+                  NativeIteratorPrototype !== Op &&
+                  hasOwn.call(NativeIteratorPrototype, iteratorSymbol)) {
+                // This environment has a native %IteratorPrototype%; use it instead
+                // of the polyfill.
+                IteratorPrototype = NativeIteratorPrototype;
+              }
+
+              var Gp = GeneratorFunctionPrototype.prototype =
+                Generator.prototype = Object.create(IteratorPrototype);
+              GeneratorFunction.prototype = Gp.constructor = GeneratorFunctionPrototype;
+              GeneratorFunctionPrototype.constructor = GeneratorFunction;
+              GeneratorFunctionPrototype[toStringTagSymbol] =
+                GeneratorFunction.displayName = "GeneratorFunction";
+
+              // Helper for defining the .next, .throw, and .return methods of the
+              // Iterator interface in terms of a single ._invoke method.
+              function defineIteratorMethods(prototype) {
+                ["next", "throw", "return"].forEach(function(method) {
+                  prototype[method] = function(arg) {
+                    return this._invoke(method, arg);
+                  };
+                });
+              }
+
+              exports.isGeneratorFunction = function(genFun) {
+                var ctor = typeof genFun === "function" && genFun.constructor;
+                return ctor
+                  ? ctor === GeneratorFunction ||
+                    // For the native GeneratorFunction constructor, the best we can
+                    // do is to check its .name property.
+                    (ctor.displayName || ctor.name) === "GeneratorFunction"
+                  : false;
+              };
+
+              exports.mark = function(genFun) {
+                if (Object.setPrototypeOf) {
+                  Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
+                } else {
+                  genFun.__proto__ = GeneratorFunctionPrototype;
+                  if (!(toStringTagSymbol in genFun)) {
+                    genFun[toStringTagSymbol] = "GeneratorFunction";
+                  }
+                }
+                genFun.prototype = Object.create(Gp);
+                return genFun;
+              };
+
+              // Within the body of any async function, `await x` is transformed to
+              // `yield regeneratorRuntime.awrap(x)`, so that the runtime can test
+              // `hasOwn.call(value, "__await")` to determine if the yielded value is
+              // meant to be awaited.
+              exports.awrap = function(arg) {
+                return { __await: arg };
+              };
+
+              function AsyncIterator(generator) {
+                function invoke(method, arg, resolve, reject) {
+                  var record = tryCatch(generator[method], generator, arg);
+                  if (record.type === "throw") {
+                    reject(record.arg);
+                  } else {
+                    var result = record.arg;
+                    var value = result.value;
+                    if (value &&
+                        typeof value === "object" &&
+                        hasOwn.call(value, "__await")) {
+                      return Promise.resolve(value.__await).then(function(value) {
+                        invoke("next", value, resolve, reject);
+                      }, function(err) {
+                        invoke("throw", err, resolve, reject);
+                      });
+                    }
+
+                    return Promise.resolve(value).then(function(unwrapped) {
+                      // When a yielded Promise is resolved, its final value becomes
+                      // the .value of the Promise<{value,done}> result for the
+                      // current iteration.
+                      result.value = unwrapped;
+                      resolve(result);
+                    }, function(error) {
+                      // If a rejected Promise was yielded, throw the rejection back
+                      // into the async generator function so it can be handled there.
+                      return invoke("throw", error, resolve, reject);
+                    });
+                  }
+                }
+
+                var previousPromise;
+
+                function enqueue(method, arg) {
+                  function callInvokeWithMethodAndArg() {
+                    return new Promise(function(resolve, reject) {
+                      invoke(method, arg, resolve, reject);
+                    });
+                  }
+
+                  return previousPromise =
+                    // If enqueue has been called before, then we want to wait until
+                    // all previous Promises have been resolved before calling invoke,
+                    // so that results are always delivered in the correct order. If
+                    // enqueue has not been called before, then it is important to
+                    // call invoke immediately, without waiting on a callback to fire,
+                    // so that the async generator function has the opportunity to do
+                    // any necessary setup in a predictable way. This predictability
+                    // is why the Promise constructor synchronously invokes its
+                    // executor callback, and why async functions synchronously
+                    // execute code before the first await. Since we implement simple
+                    // async functions in terms of async generators, it is especially
+                    // important to get this right, even though it requires care.
+                    previousPromise ? previousPromise.then(
+                      callInvokeWithMethodAndArg,
+                      // Avoid propagating failures to Promises returned by later
+                      // invocations of the iterator.
+                      callInvokeWithMethodAndArg
+                    ) : callInvokeWithMethodAndArg();
+                }
+
+                // Define the unified helper method that is used to implement .next,
+                // .throw, and .return (see defineIteratorMethods).
+                this._invoke = enqueue;
+              }
+
+              defineIteratorMethods(AsyncIterator.prototype);
+              AsyncIterator.prototype[asyncIteratorSymbol] = function () {
+                return this;
+              };
+              exports.AsyncIterator = AsyncIterator;
+
+              // Note that simple async functions are implemented on top of
+              // AsyncIterator objects; they just return a Promise for the value of
+              // the final result produced by the iterator.
+              exports.async = function(innerFn, outerFn, self, tryLocsList) {
+                var iter = new AsyncIterator(
+                  wrap(innerFn, outerFn, self, tryLocsList)
+                );
+
+                return exports.isGeneratorFunction(outerFn)
+                  ? iter // If outerFn is a generator, return the full iterator.
+                  : iter.next().then(function(result) {
+                      return result.done ? result.value : iter.next();
+                    });
+              };
+
+              function makeInvokeMethod(innerFn, self, context) {
+                var state = GenStateSuspendedStart;
+
+                return function invoke(method, arg) {
+                  if (state === GenStateExecuting) {
+                    throw new Error("Generator is already running");
+                  }
+
+                  if (state === GenStateCompleted) {
+                    if (method === "throw") {
+                      throw arg;
+                    }
+
+                    // Be forgiving, per 25.3.3.3.3 of the spec:
+                    // https://people.mozilla.org/~jorendorff/es6-draft.html#sec-generatorresume
+                    return doneResult();
+                  }
+
+                  context.method = method;
+                  context.arg = arg;
+
+                  while (true) {
+                    var delegate = context.delegate;
+                    if (delegate) {
+                      var delegateResult = maybeInvokeDelegate(delegate, context);
+                      if (delegateResult) {
+                        if (delegateResult === ContinueSentinel) continue;
+                        return delegateResult;
+                      }
+                    }
+
+                    if (context.method === "next") {
+                      // Setting context._sent for legacy support of Babel's
+                      // function.sent implementation.
+                      context.sent = context._sent = context.arg;
+
+                    } else if (context.method === "throw") {
+                      if (state === GenStateSuspendedStart) {
+                        state = GenStateCompleted;
+                        throw context.arg;
+                      }
+
+                      context.dispatchException(context.arg);
+
+                    } else if (context.method === "return") {
+                      context.abrupt("return", context.arg);
+                    }
+
+                    state = GenStateExecuting;
+
+                    var record = tryCatch(innerFn, self, context);
+                    if (record.type === "normal") {
+                      // If an exception is thrown from innerFn, we leave state ===
+                      // GenStateExecuting and loop back for another invocation.
+                      state = context.done
+                        ? GenStateCompleted
+                        : GenStateSuspendedYield;
+
+                      if (record.arg === ContinueSentinel) {
+                        continue;
+                      }
+
+                      return {
+                        value: record.arg,
+                        done: context.done
+                      };
+
+                    } else if (record.type === "throw") {
+                      state = GenStateCompleted;
+                      // Dispatch the exception by looping back around to the
+                      // context.dispatchException(context.arg) call above.
+                      context.method = "throw";
+                      context.arg = record.arg;
+                    }
+                  }
+                };
+              }
+
+              // Call delegate.iterator[context.method](context.arg) and handle the
+              // result, either by returning a { value, done } result from the
+              // delegate iterator, or by modifying context.method and context.arg,
+              // setting context.delegate to null, and returning the ContinueSentinel.
+              function maybeInvokeDelegate(delegate, context) {
+                var method = delegate.iterator[context.method];
+                if (method === undefined) {
+                  // A .throw or .return when the delegate iterator has no .throw
+                  // method always terminates the yield* loop.
+                  context.delegate = null;
+
+                  if (context.method === "throw") {
+                    // Note: ["return"] must be used for ES3 parsing compatibility.
+                    if (delegate.iterator["return"]) {
+                      // If the delegate iterator has a return method, give it a
+                      // chance to clean up.
+                      context.method = "return";
+                      context.arg = undefined;
+                      maybeInvokeDelegate(delegate, context);
+
+                      if (context.method === "throw") {
+                        // If maybeInvokeDelegate(context) changed context.method from
+                        // "return" to "throw", let that override the TypeError below.
+                        return ContinueSentinel;
+                      }
+                    }
+
+                    context.method = "throw";
+                    context.arg = new TypeError(
+                      "The iterator does not provide a 'throw' method");
+                  }
+
+                  return ContinueSentinel;
+                }
+
+                var record = tryCatch(method, delegate.iterator, context.arg);
+
+                if (record.type === "throw") {
+                  context.method = "throw";
+                  context.arg = record.arg;
+                  context.delegate = null;
+                  return ContinueSentinel;
+                }
+
+                var info = record.arg;
+
+                if (! info) {
+                  context.method = "throw";
+                  context.arg = new TypeError("iterator result is not an object");
+                  context.delegate = null;
+                  return ContinueSentinel;
+                }
+
+                if (info.done) {
+                  // Assign the result of the finished delegate to the temporary
+                  // variable specified by delegate.resultName (see delegateYield).
+                  context[delegate.resultName] = info.value;
+
+                  // Resume execution at the desired location (see delegateYield).
+                  context.next = delegate.nextLoc;
+
+                  // If context.method was "throw" but the delegate handled the
+                  // exception, let the outer generator proceed normally. If
+                  // context.method was "next", forget context.arg since it has been
+                  // "consumed" by the delegate iterator. If context.method was
+                  // "return", allow the original .return call to continue in the
+                  // outer generator.
+                  if (context.method !== "return") {
+                    context.method = "next";
+                    context.arg = undefined;
+                  }
+
+                } else {
+                  // Re-yield the result returned by the delegate method.
+                  return info;
+                }
+
+                // The delegate iterator is finished, so forget it and continue with
+                // the outer generator.
+                context.delegate = null;
+                return ContinueSentinel;
+              }
+
+              // Define Generator.prototype.{next,throw,return} in terms of the
+              // unified ._invoke helper method.
+              defineIteratorMethods(Gp);
+
+              Gp[toStringTagSymbol] = "Generator";
+
+              // A Generator should always return itself as the iterator object when the
+              // @@iterator function is called on it. Some browsers' implementations of the
+              // iterator prototype chain incorrectly implement this, causing the Generator
+              // object to not be returned from this call. This ensures that doesn't happen.
+              // See https://github.com/facebook/regenerator/issues/274 for more details.
+              Gp[iteratorSymbol] = function() {
+                return this;
+              };
+
+              Gp.toString = function() {
+                return "[object Generator]";
+              };
+
+              function pushTryEntry(locs) {
+                var entry = { tryLoc: locs[0] };
+
+                if (1 in locs) {
+                  entry.catchLoc = locs[1];
+                }
+
+                if (2 in locs) {
+                  entry.finallyLoc = locs[2];
+                  entry.afterLoc = locs[3];
+                }
+
+                this.tryEntries.push(entry);
+              }
+
+              function resetTryEntry(entry) {
+                var record = entry.completion || {};
+                record.type = "normal";
+                delete record.arg;
+                entry.completion = record;
+              }
+
+              function Context(tryLocsList) {
+                // The root entry object (effectively a try statement without a catch
+                // or a finally block) gives us a place to store values thrown from
+                // locations where there is no enclosing try statement.
+                this.tryEntries = [{ tryLoc: "root" }];
+                tryLocsList.forEach(pushTryEntry, this);
+                this.reset(true);
+              }
+
+              exports.keys = function(object) {
+                var keys = [];
+                for (var key in object) {
+                  keys.push(key);
+                }
+                keys.reverse();
+
+                // Rather than returning an object with a next method, we keep
+                // things simple and return the next function itself.
+                return function next() {
+                  while (keys.length) {
+                    var key = keys.pop();
+                    if (key in object) {
+                      next.value = key;
+                      next.done = false;
+                      return next;
+                    }
+                  }
+
+                  // To avoid creating an additional object, we just hang the .value
+                  // and .done properties off the next function object itself. This
+                  // also ensures that the minifier will not anonymize the function.
+                  next.done = true;
+                  return next;
+                };
+              };
+
+              function values(iterable) {
+                if (iterable) {
+                  var iteratorMethod = iterable[iteratorSymbol];
+                  if (iteratorMethod) {
+                    return iteratorMethod.call(iterable);
+                  }
+
+                  if (typeof iterable.next === "function") {
+                    return iterable;
+                  }
+
+                  if (!isNaN(iterable.length)) {
+                    var i = -1, next = function next() {
+                      while (++i < iterable.length) {
+                        if (hasOwn.call(iterable, i)) {
+                          next.value = iterable[i];
+                          next.done = false;
+                          return next;
+                        }
+                      }
+
+                      next.value = undefined;
+                      next.done = true;
+
+                      return next;
+                    };
+
+                    return next.next = next;
+                  }
+                }
+
+                // Return an iterator with no values.
+                return { next: doneResult };
+              }
+              exports.values = values;
+
+              function doneResult() {
+                return { value: undefined, done: true };
+              }
+
+              Context.prototype = {
+                constructor: Context,
+
+                reset: function(skipTempReset) {
+                  this.prev = 0;
+                  this.next = 0;
+                  // Resetting context._sent for legacy support of Babel's
+                  // function.sent implementation.
+                  this.sent = this._sent = undefined;
+                  this.done = false;
+                  this.delegate = null;
+
+                  this.method = "next";
+                  this.arg = undefined;
+
+                  this.tryEntries.forEach(resetTryEntry);
+
+                  if (!skipTempReset) {
+                    for (var name in this) {
+                      // Not sure about the optimal order of these conditions:
+                      if (name.charAt(0) === "t" &&
+                          hasOwn.call(this, name) &&
+                          !isNaN(+name.slice(1))) {
+                        this[name] = undefined;
+                      }
+                    }
+                  }
+                },
+
+                stop: function() {
+                  this.done = true;
+
+                  var rootEntry = this.tryEntries[0];
+                  var rootRecord = rootEntry.completion;
+                  if (rootRecord.type === "throw") {
+                    throw rootRecord.arg;
+                  }
+
+                  return this.rval;
+                },
+
+                dispatchException: function(exception) {
+                  if (this.done) {
+                    throw exception;
+                  }
+
+                  var context = this;
+                  function handle(loc, caught) {
+                    record.type = "throw";
+                    record.arg = exception;
+                    context.next = loc;
+
+                    if (caught) {
+                      // If the dispatched exception was caught by a catch block,
+                      // then let that catch block handle the exception normally.
+                      context.method = "next";
+                      context.arg = undefined;
+                    }
+
+                    return !! caught;
+                  }
+
+                  for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+                    var entry = this.tryEntries[i];
+                    var record = entry.completion;
+
+                    if (entry.tryLoc === "root") {
+                      // Exception thrown outside of any try block that could handle
+                      // it, so set the completion value of the entire function to
+                      // throw the exception.
+                      return handle("end");
+                    }
+
+                    if (entry.tryLoc <= this.prev) {
+                      var hasCatch = hasOwn.call(entry, "catchLoc");
+                      var hasFinally = hasOwn.call(entry, "finallyLoc");
+
+                      if (hasCatch && hasFinally) {
+                        if (this.prev < entry.catchLoc) {
+                          return handle(entry.catchLoc, true);
+                        } else if (this.prev < entry.finallyLoc) {
+                          return handle(entry.finallyLoc);
+                        }
+
+                      } else if (hasCatch) {
+                        if (this.prev < entry.catchLoc) {
+                          return handle(entry.catchLoc, true);
+                        }
+
+                      } else if (hasFinally) {
+                        if (this.prev < entry.finallyLoc) {
+                          return handle(entry.finallyLoc);
+                        }
+
+                      } else {
+                        throw new Error("try statement without catch or finally");
+                      }
+                    }
+                  }
+                },
+
+                abrupt: function(type, arg) {
+                  for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+                    var entry = this.tryEntries[i];
+                    if (entry.tryLoc <= this.prev &&
+                        hasOwn.call(entry, "finallyLoc") &&
+                        this.prev < entry.finallyLoc) {
+                      var finallyEntry = entry;
+                      break;
+                    }
+                  }
+
+                  if (finallyEntry &&
+                      (type === "break" ||
+                       type === "continue") &&
+                      finallyEntry.tryLoc <= arg &&
+                      arg <= finallyEntry.finallyLoc) {
+                    // Ignore the finally entry if control is not jumping to a
+                    // location outside the try/catch block.
+                    finallyEntry = null;
+                  }
+
+                  var record = finallyEntry ? finallyEntry.completion : {};
+                  record.type = type;
+                  record.arg = arg;
+
+                  if (finallyEntry) {
+                    this.method = "next";
+                    this.next = finallyEntry.finallyLoc;
+                    return ContinueSentinel;
+                  }
+
+                  return this.complete(record);
+                },
+
+                complete: function(record, afterLoc) {
+                  if (record.type === "throw") {
+                    throw record.arg;
+                  }
+
+                  if (record.type === "break" ||
+                      record.type === "continue") {
+                    this.next = record.arg;
+                  } else if (record.type === "return") {
+                    this.rval = this.arg = record.arg;
+                    this.method = "return";
+                    this.next = "end";
+                  } else if (record.type === "normal" && afterLoc) {
+                    this.next = afterLoc;
+                  }
+
+                  return ContinueSentinel;
+                },
+
+                finish: function(finallyLoc) {
+                  for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+                    var entry = this.tryEntries[i];
+                    if (entry.finallyLoc === finallyLoc) {
+                      this.complete(entry.completion, entry.afterLoc);
+                      resetTryEntry(entry);
+                      return ContinueSentinel;
+                    }
+                  }
+                },
+
+                "catch": function(tryLoc) {
+                  for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+                    var entry = this.tryEntries[i];
+                    if (entry.tryLoc === tryLoc) {
+                      var record = entry.completion;
+                      if (record.type === "throw") {
+                        var thrown = record.arg;
+                        resetTryEntry(entry);
+                      }
+                      return thrown;
+                    }
+                  }
+
+                  // The context.catch method must only be called with a location
+                  // argument that corresponds to a known catch block.
+                  throw new Error("illegal catch attempt");
+                },
+
+                delegateYield: function(iterable, resultName, nextLoc) {
+                  this.delegate = {
+                    iterator: values(iterable),
+                    resultName: resultName,
+                    nextLoc: nextLoc
+                  };
+
+                  if (this.method === "next") {
+                    // Deliberately forget the last sent value so that we don't
+                    // accidentally pass it on to the delegate.
+                    this.arg = undefined;
+                  }
+
+                  return ContinueSentinel;
+                }
+              };
+
+              // Regardless of whether this script is executing as a CommonJS module
+              // or not, return the runtime object so that we can declare the variable
+              // regeneratorRuntime in the outer scope, which allows this module to be
+              // injected easily by `bin/regenerator --include-runtime script.js`.
+              return exports;
+
+            }(
+              // If this script is executing as a CommonJS module, use module.exports
+              // as the regeneratorRuntime namespace. Otherwise create a new empty
+              // object. Either way, the resulting object will be used to initialize
+              // the regeneratorRuntime variable at the top of this file.
+              module.exports
+            ));
+
+            try {
+              regeneratorRuntime = runtime;
+            } catch (accidentalStrictMode) {
+              // This module should not be running in strict mode, so the above
+              // assignment should always work unless something is misconfigured. Just
+              // in case runtime.js accidentally runs in strict mode, we can escape
+              // strict mode using a global Function call. This could conceivably fail
+              // if a Content Security Policy forbids using Function, but in that case
+              // the proper solution is to fix the accidental strict mode problem. If
+              // you've misconfigured your bundler to force strict mode and applied a
+              // CSP to forbid Function, and you're not willing to fix either of those
+              // problems, please detail your unique predicament in a GitHub issue.
+              Function("r", "regeneratorRuntime = r")(runtime);
+            }
+            });
+
             (function(global) {
               /**
                * Polyfill URLSearchParams
@@ -8791,17 +9460,7 @@ function __processPageAndSerializeForIE() {
                 global.URLSearchParams = URLSearchParams;
               };
 
-              var checkIfURLSearchParamsSupported = function() {
-                try {
-                  var URLSearchParams = global.URLSearchParams;
-
-                  return (new URLSearchParams('?a=1').toString() === 'a=1') && (typeof URLSearchParams.prototype.set === 'function');
-                } catch (e) {
-                  return false;
-                }
-              };
-
-              if (!checkIfURLSearchParamsSupported()) {
+              if (!('URLSearchParams' in global) || (new global.URLSearchParams('?a=1').toString() !== 'a=1')) {
                 polyfillURLSearchParams();
               }
 
@@ -9106,6 +9765,10 @@ function __processPageAndSerializeForIE() {
                 : ((typeof window !== 'undefined') ? window
                 : ((typeof self !== 'undefined') ? self : undefined))
             );
+
+            var urlPolyfill = /*#__PURE__*/Object.freeze({
+
+            });
 
             var support = {
               searchParams: 'URLSearchParams' in self,
@@ -9547,7 +10210,7 @@ function __processPageAndSerializeForIE() {
               DOMException.prototype.constructor = DOMException;
             }
 
-            function fetch(input, init) {
+            function fetch$1(input, init) {
               return new Promise(function(resolve, reject) {
                 var request = new Request(input, init);
 
@@ -9615,114 +10278,173 @@ function __processPageAndSerializeForIE() {
               })
             }
 
-            fetch.polyfill = true;
+            fetch$1.polyfill = true;
 
             if (!self.fetch) {
-              self.fetch = fetch;
+              self.fetch = fetch$1;
               self.Headers = Headers;
               self.Request = Request;
               self.Response = Response;
             }
 
-            // License: https://github.com/beatgammit/base64-js/blob/bf68aaa277d9de7007cc0c58279c411bb10670ac/LICENSE
+            var fetch$2 = /*#__PURE__*/Object.freeze({
+                        Headers: Headers,
+                        Request: Request,
+                        Response: Response,
+                        get DOMException () { return DOMException; },
+                        fetch: fetch$1
+            });
 
-            function arrayBufferToBase64(ab) {
-              var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('');
-              var uint8 = new Uint8Array(ab);
-              var len = uint8.length;
-              var extraBytes = len % 3; // if we have 1 byte left, pad 2 bytes
-
-              var parts = [];
-              var maxChunkLength = 16383; // must be multiple of 3
-
-              var tmp; // go through the array every three bytes, we'll deal with trailing stuff later
-
-              for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-                parts.push(encodeChunk(i, i + maxChunkLength > len2 ? len2 : i + maxChunkLength));
-              } // pad the end with zeros, but make sure to not forget the extra bytes
-
-
-              if (extraBytes === 1) {
-                tmp = uint8[len - 1];
-                parts.push(lookup[tmp >> 2] + lookup[tmp << 4 & 0x3f] + '==');
-              } else if (extraBytes === 2) {
-                tmp = (uint8[len - 2] << 8) + uint8[len - 1];
-                parts.push(lookup[tmp >> 10] + lookup[tmp >> 4 & 0x3f] + lookup[tmp << 2 & 0x3f] + '=');
-              }
-
-              return parts.join('');
-
-              function tripletToBase64(num) {
-                return lookup[num >> 18 & 0x3f] + lookup[num >> 12 & 0x3f] + lookup[num >> 6 & 0x3f] + lookup[num & 0x3f];
-              }
-
-              function encodeChunk(start, end) {
-                var tmp;
-                var output = [];
-
-                for (var _i = start; _i < end; _i += 3) {
-                  tmp = (uint8[_i] << 16 & 0xff0000) + (uint8[_i + 1] << 8 & 0xff00) + (uint8[_i + 2] & 0xff);
-                  output.push(tripletToBase64(tmp));
-                }
-
-                return output.join('');
-              }
-            }
-
-            var arrayBufferToBase64_1 = arrayBufferToBase64;
-
-            function extractLinks() {
-              var doc = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
-              var srcsetUrls = Array.from(doc.querySelectorAll('img[srcset],source[srcset]')).map(function (srcsetEl) {
-                return srcsetEl.getAttribute('srcset').split(', ').map(function (str) {
-                  return str.trim().split(/\s+/)[0];
-                });
-              }).reduce(function (acc, urls) {
-                return acc.concat(urls);
-              }, []);
-              var srcUrls = Array.from(doc.querySelectorAll('img[src],source[src],input[type="image"][src]')).map(function (srcEl) {
-                return srcEl.getAttribute('src');
-              });
-              var imageUrls = Array.from(doc.querySelectorAll('image,use')).map(function (hrefEl) {
-                return hrefEl.getAttribute('href') || hrefEl.getAttribute('xlink:href');
-              }).filter(function (u) {
-                return u && u[0] !== '#';
-              });
-              var objectUrls = Array.from(doc.querySelectorAll('object')).map(function (el) {
-                return el.getAttribute('data');
-              }).filter(Boolean);
-              var cssUrls = Array.from(doc.querySelectorAll('link[rel="stylesheet"]')).map(function (link) {
-                return link.getAttribute('href');
-              });
-              var videoPosterUrls = Array.from(doc.querySelectorAll('video[poster]')).map(function (videoEl) {
-                return videoEl.getAttribute('poster');
-              });
-              return Array.from(srcsetUrls).concat(Array.from(srcUrls)).concat(Array.from(imageUrls)).concat(Array.from(cssUrls)).concat(Array.from(videoPosterUrls)).concat(Array.from(objectUrls));
-            }
-
-            var extractLinks_1 = extractLinks;
-
-            function uuid() {
-              return window.crypto.getRandomValues(new Uint32Array(1))[0];
-            }
-
-            var uuid_1 = uuid;
-
-            function isInlineFrame(frame) {
-              return !/^https?:.+/.test(frame.src) || frame.contentDocument && frame.contentDocument.location && frame.contentDocument.location.href === 'about:blank';
-            }
-
-            var isInlineFrame_1 = isInlineFrame;
-
-            function isAccessibleFrame(frame) {
+            function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
               try {
-                var doc = frame.contentDocument;
-                return !!(doc && doc.defaultView && doc.defaultView.frameElement);
-              } catch (err) {// for CORS frames
+                var info = gen[key](arg);
+                var value = info.value;
+              } catch (error) {
+                reject(error);
+                return;
+              }
+
+              if (info.done) {
+                resolve(value);
+              } else {
+                Promise.resolve(value).then(_next, _throw);
               }
             }
 
-            var isAccessibleFrame_1 = isAccessibleFrame;
+            function _asyncToGenerator(fn) {
+              return function () {
+                var self = this,
+                    args = arguments;
+                return new Promise(function (resolve, reject) {
+                  var gen = fn.apply(self, args);
+
+                  function _next(value) {
+                    asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+                  }
+
+                  function _throw(err) {
+                    asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+                  }
+
+                  _next(undefined);
+                });
+              };
+            }
+
+            var styleProps = ['background-repeat', 'background-origin', 'background-position', 'background-color', 'background-image', 'background-size', 'border-width', 'border-color', 'border-style', 'color', 'display', 'font-size', 'line-height', 'margin', 'opacity', 'overflow', 'padding', 'visibility'];
+            var rectProps = ['width', 'height', 'top', 'left'];
+            var ignoredTagNames = ['HEAD', 'SCRIPT'];
+            var defaultDomProps = {
+              styleProps: styleProps,
+              rectProps: rectProps,
+              ignoredTagNames: ignoredTagNames
+            };
+
+            var bgImageRe = /url\((?!['"]?:)['"]?([^'")]*)['"]?\)/;
+
+            function getBackgroundImageUrl(cssText) {
+              var match = cssText ? cssText.match(bgImageRe) : undefined;
+              return match ? match[1] : match;
+            }
+
+            var getBackgroundImageUrl_1 = getBackgroundImageUrl;
+
+            var psetTimeout = function psetTimeout(t) {
+              return new Promise(function (res) {
+                setTimeout(res, t);
+              });
+            };
+
+            function getImageSizes(_x) {
+              return _getImageSizes.apply(this, arguments);
+            }
+
+            function _getImageSizes() {
+              _getImageSizes = _asyncToGenerator(
+              /*#__PURE__*/
+              regeneratorRuntime.mark(function _callee(_ref) {
+                var bgImages, _ref$timeout, timeout, _ref$Image, Image;
+
+                return regeneratorRuntime.wrap(function _callee$(_context) {
+                  while (1) {
+                    switch (_context.prev = _context.next) {
+                      case 0:
+                        bgImages = _ref.bgImages, _ref$timeout = _ref.timeout, timeout = _ref$timeout === void 0 ? 5000 : _ref$timeout, _ref$Image = _ref.Image, Image = _ref$Image === void 0 ? window.Image : _ref$Image;
+                        _context.next = 3;
+                        return Promise.all(Array.from(bgImages).map(function (url) {
+                          return Promise.race([new Promise(function (resolve) {
+                            var img = new Image();
+
+                            img.onload = function () {
+                              return resolve({
+                                url: url,
+                                width: img.naturalWidth,
+                                height: img.naturalHeight
+                              });
+                            };
+
+                            img.onerror = function () {
+                              return resolve();
+                            };
+
+                            img.src = url;
+                          }), psetTimeout(timeout)]);
+                        }));
+
+                      case 3:
+                        _context.t0 = function (images, curr) {
+                          if (curr) {
+                            images[curr.url] = {
+                              width: curr.width,
+                              height: curr.height
+                            };
+                          }
+
+                          return images;
+                        };
+
+                        _context.t1 = {};
+                        return _context.abrupt("return", _context.sent.reduce(_context.t0, _context.t1));
+
+                      case 6:
+                      case "end":
+                        return _context.stop();
+                    }
+                  }
+                }, _callee);
+              }));
+              return _getImageSizes.apply(this, arguments);
+            }
+
+            var getImageSizes_1 = getImageSizes;
+
+            function genXpath(el) {
+              if (!el.ownerDocument) return ''; // this is the document node
+
+              var xpath = '',
+                  currEl = el,
+                  doc = el.ownerDocument,
+                  frameElement = doc.defaultView.frameElement;
+
+              while (currEl !== doc) {
+                xpath = "".concat(currEl.tagName, "[").concat(getIndex(currEl), "]/").concat(xpath);
+                currEl = currEl.parentNode;
+              }
+
+              if (frameElement) {
+                xpath = "".concat(genXpath(frameElement), ",").concat(xpath);
+              }
+
+              return xpath.replace(/\/$/, '');
+            }
+
+            function getIndex(el) {
+              return Array.prototype.filter.call(el.parentNode.childNodes, function (node) {
+                return node.tagName === el.tagName;
+              }).indexOf(el) + 1;
+            }
+
+            var genXpath_1 = genXpath;
 
             function absolutizeUrl(url, absoluteUrl) {
               return new URL(url, absoluteUrl).href;
@@ -9730,886 +10452,887 @@ function __processPageAndSerializeForIE() {
 
             var absolutizeUrl_1 = absolutizeUrl;
 
-            function domNodesToCdt(docNode, baseUrl) {
-              var cdt = [{
-                nodeType: Node.DOCUMENT_NODE
-              }];
-              var docRoots = [docNode];
-              var canvasElements = [];
-              var inlineFrames = [];
-              cdt[0].childNodeIndexes = childrenFactory(cdt, docNode.childNodes);
-              return {
-                cdt: cdt,
-                docRoots: docRoots,
-                canvasElements: canvasElements,
-                inlineFrames: inlineFrames
-              };
+            function makeGetBundledCssFromCssText(_ref) {
+              var parseCss = _ref.parseCss,
+                  CSSImportRule = _ref.CSSImportRule,
+                  absolutizeUrl = _ref.absolutizeUrl,
+                  fetchCss = _ref.fetchCss,
+                  unfetchedToken = _ref.unfetchedToken;
+              return (
+                /*#__PURE__*/
+                function () {
+                  var _getBundledCssFromCssText = _asyncToGenerator(
+                  /*#__PURE__*/
+                  regeneratorRuntime.mark(function _callee(cssText, resourceUrl) {
+                    var unfetchedResources, bundledCss, styleSheet, _i, _Array$from, rule, nestedUrl, nestedResource, _ref2, nestedCssText, nestedUnfetchedResources;
 
-              function childrenFactory(cdt, elementNodes) {
-                if (!elementNodes || elementNodes.length === 0) return null;
-                var childIndexes = [];
-                Array.prototype.forEach.call(elementNodes, function (elementNode) {
-                  var index = elementNodeFactory(cdt, elementNode);
+                    return regeneratorRuntime.wrap(function _callee$(_context) {
+                      while (1) {
+                        switch (_context.prev = _context.next) {
+                          case 0:
+                            bundledCss = '';
+                            _context.prev = 1;
+                            styleSheet = parseCss(cssText);
+                            _i = 0, _Array$from = Array.from(styleSheet.cssRules);
 
-                  if (index !== null) {
-                    childIndexes.push(index);
-                  }
-                });
-                return childIndexes;
-              }
+                          case 4:
+                            if (!(_i < _Array$from.length)) {
+                              _context.next = 26;
+                              break;
+                            }
 
-              function elementNodeFactory(cdt, elementNode) {
-                var node, manualChildNodeIndexes, dummyUrl;
-                var nodeType = elementNode.nodeType;
+                            rule = _Array$from[_i];
 
-                if ([Node.ELEMENT_NODE, Node.DOCUMENT_FRAGMENT_NODE].includes(nodeType)) {
-                  if (elementNode.nodeName !== 'SCRIPT') {
-                    if (elementNode.nodeName === 'STYLE' && elementNode.sheet && elementNode.sheet.cssRules.length) {
-                      cdt.push(getCssRulesNode(elementNode));
-                      manualChildNodeIndexes = [cdt.length - 1];
-                    }
+                            if (!(rule instanceof CSSImportRule)) {
+                              _context.next = 23;
+                              break;
+                            }
 
-                    node = getBasicNode(elementNode);
-                    node.childNodeIndexes = manualChildNodeIndexes || (elementNode.childNodes.length ? childrenFactory(cdt, elementNode.childNodes) : []);
+                            nestedUrl = absolutizeUrl(rule.href, resourceUrl);
+                            _context.next = 10;
+                            return fetchCss(nestedUrl);
 
-                    if (elementNode.shadowRoot) {
-                      node.shadowRootIndex = elementNodeFactory(cdt, elementNode.shadowRoot);
-                      docRoots.push(elementNode.shadowRoot);
-                    }
+                          case 10:
+                            nestedResource = _context.sent;
 
-                    if (elementNode.nodeName === 'CANVAS') {
-                      dummyUrl = absolutizeUrl_1("applitools-canvas-".concat(uuid_1(), ".png"), baseUrl);
-                      node.attributes.push({
-                        name: 'data-applitools-src',
-                        value: dummyUrl
-                      });
-                      canvasElements.push({
-                        element: elementNode,
-                        url: dummyUrl
-                      });
-                    }
+                            if (!(nestedResource !== undefined)) {
+                              _context.next = 21;
+                              break;
+                            }
 
-                    if (elementNode.nodeName === 'IFRAME' && isAccessibleFrame_1(elementNode) && isInlineFrame_1(elementNode)) {
-                      dummyUrl = absolutizeUrl_1("?applitools-iframe=".concat(uuid_1()), baseUrl);
-                      node.attributes.push({
-                        name: 'data-applitools-src',
-                        value: dummyUrl
-                      });
-                      inlineFrames.push({
-                        element: elementNode,
-                        url: dummyUrl
-                      });
-                    }
-                  } else {
-                    node = getScriptNode(elementNode);
-                  }
-                } else if (nodeType === Node.TEXT_NODE) {
-                  node = getTextNode(elementNode);
-                } else if (nodeType === Node.DOCUMENT_TYPE_NODE) {
-                  node = getDocNode(elementNode);
-                }
+                            _context.next = 14;
+                            return getBundledCssFromCssText(nestedResource, nestedUrl);
 
-                if (node) {
-                  cdt.push(node);
-                  return cdt.length - 1;
-                } else {
-                  return null;
-                }
-              }
+                          case 14:
+                            _ref2 = _context.sent;
+                            nestedCssText = _ref2.bundledCss;
+                            nestedUnfetchedResources = _ref2.unfetchedResources;
+                            nestedUnfetchedResources && (unfetchedResources = new Set(nestedUnfetchedResources));
+                            bundledCss = "".concat(nestedCssText).concat(bundledCss);
+                            _context.next = 23;
+                            break;
 
-              function nodeAttributes(_ref) {
-                var _ref$attributes = _ref.attributes,
-                    attributes = _ref$attributes === void 0 ? {} : _ref$attributes;
-                return Object.keys(attributes).filter(function (k) {
-                  return attributes[k] && attributes[k].name;
-                });
-              }
+                          case 21:
+                            unfetchedResources = new Set([nestedUrl]);
+                            bundledCss = "\n".concat(unfetchedToken).concat(nestedUrl).concat(unfetchedToken);
 
-              function getCssRulesNode(elementNode) {
-                return {
-                  nodeType: Node.TEXT_NODE,
-                  nodeValue: Array.from(elementNode.sheet.cssRules).map(function (rule) {
-                    return rule.cssText;
-                  }).join('')
-                };
-              }
+                          case 23:
+                            _i++;
+                            _context.next = 4;
+                            break;
 
-              function getBasicNode(elementNode) {
-                var node = {
-                  nodeType: elementNode.nodeType,
-                  nodeName: elementNode.nodeName,
-                  attributes: nodeAttributes(elementNode).map(function (key) {
-                    var value = elementNode.attributes[key].value;
-                    var name = elementNode.attributes[key].name;
+                          case 26:
+                            _context.next = 31;
+                            break;
 
-                    if (/^blob:/.test(value)) {
-                      value = value.replace(/^blob:/, '');
-                    }
+                          case 28:
+                            _context.prev = 28;
+                            _context.t0 = _context["catch"](1);
+                            console.log("error during getBundledCssFromCssText, resourceUrl=".concat(resourceUrl), _context.t0);
 
-                    return {
-                      name: name,
-                      value: value
-                    };
-                  })
-                };
+                          case 31:
+                            bundledCss = "".concat(bundledCss).concat(getCss(cssText, resourceUrl));
+                            return _context.abrupt("return", {
+                              bundledCss: bundledCss,
+                              unfetchedResources: unfetchedResources
+                            });
 
-                if (elementNode.tagName === 'INPUT' && ['checkbox', 'radio'].includes(elementNode.type)) {
-                  if (elementNode.attributes.checked && !elementNode.checked) {
-                    var idx = node.attributes.findIndex(function (a) {
-                      return a.name === 'checked';
-                    });
-                    node.attributes.splice(idx, 1);
-                  }
-
-                  if (!elementNode.attributes.checked && elementNode.checked) {
-                    node.attributes.push({
-                      name: 'checked'
-                    });
-                  }
-                }
-
-                if (elementNode.tagName === 'INPUT' && elementNode.type === 'text' && (elementNode.attributes.value && elementNode.attributes.value.value) !== elementNode.value) {
-                  var nodeAttr = node.attributes.find(function (a) {
-                    return a.name === 'value';
-                  });
-
-                  if (nodeAttr) {
-                    nodeAttr.value = elementNode.value;
-                  } else {
-                    node.attributes.push({
-                      name: 'value',
-                      value: elementNode.value
-                    });
-                  }
-                }
-
-                return node;
-              }
-
-              function getScriptNode(elementNode) {
-                return {
-                  nodeType: Node.ELEMENT_NODE,
-                  nodeName: 'SCRIPT',
-                  attributes: nodeAttributes(elementNode).map(function (key) {
-                    return {
-                      name: elementNode.attributes[key].name,
-                      value: elementNode.attributes[key].value
-                    };
-                  }).filter(function (attr) {
-                    return attr.name !== 'src';
-                  }),
-                  childNodeIndexes: []
-                };
-              }
-
-              function getTextNode(elementNode) {
-                return {
-                  nodeType: Node.TEXT_NODE,
-                  nodeValue: elementNode.nodeValue
-                };
-              }
-
-              function getDocNode(elementNode) {
-                return {
-                  nodeType: Node.DOCUMENT_TYPE_NODE,
-                  nodeName: elementNode.nodeName
-                };
-              }
-            }
-
-            var domNodesToCdt_1 = domNodesToCdt;
-
-            function uniq(arr) {
-              var result = [];
-              new Set(arr).forEach(function (v) {
-                return v && result.push(v);
-              });
-              return result;
-            }
-
-            var uniq_1 = uniq;
-
-            function aggregateResourceUrlsAndBlobs(resourceUrlsAndBlobsArr) {
-              return resourceUrlsAndBlobsArr.reduce(function (_ref, _ref2) {
-                var allResourceUrls = _ref.resourceUrls,
-                    allBlobsObj = _ref.blobsObj;
-                var resourceUrls = _ref2.resourceUrls,
-                    blobsObj = _ref2.blobsObj;
-                return {
-                  resourceUrls: uniq_1(allResourceUrls.concat(resourceUrls)),
-                  blobsObj: Object.assign(allBlobsObj, blobsObj)
-                };
-              }, {
-                resourceUrls: [],
-                blobsObj: {}
-              });
-            }
-
-            var aggregateResourceUrlsAndBlobs_1 = aggregateResourceUrlsAndBlobs;
-
-            function makeGetResourceUrlsAndBlobs(_ref) {
-              var processResource = _ref.processResource,
-                  aggregateResourceUrlsAndBlobs = _ref.aggregateResourceUrlsAndBlobs;
-              return function getResourceUrlsAndBlobs(_ref2) {
-                var documents = _ref2.documents,
-                    urls = _ref2.urls,
-                    _ref2$forceCreateStyl = _ref2.forceCreateStyle,
-                    forceCreateStyle = _ref2$forceCreateStyl === void 0 ? false : _ref2$forceCreateStyl;
-                return Promise.all(urls.map(function (url) {
-                  return processResource({
-                    url: url,
-                    documents: documents,
-                    getResourceUrlsAndBlobs: getResourceUrlsAndBlobs,
-                    forceCreateStyle: forceCreateStyle
-                  });
-                })).then(function (resourceUrlsAndBlobsArr) {
-                  return aggregateResourceUrlsAndBlobs(resourceUrlsAndBlobsArr);
-                });
-              };
-            }
-
-            var getResourceUrlsAndBlobs = makeGetResourceUrlsAndBlobs;
-
-            function _defineProperty(obj, key, value) {
-              if (key in obj) {
-                Object.defineProperty(obj, key, {
-                  value: value,
-                  enumerable: true,
-                  configurable: true,
-                  writable: true
-                });
-              } else {
-                obj[key] = value;
-              }
-
-              return obj;
-            }
-
-            function filterInlineUrl(absoluteUrl) {
-              return /^(blob|https?):/.test(absoluteUrl);
-            }
-
-            var filterInlineUrl_1 = filterInlineUrl;
-
-            function toUnAnchoredUri(url) {
-              var m = url && url.match(/(^[^#]*)/);
-              var res = m && m[1] || url;
-              return res && res.replace(/\?\s*$/, '') || url;
-            }
-
-            var toUnAnchoredUri_1 = toUnAnchoredUri;
-
-            var noop = function noop() {};
-
-            function flat(arr) {
-              return arr.reduce(function (flatArr, item) {
-                return flatArr.concat(item);
-              }, []);
-            }
-
-            var flat_1 = flat;
-
-            function makeProcessResource(_ref) {
-              var fetchUrl = _ref.fetchUrl,
-                  findStyleSheetByUrl = _ref.findStyleSheetByUrl,
-                  getCorsFreeStyleSheet = _ref.getCorsFreeStyleSheet,
-                  extractResourcesFromStyleSheet = _ref.extractResourcesFromStyleSheet,
-                  extractResourcesFromSvg = _ref.extractResourcesFromSvg,
-                  sessionCache = _ref.sessionCache,
-                  _ref$cache = _ref.cache,
-                  cache = _ref$cache === void 0 ? {} : _ref$cache,
-                  _ref$log = _ref.log,
-                  log = _ref$log === void 0 ? noop : _ref$log;
-              return function processResource(_ref2) {
-                var url = _ref2.url,
-                    documents = _ref2.documents,
-                    getResourceUrlsAndBlobs = _ref2.getResourceUrlsAndBlobs,
-                    _ref2$forceCreateStyl = _ref2.forceCreateStyle,
-                    forceCreateStyle = _ref2$forceCreateStyl === void 0 ? false : _ref2$forceCreateStyl;
-
-                if (!cache[url]) {
-                  if (sessionCache && sessionCache.getItem(url)) {
-                    var resourceUrls = getDependencies(url);
-                    log('doProcessResource from sessionStorage', url, 'deps:', resourceUrls.slice(1));
-                    cache[url] = Promise.resolve({
-                      resourceUrls: resourceUrls
-                    });
-                  } else {
-                    var now = Date.now();
-                    cache[url] = doProcessResource(url).then(function (result) {
-                      log('doProcessResource', "[".concat(Date.now() - now, "ms]"), url);
-                      return result;
-                    });
-                  }
-                }
-
-                return cache[url];
-
-                function doProcessResource(url) {
-                  log('fetching', url);
-                  var now = Date.now();
-                  return fetchUrl(url).catch(function (e) {
-                    if (probablyCORS(e)) {
-                      return {
-                        probablyCORS: true,
-                        url: url
-                      };
-                    } else {
-                      throw e;
-                    }
-                  }).then(function (_ref3) {
-                    var url = _ref3.url,
-                        type = _ref3.type,
-                        value = _ref3.value,
-                        probablyCORS = _ref3.probablyCORS;
-
-                    if (probablyCORS) {
-                      sessionCache && sessionCache.setItem(url, []);
-                      return {
-                        resourceUrls: [url]
-                      };
-                    }
-
-                    log('fetched', "[".concat(Date.now() - now, "ms]"), url);
-
-                    var thisBlob = _defineProperty({}, url, {
-                      type: type,
-                      value: value
-                    });
-
-                    var dependentUrls;
-
-                    if (/text\/css/.test(type)) {
-                      var styleSheet = findStyleSheetByUrl(url, documents);
-
-                      if (styleSheet || forceCreateStyle) {
-                        var _getCorsFreeStyleShee = getCorsFreeStyleSheet(value, styleSheet),
-                            corsFreeStyleSheet = _getCorsFreeStyleShee.corsFreeStyleSheet,
-                            cleanStyleSheet = _getCorsFreeStyleShee.cleanStyleSheet;
-
-                        dependentUrls = extractResourcesFromStyleSheet(corsFreeStyleSheet, documents[0]);
-                        cleanStyleSheet();
+                          case 33:
+                          case "end":
+                            return _context.stop();
+                        }
                       }
-                    } else if (/image\/svg/.test(type)) {
-                      try {
-                        dependentUrls = extractResourcesFromSvg(value);
-                        forceCreateStyle = !!dependentUrls;
-                      } catch (e) {
-                        console.log('could not parse svg content', e);
-                      }
-                    }
+                    }, _callee, null, [[1, 28]]);
+                  }));
 
-                    if (dependentUrls) {
-                      var absoluteDependentUrls = dependentUrls.map(function (resourceUrl) {
-                        return absolutizeUrl_1(resourceUrl, url.replace(/^blob:/, ''));
-                      }).map(toUnAnchoredUri_1).filter(filterInlineUrl_1);
-                      sessionCache && sessionCache.setItem(url, absoluteDependentUrls);
-                      return getResourceUrlsAndBlobs({
-                        documents: documents,
-                        urls: absoluteDependentUrls,
-                        forceCreateStyle: forceCreateStyle
-                      }).then(function (_ref4) {
-                        var resourceUrls = _ref4.resourceUrls,
-                            blobsObj = _ref4.blobsObj;
-                        return {
-                          resourceUrls: resourceUrls,
-                          blobsObj: Object.assign(blobsObj, thisBlob)
-                        };
-                      });
-                    } else {
-                      sessionCache && sessionCache.setItem(url, []);
-                      return {
-                        blobsObj: thisBlob
-                      };
-                    }
-                  }).catch(function (err) {
-                    log('error while fetching', url, err);
-                    sessionCache && clearFromSessionStorage();
-                    return {};
-                  });
-                }
-
-                function probablyCORS(err) {
-                  var msg = err.message && (err.message.includes('Failed to fetch') || err.message.includes('Network request failed'));
-                  var name = err.name && err.name.includes('TypeError');
-                  return msg && name;
-                }
-
-                function getDependencies(url) {
-                  var dependentUrls = sessionCache.getItem(url);
-                  return [url].concat(dependentUrls ? uniq_1(flat_1(dependentUrls.map(getDependencies))) : []);
-                }
-
-                function clearFromSessionStorage() {
-                  log('clearing from sessionStorage:', url);
-                  sessionCache.keys().forEach(function (key) {
-                    var dependentUrls = sessionCache.getItem(key);
-                    sessionCache.setItem(key, dependentUrls.filter(function (dep) {
-                      return dep !== url;
-                    }));
-                  });
-                  log('cleared from sessionStorage:', url);
-                }
-              };
-            }
-
-            var processResource = makeProcessResource;
-
-            function getUrlFromCssText(cssText) {
-              var re = /url\((?!['"]?:)['"]?([^'")]*)['"]?\)/g;
-              var ret = [];
-              var result;
-
-              while ((result = re.exec(cssText)) !== null) {
-                ret.push(result[1]);
-              }
-
-              return ret;
-            }
-
-            var getUrlFromCssText_1 = getUrlFromCssText;
-
-            function makeExtractResourcesFromSvg(_ref) {
-              var parser = _ref.parser,
-                  decoder = _ref.decoder,
-                  extractResourceUrlsFromStyleTags = _ref.extractResourceUrlsFromStyleTags;
-              return function (svgArrayBuffer) {
-                var decooder = decoder || new TextDecoder('utf-8');
-                var svgStr = decooder.decode(svgArrayBuffer);
-                var domparser = parser || new DOMParser();
-                var doc = domparser.parseFromString(svgStr, 'image/svg+xml');
-                var fromHref = Array.from(doc.querySelectorAll('image,use,link[rel="stylesheet"]')).map(function (e) {
-                  return e.getAttribute('href') || e.getAttribute('xlink:href');
-                });
-                var fromObjects = Array.from(doc.getElementsByTagName('object')).map(function (e) {
-                  return e.getAttribute('data');
-                });
-                var fromStyleTags = extractResourceUrlsFromStyleTags(doc, false);
-                var fromStyleAttrs = urlsFromStyleAttrOfDoc(doc);
-                return fromHref.concat(fromObjects).concat(fromStyleTags).concat(fromStyleAttrs).filter(function (u) {
-                  return u[0] !== '#';
-                });
-              };
-            }
-
-            function urlsFromStyleAttrOfDoc(doc) {
-              return flat_1(Array.from(doc.querySelectorAll('*[style]')).map(function (e) {
-                return e.style.cssText;
-              }).map(getUrlFromCssText_1).filter(Boolean));
-            }
-
-            var makeExtractResourcesFromSvg_1 = makeExtractResourcesFromSvg;
-
-            /* global window */
-
-            function fetchUrl(url) {
-              var fetch = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window.fetch;
-              return fetch(url, {
-                cache: 'force-cache',
-                credentials: 'same-origin'
-              }).then(function (resp) {
-                return resp.status === 200 ? resp.arrayBuffer().then(function (buff) {
-                  return {
-                    url: url,
-                    type: resp.headers.get('Content-Type'),
-                    value: buff
-                  };
-                }) : Promise.reject("bad status code ".concat(resp.status));
-              });
-            }
-
-            var fetchUrl_1 = fetchUrl;
-
-            function makeFindStyleSheetByUrl(_ref) {
-              var styleSheetCache = _ref.styleSheetCache;
-              return function findStyleSheetByUrl(url, documents) {
-                var allStylesheets = flat_1(documents.map(function (d) {
-                  return Array.from(d.styleSheets);
-                }));
-                return styleSheetCache[url] || allStylesheets.find(function (styleSheet) {
-                  return styleSheet.href && toUnAnchoredUri_1(styleSheet.href) === url;
-                });
-              };
-            }
-
-            var findStyleSheetByUrl = makeFindStyleSheetByUrl;
-
-            function makeExtractResourcesFromStyleSheet(_ref) {
-              var styleSheetCache = _ref.styleSheetCache;
-              return function extractResourcesFromStyleSheet(styleSheet, doc) {
-                var win = doc.defaultView || doc.ownerDocument && doc.ownerDocument.defaultView || window;
-                var urls = uniq_1(Array.from(styleSheet.cssRules || []).reduce(function (acc, rule) {
-                  if (rule instanceof win.CSSImportRule) {
-                    styleSheetCache[rule.styleSheet.href] = rule.styleSheet;
-                    return acc.concat(rule.href);
-                  } else if (rule instanceof win.CSSFontFaceRule) {
-                    return acc.concat(getUrlFromCssText_1(rule.cssText));
-                  } else if (win.CSSSupportsRule && rule instanceof win.CSSSupportsRule || rule instanceof win.CSSMediaRule) {
-                    return acc.concat(extractResourcesFromStyleSheet(rule, doc));
-                  } else if (rule instanceof win.CSSStyleRule) {
-                    for (var i = 0, ii = rule.style.length; i < ii; i++) {
-                      var _urls = getUrlFromCssText_1(rule.style.getPropertyValue(rule.style[i]));
-
-                      _urls.length && (acc = acc.concat(_urls));
-                    }
+                  function getBundledCssFromCssText(_x, _x2) {
+                    return _getBundledCssFromCssText.apply(this, arguments);
                   }
 
-                  return acc;
-                }, []));
-                return urls.filter(function (u) {
-                  return u[0] !== '#';
-                });
-              };
+                  return getBundledCssFromCssText;
+                }()
+              );
             }
 
-            var extractResourcesFromStyleSheet = makeExtractResourcesFromStyleSheet;
-
-            function extractResourceUrlsFromStyleAttrs(cdt) {
-              return cdt.reduce(function (acc, node) {
-                if (node.nodeType === 1) {
-                  var styleAttr = node.attributes && node.attributes.find(function (attr) {
-                    return attr.name.toUpperCase() === 'STYLE';
-                  });
-                  if (styleAttr) acc = acc.concat(getUrlFromCssText_1(styleAttr.value));
-                }
-
-                return acc;
-              }, []);
+            function getCss(newText, url) {
+              return "\n/** ".concat(url, " **/\n").concat(newText);
             }
 
-            var extractResourceUrlsFromStyleAttrs_1 = extractResourceUrlsFromStyleAttrs;
+            var getBundledCssFromCssText = makeGetBundledCssFromCssText;
 
-            function makeExtractResourceUrlsFromStyleTags(extractResourcesFromStyleSheet) {
-              return function extractResourceUrlsFromStyleTags(doc) {
-                var onlyDocStylesheet = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-                return uniq_1(Array.from(doc.querySelectorAll('style')).reduce(function (resourceUrls, styleEl) {
-                  var styleSheet = onlyDocStylesheet ? Array.from(doc.styleSheets).find(function (styleSheet) {
-                    return styleSheet.ownerNode === styleEl;
-                  }) : styleEl.sheet;
-                  return styleSheet ? resourceUrls.concat(extractResourcesFromStyleSheet(styleSheet, doc)) : resourceUrls;
-                }, []));
-              };
+            function parseCss(styleContent) {
+              var doc = document.implementation.createHTMLDocument(''),
+                  styleElement = doc.createElement('style');
+              styleElement.textContent = styleContent; // the style will only be parsed once it is added to a document
+
+              doc.body.appendChild(styleElement);
+              return styleElement.sheet;
             }
 
-            var extractResourceUrlsFromStyleTags = makeExtractResourceUrlsFromStyleTags;
+            var parseCss_1 = parseCss;
 
-            function createTempStylsheet(cssArrayBuffer) {
-              var cssText = new TextDecoder('utf-8').decode(cssArrayBuffer);
-              var head = document.head || document.querySelectorAll('head')[0];
-              var style = document.createElement('style');
-              style.type = 'text/css';
-              style.setAttribute('data-desc', 'Applitools tmp variable created by DOM SNAPSHOT');
-              head.appendChild(style); // This is required for IE8 and below.
+            function makeFetchCss(fetch) {
+              return (
+                /*#__PURE__*/
+                function () {
+                  var _fetchCss = _asyncToGenerator(
+                  /*#__PURE__*/
+                  regeneratorRuntime.mark(function _callee(url) {
+                    var response;
+                    return regeneratorRuntime.wrap(function _callee$(_context) {
+                      while (1) {
+                        switch (_context.prev = _context.next) {
+                          case 0:
+                            _context.prev = 0;
+                            _context.next = 3;
+                            return fetch(url, {
+                              cache: 'force-cache'
+                            });
 
-              if (style.styleSheet) {
-                style.styleSheet.cssText = cssText;
-              } else {
-                style.appendChild(document.createTextNode(cssText));
-              }
+                          case 3:
+                            response = _context.sent;
 
-              return style.sheet;
+                            if (!response.ok) {
+                              _context.next = 8;
+                              break;
+                            }
+
+                            _context.next = 7;
+                            return response.text();
+
+                          case 7:
+                            return _context.abrupt("return", _context.sent);
+
+                          case 8:
+                            console.log('/failed to fetch (status ' + response.status + ') css from: ' + url + '/');
+                            _context.next = 14;
+                            break;
+
+                          case 11:
+                            _context.prev = 11;
+                            _context.t0 = _context["catch"](0);
+                            console.log('/failed to fetch (error ' + _context.t0.toString() + ') css from: ' + url + '/');
+
+                          case 14:
+                          case "end":
+                            return _context.stop();
+                        }
+                      }
+                    }, _callee, null, [[0, 11]]);
+                  }));
+
+                  function fetchCss(_x) {
+                    return _fetchCss.apply(this, arguments);
+                  }
+
+                  return fetchCss;
+                }()
+              );
             }
 
-            var createTempStyleSheet = createTempStylsheet;
+            var fetchCss = makeFetchCss;
 
-            function getCorsFreeStyleSheet(cssArrayBuffer, styleSheet) {
-              var corsFreeStyleSheet;
+            function makeExtractCssFromNode(_ref) {
+              var fetchCss = _ref.fetchCss,
+                  absolutizeUrl = _ref.absolutizeUrl;
+              return (
+                /*#__PURE__*/
+                function () {
+                  var _extractCssFromNode = _asyncToGenerator(
+                  /*#__PURE__*/
+                  regeneratorRuntime.mark(function _callee(node, baseUrl) {
+                    var cssText, resourceUrl, isUnfetched;
+                    return regeneratorRuntime.wrap(function _callee$(_context) {
+                      while (1) {
+                        switch (_context.prev = _context.next) {
+                          case 0:
+                            if (!isStyleElement(node)) {
+                              _context.next = 5;
+                              break;
+                            }
 
-              if (styleSheet) {
-                try {
-                  styleSheet.cssRules;
-                  corsFreeStyleSheet = styleSheet;
-                } catch (e) {
-                  console.log("[dom-snapshot] could not access cssRules for ".concat(styleSheet.href, " ").concat(e, "\ncreating temp style for access."));
-                  corsFreeStyleSheet = createTempStyleSheet(cssArrayBuffer);
-                }
-              } else {
-                corsFreeStyleSheet = createTempStyleSheet(cssArrayBuffer);
-              }
+                            cssText = Array.from(node.childNodes).map(function (node) {
+                              return node.nodeValue;
+                            }).join('');
+                            resourceUrl = baseUrl;
+                            _context.next = 11;
+                            break;
 
-              return {
-                corsFreeStyleSheet: corsFreeStyleSheet,
-                cleanStyleSheet: cleanStyleSheet
-              };
+                          case 5:
+                            if (!isLinkToStyleSheet(node)) {
+                              _context.next = 11;
+                              break;
+                            }
 
-              function cleanStyleSheet() {
-                if (corsFreeStyleSheet !== styleSheet) {
-                  corsFreeStyleSheet.ownerNode.parentNode.removeChild(corsFreeStyleSheet.ownerNode);
-                }
-              }
+                            resourceUrl = absolutizeUrl(getHrefAttr(node), baseUrl);
+                            _context.next = 9;
+                            return fetchCss(resourceUrl);
+
+                          case 9:
+                            cssText = _context.sent;
+
+                            if (cssText === undefined) {
+                              isUnfetched = true;
+                            }
+
+                          case 11:
+                            return _context.abrupt("return", {
+                              cssText: cssText,
+                              resourceUrl: resourceUrl,
+                              isUnfetched: isUnfetched
+                            });
+
+                          case 12:
+                          case "end":
+                            return _context.stop();
+                        }
+                      }
+                    }, _callee);
+                  }));
+
+                  function extractCssFromNode(_x, _x2) {
+                    return _extractCssFromNode.apply(this, arguments);
+                  }
+
+                  return extractCssFromNode;
+                }()
+              );
             }
 
-            var getCorsFreeStyleSheet_1 = getCorsFreeStyleSheet;
-
-            function base64ToArrayBuffer(base64) {
-              var binary_string = window.atob(base64);
-              var len = binary_string.length;
-              var bytes = new Uint8Array(len);
-
-              for (var i = 0; i < len; i++) {
-                bytes[i] = binary_string.charCodeAt(i);
-              }
-
-              return bytes.buffer;
+            function isStyleElement(node) {
+              return node.nodeName && node.nodeName.toUpperCase() === 'STYLE';
             }
 
-            var base64ToArrayBuffer_1 = base64ToArrayBuffer;
+            function getHrefAttr(node) {
+              var attr = Array.from(node.attributes).find(function (attr) {
+                return attr.name.toLowerCase() === 'href';
+              });
+              return attr && attr.value;
+            }
 
-            function buildCanvasBlobs(canvasElements) {
-              return canvasElements.map(function (_ref) {
-                var url = _ref.url,
-                    element = _ref.element;
-                var data = element.toDataURL('image/png');
-                var value = base64ToArrayBuffer_1(data.split(',')[1]);
-                return {
-                  url: url,
-                  type: 'image/png',
-                  value: value
-                };
+            function isLinkToStyleSheet(node) {
+              return node.nodeName && node.nodeName.toUpperCase() === 'LINK' && node.attributes && Array.from(node.attributes).find(function (attr) {
+                return attr.name.toLowerCase() === 'rel' && attr.value.toLowerCase() === 'stylesheet';
               });
             }
 
-            var buildCanvasBlobs_1 = buildCanvasBlobs;
+            var extractCssFromNode = makeExtractCssFromNode;
 
-            function extractFrames() {
-              var documents = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : [document];
-              var iframes = flat_1(documents.map(function (d) {
-                return Array.from(d.querySelectorAll('iframe[src]:not([src=""])'));
-              }));
-              return iframes.filter(function (f) {
-                return isAccessibleFrame_1(f) && !isInlineFrame_1(f);
-              }).map(function (f) {
-                return f.contentDocument;
-              });
+            function makeCaptureNodeCss(_ref) {
+              var extractCssFromNode = _ref.extractCssFromNode,
+                  getBundledCssFromCssText = _ref.getBundledCssFromCssText,
+                  unfetchedToken = _ref.unfetchedToken;
+              return (
+                /*#__PURE__*/
+                function () {
+                  var _captureNodeCss = _asyncToGenerator(
+                  /*#__PURE__*/
+                  regeneratorRuntime.mark(function _callee(node, baseUrl) {
+                    var _ref2, resourceUrl, cssText, isUnfetched, unfetchedResources, bundledCss, _ref3, nestedCss, nestedUnfetched;
+
+                    return regeneratorRuntime.wrap(function _callee$(_context) {
+                      while (1) {
+                        switch (_context.prev = _context.next) {
+                          case 0:
+                            _context.next = 2;
+                            return extractCssFromNode(node, baseUrl);
+
+                          case 2:
+                            _ref2 = _context.sent;
+                            resourceUrl = _ref2.resourceUrl;
+                            cssText = _ref2.cssText;
+                            isUnfetched = _ref2.isUnfetched;
+                            bundledCss = '';
+
+                            if (!cssText) {
+                              _context.next = 17;
+                              break;
+                            }
+
+                            _context.next = 10;
+                            return getBundledCssFromCssText(cssText, resourceUrl);
+
+                          case 10:
+                            _ref3 = _context.sent;
+                            nestedCss = _ref3.bundledCss;
+                            nestedUnfetched = _ref3.unfetchedResources;
+                            bundledCss += nestedCss;
+                            unfetchedResources = new Set(nestedUnfetched);
+                            _context.next = 18;
+                            break;
+
+                          case 17:
+                            if (isUnfetched) {
+                              bundledCss += "".concat(unfetchedToken).concat(resourceUrl).concat(unfetchedToken);
+                              unfetchedResources = new Set([resourceUrl]);
+                            }
+
+                          case 18:
+                            return _context.abrupt("return", {
+                              bundledCss: bundledCss,
+                              unfetchedResources: unfetchedResources
+                            });
+
+                          case 19:
+                          case "end":
+                            return _context.stop();
+                        }
+                      }
+                    }, _callee);
+                  }));
+
+                  function captureNodeCss(_x, _x2) {
+                    return _captureNodeCss.apply(this, arguments);
+                  }
+
+                  return captureNodeCss;
+                }()
+              );
             }
 
-            var extractFrames_1 = extractFrames;
+            var captureNodeCss = makeCaptureNodeCss;
 
-            var getBaesUrl = function getBaesUrl(doc) {
-              var baseUrl = doc.querySelectorAll('base')[0] && doc.querySelectorAll('base')[0].href;
-
-              if (baseUrl && isUrl(baseUrl)) {
-                return baseUrl;
-              }
+            var NODE_TYPES = {
+              ELEMENT: 1,
+              TEXT: 3
             };
+            var API_VERSION = '1.0.0';
 
-            function isUrl(url) {
-              return url && !/^(about:blank|javascript:void|blob:)/.test(url);
+            function captureFrame() {
+              return _captureFrame.apply(this, arguments);
             }
 
-            var getBaseUrl = getBaesUrl;
+            function _captureFrame() {
+              _captureFrame = _asyncToGenerator(
+              /*#__PURE__*/
+              regeneratorRuntime.mark(function _callee5() {
+                var _ref,
+                    styleProps,
+                    rectProps,
+                    ignoredTagNames,
+                    doc,
+                    start,
+                    unfetchedResources,
+                    iframeCors,
+                    iframeToken,
+                    unfetchedToken,
+                    separator,
+                    fetchCss$$1,
+                    getBundledCssFromCssText$$1,
+                    extractCssFromNode$$1,
+                    captureNodeCss$$1,
+                    capturedFrame,
+                    iframePrefix,
+                    unfetchedPrefix,
+                    metaPrefix,
+                    ret,
+                    filter,
+                    notEmptyObj,
+                    captureTextNode,
+                    doCaptureFrame,
+                    _doCaptureFrame,
+                    _args5 = arguments;
 
-            function toUriEncoding(url) {
-              var result = url && url.replace(/(\\[0-9a-fA-F]{1,6}\s?)/g, function (s) {
-                var int = parseInt(s.substr(1).trim(), 16);
-                return String.fromCodePoint(int);
-              }) || url;
-              return result;
+                return regeneratorRuntime.wrap(function _callee5$(_context5) {
+                  while (1) {
+                    switch (_context5.prev = _context5.next) {
+                      case 0:
+                        _doCaptureFrame = function _ref14() {
+                          _doCaptureFrame = _asyncToGenerator(
+                          /*#__PURE__*/
+                          regeneratorRuntime.mark(function _callee4(frameDoc) {
+                            var bgImages, bundledCss, ret, captureNode, _captureNode, elementToJSON, _elementToJSON, iframeToJSON, _iframeToJSON;
+
+                            return regeneratorRuntime.wrap(function _callee4$(_context4) {
+                              while (1) {
+                                switch (_context4.prev = _context4.next) {
+                                  case 0:
+                                    _iframeToJSON = function _ref9() {
+                                      _iframeToJSON = _asyncToGenerator(
+                                      /*#__PURE__*/
+                                      regeneratorRuntime.mark(function _callee3(el) {
+                                        var obj, doc, markFrameAsCors;
+                                        return regeneratorRuntime.wrap(function _callee3$(_context3) {
+                                          while (1) {
+                                            switch (_context3.prev = _context3.next) {
+                                              case 0:
+                                                markFrameAsCors = function _ref3() {
+                                                  var xpath = genXpath_1(el);
+                                                  iframeCors.push(xpath);
+                                                  obj.childNodes = ["".concat(iframeToken).concat(xpath).concat(iframeToken)];
+                                                };
+
+                                                _context3.next = 3;
+                                                return elementToJSON(el);
+
+                                              case 3:
+                                                obj = _context3.sent;
+                                                _context3.prev = 4;
+                                                doc = el.contentDocument;
+                                                _context3.next = 12;
+                                                break;
+
+                                              case 8:
+                                                _context3.prev = 8;
+                                                _context3.t0 = _context3["catch"](4);
+                                                markFrameAsCors();
+                                                return _context3.abrupt("return", obj);
+
+                                              case 12:
+                                                _context3.prev = 12;
+
+                                                if (!doc) {
+                                                  _context3.next = 20;
+                                                  break;
+                                                }
+
+                                                _context3.next = 16;
+                                                return doCaptureFrame(el.contentDocument);
+
+                                              case 16:
+                                                _context3.t1 = _context3.sent;
+                                                obj.childNodes = [_context3.t1];
+                                                _context3.next = 21;
+                                                break;
+
+                                              case 20:
+                                                markFrameAsCors();
+
+                                              case 21:
+                                                _context3.next = 26;
+                                                break;
+
+                                              case 23:
+                                                _context3.prev = 23;
+                                                _context3.t2 = _context3["catch"](12);
+                                                console.log('error in iframeToJSON', _context3.t2);
+
+                                              case 26:
+                                                return _context3.abrupt("return", obj);
+
+                                              case 27:
+                                              case "end":
+                                                return _context3.stop();
+                                            }
+                                          }
+                                        }, _callee3, null, [[4, 8], [12, 23]]);
+                                      }));
+                                      return _iframeToJSON.apply(this, arguments);
+                                    };
+
+                                    iframeToJSON = function _ref8(_x4) {
+                                      return _iframeToJSON.apply(this, arguments);
+                                    };
+
+                                    _elementToJSON = function _ref7() {
+                                      _elementToJSON = _asyncToGenerator(
+                                      /*#__PURE__*/
+                                      regeneratorRuntime.mark(function _callee2(el) {
+                                        var childNodes, tagName, computedStyle, boundingClientRect, style, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, p, rect, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, _p, attributes, bgImage;
+
+                                        return regeneratorRuntime.wrap(function _callee2$(_context2) {
+                                          while (1) {
+                                            switch (_context2.prev = _context2.next) {
+                                              case 0:
+                                                _context2.next = 2;
+                                                return Promise.all(Array.prototype.map.call(el.childNodes, captureNode));
+
+                                              case 2:
+                                                _context2.t0 = filter;
+                                                childNodes = _context2.sent.filter(_context2.t0);
+                                                tagName = el.tagName.toUpperCase();
+
+                                                if (!(ignoredTagNames.indexOf(tagName) > -1)) {
+                                                  _context2.next = 7;
+                                                  break;
+                                                }
+
+                                                return _context2.abrupt("return", null);
+
+                                              case 7:
+                                                computedStyle = window.getComputedStyle(el);
+                                                boundingClientRect = el.getBoundingClientRect();
+                                                style = {};
+                                                _iteratorNormalCompletion2 = true;
+                                                _didIteratorError2 = false;
+                                                _iteratorError2 = undefined;
+                                                _context2.prev = 13;
+
+                                                for (_iterator2 = styleProps[Symbol.iterator](); !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                                                  p = _step2.value;
+                                                  style[p] = computedStyle.getPropertyValue(p);
+                                                }
+
+                                                _context2.next = 21;
+                                                break;
+
+                                              case 17:
+                                                _context2.prev = 17;
+                                                _context2.t1 = _context2["catch"](13);
+                                                _didIteratorError2 = true;
+                                                _iteratorError2 = _context2.t1;
+
+                                              case 21:
+                                                _context2.prev = 21;
+                                                _context2.prev = 22;
+
+                                                if (!_iteratorNormalCompletion2 && _iterator2.return != null) {
+                                                  _iterator2.return();
+                                                }
+
+                                              case 24:
+                                                _context2.prev = 24;
+
+                                                if (!_didIteratorError2) {
+                                                  _context2.next = 27;
+                                                  break;
+                                                }
+
+                                                throw _iteratorError2;
+
+                                              case 27:
+                                                return _context2.finish(24);
+
+                                              case 28:
+                                                return _context2.finish(21);
+
+                                              case 29:
+                                                rect = {};
+                                                _iteratorNormalCompletion3 = true;
+                                                _didIteratorError3 = false;
+                                                _iteratorError3 = undefined;
+                                                _context2.prev = 33;
+
+                                                for (_iterator3 = rectProps[Symbol.iterator](); !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                                                  _p = _step3.value;
+                                                  rect[_p] = boundingClientRect[_p];
+                                                }
+
+                                                _context2.next = 41;
+                                                break;
+
+                                              case 37:
+                                                _context2.prev = 37;
+                                                _context2.t2 = _context2["catch"](33);
+                                                _didIteratorError3 = true;
+                                                _iteratorError3 = _context2.t2;
+
+                                              case 41:
+                                                _context2.prev = 41;
+                                                _context2.prev = 42;
+
+                                                if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
+                                                  _iterator3.return();
+                                                }
+
+                                              case 44:
+                                                _context2.prev = 44;
+
+                                                if (!_didIteratorError3) {
+                                                  _context2.next = 47;
+                                                  break;
+                                                }
+
+                                                throw _iteratorError3;
+
+                                              case 47:
+                                                return _context2.finish(44);
+
+                                              case 48:
+                                                return _context2.finish(41);
+
+                                              case 49:
+                                                attributes = Array.from(el.attributes).map(function (a) {
+                                                  return {
+                                                    key: a.name,
+                                                    value: a.value
+                                                  };
+                                                }).reduce(function (obj, attr) {
+                                                  obj[attr.key] = attr.value;
+                                                  return obj;
+                                                }, {});
+                                                bgImage = getBackgroundImageUrl_1(computedStyle.getPropertyValue('background-image'));
+
+                                                if (bgImage) {
+                                                  bgImages.add(bgImage);
+                                                }
+
+                                                return _context2.abrupt("return", {
+                                                  tagName: tagName,
+                                                  style: notEmptyObj(style),
+                                                  rect: notEmptyObj(rect),
+                                                  attributes: notEmptyObj(attributes),
+                                                  childNodes: childNodes
+                                                });
+
+                                              case 53:
+                                              case "end":
+                                                return _context2.stop();
+                                            }
+                                          }
+                                        }, _callee2, null, [[13, 17, 21, 29], [22,, 24, 28], [33, 37, 41, 49], [42,, 44, 48]]);
+                                      }));
+                                      return _elementToJSON.apply(this, arguments);
+                                    };
+
+                                    elementToJSON = function _ref6(_x3) {
+                                      return _elementToJSON.apply(this, arguments);
+                                    };
+
+                                    _captureNode = function _ref5() {
+                                      _captureNode = _asyncToGenerator(
+                                      /*#__PURE__*/
+                                      regeneratorRuntime.mark(function _callee(node) {
+                                        var _ref2, nodeCss, nodeUnfetched, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, elem, tagName;
+
+                                        return regeneratorRuntime.wrap(function _callee$(_context) {
+                                          while (1) {
+                                            switch (_context.prev = _context.next) {
+                                              case 0:
+                                                _context.next = 2;
+                                                return captureNodeCss$$1(node, frameDoc.location.href);
+
+                                              case 2:
+                                                _ref2 = _context.sent;
+                                                nodeCss = _ref2.bundledCss;
+                                                nodeUnfetched = _ref2.unfetchedResources;
+                                                bundledCss += nodeCss;
+
+                                                if (!nodeUnfetched) {
+                                                  _context.next = 26;
+                                                  break;
+                                                }
+
+                                                _iteratorNormalCompletion = true;
+                                                _didIteratorError = false;
+                                                _iteratorError = undefined;
+                                                _context.prev = 10;
+
+                                                for (_iterator = nodeUnfetched[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                                                  elem = _step.value;
+                                                  unfetchedResources.add(elem);
+                                                }
+
+                                                _context.next = 18;
+                                                break;
+
+                                              case 14:
+                                                _context.prev = 14;
+                                                _context.t0 = _context["catch"](10);
+                                                _didIteratorError = true;
+                                                _iteratorError = _context.t0;
+
+                                              case 18:
+                                                _context.prev = 18;
+                                                _context.prev = 19;
+
+                                                if (!_iteratorNormalCompletion && _iterator.return != null) {
+                                                  _iterator.return();
+                                                }
+
+                                              case 21:
+                                                _context.prev = 21;
+
+                                                if (!_didIteratorError) {
+                                                  _context.next = 24;
+                                                  break;
+                                                }
+
+                                                throw _iteratorError;
+
+                                              case 24:
+                                                return _context.finish(21);
+
+                                              case 25:
+                                                return _context.finish(18);
+
+                                              case 26:
+                                                _context.t1 = node.nodeType;
+                                                _context.next = _context.t1 === NODE_TYPES.TEXT ? 29 : _context.t1 === NODE_TYPES.ELEMENT ? 30 : 40;
+                                                break;
+
+                                              case 29:
+                                                return _context.abrupt("return", captureTextNode(node));
+
+                                              case 30:
+                                                tagName = node.tagName.toUpperCase();
+
+                                                if (!(tagName === 'IFRAME')) {
+                                                  _context.next = 37;
+                                                  break;
+                                                }
+
+                                                _context.next = 34;
+                                                return iframeToJSON(node);
+
+                                              case 34:
+                                                return _context.abrupt("return", _context.sent);
+
+                                              case 37:
+                                                _context.next = 39;
+                                                return elementToJSON(node);
+
+                                              case 39:
+                                                return _context.abrupt("return", _context.sent);
+
+                                              case 40:
+                                                return _context.abrupt("return", null);
+
+                                              case 41:
+                                              case "end":
+                                                return _context.stop();
+                                            }
+                                          }
+                                        }, _callee, null, [[10, 14, 18, 26], [19,, 21, 25]]);
+                                      }));
+                                      return _captureNode.apply(this, arguments);
+                                    };
+
+                                    captureNode = function _ref4(_x2) {
+                                      return _captureNode.apply(this, arguments);
+                                    };
+
+                                    bgImages = new Set();
+                                    bundledCss = '';
+                                    _context4.next = 10;
+                                    return captureNode(frameDoc.documentElement);
+
+                                  case 10:
+                                    ret = _context4.sent;
+                                    ret.css = bundledCss;
+                                    _context4.next = 14;
+                                    return getImageSizes_1({
+                                      bgImages: bgImages
+                                    });
+
+                                  case 14:
+                                    ret.images = _context4.sent;
+                                    return _context4.abrupt("return", ret);
+
+                                  case 16:
+                                  case "end":
+                                    return _context4.stop();
+                                }
+                              }
+                            }, _callee4);
+                          }));
+                          return _doCaptureFrame.apply(this, arguments);
+                        };
+
+                        doCaptureFrame = function _ref13(_x) {
+                          return _doCaptureFrame.apply(this, arguments);
+                        };
+
+                        captureTextNode = function _ref12(node) {
+                          return {
+                            tagName: '#text',
+                            text: node.textContent
+                          };
+                        };
+
+                        notEmptyObj = function _ref11(obj) {
+                          return Object.keys(obj).length ? obj : undefined;
+                        };
+
+                        filter = function _ref10(x) {
+                          return !!x;
+                        };
+
+                        _ref = _args5.length > 0 && _args5[0] !== undefined ? _args5[0] : defaultDomProps, styleProps = _ref.styleProps, rectProps = _ref.rectProps, ignoredTagNames = _ref.ignoredTagNames;
+                        doc = _args5.length > 1 && _args5[1] !== undefined ? _args5[1] : document;
+                        start = Date.now();
+                        unfetchedResources = new Set();
+                        iframeCors = [];
+                        iframeToken = '@@@@@';
+                        unfetchedToken = '#####';
+                        separator = '-----';
+                        fetchCss$$1 = fetchCss(fetch);
+                        getBundledCssFromCssText$$1 = getBundledCssFromCssText({
+                          parseCss: parseCss_1,
+                          CSSImportRule: CSSImportRule,
+                          fetchCss: fetchCss$$1,
+                          absolutizeUrl: absolutizeUrl_1,
+                          unfetchedToken: unfetchedToken
+                        });
+                        extractCssFromNode$$1 = extractCssFromNode({
+                          fetchCss: fetchCss$$1,
+                          absolutizeUrl: absolutizeUrl_1
+                        });
+                        captureNodeCss$$1 = captureNodeCss({
+                          extractCssFromNode: extractCssFromNode$$1,
+                          getBundledCssFromCssText: getBundledCssFromCssText$$1,
+                          unfetchedToken: unfetchedToken
+                        }); // Note: Change the API_VERSION when changing json structure.
+
+                        _context5.next = 19;
+                        return doCaptureFrame(doc);
+
+                      case 19:
+                        capturedFrame = _context5.sent;
+                        capturedFrame.version = API_VERSION;
+                        iframePrefix = iframeCors.length ? "".concat(iframeCors.join('\n'), "\n") : '';
+                        unfetchedPrefix = unfetchedResources.size ? "".concat(Array.from(unfetchedResources).join('\n'), "\n") : '';
+                        metaPrefix = JSON.stringify({
+                          separator: separator,
+                          cssStartToken: unfetchedToken,
+                          cssEndToken: unfetchedToken,
+                          iframeStartToken: "\"".concat(iframeToken),
+                          iframeEndToken: "".concat(iframeToken, "\"")
+                        });
+                        ret = "".concat(metaPrefix, "\n").concat(unfetchedPrefix).concat(separator, "\n").concat(iframePrefix).concat(separator, "\n").concat(JSON.stringify(capturedFrame));
+                        console.log('[captureFrame]', Date.now() - start);
+                        return _context5.abrupt("return", ret);
+
+                      case 27:
+                      case "end":
+                        return _context5.stop();
+                    }
+                  }
+                }, _callee5);
+              }));
+              return _captureFrame.apply(this, arguments);
             }
 
-            var toUriEncoding_1 = toUriEncoding;
+            var captureFrame_1 = captureFrame;
 
-            function makeLog(referenceTime) {
-              return function log() {
-                var args = ['[dom-snapshot]', "[+".concat(Date.now() - referenceTime, "ms]")].concat(Array.from(arguments));
-                console.log.apply(console, args);
-              };
-            }
+            getCjsExportFromNamespace(urlPolyfill);
 
-            var log$8 = makeLog;
+            getCjsExportFromNamespace(fetch$2);
 
-            var RESOURCE_STORAGE_KEY = '__process_resource';
+            var EYES_NAME_SPACE = '__EYES__APPLITOOLS__';
 
-            function makeSessionCache(_ref) {
-              var log = _ref.log,
-                  sessionStorage = _ref.sessionStorage;
-              var sessionStorageCache;
-
-              try {
-                sessionStorage = sessionStorage || window.sessionStorage;
-                var sessionStorageCacheStr = sessionStorage.getItem(RESOURCE_STORAGE_KEY);
-                sessionStorageCache = sessionStorageCacheStr ? JSON.parse(sessionStorageCacheStr) : {};
-              } catch (ex) {
-                log('error creating session cache', ex);
+            function captureFrameAndPoll() {
+              if (!window[EYES_NAME_SPACE]) {
+                window[EYES_NAME_SPACE] = {};
               }
 
-              return {
-                getItem: getItem,
-                setItem: setItem,
-                keys: keys,
-                persist: persist
-              };
-
-              function getItem(key) {
-                if (sessionStorageCache) {
-                  return sessionStorageCache[key];
-                }
-              }
-
-              function setItem(key, value) {
-                if (sessionStorageCache) {
-                  log('saving to in-memory sessionStorage, key:', key, 'value:', value);
-                  sessionStorageCache[key] = value;
-                }
-              }
-
-              function keys() {
-                if (sessionStorageCache) {
-                  return Object.keys(sessionStorageCache);
-                } else {
-                  return [];
-                }
-              }
-
-              function persist() {
-                if (sessionStorageCache) {
-                  sessionStorage.setItem(RESOURCE_STORAGE_KEY, JSON.stringify(sessionStorageCache));
-                }
-              }
-            }
-
-            var sessionCache = makeSessionCache;
-
-            function processPage() {
-              var doc = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
-
-              var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-                  showLogs = _ref.showLogs,
-                  useSessionCache = _ref.useSessionCache;
-
-              var log = showLogs ? log$8(Date.now()) : noop;
-              log('processPage start');
-              var sessionCache$$1 = useSessionCache && sessionCache({
-                log: log
-              });
-              var styleSheetCache = {};
-              var extractResourcesFromStyleSheet$$1 = extractResourcesFromStyleSheet({
-                styleSheetCache: styleSheetCache
-              });
-              var findStyleSheetByUrl$$1 = findStyleSheetByUrl({
-                styleSheetCache: styleSheetCache
-              });
-              var extractResourceUrlsFromStyleTags$$1 = extractResourceUrlsFromStyleTags(extractResourcesFromStyleSheet$$1);
-              var extractResourcesFromSvg = makeExtractResourcesFromSvg_1({
-                extractResourceUrlsFromStyleTags: extractResourceUrlsFromStyleTags$$1
-              });
-              var processResource$$1 = processResource({
-                fetchUrl: fetchUrl_1,
-                findStyleSheetByUrl: findStyleSheetByUrl$$1,
-                getCorsFreeStyleSheet: getCorsFreeStyleSheet_1,
-                extractResourcesFromStyleSheet: extractResourcesFromStyleSheet$$1,
-                extractResourcesFromSvg: extractResourcesFromSvg,
-                absolutizeUrl: absolutizeUrl_1,
-                log: log,
-                sessionCache: sessionCache$$1
-              });
-              var getResourceUrlsAndBlobs$$1 = getResourceUrlsAndBlobs({
-                processResource: processResource$$1,
-                aggregateResourceUrlsAndBlobs: aggregateResourceUrlsAndBlobs_1
-              });
-              return doProcessPage(doc).then(function (result) {
-                log('processPage end');
-                return result;
-              });
-
-              function doProcessPage(doc) {
-                var pageUrl = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : doc.location.href;
-                var baseUrl = getBaseUrl(doc) || pageUrl;
-
-                var _domNodesToCdt = domNodesToCdt_1(doc, baseUrl),
-                    cdt = _domNodesToCdt.cdt,
-                    docRoots = _domNodesToCdt.docRoots,
-                    canvasElements = _domNodesToCdt.canvasElements,
-                    inlineFrames = _domNodesToCdt.inlineFrames;
-
-                var linkUrls = flat_1(docRoots.map(extractLinks_1));
-                var styleTagUrls = flat_1(docRoots.map(extractResourceUrlsFromStyleTags$$1));
-                var absolutizeThisUrl = getAbsolutizeByUrl(baseUrl);
-                var urls = uniq_1(Array.from(linkUrls).concat(Array.from(styleTagUrls)).concat(extractResourceUrlsFromStyleAttrs_1(cdt))).map(toUriEncoding_1).map(absolutizeThisUrl).map(toUnAnchoredUri_1).filter(filterInlineUrlsIfExisting);
-                var resourceUrlsAndBlobsPromise = getResourceUrlsAndBlobs$$1({
-                  documents: docRoots,
-                  urls: urls
-                }).then(function (result) {
-                  sessionCache$$1 && sessionCache$$1.persist();
-                  return result;
-                });
-                var canvasBlobs = buildCanvasBlobs_1(canvasElements);
-                var frameDocs = extractFrames_1(docRoots);
-                var processFramesPromise = frameDocs.map(function (f) {
-                  return doProcessPage(f, f.defaultView.frameElement.src);
-                });
-                var processInlineFramesPromise = inlineFrames.map(function (_ref2) {
-                  var element = _ref2.element,
-                      url = _ref2.url;
-                  return doProcessPage(element.contentDocument, url);
-                });
-                var srcAttr = doc.defaultView && doc.defaultView.frameElement && doc.defaultView.frameElement.getAttribute('src');
-                return Promise.all([resourceUrlsAndBlobsPromise].concat(processFramesPromise).concat(processInlineFramesPromise)).then(function (resultsWithFrameResults) {
-                  var _resultsWithFrameResu = resultsWithFrameResults[0],
-                      resourceUrls = _resultsWithFrameResu.resourceUrls,
-                      blobsObj = _resultsWithFrameResu.blobsObj;
-                  var framesResults = resultsWithFrameResults.slice(1);
-                  return {
-                    cdt: cdt,
-                    url: pageUrl,
-                    srcAttr: srcAttr,
-                    resourceUrls: resourceUrls.map(function (url) {
-                      return url.replace(/^blob:/, '');
-                    }),
-                    blobs: blobsObjToArray(blobsObj).concat(canvasBlobs),
-                    frames: framesResults
-                  };
-                });
-              }
-            }
-
-            function getAbsolutizeByUrl(url) {
-              return function (someUrl) {
-                try {
-                  return absolutizeUrl_1(someUrl, url);
-                } catch (err) {// can't do anything with a non-absolute url
-                }
-              };
-            }
-
-            function blobsObjToArray(blobsObj) {
-              return Object.keys(blobsObj).map(function (blobUrl) {
-                return Object.assign({
-                  url: blobUrl.replace(/^blob:/, '')
-                }, blobsObj[blobUrl]);
-              });
-            }
-
-            function filterInlineUrlsIfExisting(absoluteUrl) {
-              return absoluteUrl && filterInlineUrl_1(absoluteUrl);
-            }
-
-            var processPage_1 = processPage;
-
-            function processPageAndSerialize() {
-              return processPage_1.apply(this, arguments).then(serializeFrame);
-            }
-
-            function serializeFrame(frame) {
-              frame.blobs = frame.blobs.map(function (_ref) {
-                var url = _ref.url,
-                    type = _ref.type,
-                    value = _ref.value;
-                return {
-                  url: url,
-                  type: type,
-                  value: arrayBufferToBase64_1(value)
+              if (!window[EYES_NAME_SPACE].captureDomResult) {
+                window[EYES_NAME_SPACE].captureDomResult = {
+                  status: 'WIP',
+                  value: null,
+                  error: null
                 };
-              });
-              frame.frames.forEach(serializeFrame);
-              return frame;
+                captureFrame_1.apply(void 0, arguments).then(function (r) {
+                  return resultObject.status = 'SUCCESS', resultObject.value = r;
+                }).catch(function (e) {
+                  return resultObject.status = 'ERROR', resultObject.error = e.message;
+                });
+              }
+
+              var resultObject = window[EYES_NAME_SPACE].captureDomResult;
+
+              if (resultObject.status === 'SUCCESS') {
+                window[EYES_NAME_SPACE].captureDomResult = null;
+              }
+
+              return JSON.stringify(resultObject);
             }
 
-            var processPageAndSerialize_1 = processPageAndSerialize;
+            var captureFrameAndPoll_1 = captureFrameAndPoll;
 
-            return processPageAndSerialize_1;
+            return captureFrameAndPoll_1;
 
 }());
 
-  return processPageAndSerializeForIE.apply(this, arguments);
+  return captureDomAndPollForIE.apply(this, arguments);
 }
