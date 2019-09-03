@@ -1,46 +1,67 @@
-/* @applitools/dom-snapshot@2.2.2 */
+/* @applitools/dom-snapshot@2.1.1 */
 
 function __processPageAndPoll() {
   var processPageAndPoll = (function () {
   'use strict';
 
-  const EYES_NAME_SPACE = '__EYES__APPLITOOLS__';
+  // This code was copied and modified from https://github.com/beatgammit/base64-js/blob/bf68aaa277/index.js
+  // License: https://github.com/beatgammit/base64-js/blob/bf68aaa277d9de7007cc0c58279c411bb10670ac/LICENSE
 
-  function pullify(script, win = window) {
-    return function() {
-      const scriptName = script.name;
-      if (!win[EYES_NAME_SPACE]) {
-        win[EYES_NAME_SPACE] = {};
-      }
-      if (!win[EYES_NAME_SPACE][scriptName]) {
-        win[EYES_NAME_SPACE][scriptName] = {
-          status: 'WIP',
-          value: null,
-          error: null,
-        };
-        script
-          .apply(null, arguments)
-          .then(r => ((resultObject.status = 'SUCCESS'), (resultObject.value = r)))
-          .catch(e => ((resultObject.status = 'ERROR'), (resultObject.error = e.message)));
-      }
+  function arrayBufferToBase64(ab) {
+    const lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('');
 
-      const resultObject = win[EYES_NAME_SPACE][scriptName];
-      if (resultObject.status === 'SUCCESS') {
-        win[EYES_NAME_SPACE][scriptName] = null;
-      }
+    const uint8 = new Uint8Array(ab);
+    const len = uint8.length;
+    const extraBytes = len % 3; // if we have 1 byte left, pad 2 bytes
+    const parts = [];
+    const maxChunkLength = 16383; // must be multiple of 3
 
-      return JSON.stringify(resultObject);
-    };
+    let tmp;
+
+    // go through the array every three bytes, we'll deal with trailing stuff later
+    for (let i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
+      parts.push(encodeChunk(i, i + maxChunkLength > len2 ? len2 : i + maxChunkLength));
+    }
+
+    // pad the end with zeros, but make sure to not forget the extra bytes
+    if (extraBytes === 1) {
+      tmp = uint8[len - 1];
+      parts.push(lookup[tmp >> 2] + lookup[(tmp << 4) & 0x3f] + '==');
+    } else if (extraBytes === 2) {
+      tmp = (uint8[len - 2] << 8) + uint8[len - 1];
+      parts.push(lookup[tmp >> 10] + lookup[(tmp >> 4) & 0x3f] + lookup[(tmp << 2) & 0x3f] + '=');
+    }
+
+    return parts.join('');
+
+    function tripletToBase64(num) {
+      return (
+        lookup[(num >> 18) & 0x3f] +
+        lookup[(num >> 12) & 0x3f] +
+        lookup[(num >> 6) & 0x3f] +
+        lookup[num & 0x3f]
+      );
+    }
+
+    function encodeChunk(start, end) {
+      let tmp;
+      const output = [];
+      for (let i = start; i < end; i += 3) {
+        tmp = ((uint8[i] << 16) & 0xff0000) + ((uint8[i + 1] << 8) & 0xff00) + (uint8[i + 2] & 0xff);
+        output.push(tripletToBase64(tmp));
+      }
+      return output.join('');
+    }
   }
 
-  var pollify = pullify;
+  var arrayBufferToBase64_1 = arrayBufferToBase64;
 
   function extractLinks(doc = document) {
     const srcsetUrls = Array.from(doc.querySelectorAll('img[srcset],source[srcset]'))
       .map(srcsetEl =>
         srcsetEl
           .getAttribute('srcset')
-          .split(', ')
+          .split(',')
           .map(str => str.trim().split(/\s+/)[0]),
       )
       .reduce((acc, urls) => acc.concat(urls), []);
@@ -75,6 +96,12 @@ function __processPageAndPoll() {
 
   var extractLinks_1 = extractLinks;
 
+  function absolutizeUrl(url, absoluteUrl) {
+    return new URL(url, absoluteUrl).href;
+  }
+
+  var absolutizeUrl_1 = absolutizeUrl;
+
   function uuid() {
     return window.crypto.getRandomValues(new Uint32Array(1))[0];
   }
@@ -82,12 +109,7 @@ function __processPageAndPoll() {
   var uuid_1 = uuid;
 
   function isInlineFrame(frame) {
-    return (
-      !/^https?:.+/.test(frame.src) ||
-      (frame.contentDocument &&
-        frame.contentDocument.location &&
-        frame.contentDocument.location.href === 'about:blank')
-    );
+    return !/^https?:.+/.test(frame.src);
   }
 
   var isInlineFrame_1 = isInlineFrame;
@@ -103,13 +125,7 @@ function __processPageAndPoll() {
 
   var isAccessibleFrame_1 = isAccessibleFrame;
 
-  function absolutizeUrl(url, absoluteUrl) {
-    return new URL(url, absoluteUrl).href;
-  }
-
-  var absolutizeUrl_1 = absolutizeUrl;
-
-  function domNodesToCdt(docNode, baseUrl) {
+  function domNodesToCdt(docNode, url) {
     const cdt = [{nodeType: Node.DOCUMENT_NODE}];
     const docRoots = [docNode];
     const canvasElements = [];
@@ -132,8 +148,9 @@ function __processPageAndPoll() {
     }
 
     function elementNodeFactory(cdt, elementNode) {
-      let node, manualChildNodeIndexes, dummyUrl;
+      let node, manualChildNodeIndexes;
       const {nodeType} = elementNode;
+      let dummyUrl, frameBase;
 
       if ([Node.ELEMENT_NODE, Node.DOCUMENT_FRAGMENT_NODE].includes(nodeType)) {
         if (elementNode.nodeName !== 'SCRIPT') {
@@ -157,7 +174,7 @@ function __processPageAndPoll() {
           }
 
           if (elementNode.nodeName === 'CANVAS') {
-            dummyUrl = absolutizeUrl_1(`applitools-canvas-${uuid_1()}.png`, baseUrl);
+            dummyUrl = absolutizeUrl_1(`applitools-canvas-${uuid_1()}.png`, url);
             node.attributes.push({name: 'data-applitools-src', value: dummyUrl});
             canvasElements.push({element: elementNode, url: dummyUrl});
           }
@@ -167,7 +184,8 @@ function __processPageAndPoll() {
             isAccessibleFrame_1(elementNode) &&
             isInlineFrame_1(elementNode)
           ) {
-            dummyUrl = absolutizeUrl_1(`?applitools-iframe=${uuid_1()}`, baseUrl);
+            frameBase = getFrameBaseUrl(elementNode);
+            dummyUrl = absolutizeUrl_1(`?applitools-iframe=${uuid_1()}`, frameBase || url);
             node.attributes.push({name: 'data-applitools-src', value: dummyUrl});
             inlineFrames.push({element: elementNode, url: dummyUrl});
           }
@@ -270,6 +288,16 @@ function __processPageAndPoll() {
         nodeName: elementNode.nodeName,
       };
     }
+
+    function getFrameBaseUrl(frameElement) {
+      const href =
+        frameElement.contentDocument.querySelectorAll('base') &&
+        frameElement.contentDocument.querySelectorAll('base')[0] &&
+        frameElement.contentDocument.querySelectorAll('base')[0].href;
+      if (href && !href.includes('about:blank')) {
+        return href;
+      }
+    }
   }
 
   var domNodesToCdt_1 = domNodesToCdt;
@@ -295,9 +323,9 @@ function __processPageAndPoll() {
   var aggregateResourceUrlsAndBlobs_1 = aggregateResourceUrlsAndBlobs;
 
   function makeGetResourceUrlsAndBlobs({processResource, aggregateResourceUrlsAndBlobs}) {
-    return function getResourceUrlsAndBlobs({documents, urls, forceCreateStyle = false}) {
+    return function getResourceUrlsAndBlobs(documents, baseUrl, urls) {
       return Promise.all(
-        urls.map(url => processResource({url, documents, getResourceUrlsAndBlobs, forceCreateStyle})),
+        urls.map(url => processResource(url, documents, baseUrl, getResourceUrlsAndBlobs)),
       ).then(resourceUrlsAndBlobsArr => aggregateResourceUrlsAndBlobs(resourceUrlsAndBlobsArr));
     };
   }
@@ -318,48 +346,71 @@ function __processPageAndPoll() {
 
   var toUnAnchoredUri_1 = toUnAnchoredUri;
 
-  var noop = () => {};
+  function createTempStylsheet(cssContent) {
+    if (!cssContent) {
+      console.log('[dom-snapshot] error createTempStylsheet called without cssContent');
+      return;
+    }
+    const head = document.head || document.querySelectorAll('head')[0];
+    const style = document.createElement('style');
+    style.type = 'text/css';
+    style.setAttribute('data-desc', 'Applitools tmp variable created by DOM SNAPSHOT');
+    head.appendChild(style);
 
-  function flat(arr) {
-    return arr.reduce((flatArr, item) => flatArr.concat(item), []);
+    // This is required for IE8 and below.
+    if (style.styleSheet) {
+      style.styleSheet.cssText = cssContent;
+    } else {
+      style.appendChild(document.createTextNode(cssContent));
+    }
+    return style.sheet;
   }
 
-  var flat_1 = flat;
+  var createTempStyleSheet = createTempStylsheet;
+
+  function makeExtractResourcesFromStyle({extractResourcesFromStyleSheet}) {
+    return function extractResourcesFromStyle(cssArrayBuffer, styleSheet, doc = document) {
+      let corsFreeStyleSheet;
+      let cssText;
+      if (styleSheet) {
+        try {
+          styleSheet.cssRules;
+          corsFreeStyleSheet = styleSheet;
+        } catch (e) {
+          console.log(
+            `[dom-snapshot] could not access cssRules for ${styleSheet.href} ${e}\ncreating temp style for access.`,
+          );
+          cssText = new TextDecoder('utf-8').decode(cssArrayBuffer);
+          corsFreeStyleSheet = createTempStyleSheet(cssText);
+        }
+      } else {
+        cssText = new TextDecoder('utf-8').decode(cssArrayBuffer);
+        corsFreeStyleSheet = createTempStyleSheet(cssText);
+      }
+
+      const result = extractResourcesFromStyleSheet(corsFreeStyleSheet, doc);
+      if (corsFreeStyleSheet !== styleSheet) {
+        corsFreeStyleSheet.ownerNode.parentNode.removeChild(corsFreeStyleSheet.ownerNode);
+      }
+      return result;
+    };
+  }
+
+  var extractResourcesFromStyle = makeExtractResourcesFromStyle;
 
   function makeProcessResource({
     fetchUrl,
     findStyleSheetByUrl,
-    getCorsFreeStyleSheet,
     extractResourcesFromStyleSheet,
     extractResourcesFromSvg,
-    sessionCache,
     cache = {},
-    log = noop,
   }) {
-    return function processResource({
-      url,
-      documents,
-      getResourceUrlsAndBlobs,
-      forceCreateStyle = false,
-    }) {
-      if (!cache[url]) {
-        if (sessionCache && sessionCache.getItem(url)) {
-          const resourceUrls = getDependencies(url);
-          log('doProcessResource from sessionStorage', url, 'deps:', resourceUrls.slice(1));
-          cache[url] = Promise.resolve({resourceUrls});
-        } else {
-          const now = Date.now();
-          cache[url] = doProcessResource(url).then(result => {
-            log('doProcessResource', `[${Date.now() - now}ms]`, url);
-            return result;
-          });
-        }
-      }
-      return cache[url];
+    let isFromSvgResource;
+    const extractResourcesFromStyle$$1 = extractResourcesFromStyle({extractResourcesFromStyleSheet});
+    return function processResource(absoluteUrl, documents, baseUrl, getResourceUrlsAndBlobs) {
+      return cache[absoluteUrl] || (cache[absoluteUrl] = doProcessResource(absoluteUrl));
 
       function doProcessResource(url) {
-        log('fetching', url);
-        const now = Date.now();
         return fetchUrl(url)
           .catch(e => {
             if (probablyCORS(e)) {
@@ -370,59 +421,49 @@ function __processPageAndPoll() {
           })
           .then(({url, type, value, probablyCORS}) => {
             if (probablyCORS) {
-              sessionCache && sessionCache.setItem(url, []);
               return {resourceUrls: [url]};
             }
 
-            log('fetched', `[${Date.now() - now}ms]`, url);
-
-            const thisBlob = {[url]: {type, value}};
-            let dependentUrls;
+            let result = {blobsObj: {[url]: {type, value}}};
+            let resourceUrls;
             if (/text\/css/.test(type)) {
               let styleSheet = findStyleSheetByUrl(url, documents);
-              if (styleSheet || forceCreateStyle) {
-                const {corsFreeStyleSheet, cleanStyleSheet} = getCorsFreeStyleSheet(
-                  value,
-                  styleSheet,
-                );
-                dependentUrls = extractResourcesFromStyleSheet(corsFreeStyleSheet, documents[0]);
-                cleanStyleSheet();
+              if (styleSheet || isFromSvgResource) {
+                resourceUrls = extractResourcesFromStyle$$1(value, styleSheet, documents[0]);
               }
             } else if (/image\/svg/.test(type)) {
               try {
-                dependentUrls = extractResourcesFromSvg(value);
-                forceCreateStyle = !!dependentUrls;
+                resourceUrls = extractResourcesFromSvg(value);
+                if (resourceUrls && !isFromSvgResource) {
+                  isFromSvgResource = url;
+                }
               } catch (e) {
                 console.log('could not parse svg content', e);
               }
             }
 
-            if (dependentUrls) {
-              const absoluteDependentUrls = dependentUrls
-                .map(resourceUrl => absolutizeUrl_1(resourceUrl, url.replace(/^blob:/, '')))
-                .map(toUnAnchoredUri_1)
-                .filter(filterInlineUrl_1);
-
-              sessionCache && sessionCache.setItem(url, absoluteDependentUrls);
-
-              return getResourceUrlsAndBlobs({
-                documents,
-                urls: absoluteDependentUrls,
-                forceCreateStyle,
-              }).then(({resourceUrls, blobsObj}) => ({
-                resourceUrls,
-                blobsObj: Object.assign(blobsObj, thisBlob),
-              }));
-            } else {
-              sessionCache && sessionCache.setItem(url, []);
-              return {blobsObj: thisBlob};
+            if (resourceUrls) {
+              result = mapUrlsAndGetResult({resourceUrls, url, type, value}).then(
+                res => (res),
+              );
             }
+            return result;
           })
           .catch(err => {
-            log('error while fetching', url, err);
-            sessionCache && clearFromSessionStorage();
+            console.log('[dom-snapshot] error while fetching', url, err);
             return {};
           });
+      }
+
+      function mapUrlsAndGetResult({resourceUrls, url, type, value}) {
+        const urls = resourceUrls
+          .map(resourceUrl => absolutizeUrl_1(resourceUrl, url.replace(/^blob:/, '')))
+          .map(toUnAnchoredUri_1)
+          .filter(filterInlineUrl_1);
+        return getResourceUrlsAndBlobs(documents, baseUrl, urls).then(({resourceUrls, blobsObj}) => ({
+          resourceUrls,
+          blobsObj: Object.assign(blobsObj, {[url]: {type, value}}),
+        }));
       }
 
       function probablyCORS(err) {
@@ -431,20 +472,6 @@ function __processPageAndPoll() {
           (err.message.includes('Failed to fetch') || err.message.includes('Network request failed'));
         const name = err.name && err.name.includes('TypeError');
         return msg && name;
-      }
-
-      function getDependencies(url) {
-        const dependentUrls = sessionCache.getItem(url);
-        return [url].concat(dependentUrls ? uniq_1(flat_1(dependentUrls.map(getDependencies))) : []);
-      }
-
-      function clearFromSessionStorage() {
-        log('clearing from sessionStorage:', url);
-        sessionCache.keys().forEach(key => {
-          const dependentUrls = sessionCache.getItem(key);
-          sessionCache.setItem(key, dependentUrls.filter(dep => dep !== url));
-        });
-        log('cleared from sessionStorage:', url);
       }
     };
   }
@@ -462,6 +489,12 @@ function __processPageAndPoll() {
   }
 
   var getUrlFromCssText_1 = getUrlFromCssText;
+
+  function flat(arr) {
+    return [].concat(...arr);
+  }
+
+  var flat_1 = flat;
 
   function makeExtractResourcesFromSvg({parser, decoder, extractResourceUrlsFromStyleTags}) {
     return function(svgArrayBuffer) {
@@ -587,52 +620,6 @@ function __processPageAndPoll() {
 
   var extractResourceUrlsFromStyleTags = makeExtractResourceUrlsFromStyleTags;
 
-  function createTempStylsheet(cssArrayBuffer) {
-    const cssText = new TextDecoder('utf-8').decode(cssArrayBuffer);
-    const head = document.head || document.querySelectorAll('head')[0];
-    const style = document.createElement('style');
-    style.type = 'text/css';
-    style.setAttribute('data-desc', 'Applitools tmp variable created by DOM SNAPSHOT');
-    head.appendChild(style);
-
-    // This is required for IE8 and below.
-    if (style.styleSheet) {
-      style.styleSheet.cssText = cssText;
-    } else {
-      style.appendChild(document.createTextNode(cssText));
-    }
-    return style.sheet;
-  }
-
-  var createTempStyleSheet = createTempStylsheet;
-
-  function getCorsFreeStyleSheet(cssArrayBuffer, styleSheet) {
-    let corsFreeStyleSheet;
-    if (styleSheet) {
-      try {
-        styleSheet.cssRules;
-        corsFreeStyleSheet = styleSheet;
-      } catch (e) {
-        console.log(
-          `[dom-snapshot] could not access cssRules for ${styleSheet.href} ${e}\ncreating temp style for access.`,
-        );
-        corsFreeStyleSheet = createTempStyleSheet(cssArrayBuffer);
-      }
-    } else {
-      corsFreeStyleSheet = createTempStyleSheet(cssArrayBuffer);
-    }
-
-    return {corsFreeStyleSheet, cleanStyleSheet};
-
-    function cleanStyleSheet() {
-      if (corsFreeStyleSheet !== styleSheet) {
-        corsFreeStyleSheet.ownerNode.parentNode.removeChild(corsFreeStyleSheet.ownerNode);
-      }
-    }
-  }
-
-  var getCorsFreeStyleSheet_1 = getCorsFreeStyleSheet;
-
   function base64ToArrayBuffer(base64) {
     var binary_string = window.atob(base64);
     var len = binary_string.length;
@@ -667,14 +654,15 @@ function __processPageAndPoll() {
 
   const getBaesUrl = function(doc) {
     const baseUrl = doc.querySelectorAll('base')[0] && doc.querySelectorAll('base')[0].href;
-    if (baseUrl && isUrl(baseUrl)) {
+    if (baseUrl) {
       return baseUrl;
     }
+    const frameElement = doc.defaultView && doc.defaultView.frameElement;
+    if (frameElement) {
+      return frameElement.src || getBaesUrl(frameElement.ownerDocument);
+    }
+    return doc.location.href;
   };
-
-  function isUrl(url) {
-    return url && !/^(about:blank|javascript:void|blob:)/.test(url);
-  }
 
   var getBaseUrl = getBaesUrl;
 
@@ -691,70 +679,7 @@ function __processPageAndPoll() {
 
   var toUriEncoding_1 = toUriEncoding;
 
-  function makeLog(referenceTime) {
-    return function log() {
-      const args = ['[dom-snapshot]', `[+${Date.now() - referenceTime}ms]`].concat(
-        Array.from(arguments),
-      );
-      console.log.apply(console, args);
-    };
-  }
-
-  var log = makeLog;
-
-  const RESOURCE_STORAGE_KEY = '__process_resource';
-
-  function makeSessionCache({log, sessionStorage}) {
-    let sessionStorageCache;
-    try {
-      sessionStorage = sessionStorage || window.sessionStorage;
-      const sessionStorageCacheStr = sessionStorage.getItem(RESOURCE_STORAGE_KEY);
-      sessionStorageCache = sessionStorageCacheStr ? JSON.parse(sessionStorageCacheStr) : {};
-    } catch (ex) {
-      log('error creating session cache', ex);
-    }
-
-    return {
-      getItem,
-      setItem,
-      keys,
-      persist,
-    };
-
-    function getItem(key) {
-      if (sessionStorageCache) {
-        return sessionStorageCache[key];
-      }
-    }
-
-    function setItem(key, value) {
-      if (sessionStorageCache) {
-        log('saving to in-memory sessionStorage, key:', key, 'value:', value);
-        sessionStorageCache[key] = value;
-      }
-    }
-
-    function keys() {
-      if (sessionStorageCache) {
-        return Object.keys(sessionStorageCache);
-      } else {
-        return [];
-      }
-    }
-
-    function persist() {
-      if (sessionStorageCache) {
-        sessionStorage.setItem(RESOURCE_STORAGE_KEY, JSON.stringify(sessionStorageCache));
-      }
-    }
-  }
-
-  var sessionCache = makeSessionCache;
-
-  function processPage(doc = document, {showLogs, useSessionCache} = {}) {
-    const log$$1 = showLogs ? log(Date.now()) : noop;
-    log$$1('processPage start');
-    const sessionCache$$1 = useSessionCache && sessionCache({log: log$$1});
+  function processPage(doc = document) {
     const styleSheetCache = {};
     const extractResourcesFromStyleSheet$$1 = extractResourcesFromStyleSheet({styleSheetCache});
     const findStyleSheetByUrl$$1 = findStyleSheetByUrl({styleSheetCache});
@@ -766,12 +691,9 @@ function __processPageAndPoll() {
     const processResource$$1 = processResource({
       fetchUrl: fetchUrl_1,
       findStyleSheetByUrl: findStyleSheetByUrl$$1,
-      getCorsFreeStyleSheet: getCorsFreeStyleSheet_1,
       extractResourcesFromStyleSheet: extractResourcesFromStyleSheet$$1,
       extractResourcesFromSvg,
       absolutizeUrl: absolutizeUrl_1,
-      log: log$$1,
-      sessionCache: sessionCache$$1,
     });
 
     const getResourceUrlsAndBlobs$$1 = getResourceUrlsAndBlobs({
@@ -779,19 +701,16 @@ function __processPageAndPoll() {
       aggregateResourceUrlsAndBlobs: aggregateResourceUrlsAndBlobs_1,
     });
 
-    return doProcessPage(doc).then(result => {
-      log$$1('processPage end');
-      return result;
-    });
+    return doProcessPage(doc);
 
-    function doProcessPage(doc, pageUrl = doc.location.href) {
-      const baseUrl = getBaseUrl(doc) || pageUrl;
-      const {cdt, docRoots, canvasElements, inlineFrames} = domNodesToCdt_1(doc, baseUrl);
+    function doProcessPage(doc, baesUrl = null) {
+      const url = baesUrl || getBaseUrl(doc);
+      const {cdt, docRoots, canvasElements, inlineFrames} = domNodesToCdt_1(doc, url);
 
       const linkUrls = flat_1(docRoots.map(extractLinks_1));
       const styleTagUrls = flat_1(docRoots.map(extractResourceUrlsFromStyleTags$$1));
-      const absolutizeThisUrl = getAbsolutizeByUrl(baseUrl);
-      const urls = uniq_1(
+      const absolutizeThisUrl = getAbsolutizeByUrl(url);
+      const links = uniq_1(
         Array.from(linkUrls)
           .concat(Array.from(styleTagUrls))
           .concat(extractResourceUrlsFromStyleAttrs_1(cdt)),
@@ -801,41 +720,28 @@ function __processPageAndPoll() {
         .map(toUnAnchoredUri_1)
         .filter(filterInlineUrlsIfExisting);
 
-      const resourceUrlsAndBlobsPromise = getResourceUrlsAndBlobs$$1({documents: docRoots, urls}).then(
-        result => {
-          sessionCache$$1 && sessionCache$$1.persist();
-          return result;
-        },
-      );
+      const resourceUrlsAndBlobsPromise = getResourceUrlsAndBlobs$$1(docRoots, url, links);
       const canvasBlobs = buildCanvasBlobs_1(canvasElements);
-      const frameDocs = extractFrames_1(docRoots);
 
-      const processFramesPromise = frameDocs.map(f =>
-        doProcessPage(f, f.defaultView.frameElement.src),
-      );
+      const frameDocs = extractFrames_1(docRoots);
+      const processFramesPromise = frameDocs.map(f => doProcessPage(f, null));
       const processInlineFramesPromise = inlineFrames.map(({element, url}) =>
         doProcessPage(element.contentDocument, url),
       );
 
-      const srcAttr =
-        doc.defaultView &&
-        doc.defaultView.frameElement &&
-        doc.defaultView.frameElement.getAttribute('src');
-
-      return Promise.all(
-        [resourceUrlsAndBlobsPromise].concat(processFramesPromise).concat(processInlineFramesPromise),
-      ).then(function(resultsWithFrameResults) {
-        const {resourceUrls, blobsObj} = resultsWithFrameResults[0];
-        const framesResults = resultsWithFrameResults.slice(1);
-        return {
-          cdt,
-          url: pageUrl,
-          srcAttr,
-          resourceUrls: resourceUrls.map(url => url.replace(/^blob:/, '')),
-          blobs: blobsObjToArray(blobsObj).concat(canvasBlobs),
-          frames: framesResults,
-        };
-      });
+      const frameElement = doc.defaultView && doc.defaultView.frameElement;
+      return Promise.all([
+        resourceUrlsAndBlobsPromise,
+        ...processFramesPromise,
+        ...processInlineFramesPromise,
+      ]).then(([{resourceUrls, blobsObj}, ...framesResults]) => ({
+        cdt,
+        url,
+        resourceUrls,
+        blobs: [...blobsObjToArray(blobsObj), ...canvasBlobs],
+        frames: framesResults,
+        srcAttr: frameElement ? frameElement.getAttribute('src') : undefined,
+      }));
     }
   }
 
@@ -866,9 +772,50 @@ function __processPageAndPoll() {
 
   var processPage_1 = processPage;
 
-  var processPageAndPoll = pollify(processPage_1);
+  function processPageAndSerialize(doc) {
+    return processPage_1(doc).then(serializeFrame);
+  }
 
-  return processPageAndPoll;
+  function serializeFrame(frame) {
+    frame.blobs = frame.blobs.map(({url, type, value}) => ({
+      url,
+      type,
+      value: arrayBufferToBase64_1(value),
+    }));
+    frame.frames.forEach(serializeFrame);
+    return frame;
+  }
+
+  var processPageAndSerialize_1 = processPageAndSerialize;
+
+  const EYES_NAME_SPACE = '__EYES__APPLITOOLS__';
+
+  function processPageAndPoll(doc) {
+    if (!window[EYES_NAME_SPACE]) {
+      window[EYES_NAME_SPACE] = {};
+    }
+    if (!window[EYES_NAME_SPACE].processPageAndSerializeResult) {
+      window[EYES_NAME_SPACE].processPageAndSerializeResult = {
+        status: 'WIP',
+        value: null,
+        error: null,
+      };
+      processPageAndSerialize_1(doc)
+        .then(r => ((resultObject.status = 'SUCCESS'), (resultObject.value = r)))
+        .catch(e => ((resultObject.status = 'ERROR'), (resultObject.error = e.message)));
+    }
+
+    const resultObject = window[EYES_NAME_SPACE].processPageAndSerializeResult;
+    if (resultObject.status === 'SUCCESS') {
+      window[EYES_NAME_SPACE].processPageAndSerializeResult = null;
+    }
+
+    return JSON.stringify(resultObject);
+  }
+
+  var processPageAndPoll_1 = processPageAndPoll;
+
+  return processPageAndPoll_1;
 
 }());
 
