@@ -1,4 +1,4 @@
-/* @applitools/dom-snapshot@2.2.2 */
+/* @applitools/dom-snapshot@2.1.1 */
 
 function __processPageAndSerializeForIE() {
   var processPageAndSerializeForIE = (function () {
@@ -203,7 +203,7 @@ function __processPageAndSerializeForIE() {
             (module.exports = function (key, value) {
               return store[key] || (store[key] = value !== undefined ? value : {});
             })('versions', []).push({
-              version: '3.2.1',
+              version: '3.1.3',
               mode: 'global',
               copyright: '© 2019 Denis Pushkarev (zloirock.ru)'
             });
@@ -4229,17 +4229,12 @@ function __processPageAndSerializeForIE() {
             // https://tc39.github.io/ecma262/#sec-math.fround
             _export({ target: 'Math', stat: true }, { fround: mathFround });
 
-            var $hypot = Math.hypot;
             var abs$4 = Math.abs;
             var sqrt$2 = Math.sqrt;
 
-            // Chrome 77 bug
-            // https://bugs.chromium.org/p/v8/issues/detail?id=9546
-            var BUGGY = !!$hypot && $hypot(Infinity, NaN) !== Infinity;
-
             // `Math.hypot` method
             // https://tc39.github.io/ecma262/#sec-math.hypot
-            _export({ target: 'Math', stat: true, forced: BUGGY }, {
+            _export({ target: 'Math', stat: true }, {
               hypot: function hypot(value1, value2) { // eslint-disable-line no-unused-vars
                 var sum = 0;
                 var i = 0;
@@ -4451,8 +4446,6 @@ function __processPageAndSerializeForIE() {
             // https://tc39.github.io/ecma262/#sec-json-@@tostringtag
             setToStringTag(global_1.JSON, 'JSON', true);
 
-            var nativePromiseConstructor = global_1.Promise;
-
             var redefineAll = function (target, src, options) {
               for (var key in src) redefine(target, key, src[key], options);
               return target;
@@ -4570,7 +4563,7 @@ function __processPageAndSerializeForIE() {
             var queueMicrotaskDescriptor = getOwnPropertyDescriptor$5(global_1, 'queueMicrotask');
             var queueMicrotask = queueMicrotaskDescriptor && queueMicrotaskDescriptor.value;
 
-            var flush, head, last, notify, toggle, node, promise, then;
+            var flush, head, last, notify, toggle, node, promise;
 
             // modern engines have queueMicrotask method
             if (!queueMicrotask) {
@@ -4608,9 +4601,8 @@ function __processPageAndSerializeForIE() {
               } else if (Promise$1 && Promise$1.resolve) {
                 // Promise.resolve without an argument throws an error in LG WebOS 2
                 promise = Promise$1.resolve(undefined);
-                then = promise.then;
                 notify = function () {
-                  then.call(promise, flush);
+                  promise.then(flush);
                 };
               // for other environments - macrotask based on:
               // - setImmediate
@@ -4695,7 +4687,7 @@ function __processPageAndSerializeForIE() {
             var getInternalState$4 = internalState.get;
             var setInternalState$4 = internalState.set;
             var getInternalPromiseState = internalState.getterFor(PROMISE);
-            var PromiseConstructor = nativePromiseConstructor;
+            var PromiseConstructor = global_1[PROMISE];
             var TypeError$1 = global_1.TypeError;
             var document$2 = global_1.document;
             var process$2 = global_1.process;
@@ -4713,7 +4705,7 @@ function __processPageAndSerializeForIE() {
             var REJECTED = 2;
             var HANDLED = 1;
             var UNHANDLED = 2;
-            var Internal, OwnPromiseCapability, PromiseWrapper, nativeThen;
+            var Internal, OwnPromiseCapability, PromiseWrapper;
 
             var FORCED$e = isForced_1(PROMISE, function () {
               // correct subclassing with @@species support
@@ -4938,25 +4930,13 @@ function __processPageAndSerializeForIE() {
                   : newGenericPromiseCapability(C);
               };
 
-              if (typeof nativePromiseConstructor == 'function') {
-                nativeThen = nativePromiseConstructor.prototype.then;
-
-                // wrap native Promise#then for native async functions
-                redefine(nativePromiseConstructor.prototype, 'then', function then(onFulfilled, onRejected) {
-                  var that = this;
-                  return new PromiseConstructor(function (resolve, reject) {
-                    nativeThen.call(that, resolve, reject);
-                  }).then(onFulfilled, onRejected);
-                });
-
-                // wrap fetch result
-                if (typeof $fetch == 'function') _export({ global: true, enumerable: true, forced: true }, {
-                  // eslint-disable-next-line no-unused-vars
-                  fetch: function fetch(input) {
-                    return promiseResolve(PromiseConstructor, $fetch.apply(global_1, arguments));
-                  }
-                });
-              }
+              // wrap fetch result
+              if (typeof $fetch == 'function') _export({ global: true, enumerable: true, forced: true }, {
+                // eslint-disable-next-line no-unused-vars
+                fetch: function fetch(input) {
+                  return promiseResolve(PromiseConstructor, $fetch.apply(global_1, arguments));
+                }
+              });
             }
 
             _export({ global: true, wrap: true, forced: FORCED$e }, {
@@ -5034,43 +5014,6 @@ function __processPageAndSerializeForIE() {
               }
             });
 
-            // `Promise.allSettled` method
-            // https://github.com/tc39/proposal-promise-allSettled
-            _export({ target: 'Promise', stat: true }, {
-              allSettled: function allSettled(iterable) {
-                var C = this;
-                var capability = newPromiseCapability.f(C);
-                var resolve = capability.resolve;
-                var reject = capability.reject;
-                var result = perform(function () {
-                  var promiseResolve = aFunction$1(C.resolve);
-                  var values = [];
-                  var counter = 0;
-                  var remaining = 1;
-                  iterate_1(iterable, function (promise) {
-                    var index = counter++;
-                    var alreadyCalled = false;
-                    values.push(undefined);
-                    remaining++;
-                    promiseResolve.call(C, promise).then(function (value) {
-                      if (alreadyCalled) return;
-                      alreadyCalled = true;
-                      values[index] = { status: 'fulfilled', value: value };
-                      --remaining || resolve(values);
-                    }, function (e) {
-                      if (alreadyCalled) return;
-                      alreadyCalled = true;
-                      values[index] = { status: 'rejected', reason: e };
-                      --remaining || resolve(values);
-                    });
-                  });
-                  --remaining || resolve(values);
-                });
-                if (result.error) reject(result.value);
-                return capability.promise;
-              }
-            });
-
             // `Promise.prototype.finally` method
             // https://tc39.github.io/ecma262/#sec-promise.prototype.finally
             _export({ target: 'Promise', proto: true, real: true }, {
@@ -5088,11 +5031,6 @@ function __processPageAndSerializeForIE() {
               }
             });
 
-            // patch native Promise.prototype for native async functions
-            if (typeof nativePromiseConstructor == 'function' && !nativePromiseConstructor.prototype['finally']) {
-              redefine(nativePromiseConstructor.prototype, 'finally', getBuiltIn('Promise').prototype['finally']);
-            }
-
             var collection = function (CONSTRUCTOR_NAME, wrapper, common, IS_MAP, IS_WEAK) {
               var NativeConstructor = global_1[CONSTRUCTOR_NAME];
               var NativePrototype = NativeConstructor && NativeConstructor.prototype;
@@ -5103,17 +5041,17 @@ function __processPageAndSerializeForIE() {
               var fixMethod = function (KEY) {
                 var nativeMethod = NativePrototype[KEY];
                 redefine(NativePrototype, KEY,
-                  KEY == 'add' ? function add(value) {
-                    nativeMethod.call(this, value === 0 ? 0 : value);
+                  KEY == 'add' ? function add(a) {
+                    nativeMethod.call(this, a === 0 ? 0 : a);
                     return this;
-                  } : KEY == 'delete' ? function (key) {
-                    return IS_WEAK && !isObject(key) ? false : nativeMethod.call(this, key === 0 ? 0 : key);
-                  } : KEY == 'get' ? function get(key) {
-                    return IS_WEAK && !isObject(key) ? undefined : nativeMethod.call(this, key === 0 ? 0 : key);
-                  } : KEY == 'has' ? function has(key) {
-                    return IS_WEAK && !isObject(key) ? false : nativeMethod.call(this, key === 0 ? 0 : key);
-                  } : function set(key, value) {
-                    nativeMethod.call(this, key === 0 ? 0 : key, value);
+                  } : KEY == 'delete' ? function (a) {
+                    return IS_WEAK && !isObject(a) ? false : nativeMethod.call(this, a === 0 ? 0 : a);
+                  } : KEY == 'get' ? function get(a) {
+                    return IS_WEAK && !isObject(a) ? undefined : nativeMethod.call(this, a === 0 ? 0 : a);
+                  } : KEY == 'has' ? function has(a) {
+                    return IS_WEAK && !isObject(a) ? false : nativeMethod.call(this, a === 0 ? 0 : a);
+                  } : function set(a, b) {
+                    nativeMethod.call(this, a === 0 ? 0 : a, b);
                     return this;
                   }
                 );
@@ -5130,7 +5068,7 @@ function __processPageAndSerializeForIE() {
                 var instance = new Constructor();
                 // early implementations not supports chaining
                 var HASNT_CHAINING = instance[ADDER](IS_WEAK ? {} : -0, 1) != instance;
-                // V8 ~ Chromium 40- weak-collections throws on primitives, but should return false
+                // V8 ~  Chromium 40- weak-collections throws on primitives, but should return false
                 var THROWS_ON_PRIMITIVES = fails(function () { instance.has(1); });
                 // most early implementations doesn't supports iterables, most modern - not close it correctly
                 // eslint-disable-next-line no-new
@@ -5590,8 +5528,7 @@ function __processPageAndSerializeForIE() {
             var TO_STRING_TAG$3 = wellKnownSymbol('toStringTag');
             var TYPED_ARRAY_TAG = uid('TYPED_ARRAY_TAG');
             var NATIVE_ARRAY_BUFFER = !!(global_1.ArrayBuffer && DataView$1);
-            // Fixing native typed arrays in Opera Presto crashes the browser, see #595
-            var NATIVE_ARRAY_BUFFER_VIEWS = NATIVE_ARRAY_BUFFER && !!objectSetPrototypeOf && classof(global_1.opera) !== 'Opera';
+            var NATIVE_ARRAY_BUFFER_VIEWS = NATIVE_ARRAY_BUFFER && !!objectSetPrototypeOf;
             var TYPED_ARRAY_TAG_REQIRED = false;
             var NAME$1;
 
@@ -8791,17 +8728,7 @@ function __processPageAndSerializeForIE() {
                 global.URLSearchParams = URLSearchParams;
               };
 
-              var checkIfURLSearchParamsSupported = function() {
-                try {
-                  var URLSearchParams = global.URLSearchParams;
-
-                  return (new URLSearchParams('?a=1').toString() === 'a=1') && (typeof URLSearchParams.prototype.set === 'function');
-                } catch (e) {
-                  return false;
-                }
-              };
-
-              if (!checkIfURLSearchParamsSupported()) {
+              if (!('URLSearchParams' in global) || (new global.URLSearchParams('?a=1').toString() !== 'a=1')) {
                 polyfillURLSearchParams();
               }
 
@@ -9671,10 +9598,57 @@ function __processPageAndSerializeForIE() {
 
             var arrayBufferToBase64_1 = arrayBufferToBase64;
 
+            function _defineProperty(obj, key, value) {
+              if (key in obj) {
+                Object.defineProperty(obj, key, {
+                  value: value,
+                  enumerable: true,
+                  configurable: true,
+                  writable: true
+                });
+              } else {
+                obj[key] = value;
+              }
+
+              return obj;
+            }
+
+            function _toArray(arr) {
+              return _arrayWithHoles(arr) || _iterableToArray(arr) || _nonIterableRest();
+            }
+
+            function _toConsumableArray(arr) {
+              return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread();
+            }
+
+            function _arrayWithoutHoles(arr) {
+              if (Array.isArray(arr)) {
+                for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+                return arr2;
+              }
+            }
+
+            function _arrayWithHoles(arr) {
+              if (Array.isArray(arr)) return arr;
+            }
+
+            function _iterableToArray(iter) {
+              if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter);
+            }
+
+            function _nonIterableSpread() {
+              throw new TypeError("Invalid attempt to spread non-iterable instance");
+            }
+
+            function _nonIterableRest() {
+              throw new TypeError("Invalid attempt to destructure non-iterable instance");
+            }
+
             function extractLinks() {
               var doc = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
               var srcsetUrls = Array.from(doc.querySelectorAll('img[srcset],source[srcset]')).map(function (srcsetEl) {
-                return srcsetEl.getAttribute('srcset').split(', ').map(function (str) {
+                return srcsetEl.getAttribute('srcset').split(',').map(function (str) {
                   return str.trim().split(/\s+/)[0];
                 });
               }).reduce(function (acc, urls) {
@@ -9702,6 +9676,12 @@ function __processPageAndSerializeForIE() {
 
             var extractLinks_1 = extractLinks;
 
+            function absolutizeUrl(url, absoluteUrl) {
+              return new URL(url, absoluteUrl).href;
+            }
+
+            var absolutizeUrl_1 = absolutizeUrl;
+
             function uuid() {
               return window.crypto.getRandomValues(new Uint32Array(1))[0];
             }
@@ -9709,7 +9689,7 @@ function __processPageAndSerializeForIE() {
             var uuid_1 = uuid;
 
             function isInlineFrame(frame) {
-              return !/^https?:.+/.test(frame.src) || frame.contentDocument && frame.contentDocument.location && frame.contentDocument.location.href === 'about:blank';
+              return !/^https?:.+/.test(frame.src);
             }
 
             var isInlineFrame_1 = isInlineFrame;
@@ -9724,13 +9704,7 @@ function __processPageAndSerializeForIE() {
 
             var isAccessibleFrame_1 = isAccessibleFrame;
 
-            function absolutizeUrl(url, absoluteUrl) {
-              return new URL(url, absoluteUrl).href;
-            }
-
-            var absolutizeUrl_1 = absolutizeUrl;
-
-            function domNodesToCdt(docNode, baseUrl) {
+            function domNodesToCdt(docNode, url) {
               var cdt = [{
                 nodeType: Node.DOCUMENT_NODE
               }];
@@ -9759,8 +9733,9 @@ function __processPageAndSerializeForIE() {
               }
 
               function elementNodeFactory(cdt, elementNode) {
-                var node, manualChildNodeIndexes, dummyUrl;
+                var node, manualChildNodeIndexes;
                 var nodeType = elementNode.nodeType;
+                var dummyUrl, frameBase;
 
                 if ([Node.ELEMENT_NODE, Node.DOCUMENT_FRAGMENT_NODE].includes(nodeType)) {
                   if (elementNode.nodeName !== 'SCRIPT') {
@@ -9778,7 +9753,7 @@ function __processPageAndSerializeForIE() {
                     }
 
                     if (elementNode.nodeName === 'CANVAS') {
-                      dummyUrl = absolutizeUrl_1("applitools-canvas-".concat(uuid_1(), ".png"), baseUrl);
+                      dummyUrl = absolutizeUrl_1("applitools-canvas-".concat(uuid_1(), ".png"), url);
                       node.attributes.push({
                         name: 'data-applitools-src',
                         value: dummyUrl
@@ -9790,7 +9765,8 @@ function __processPageAndSerializeForIE() {
                     }
 
                     if (elementNode.nodeName === 'IFRAME' && isAccessibleFrame_1(elementNode) && isInlineFrame_1(elementNode)) {
-                      dummyUrl = absolutizeUrl_1("?applitools-iframe=".concat(uuid_1()), baseUrl);
+                      frameBase = getFrameBaseUrl(elementNode);
+                      dummyUrl = absolutizeUrl_1("?applitools-iframe=".concat(uuid_1()), frameBase || url);
                       node.attributes.push({
                         name: 'data-applitools-src',
                         value: dummyUrl
@@ -9915,6 +9891,14 @@ function __processPageAndSerializeForIE() {
                   nodeName: elementNode.nodeName
                 };
               }
+
+              function getFrameBaseUrl(frameElement) {
+                var href = frameElement.contentDocument.querySelectorAll('base') && frameElement.contentDocument.querySelectorAll('base')[0] && frameElement.contentDocument.querySelectorAll('base')[0].href;
+
+                if (href && !href.includes('about:blank')) {
+                  return href;
+                }
+              }
             }
 
             var domNodesToCdt_1 = domNodesToCdt;
@@ -9950,18 +9934,9 @@ function __processPageAndSerializeForIE() {
             function makeGetResourceUrlsAndBlobs(_ref) {
               var processResource = _ref.processResource,
                   aggregateResourceUrlsAndBlobs = _ref.aggregateResourceUrlsAndBlobs;
-              return function getResourceUrlsAndBlobs(_ref2) {
-                var documents = _ref2.documents,
-                    urls = _ref2.urls,
-                    _ref2$forceCreateStyl = _ref2.forceCreateStyle,
-                    forceCreateStyle = _ref2$forceCreateStyl === void 0 ? false : _ref2$forceCreateStyl;
+              return function getResourceUrlsAndBlobs(documents, baseUrl, urls) {
                 return Promise.all(urls.map(function (url) {
-                  return processResource({
-                    url: url,
-                    documents: documents,
-                    getResourceUrlsAndBlobs: getResourceUrlsAndBlobs,
-                    forceCreateStyle: forceCreateStyle
-                  });
+                  return processResource(url, documents, baseUrl, getResourceUrlsAndBlobs);
                 })).then(function (resourceUrlsAndBlobsArr) {
                   return aggregateResourceUrlsAndBlobs(resourceUrlsAndBlobsArr);
                 });
@@ -9969,21 +9944,6 @@ function __processPageAndSerializeForIE() {
             }
 
             var getResourceUrlsAndBlobs = makeGetResourceUrlsAndBlobs;
-
-            function _defineProperty(obj, key, value) {
-              if (key in obj) {
-                Object.defineProperty(obj, key, {
-                  value: value,
-                  enumerable: true,
-                  configurable: true,
-                  writable: true
-                });
-              } else {
-                obj[key] = value;
-              }
-
-              return obj;
-            }
 
             function filterInlineUrl(absoluteUrl) {
               return /^(blob|https?):/.test(absoluteUrl);
@@ -9999,55 +9959,77 @@ function __processPageAndSerializeForIE() {
 
             var toUnAnchoredUri_1 = toUnAnchoredUri;
 
-            var noop = function noop() {};
+            function createTempStylsheet(cssContent) {
+              if (!cssContent) {
+                console.log('[dom-snapshot] error createTempStylsheet called without cssContent');
+                return;
+              }
 
-            function flat(arr) {
-              return arr.reduce(function (flatArr, item) {
-                return flatArr.concat(item);
-              }, []);
+              var head = document.head || document.querySelectorAll('head')[0];
+              var style = document.createElement('style');
+              style.type = 'text/css';
+              style.setAttribute('data-desc', 'Applitools tmp variable created by DOM SNAPSHOT');
+              head.appendChild(style); // This is required for IE8 and below.
+
+              if (style.styleSheet) {
+                style.styleSheet.cssText = cssContent;
+              } else {
+                style.appendChild(document.createTextNode(cssContent));
+              }
+
+              return style.sheet;
             }
 
-            var flat_1 = flat;
+            var createTempStyleSheet = createTempStylsheet;
+
+            function makeExtractResourcesFromStyle(_ref) {
+              var extractResourcesFromStyleSheet = _ref.extractResourcesFromStyleSheet;
+              return function extractResourcesFromStyle(cssArrayBuffer, styleSheet) {
+                var doc = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : document;
+                var corsFreeStyleSheet;
+                var cssText;
+
+                if (styleSheet) {
+                  try {
+                    styleSheet.cssRules;
+                    corsFreeStyleSheet = styleSheet;
+                  } catch (e) {
+                    console.log("[dom-snapshot] could not access cssRules for ".concat(styleSheet.href, " ").concat(e, "\ncreating temp style for access."));
+                    cssText = new TextDecoder('utf-8').decode(cssArrayBuffer);
+                    corsFreeStyleSheet = createTempStyleSheet(cssText);
+                  }
+                } else {
+                  cssText = new TextDecoder('utf-8').decode(cssArrayBuffer);
+                  corsFreeStyleSheet = createTempStyleSheet(cssText);
+                }
+
+                var result = extractResourcesFromStyleSheet(corsFreeStyleSheet, doc);
+
+                if (corsFreeStyleSheet !== styleSheet) {
+                  corsFreeStyleSheet.ownerNode.parentNode.removeChild(corsFreeStyleSheet.ownerNode);
+                }
+
+                return result;
+              };
+            }
+
+            var extractResourcesFromStyle = makeExtractResourcesFromStyle;
 
             function makeProcessResource(_ref) {
               var fetchUrl = _ref.fetchUrl,
                   findStyleSheetByUrl = _ref.findStyleSheetByUrl,
-                  getCorsFreeStyleSheet = _ref.getCorsFreeStyleSheet,
                   extractResourcesFromStyleSheet = _ref.extractResourcesFromStyleSheet,
                   extractResourcesFromSvg = _ref.extractResourcesFromSvg,
-                  sessionCache = _ref.sessionCache,
                   _ref$cache = _ref.cache,
-                  cache = _ref$cache === void 0 ? {} : _ref$cache,
-                  _ref$log = _ref.log,
-                  log = _ref$log === void 0 ? noop : _ref$log;
-              return function processResource(_ref2) {
-                var url = _ref2.url,
-                    documents = _ref2.documents,
-                    getResourceUrlsAndBlobs = _ref2.getResourceUrlsAndBlobs,
-                    _ref2$forceCreateStyl = _ref2.forceCreateStyle,
-                    forceCreateStyle = _ref2$forceCreateStyl === void 0 ? false : _ref2$forceCreateStyl;
-
-                if (!cache[url]) {
-                  if (sessionCache && sessionCache.getItem(url)) {
-                    var resourceUrls = getDependencies(url);
-                    log('doProcessResource from sessionStorage', url, 'deps:', resourceUrls.slice(1));
-                    cache[url] = Promise.resolve({
-                      resourceUrls: resourceUrls
-                    });
-                  } else {
-                    var now = Date.now();
-                    cache[url] = doProcessResource(url).then(function (result) {
-                      log('doProcessResource', "[".concat(Date.now() - now, "ms]"), url);
-                      return result;
-                    });
-                  }
-                }
-
-                return cache[url];
+                  cache = _ref$cache === void 0 ? {} : _ref$cache;
+              var isFromSvgResource;
+              var extractResourcesFromStyle$$1 = extractResourcesFromStyle({
+                extractResourcesFromStyleSheet: extractResourcesFromStyleSheet
+              });
+              return function processResource(absoluteUrl, documents, baseUrl, getResourceUrlsAndBlobs) {
+                return cache[absoluteUrl] || (cache[absoluteUrl] = doProcessResource(absoluteUrl));
 
                 function doProcessResource(url) {
-                  log('fetching', url);
-                  var now = Date.now();
                   return fetchUrl(url).catch(function (e) {
                     if (probablyCORS(e)) {
                       return {
@@ -10057,75 +10039,80 @@ function __processPageAndSerializeForIE() {
                     } else {
                       throw e;
                     }
-                  }).then(function (_ref3) {
-                    var url = _ref3.url,
-                        type = _ref3.type,
-                        value = _ref3.value,
-                        probablyCORS = _ref3.probablyCORS;
+                  }).then(function (_ref2) {
+                    var url = _ref2.url,
+                        type = _ref2.type,
+                        value = _ref2.value,
+                        probablyCORS = _ref2.probablyCORS;
 
                     if (probablyCORS) {
-                      sessionCache && sessionCache.setItem(url, []);
                       return {
                         resourceUrls: [url]
                       };
                     }
 
-                    log('fetched', "[".concat(Date.now() - now, "ms]"), url);
-
-                    var thisBlob = _defineProperty({}, url, {
-                      type: type,
-                      value: value
-                    });
-
-                    var dependentUrls;
+                    var result = {
+                      blobsObj: _defineProperty({}, url, {
+                        type: type,
+                        value: value
+                      })
+                    };
+                    var resourceUrls;
 
                     if (/text\/css/.test(type)) {
                       var styleSheet = findStyleSheetByUrl(url, documents);
 
-                      if (styleSheet || forceCreateStyle) {
-                        var _getCorsFreeStyleShee = getCorsFreeStyleSheet(value, styleSheet),
-                            corsFreeStyleSheet = _getCorsFreeStyleShee.corsFreeStyleSheet,
-                            cleanStyleSheet = _getCorsFreeStyleShee.cleanStyleSheet;
-
-                        dependentUrls = extractResourcesFromStyleSheet(corsFreeStyleSheet, documents[0]);
-                        cleanStyleSheet();
+                      if (styleSheet || isFromSvgResource) {
+                        resourceUrls = extractResourcesFromStyle$$1(value, styleSheet, documents[0]);
                       }
                     } else if (/image\/svg/.test(type)) {
                       try {
-                        dependentUrls = extractResourcesFromSvg(value);
-                        forceCreateStyle = !!dependentUrls;
+                        resourceUrls = extractResourcesFromSvg(value);
+
+                        if (resourceUrls && !isFromSvgResource) {
+                          isFromSvgResource = url;
+                        }
                       } catch (e) {
                         console.log('could not parse svg content', e);
                       }
                     }
 
-                    if (dependentUrls) {
-                      var absoluteDependentUrls = dependentUrls.map(function (resourceUrl) {
-                        return absolutizeUrl_1(resourceUrl, url.replace(/^blob:/, ''));
-                      }).map(toUnAnchoredUri_1).filter(filterInlineUrl_1);
-                      sessionCache && sessionCache.setItem(url, absoluteDependentUrls);
-                      return getResourceUrlsAndBlobs({
-                        documents: documents,
-                        urls: absoluteDependentUrls,
-                        forceCreateStyle: forceCreateStyle
-                      }).then(function (_ref4) {
-                        var resourceUrls = _ref4.resourceUrls,
-                            blobsObj = _ref4.blobsObj;
-                        return {
-                          resourceUrls: resourceUrls,
-                          blobsObj: Object.assign(blobsObj, thisBlob)
-                        };
+                    if (resourceUrls) {
+                      result = mapUrlsAndGetResult({
+                        resourceUrls: resourceUrls,
+                        url: url,
+                        type: type,
+                        value: value
+                      }).then(function (res) {
+                        return res;
                       });
-                    } else {
-                      sessionCache && sessionCache.setItem(url, []);
-                      return {
-                        blobsObj: thisBlob
-                      };
                     }
+
+                    return result;
                   }).catch(function (err) {
-                    log('error while fetching', url, err);
-                    sessionCache && clearFromSessionStorage();
+                    console.log('[dom-snapshot] error while fetching', url, err);
                     return {};
+                  });
+                }
+
+                function mapUrlsAndGetResult(_ref3) {
+                  var resourceUrls = _ref3.resourceUrls,
+                      url = _ref3.url,
+                      type = _ref3.type,
+                      value = _ref3.value;
+                  var urls = resourceUrls.map(function (resourceUrl) {
+                    return absolutizeUrl_1(resourceUrl, url.replace(/^blob:/, ''));
+                  }).map(toUnAnchoredUri_1).filter(filterInlineUrl_1);
+                  return getResourceUrlsAndBlobs(documents, baseUrl, urls).then(function (_ref4) {
+                    var resourceUrls = _ref4.resourceUrls,
+                        blobsObj = _ref4.blobsObj;
+                    return {
+                      resourceUrls: resourceUrls,
+                      blobsObj: Object.assign(blobsObj, _defineProperty({}, url, {
+                        type: type,
+                        value: value
+                      }))
+                    };
                   });
                 }
 
@@ -10133,22 +10120,6 @@ function __processPageAndSerializeForIE() {
                   var msg = err.message && (err.message.includes('Failed to fetch') || err.message.includes('Network request failed'));
                   var name = err.name && err.name.includes('TypeError');
                   return msg && name;
-                }
-
-                function getDependencies(url) {
-                  var dependentUrls = sessionCache.getItem(url);
-                  return [url].concat(dependentUrls ? uniq_1(flat_1(dependentUrls.map(getDependencies))) : []);
-                }
-
-                function clearFromSessionStorage() {
-                  log('clearing from sessionStorage:', url);
-                  sessionCache.keys().forEach(function (key) {
-                    var dependentUrls = sessionCache.getItem(key);
-                    sessionCache.setItem(key, dependentUrls.filter(function (dep) {
-                      return dep !== url;
-                    }));
-                  });
-                  log('cleared from sessionStorage:', url);
                 }
               };
             }
@@ -10168,6 +10139,14 @@ function __processPageAndSerializeForIE() {
             }
 
             var getUrlFromCssText_1 = getUrlFromCssText;
+
+            function flat(arr) {
+              var _ref;
+
+              return (_ref = []).concat.apply(_ref, _toConsumableArray(arr));
+            }
+
+            var flat_1 = flat;
 
             function makeExtractResourcesFromSvg(_ref) {
               var parser = _ref.parser,
@@ -10293,54 +10272,6 @@ function __processPageAndSerializeForIE() {
 
             var extractResourceUrlsFromStyleTags = makeExtractResourceUrlsFromStyleTags;
 
-            function createTempStylsheet(cssArrayBuffer) {
-              var cssText = new TextDecoder('utf-8').decode(cssArrayBuffer);
-              var head = document.head || document.querySelectorAll('head')[0];
-              var style = document.createElement('style');
-              style.type = 'text/css';
-              style.setAttribute('data-desc', 'Applitools tmp variable created by DOM SNAPSHOT');
-              head.appendChild(style); // This is required for IE8 and below.
-
-              if (style.styleSheet) {
-                style.styleSheet.cssText = cssText;
-              } else {
-                style.appendChild(document.createTextNode(cssText));
-              }
-
-              return style.sheet;
-            }
-
-            var createTempStyleSheet = createTempStylsheet;
-
-            function getCorsFreeStyleSheet(cssArrayBuffer, styleSheet) {
-              var corsFreeStyleSheet;
-
-              if (styleSheet) {
-                try {
-                  styleSheet.cssRules;
-                  corsFreeStyleSheet = styleSheet;
-                } catch (e) {
-                  console.log("[dom-snapshot] could not access cssRules for ".concat(styleSheet.href, " ").concat(e, "\ncreating temp style for access."));
-                  corsFreeStyleSheet = createTempStyleSheet(cssArrayBuffer);
-                }
-              } else {
-                corsFreeStyleSheet = createTempStyleSheet(cssArrayBuffer);
-              }
-
-              return {
-                corsFreeStyleSheet: corsFreeStyleSheet,
-                cleanStyleSheet: cleanStyleSheet
-              };
-
-              function cleanStyleSheet() {
-                if (corsFreeStyleSheet !== styleSheet) {
-                  corsFreeStyleSheet.ownerNode.parentNode.removeChild(corsFreeStyleSheet.ownerNode);
-                }
-              }
-            }
-
-            var getCorsFreeStyleSheet_1 = getCorsFreeStyleSheet;
-
             function base64ToArrayBuffer(base64) {
               var binary_string = window.atob(base64);
               var len = binary_string.length;
@@ -10388,14 +10319,18 @@ function __processPageAndSerializeForIE() {
             var getBaesUrl = function getBaesUrl(doc) {
               var baseUrl = doc.querySelectorAll('base')[0] && doc.querySelectorAll('base')[0].href;
 
-              if (baseUrl && isUrl(baseUrl)) {
+              if (baseUrl) {
                 return baseUrl;
               }
-            };
 
-            function isUrl(url) {
-              return url && !/^(about:blank|javascript:void|blob:)/.test(url);
-            }
+              var frameElement = doc.defaultView && doc.defaultView.frameElement;
+
+              if (frameElement) {
+                return frameElement.src || getBaesUrl(frameElement.ownerDocument);
+              }
+
+              return doc.location.href;
+            };
 
             var getBaseUrl = getBaesUrl;
 
@@ -10409,79 +10344,8 @@ function __processPageAndSerializeForIE() {
 
             var toUriEncoding_1 = toUriEncoding;
 
-            function makeLog(referenceTime) {
-              return function log() {
-                var args = ['[dom-snapshot]', "[+".concat(Date.now() - referenceTime, "ms]")].concat(Array.from(arguments));
-                console.log.apply(console, args);
-              };
-            }
-
-            var log$8 = makeLog;
-
-            var RESOURCE_STORAGE_KEY = '__process_resource';
-
-            function makeSessionCache(_ref) {
-              var log = _ref.log,
-                  sessionStorage = _ref.sessionStorage;
-              var sessionStorageCache;
-
-              try {
-                sessionStorage = sessionStorage || window.sessionStorage;
-                var sessionStorageCacheStr = sessionStorage.getItem(RESOURCE_STORAGE_KEY);
-                sessionStorageCache = sessionStorageCacheStr ? JSON.parse(sessionStorageCacheStr) : {};
-              } catch (ex) {
-                log('error creating session cache', ex);
-              }
-
-              return {
-                getItem: getItem,
-                setItem: setItem,
-                keys: keys,
-                persist: persist
-              };
-
-              function getItem(key) {
-                if (sessionStorageCache) {
-                  return sessionStorageCache[key];
-                }
-              }
-
-              function setItem(key, value) {
-                if (sessionStorageCache) {
-                  log('saving to in-memory sessionStorage, key:', key, 'value:', value);
-                  sessionStorageCache[key] = value;
-                }
-              }
-
-              function keys() {
-                if (sessionStorageCache) {
-                  return Object.keys(sessionStorageCache);
-                } else {
-                  return [];
-                }
-              }
-
-              function persist() {
-                if (sessionStorageCache) {
-                  sessionStorage.setItem(RESOURCE_STORAGE_KEY, JSON.stringify(sessionStorageCache));
-                }
-              }
-            }
-
-            var sessionCache = makeSessionCache;
-
             function processPage() {
               var doc = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : document;
-
-              var _ref = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {},
-                  showLogs = _ref.showLogs,
-                  useSessionCache = _ref.useSessionCache;
-
-              var log = showLogs ? log$8(Date.now()) : noop;
-              log('processPage start');
-              var sessionCache$$1 = useSessionCache && sessionCache({
-                log: log
-              });
               var styleSheetCache = {};
               var extractResourcesFromStyleSheet$$1 = extractResourcesFromStyleSheet({
                 styleSheetCache: styleSheetCache
@@ -10496,27 +10360,21 @@ function __processPageAndSerializeForIE() {
               var processResource$$1 = processResource({
                 fetchUrl: fetchUrl_1,
                 findStyleSheetByUrl: findStyleSheetByUrl$$1,
-                getCorsFreeStyleSheet: getCorsFreeStyleSheet_1,
                 extractResourcesFromStyleSheet: extractResourcesFromStyleSheet$$1,
                 extractResourcesFromSvg: extractResourcesFromSvg,
-                absolutizeUrl: absolutizeUrl_1,
-                log: log,
-                sessionCache: sessionCache$$1
+                absolutizeUrl: absolutizeUrl_1
               });
               var getResourceUrlsAndBlobs$$1 = getResourceUrlsAndBlobs({
                 processResource: processResource$$1,
                 aggregateResourceUrlsAndBlobs: aggregateResourceUrlsAndBlobs_1
               });
-              return doProcessPage(doc).then(function (result) {
-                log('processPage end');
-                return result;
-              });
+              return doProcessPage(doc);
 
               function doProcessPage(doc) {
-                var pageUrl = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : doc.location.href;
-                var baseUrl = getBaseUrl(doc) || pageUrl;
+                var baesUrl = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+                var url = baesUrl || getBaseUrl(doc);
 
-                var _domNodesToCdt = domNodesToCdt_1(doc, baseUrl),
+                var _domNodesToCdt = domNodesToCdt_1(doc, url),
                     cdt = _domNodesToCdt.cdt,
                     docRoots = _domNodesToCdt.docRoots,
                     canvasElements = _domNodesToCdt.canvasElements,
@@ -10524,40 +10382,34 @@ function __processPageAndSerializeForIE() {
 
                 var linkUrls = flat_1(docRoots.map(extractLinks_1));
                 var styleTagUrls = flat_1(docRoots.map(extractResourceUrlsFromStyleTags$$1));
-                var absolutizeThisUrl = getAbsolutizeByUrl(baseUrl);
-                var urls = uniq_1(Array.from(linkUrls).concat(Array.from(styleTagUrls)).concat(extractResourceUrlsFromStyleAttrs_1(cdt))).map(toUriEncoding_1).map(absolutizeThisUrl).map(toUnAnchoredUri_1).filter(filterInlineUrlsIfExisting);
-                var resourceUrlsAndBlobsPromise = getResourceUrlsAndBlobs$$1({
-                  documents: docRoots,
-                  urls: urls
-                }).then(function (result) {
-                  sessionCache$$1 && sessionCache$$1.persist();
-                  return result;
-                });
+                var absolutizeThisUrl = getAbsolutizeByUrl(url);
+                var links = uniq_1(Array.from(linkUrls).concat(Array.from(styleTagUrls)).concat(extractResourceUrlsFromStyleAttrs_1(cdt))).map(toUriEncoding_1).map(absolutizeThisUrl).map(toUnAnchoredUri_1).filter(filterInlineUrlsIfExisting);
+                var resourceUrlsAndBlobsPromise = getResourceUrlsAndBlobs$$1(docRoots, url, links);
                 var canvasBlobs = buildCanvasBlobs_1(canvasElements);
                 var frameDocs = extractFrames_1(docRoots);
                 var processFramesPromise = frameDocs.map(function (f) {
-                  return doProcessPage(f, f.defaultView.frameElement.src);
+                  return doProcessPage(f, null);
                 });
-                var processInlineFramesPromise = inlineFrames.map(function (_ref2) {
-                  var element = _ref2.element,
-                      url = _ref2.url;
+                var processInlineFramesPromise = inlineFrames.map(function (_ref) {
+                  var element = _ref.element,
+                      url = _ref.url;
                   return doProcessPage(element.contentDocument, url);
                 });
-                var srcAttr = doc.defaultView && doc.defaultView.frameElement && doc.defaultView.frameElement.getAttribute('src');
-                return Promise.all([resourceUrlsAndBlobsPromise].concat(processFramesPromise).concat(processInlineFramesPromise)).then(function (resultsWithFrameResults) {
-                  var _resultsWithFrameResu = resultsWithFrameResults[0],
-                      resourceUrls = _resultsWithFrameResu.resourceUrls,
-                      blobsObj = _resultsWithFrameResu.blobsObj;
-                  var framesResults = resultsWithFrameResults.slice(1);
+                var frameElement = doc.defaultView && doc.defaultView.frameElement;
+                return Promise.all([resourceUrlsAndBlobsPromise].concat(_toConsumableArray(processFramesPromise), _toConsumableArray(processInlineFramesPromise))).then(function (_ref2) {
+                  var _ref3 = _toArray(_ref2),
+                      _ref3$ = _ref3[0],
+                      resourceUrls = _ref3$.resourceUrls,
+                      blobsObj = _ref3$.blobsObj,
+                      framesResults = _ref3.slice(1);
+
                   return {
                     cdt: cdt,
-                    url: pageUrl,
-                    srcAttr: srcAttr,
-                    resourceUrls: resourceUrls.map(function (url) {
-                      return url.replace(/^blob:/, '');
-                    }),
-                    blobs: blobsObjToArray(blobsObj).concat(canvasBlobs),
-                    frames: framesResults
+                    url: url,
+                    resourceUrls: resourceUrls,
+                    blobs: [].concat(_toConsumableArray(blobsObjToArray(blobsObj)), _toConsumableArray(canvasBlobs)),
+                    frames: framesResults,
+                    srcAttr: frameElement ? frameElement.getAttribute('src') : undefined
                   };
                 });
               }
@@ -10586,8 +10438,8 @@ function __processPageAndSerializeForIE() {
 
             var processPage_1 = processPage;
 
-            function processPageAndSerialize() {
-              return processPage_1.apply(this, arguments).then(serializeFrame);
+            function processPageAndSerialize(doc) {
+              return processPage_1(doc).then(serializeFrame);
             }
 
             function serializeFrame(frame) {
