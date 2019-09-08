@@ -1,7 +1,7 @@
 /* @applitools/dom-capture@7.0.14 */
 
-function __captureDomAndPoll() {
-  var captureDomAndPoll = (function () {
+function __captureDom() {
+  var captureDom = (function () {
   'use strict';
 
   const styleProps = [
@@ -419,36 +419,9 @@ function __captureDomAndPoll() {
 
   var captureFrame_1 = captureFrame;
 
-  const EYES_NAME_SPACE = '__EYES__APPLITOOLS__';
-
-  function captureFrameAndPoll(...args) {
-    if (!window[EYES_NAME_SPACE]) {
-      window[EYES_NAME_SPACE] = {};
-    }
-    if (!window[EYES_NAME_SPACE].captureDomResult) {
-      window[EYES_NAME_SPACE].captureDomResult = {
-        status: 'WIP',
-        value: null,
-        error: null,
-      };
-      captureFrame_1(...args)
-        .then(r => ((resultObject.status = 'SUCCESS'), (resultObject.value = r)))
-        .catch(e => ((resultObject.status = 'ERROR'), (resultObject.error = e.message)));
-    }
-
-    const resultObject = window[EYES_NAME_SPACE].captureDomResult;
-    if (resultObject.status === 'SUCCESS') {
-      window[EYES_NAME_SPACE].captureDomResult = null;
-    }
-
-    return JSON.stringify(resultObject);
-  }
-
-  var captureFrameAndPoll_1 = captureFrameAndPoll;
-
-  return captureFrameAndPoll_1;
+  return captureFrame_1;
 
 }());
 
-  return captureDomAndPoll.apply(this, arguments);
+  return captureDom.apply(this, arguments);
 }

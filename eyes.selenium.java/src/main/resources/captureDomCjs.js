@@ -147,7 +147,7 @@ function makeGetBundledCssFromCssText({
 }
 
 function getCss(newText, url) {
-  return `\n/** http://www.applitools.com **/\n${newText}`;
+  return `\n/** ${url} **/\n${newText}`;
 }
 
 var getBundledCssFromCssText = makeGetBundledCssFromCssText;
