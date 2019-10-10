@@ -1,4 +1,4 @@
-/* @applitools/dom-capture@7.0.17 */
+/* @applitools/dom-capture@7.0.18 */
 
 function __captureDomAndPoll() {
   var captureDomAndPoll = (function () {
@@ -363,6 +363,13 @@ function __captureDomAndPoll() {
 
         const style = {};
         for (const p of styleProps) style[p] = computedStyle.getPropertyValue(p);
+        if (!style['border-width']) {
+          style['border-width'] = `${computedStyle.getPropertyValue(
+          'border-top-width',
+        )} ${computedStyle.getPropertyValue('border-right-width')} ${computedStyle.getPropertyValue(
+          'border-bottom-width',
+        )} ${computedStyle.getPropertyValue('border-left-width')}`;
+        }
 
         const rect = {};
         for (const p of rectProps) rect[p] = boundingClientRect[p];

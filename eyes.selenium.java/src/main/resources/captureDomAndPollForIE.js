@@ -1,4 +1,4 @@
-/* @applitools/dom-capture@7.0.17 */
+/* @applitools/dom-capture@7.0.18 */
 
 function __captureDomAndPollForIE() {
   var captureDomAndPollForIE = (function () {
@@ -10997,51 +10997,55 @@ function __captureDomAndPollForIE() {
                                                 return _context2.finish(21);
 
                                               case 29:
+                                                if (!style['border-width']) {
+                                                  style['border-width'] = "".concat(computedStyle.getPropertyValue('border-top-width'), " ").concat(computedStyle.getPropertyValue('border-right-width'), " ").concat(computedStyle.getPropertyValue('border-bottom-width'), " ").concat(computedStyle.getPropertyValue('border-left-width'));
+                                                }
+
                                                 rect = {};
                                                 _iteratorNormalCompletion3 = true;
                                                 _didIteratorError3 = false;
                                                 _iteratorError3 = undefined;
-                                                _context2.prev = 33;
+                                                _context2.prev = 34;
 
                                                 for (_iterator3 = rectProps[Symbol.iterator](); !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
                                                   _p = _step3.value;
                                                   rect[_p] = boundingClientRect[_p];
                                                 }
 
-                                                _context2.next = 41;
+                                                _context2.next = 42;
                                                 break;
 
-                                              case 37:
-                                                _context2.prev = 37;
-                                                _context2.t2 = _context2["catch"](33);
+                                              case 38:
+                                                _context2.prev = 38;
+                                                _context2.t2 = _context2["catch"](34);
                                                 _didIteratorError3 = true;
                                                 _iteratorError3 = _context2.t2;
 
-                                              case 41:
-                                                _context2.prev = 41;
+                                              case 42:
                                                 _context2.prev = 42;
+                                                _context2.prev = 43;
 
                                                 if (!_iteratorNormalCompletion3 && _iterator3.return != null) {
                                                   _iterator3.return();
                                                 }
 
-                                              case 44:
-                                                _context2.prev = 44;
+                                              case 45:
+                                                _context2.prev = 45;
 
                                                 if (!_didIteratorError3) {
-                                                  _context2.next = 47;
+                                                  _context2.next = 48;
                                                   break;
                                                 }
 
                                                 throw _iteratorError3;
 
-                                              case 47:
-                                                return _context2.finish(44);
-
                                               case 48:
-                                                return _context2.finish(41);
+                                                return _context2.finish(45);
 
                                               case 49:
+                                                return _context2.finish(42);
+
+                                              case 50:
                                                 attributes = Array.from(el.attributes).map(function (a) {
                                                   return {
                                                     key: a.name,
@@ -11065,12 +11069,12 @@ function __captureDomAndPollForIE() {
                                                   childNodes: childNodes
                                                 });
 
-                                              case 53:
+                                              case 54:
                                               case "end":
                                                 return _context2.stop();
                                             }
                                           }
-                                        }, _callee2, null, [[13, 17, 21, 29], [22,, 24, 28], [33, 37, 41, 49], [42,, 44, 48]]);
+                                        }, _callee2, null, [[13, 17, 21, 29], [22,, 24, 28], [34, 38, 42, 50], [43,, 45, 49]]);
                                       }));
                                       return _elementToJSON.apply(this, arguments);
                                     };
