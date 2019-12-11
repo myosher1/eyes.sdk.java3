@@ -1,4 +1,4 @@
-/* @applitools/dom-capture@7.0.22 */
+/* @applitools/dom-capture@7.1.2 */
 'use strict';
 
 const styleProps = [
@@ -47,19 +47,21 @@ const psetTimeout = t =>
   });
 
 async function getImageSizes({bgImages, timeout = 5000, Image = window.Image}) {
-  return (await Promise.all(
-    Array.from(bgImages).map(url =>
-      Promise.race([
-        new Promise(resolve => {
-          const img = new Image();
-          img.onload = () => resolve({url, width: img.naturalWidth, height: img.naturalHeight});
-          img.onerror = () => resolve();
-          img.src = url;
-        }),
-        psetTimeout(timeout),
-      ]),
-    ),
-  )).reduce((images, curr) => {
+  return (
+    await Promise.all(
+      Array.from(bgImages).map(url =>
+        Promise.race([
+          new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => resolve({url, width: img.naturalWidth, height: img.naturalHeight});
+            img.onerror = () => resolve();
+            img.src = url;
+          }),
+          psetTimeout(timeout),
+        ]),
+      ),
+    )
+  ).reduce((images, curr) => {
     if (curr) {
       images[curr.url] = {width: curr.width, height: curr.height};
     }
@@ -109,7 +111,7 @@ function makeGetBundledCssFromCssText({
   getCssFromCache,
   unfetchedToken,
 }) {
-  return function getBundledCssFromCssText(cssText, resourceUrl) {
+  return function getBundledCssFromCssText(cssText, styleBaseUrl) {
     let unfetchedResources;
     let bundledCss = '';
 
@@ -117,7 +119,7 @@ function makeGetBundledCssFromCssText({
       const styleSheet = parseCss(cssText);
       for (const rule of Array.from(styleSheet.cssRules)) {
         if (rule instanceof CSSImportRule) {
-          const nestedUrl = absolutizeUrl(rule.href, resourceUrl);
+          const nestedUrl = absolutizeUrl(rule.href, styleBaseUrl);
           const nestedResource = getCssFromCache(nestedUrl);
           if (nestedResource !== undefined) {
             const {
@@ -134,10 +136,10 @@ function makeGetBundledCssFromCssText({
         }
       }
     } catch (ex) {
-      console.log(`error during getBundledCssFromCssText, resourceUrl=${resourceUrl}`, ex);
+      console.log(`error during getBundledCssFromCssText, styleBaseUrl=${styleBaseUrl}`, ex);
     }
 
-    bundledCss = `${bundledCss}${getCss(cssText, resourceUrl)}`;
+    bundledCss = `${bundledCss}${getCss(cssText, styleBaseUrl)}`;
 
     return {
       bundledCss,
@@ -196,22 +198,32 @@ var isLinkToStyleSheet = function isLinkToStyleSheet(node) {
   );
 };
 
+function isDataUrl(url) {
+  return url && url.startsWith('data:');
+}
+
+var isDataUrl_1 = isDataUrl;
+
 function makeExtractCssFromNode({getCssFromCache, absolutizeUrl}) {
   return function extractCssFromNode(node, baseUrl) {
-    let cssText, resourceUrl, isUnfetched;
+    let cssText, styleBaseUrl, isUnfetched;
     if (isStyleElement(node)) {
       cssText = Array.from(node.childNodes)
         .map(node => node.nodeValue)
         .join('');
-      resourceUrl = baseUrl;
+      styleBaseUrl = baseUrl;
     } else if (isLinkToStyleSheet(node)) {
-      resourceUrl = absolutizeUrl(getHrefAttr(node), baseUrl);
-      cssText = getCssFromCache(resourceUrl);
-      if (cssText === undefined) {
-        isUnfetched = true;
+      const href = getHrefAttr(node);
+      if (!isDataUrl_1(href)) {
+        styleBaseUrl = absolutizeUrl(href, baseUrl);
+        cssText = getCssFromCache(styleBaseUrl);
+      } else {
+        styleBaseUrl = baseUrl;
+        cssText = href.match(/,(.+)/)[1];
       }
+      isUnfetched = cssText === undefined;
     }
-    return {cssText, resourceUrl, isUnfetched};
+    return {cssText, styleBaseUrl, isUnfetched};
   };
 }
 
@@ -223,21 +235,21 @@ var extractCssFromNode = makeExtractCssFromNode;
 
 function makeCaptureNodeCss({extractCssFromNode, getBundledCssFromCssText, unfetchedToken}) {
   return function captureNodeCss(node, baseUrl) {
-    const {resourceUrl, cssText, isUnfetched} = extractCssFromNode(node, baseUrl);
+    const {styleBaseUrl, cssText, isUnfetched} = extractCssFromNode(node, baseUrl);
 
     let unfetchedResources;
     let bundledCss = '';
     if (cssText) {
       const {bundledCss: nestedCss, unfetchedResources: nestedUnfetched} = getBundledCssFromCssText(
         cssText,
-        resourceUrl,
+        styleBaseUrl,
       );
 
       bundledCss += nestedCss;
       unfetchedResources = new Set(nestedUnfetched);
     } else if (isUnfetched) {
-      bundledCss += `${unfetchedToken}${resourceUrl}${unfetchedToken}`;
-      unfetchedResources = new Set([resourceUrl]);
+      bundledCss += `${unfetchedToken}${styleBaseUrl}${unfetchedToken}`;
+      unfetchedResources = new Set([styleBaseUrl]);
     }
     return {bundledCss, unfetchedResources};
   };
@@ -347,7 +359,7 @@ var prefetchAllCss = makePrefetchAllCss;
 
 const {NODE_TYPES: NODE_TYPES$2} = nodeTypes;
 
-const API_VERSION = '1.0.0';
+const API_VERSION = '1.1.0';
 
 async function captureFrame(
   {styleProps, rectProps, ignoredTagNames} = defaultDomProps,
@@ -389,7 +401,6 @@ async function captureFrame(
     unfetchedToken,
   });
 
-  // Note: Change the API_VERSION when changing json structure.
   startTime(performance.doCaptureFrame);
   const capturedFrame = doCaptureFrame(doc);
   endTime(performance.doCaptureFrame);
@@ -397,7 +408,10 @@ async function captureFrame(
   startTime(performance.waitForImages);
   await Promise.all(promises);
   endTime(performance.waitForImages);
+
+  // Note: Change the API_VERSION when changing json structure.
   capturedFrame.version = API_VERSION;
+  capturedFrame.scriptVersion = '7.1.1';
 
   const iframePrefix = iframeCors.length ? `${iframeCors.join('\n')}\n` : '';
   const unfetchedPrefix = unfetchedResources.size

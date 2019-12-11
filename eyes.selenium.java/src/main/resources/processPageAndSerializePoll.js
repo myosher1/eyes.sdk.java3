@@ -1,4 +1,4 @@
-/* @applitools/dom-snapshot@3.1.4 */
+/* @applitools/dom-snapshot@3.2.1 */
 
 function __processPageAndSerializePoll() {
   var processPageAndSerializePoll = (function () {
@@ -528,7 +528,10 @@ function __processPageAndSerializePoll() {
         log('clearing from sessionStorage:', url);
         sessionCache.keys().forEach(key => {
           const dependentUrls = sessionCache.getItem(key);
-          sessionCache.setItem(key, dependentUrls.filter(dep => dep !== url));
+          sessionCache.setItem(
+            key,
+            dependentUrls.filter(dep => dep !== url),
+          );
         });
         log('cleared from sessionStorage:', url);
       }
@@ -625,10 +628,13 @@ function __processPageAndSerializePoll() {
 
   function sanitizeAuthUrl(urlStr) {
     const url = new URL(urlStr);
-    if (url.username && url.password) {
-      return urlStr.replace(`${url.username}:${url.password}@`, '');
+    if (url.username) {
+      url.username = '';
     }
-    return urlStr;
+    if (url.password) {
+      url.password = '';
+    }
+    return url.href;
   }
 
   var sanitizeAuthUrl_1 = sanitizeAuthUrl;
@@ -907,6 +913,7 @@ function __processPageAndSerializePoll() {
 
     return doProcessPage(doc).then(result => {
       log$$1('processPage end');
+      result.scriptVersion = '3.2.0';
       return result;
     });
 
