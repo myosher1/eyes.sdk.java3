@@ -3,6 +3,7 @@
 
 ###Fixed
 - Java SDK was missing abortAsync. [Trello 1420](https://trello.com/c/3NOKuLLj)
+- Java: Some special characters are not rendering when using Java SDK. [Trello 1443](https://trello.com/c/GWzVCY7W)
 
 ## [3.158.9] - 2019-12-12
 ### Fixed
